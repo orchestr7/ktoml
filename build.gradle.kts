@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("multiplatform") version "1.4.10"
+    kotlin("plugin.serialization") version "1.4.10"
 }
 
 group = "com.akuleshov7"
@@ -24,7 +25,7 @@ kotlin {
     ktomlTarget.apply {
         binaries {
             executable {
-                entryPoint = "main"
+                entryPoint = "com.akuleshov7.main"
             }
         }
     }
@@ -33,6 +34,7 @@ kotlin {
         val ktomlMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio-multiplatform:3.0.0-alpha.1")
+                implementation( "org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
             }
         }
         val ktomlTest by getting
