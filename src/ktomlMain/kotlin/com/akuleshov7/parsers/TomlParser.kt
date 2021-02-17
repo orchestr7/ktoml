@@ -6,6 +6,7 @@ import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import platform.posix.exit
+import kotlin.system.exitProcess
 
 
 internal class TomlParser(tomlString: String = "") {
@@ -22,7 +23,7 @@ internal class TomlParser(tomlString: String = "") {
             parse()
         } catch (e: FileNotFoundException) {
             "Not able to find file in the following path: $ktomlFilePath".error()
-            exit(1)
+            exitProcess(1)
         }
     }
 

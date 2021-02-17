@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform") version "1.4.10"
     kotlin("plugin.serialization") version "1.4.10"
+
 }
 
 group = "com.akuleshov7"
@@ -10,6 +11,7 @@ version = "0.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven(url = "https://kotlin.bintray.com/kotlinx/")
 }
 
 kotlin {
@@ -35,6 +37,7 @@ kotlin {
             dependencies {
                 implementation("com.squareup.okio:okio-multiplatform:3.0.0-alpha.1")
                 implementation( "org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
             }
         }
         val ktomlTest by getting
