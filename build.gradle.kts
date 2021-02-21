@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
 plugins {
     kotlin("multiplatform") version "1.4.10"
@@ -14,7 +15,10 @@ repositories {
     maven(url = "https://kotlin.bintray.com/kotlinx/")
 }
 
+
+
 kotlin {
+    jvm()
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
     val ktomlTarget = when {
@@ -27,12 +31,13 @@ kotlin {
     ktomlTarget.apply {
         binaries {
             executable {
-                entryPoint = "com.akuleshov7.parsers.node.main"
+                entryPoint = "com.akuleshov7.main"
             }
         }
     }
 
     sourceSets {
+
         val ktomlMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio-multiplatform:3.0.0-alpha.1")
@@ -41,5 +46,23 @@ kotlin {
             }
         }
         val ktomlTest by getting
+
+        val jvmMain by getting {
+            dependsOn(ktomlMain)
+        }
+
+        val jvmTest by getting {
+            dependsOn(ktomlTest)
+            dependencies {
+                implementation(kotlin("test-junit5"))
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.0.0")
+            }
+        }
     }
 }
+
+
+tasks.withType<KotlinJvmTest> {
+    useJUnitPlatform()
+}
+
