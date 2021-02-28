@@ -1,6 +1,5 @@
 package com.akuleshov7.parsers.node
 
-import platform.posix.exit
 import kotlin.system.exitProcess
 
 // Toml specification includes a list of supported data types: String, Integer, Float, Boolean, Datetime, Array, and Table.
@@ -13,6 +12,8 @@ sealed class TomlNode(open val content: String) {
     fun insertAfter() {}
     fun addChildAfter() {}
     fun addChildBefore() {}
+
+    fun findNodeWithProperType() {}
 
     fun appendChild(child: TomlNode) {
         children.add(child)
@@ -35,8 +36,10 @@ sealed class TomlNode(open val content: String) {
 
 class TomlFile : TomlNode("rootNode")
 
-class TomlSection(content: String) : TomlNode(content) {
+class TomlTable(content: String) : TomlNode(content) {
     var sectionName: String
+    var level: Int
+    var sections: List<String>
 
     init {
         val sectionFromContent = "\\[(.*?)]"
@@ -47,6 +50,9 @@ class TomlSection(content: String) : TomlNode(content) {
 
         // FixMe: create parse exceptions
         sectionName = sectionFromContent ?: throw Exception()
+        level = sectionName.count { it == '.' }
+        sections = sectionName.split(".")
+
     }
 }
 
@@ -56,8 +62,10 @@ class TomlVariable(content: String) : TomlNode(content) {
 
     init {
         val keyValue = content.split("=").map { it.trim() }
-        // FixMe: need to throw a normal exception
+        println(content)
+        println(keyValue)
         if (keyValue.size != 2) {
+            // FixMe: need to log a good error and throw a normal exception
             throw Exception()
         }
 
