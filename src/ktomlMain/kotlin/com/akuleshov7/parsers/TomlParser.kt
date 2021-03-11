@@ -4,7 +4,7 @@ import com.akuleshov7.error
 import com.akuleshov7.parsers.node.TomlFile
 import com.akuleshov7.parsers.node.TomlNode
 import com.akuleshov7.parsers.node.TomlTable
-import com.akuleshov7.parsers.node.TomlVariable
+import com.akuleshov7.parsers.node.TomlKeyValue
 import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
 import okio.FileSystem
@@ -37,31 +37,25 @@ internal class TomlParser(tomlString: String = "") {
         var currentParent: TomlNode = TomlFile()
         val head = currentParent
 
-        ktomlLines.forEach {
-                line ->
-
+        ktomlLines.forEachIndexed { index, line ->
+            val lineno = index + 1
             if (!line.isComment() && !line.isEmptyLine()) {
-                if (line.isTableString()) {
-                    val tableSection = TomlTable(line)
+                if (line.isTableNode()) {
+                    val tableSection = TomlTable(line, lineno)
                     allSections.add(tableSection)
                     currentParent.appendChild(tableSection)
                     currentParent = tableSection
                 } else {
-                    val variable = TomlVariable(line)
-                    currentParent.appendChild(variable)
+                    currentParent.appendChild(TomlKeyValue(line, lineno))
                 }
             }
         }
-
         return head
     }
 
-    private fun String.isTableString() = "\\[(.*?)]".toRegex().matches(this.trim())
+    private fun String.isTableNode() = "\\[(.*?)]".toRegex().matches(this.trim())
 
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
-
-    private fun String.levels() = this.split(".")
 }
-

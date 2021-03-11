@@ -1,5 +1,6 @@
 package com.akuleshov7.decoders
 
+import com.akuleshov7.error
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
@@ -21,7 +22,7 @@ public abstract class TomlInput(
         try {
             return super.decodeSerializableValue(deserializer)
         } catch (e: SerializationException) {
-            println(e.message)
+            e.message?.error()
             throw e
         }
     }
@@ -32,7 +33,7 @@ private class TomlInputNull(content: String,serializersModule: SerializersModule
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = 0
 
     override fun decodeString(): String {
-        println("String")
+        println("Decoding String")
         return super.decodeString()
     }
 }

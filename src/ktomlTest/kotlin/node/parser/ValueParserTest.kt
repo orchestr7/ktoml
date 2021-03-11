@@ -29,7 +29,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
 }
 
 fun testTomlValue(s: String, expectedType: NodeType) {
-    assertEquals(expectedType, getNodeType(TomlVariable(s).value))
+    assertEquals(expectedType, getNodeType(TomlKeyValue(s, 0).value))
 }
 
 
