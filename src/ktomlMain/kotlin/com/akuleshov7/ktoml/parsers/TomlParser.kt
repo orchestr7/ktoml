@@ -1,10 +1,10 @@
-package com.akuleshov7.parsers
+package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.error
-import com.akuleshov7.parsers.node.TomlFile
-import com.akuleshov7.parsers.node.TomlNode
-import com.akuleshov7.parsers.node.TomlTable
-import com.akuleshov7.parsers.node.TomlKeyValue
+import com.akuleshov7.ktoml.error
+import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.parsers.node.TomlNode
+import com.akuleshov7.ktoml.parsers.node.TomlTable
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
 import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
 import okio.FileSystem
@@ -31,26 +31,24 @@ internal class TomlParser(tomlString: String = "") {
     }
 
     private fun parse(): TomlNode {
-        val allSections = mutableSetOf<TomlTable>()
-
         // FixMe: should be done in parallel
         var currentParent: TomlNode = TomlFile()
-        val head = currentParent
+        val tomlFileHead = currentParent as TomlFile
 
         ktomlLines.forEachIndexed { index, line ->
             val lineno = index + 1
             if (!line.isComment() && !line.isEmptyLine()) {
                 if (line.isTableNode()) {
                     val tableSection = TomlTable(line, lineno)
-                    allSections.add(tableSection)
-                    currentParent.appendChild(tableSection)
+                    tomlFileHead.insertTableToTree(tableSection)
                     currentParent = tableSection
                 } else {
                     currentParent.appendChild(TomlKeyValue(line, lineno))
                 }
             }
         }
-        return head
+
+        return tomlFileHead
     }
 
     private fun String.isTableNode() = "\\[(.*?)]".toRegex().matches(this.trim())

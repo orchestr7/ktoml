@@ -1,4 +1,4 @@
-package com.akuleshov7.decoders
+package com.akuleshov7.ktoml.decoders
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor

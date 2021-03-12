@@ -1,8 +1,8 @@
 package node.parser
 
-import com.akuleshov7.parsers.node.TomlFile
-import com.akuleshov7.parsers.node.TomlNode
-import com.akuleshov7.parsers.node.TomlTable
+import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.parsers.node.TomlNode
+import com.akuleshov7.ktoml.parsers.node.TomlTable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -76,7 +76,7 @@ class TomlTableTest {
         assertEquals( "c.a.b", fileNode.findTableInAstByName("c.a.b", 3)?.tableName,)
         assertEquals( "d.e.f", fileNode.findTableInAstByName("d.e.f", 3)?.tableName,)
 
-        // checking that table [b.a.a.a] is a node in a tree that does not have children and it's grand parent is [b]
+        // checking that table [b.a.a.a] is a node in a tree that does not have children and it's grandparent is [b]
         val baaaNode = fileNode.findTableInAstByName("b.a.a.a", 4)!!
         val ba = fileNode.findTableInAstByName("b", 1)!!
         assertEquals(emptySet(), baaaNode.children)

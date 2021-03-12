@@ -1,6 +1,8 @@
-package com.akuleshov7.parsers.node
+package com.akuleshov7.ktoml.parsers.node
 
-import com.akuleshov7.error
+import com.akuleshov7.ktoml.error
+import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsingError
 import kotlin.system.exitProcess
 
 // Toml specification includes a list of supported data types: String, Integer, Float, Boolean, Datetime, Array, and Table.
@@ -81,8 +83,35 @@ class TomlFile : TomlNode("rootNode", 0) {
         return if (searchedTable.isEmpty()) null else searchedTable[0]
     }
 
+    /**
+     * Method inserts a table (section) to tree. It parses the section name and creates all missing nodes in the tree (even parental).
+     * for [a.b.c] it will create 3 nodes: a, b, and c
+     *
+     * @param tomlTable - a table (section) that should be inserted into the tree
+     */
     fun insertTableToTree(tomlTable: TomlTable) {
-        tomlTable.insertTableToTree(this)
+        // prevParentNode - saved node that is used in a chain
+        var prevParentNode: TomlNode = this
+        // [a.b.c.d] -> for each section node checking existing node in a tree
+        // [a], [a.b], [a.b.c], [a.b.c.d] -> if any of them does not exist we create and insert that in a tree
+        //
+        // the only trick here is to save the link to the initial tomlTable (append it in the end)
+        tomlTable.tablesList.forEachIndexed { level, tableName ->
+            val foundTableName = this.findTableInAstByName(tableName, level + 1)
+            foundTableName?.let {
+                prevParentNode = it
+            } ?: run {
+                // hack and trick to save the link to the initial node (that was passed as an argument) in the tree
+                // so the node will be added only in the end, and it will be the initial node
+                if (level != tomlTable.tablesList.size - 1) {
+                    val newChildTableName = TomlTable("[$tableName]", lineNo)
+                    prevParentNode.appendChild(newChildTableName)
+                    prevParentNode = newChildTableName
+                } else {
+                    prevParentNode.appendChild(tomlTable)
+                }
+            }
+        }
     }
 }
 
@@ -116,23 +145,6 @@ class TomlFile : TomlNode("rootNode", 0) {
             (0..index).map { sectionsList[it] }.joinToString(".")
         }
     }
-
-    fun insertTableToTree(treeHead: TomlFile) {
-        // prevParentNode - saved node that is used in a chain
-        var prevParentNode: TomlNode = treeHead
-        // [a.b.c.d] -> for each section node checking existing node in a tree
-        // [a], [a.b], [a.b.c], [a.b.c.d] -> if any of them does not exist we create and insert that in a tree
-        this.tablesList.forEachIndexed { level, tableName ->
-            val foundTableName = treeHead.findTableInAstByName(tableName, level + 1)
-            foundTableName?.let {
-                prevParentNode = it
-            } ?: run {
-                val newChildTableName = TomlTable("[$tableName]", lineNo)
-                prevParentNode.appendChild(newChildTableName)
-                prevParentNode = newChildTableName
-            }
-        }
-    }
 }
 
 class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
@@ -140,19 +152,41 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
     var value: TomlValue
 
     init {
-        val keyValue = content.split("=").map { it.trim() }
+        // FixMe: need to cover a case, when no value is present, because of the comment, but "=" is present: a = # comment
+        // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") - is this supported?
+        val keyValue = content.split("=")
+            .map { it.substringBefore("#",) }
+            .map { it.trim() }
+
         if (keyValue.size != 2) {
-            "Line $lineNo has incorrect format of Key-Value pair. Should be <key = value>, but was $content".error()
-            exitProcess(1)
+            "Incorrect format of Key-Value pair. Should be <key = value>, but was $content"
+                .parsingError(lineNo)
         }
 
-        key = TomlKey(keyValue[0], lineNo)
-        value = parseValue(keyValue[1], lineNo)
+        val keyStr = keyValue[0].trim().also {
+            if (it.isBlank()) {
+                "Incorrect format of Key-Value pair. It has empty <key>: $content"
+                    .parsingError(lineNo)
+            }
+        }
+        // trimming and removing the comment in the end of the string
+        val valueStr = keyValue[1].trim().also {
+            if (it.isBlank()) {
+                "Incorrect format of Key-Value pair. It has empty <value>: $content"
+                    .parsingError(lineNo)
+            }
+        }
+
+        key = TomlKey(keyStr, lineNo)
+        value = parseValue(valueStr, lineNo)
 
         this.appendChild(key)
         this.appendChild(value)
     }
 
+    /**
+     * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
+     */
     private fun parseValue(contentStr: String, lineNo: Int): TomlValue =
         if (contentStr == "true" || contentStr == "false") {
             TomlBoolean(contentStr, lineNo)

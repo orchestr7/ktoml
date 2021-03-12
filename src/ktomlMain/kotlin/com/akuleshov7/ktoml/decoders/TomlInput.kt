@@ -1,6 +1,6 @@
-package com.akuleshov7.decoders
+package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.error
+import com.akuleshov7.ktoml.error
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException

@@ -1,7 +1,7 @@
 package node.parser
 
-import com.akuleshov7.parsers.TomlParser
-import com.akuleshov7.parsers.node.TomlNode
+import com.akuleshov7.ktoml.parsers.TomlParser
+import com.akuleshov7.ktoml.parsers.node.TomlNode
 import okio.ExperimentalFileSystem
 import kotlin.test.Test
 

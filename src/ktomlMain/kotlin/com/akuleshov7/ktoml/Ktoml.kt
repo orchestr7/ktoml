@@ -1,6 +1,6 @@
-package com.akuleshov7
+package com.akuleshov7.ktoml
 
-import com.akuleshov7.decoders.TomlInput
+import com.akuleshov7.ktoml.decoders.TomlInput
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule

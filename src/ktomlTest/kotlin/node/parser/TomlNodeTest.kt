@@ -1,8 +1,8 @@
 package node.parser
 
-import com.akuleshov7.parsers.node.TomlFile
-import com.akuleshov7.parsers.node.TomlNode
-import com.akuleshov7.parsers.node.TomlTable
+import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.parsers.node.TomlNode
+import com.akuleshov7.ktoml.parsers.node.TomlTable
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
