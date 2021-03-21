@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.decoders
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
+import okio.ExperimentalFileSystem
 
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlScalarInput(content: String, serializersModule: SerializersModule,) : TomlInput(content, serializersModule) {

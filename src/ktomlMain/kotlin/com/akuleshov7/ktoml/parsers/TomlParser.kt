@@ -15,7 +15,7 @@ import kotlin.system.exitProcess
 internal class TomlParser(tomlString: String = "") {
     lateinit var ktomlLines: List<String>
 
-    @ExperimentalFileSystem
+    @OptIn(ExperimentalFileSystem::class)
     fun readFile(ktomlFilePath: String): TomlNode {
         try {
             val ktomlPath = ktomlFilePath.toPath()
