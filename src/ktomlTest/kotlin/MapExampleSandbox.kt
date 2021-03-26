@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.*
 import kotlin.test.Test
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 class MainTest {
     class MapDecoder(val map: Map<*, *>, var elementsCount: Int = 0) : AbstractDecoder() {
         private var elementIndex = 0
@@ -47,6 +47,7 @@ class MainTest {
             }
 
         // used to trigger the processing for structures (including nested)
+        // when we use this method we go throw nested (non-primitive) structures IN THE CLASS
         override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
             // corner case at the beginning of the decoding
             if (elementIndex == 0) {

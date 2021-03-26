@@ -31,7 +31,7 @@ kotlin {
     ktomlTarget.apply {
         binaries {
             executable {
-                entryPoint = "com.akuleshov7.main"
+                entryPoint = "com.akuleshov7.ktoml.main"
             }
         }
     }

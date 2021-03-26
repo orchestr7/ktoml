@@ -11,26 +11,33 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 import kotlin.system.exitProcess
 
-
-internal class TomlParser(tomlString: String = "") {
-    lateinit var ktomlLines: List<String>
-
+/**
+ * @param toml - this argument can be a path to a toml file or a string in the toml format,
+ * depending on how you plan to work with it.
+ */
+internal class TomlParser(val toml: String) {
     @OptIn(ExperimentalFileSystem::class)
-    fun readFile(ktomlFilePath: String): TomlNode {
+    fun readAndParseFile(): TomlNode {
         try {
-            val ktomlPath = ktomlFilePath.toPath()
-            ktomlLines = FileSystem.SYSTEM.read(ktomlPath) {
+            val ktomlPath = toml.toPath()
+            val ktomlLinesFromFile = FileSystem.SYSTEM.read(ktomlPath) {
                 // FixMe: may be we need to read and at the same time parse (to make it parallel)
                 generateSequence { readUtf8Line() }.toList()
             }
-            return parse()
+            return parseStringsToTomlNode(ktomlLinesFromFile)
         } catch (e: FileNotFoundException) {
-            "Not able to find file in the following path: $ktomlFilePath".error()
+            "Not able to find file in the following path: $toml".error()
             exitProcess(1)
         }
     }
 
-    private fun parse(): TomlNode {
+    fun parseString(): TomlNode {
+        // FixMe: need to be careful here about the newline symbol
+        return parseStringsToTomlNode(toml.split("\n"))
+    }
+
+
+    private fun parseStringsToTomlNode(ktomlLines: List<String>): TomlNode {
         // FixMe: should be done in parallel
         var currentParent: TomlNode = TomlFile()
         val tomlFileHead = currentParent as TomlFile

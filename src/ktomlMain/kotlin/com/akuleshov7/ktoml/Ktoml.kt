@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml
 
-import com.akuleshov7.ktoml.decoders.TomlInput
+import com.akuleshov7.ktoml.decoders.TomlDecoder
+import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
@@ -25,21 +26,16 @@ public class Ktoml(
     }
 
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        return TomlInput.createFor(string, serializersModule).decodeSerializableValue(deserializer)
+        val parsedTomlNode = TomlParser(string).parseString()
+        return TomlDecoder.decode(deserializer, parsedTomlNode)
+    }
+
+    fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlStr: String): T {
+        TODO()
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
         TODO("Not yet implemented")
     }
-
-    public companion object {
-        // Ktoml.decodeFromString<Team>(input) or Ktoml.encodeToString<Team>(input)
-        @OptIn(InternalSerializationApi::class)
-        public inline fun <reified T : Any> decodeFromString(string: String): T =
-            Ktoml().decodeFromString(T::class.serializer(), string)
-
-        @OptIn(InternalSerializationApi::class)
-        public inline fun <reified T : Any> encodeToString(value: T): String =
-            Ktoml().encodeToString(T::class.serializer(), value)
-    }
 }
+

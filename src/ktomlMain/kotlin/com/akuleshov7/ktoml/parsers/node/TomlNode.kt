@@ -45,6 +45,10 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
         child.parent = this
     }
 
+    fun prettyPrint() {
+        prettyPrint(this)
+    }
+
     companion object {
         // number of spaces that is used to indent levels
         const val INDENTING_LEVEL = 4
@@ -179,9 +183,6 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
 
         key = TomlKey(keyStr, lineNo)
         value = parseValue(valueStr, lineNo)
-
-        this.appendChild(key)
-        this.appendChild(value)
     }
 
     /**
@@ -209,20 +210,28 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
 
 class TomlKey(content: String, lineNo: Int) : TomlNode(content, lineNo)
 
-sealed class TomlValue(content: String, lineNo: Int) : TomlNode(content, lineNo)
+sealed class TomlValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+    abstract var value: Any
 
-class TomlString(content: String, lineNo: Int) : TomlValue(content, lineNo)
+}
+
+class TomlString(content: String, lineNo: Int) : TomlValue(content, lineNo) {
+    override var value: Any = content
+}
 
 class TomlInt(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    var value: Int = content.toInt()
+    override var value: Any = content.toInt()
 }
 
 class TomlFloat(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    var value: Float = content.toFloat()
+    override var value: Any = content.toFloat()
 }
 
 class TomlBoolean(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    var value: Boolean = content.toBoolean()
+    override var value: Any = content.toBoolean()
 }
 
-class TomlNull(lineNo: Int) : TomlValue("null", lineNo)
+class TomlNull(lineNo: Int) : TomlValue("null", lineNo) {
+    // FixMe: support null properly
+    override var value: Any = "null"
+}
