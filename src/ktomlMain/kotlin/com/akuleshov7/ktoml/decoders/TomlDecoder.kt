@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
+import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -9,32 +10,30 @@ import kotlinx.serialization.modules.*
 @OptIn(ExperimentalSerializationApi::class)
 class TomlDecoder(val rootNode: TomlNode, var elementsCount: Int = 0) : AbstractDecoder() {
     private var elementIndex = 0
+    val neighbourNodes = rootNode.parent?.children
 
     override val serializersModule: SerializersModule = EmptySerializersModule
 
-    init {
-        println("creating for ${rootNode.content}")
-    }
-
     override fun decodeValue(): Any {
-        return when(rootNode) {
-            is TomlKeyValue -> rootNode.value.value
-            is TomlTable -> rootNode.children
-            is TomlFile -> rootNode.children
-            else -> throw Exception("")
+        val currentNode = neighbourNodes?.elementAt(elementIndex - 1)
+
+        return when(currentNode) {
+            is TomlKeyValue -> currentNode.value.value
+            is TomlTable -> currentNode.children
+            is TomlFile -> currentNode.children
+            else -> throw InternalDecodingException("Internal error (decodeValue stage) - unexpected type of a node: <$currentNode> was found during the decoding process.")
         }
     }
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (elementIndex == descriptor.elementsCount) return CompositeDecoder.DECODE_DONE
-        val neighbourNodes = rootNode.parent?.children
         val currentNode = neighbourNodes?.elementAt(elementIndex)
 
         val keyField = when (currentNode) {
             is TomlKeyValue -> currentNode.key.content
             is TomlTable -> currentNode.tableName
             is TomlFile -> currentNode.content
-            else -> throw Exception("")
+            else -> throw InternalDecodingException("Internal error (decodeElementIndex stage) - unexpected type of a node: <$currentNode> was found during the decoding process.")
         }
 
         val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(keyField)
@@ -43,6 +42,7 @@ class TomlDecoder(val rootNode: TomlNode, var elementsCount: Int = 0) : Abstract
         if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
             // FixMe: throw exception or handle this case
         }
+        println("Indexes: $elementIndex, ${descriptor.elementsCount}")
         elementIndex++
         return fieldWhereValueShouldBeInjected
     }
@@ -56,11 +56,14 @@ class TomlDecoder(val rootNode: TomlNode, var elementsCount: Int = 0) : Abstract
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         println("====== new structure with size ${descriptor.elementsCount}~~~~")
-        rootNode.prettyPrint()
+        println("Came to beginStructure with ${rootNode.content}")
+        println("Structure index: $elementIndex")
+
         return when(rootNode) {
             is TomlFile -> TomlDecoder(rootNode.children.elementAt(0), descriptor.elementsCount)
-            is TomlTable -> TomlDecoder(rootNode.children.elementAt(elementIndex - 1), descriptor.elementsCount)
-            else -> throw Exception("")
+            // need to move on here, but also need to pass children into the function
+            is TomlTable -> TomlDecoder(rootNode.parent!!.children.elementAt(elementIndex - 1).children.elementAt(0), descriptor.elementsCount)
+            else -> throw InternalDecodingException("Internal error (beginStructure stage) - unexpected type of a node was found during the decoding process.")
         }
     }
 
