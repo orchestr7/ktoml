@@ -4,4 +4,8 @@ class TomlParsingException(message:String, lineNo: Int): Exception("Line $lineNo
 
 class InternalDecodingException(message:String): Exception(message)
 
-class UnknownNameDecodingException(message:String): Exception(message)
+class UnknownNameDecodingException(keyField: String): Exception("Unknown key received: $keyField." +
+        " Pass 'ignoreUnknownNames' option if you would like to skip unknown keys")
+
+class InvalidEnumValueException(value: String, availableEnumValues: String): Exception("Value $value is not a valid" +
+        " option, permitted choices are: $availableEnumValues")

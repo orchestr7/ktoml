@@ -5,6 +5,7 @@ build
 *.iml
 out
 .DS_Store
+*.hprof
 
 # Compiled class file
 *.class

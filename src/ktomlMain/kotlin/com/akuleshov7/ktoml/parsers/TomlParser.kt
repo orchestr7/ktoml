@@ -36,7 +36,6 @@ internal class TomlParser(val toml: String) {
         return parseStringsToTomlNode(toml.split("\n"))
     }
 
-
     private fun parseStringsToTomlNode(ktomlLines: List<String>): TomlNode {
         // FixMe: should be done in parallel
         var currentParent: TomlNode = TomlFile()

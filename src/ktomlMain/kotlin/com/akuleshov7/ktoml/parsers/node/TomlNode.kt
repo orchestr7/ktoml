@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.error
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsingError
 import kotlin.system.exitProcess
 
@@ -26,7 +25,7 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
         searchedLevel: Int,
         currentLevel: Int
     ): List<TomlTable> {
-        val result = if (this is TomlTable && this.tableName == searchedTableName && currentLevel == searchedLevel) {
+        val result = if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
             mutableListOf(this)
         } else {
             mutableListOf()
@@ -124,6 +123,7 @@ class TomlFile : TomlNode("rootNode", 0) {
  * for example: if the TomlTable is [a.b.c] this list will contain [a], [a.b], [a.b.c]
  */
  class TomlTable(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+    var fullTableName: String
     var tableName: String
     var level: Int
     var tablesList: List<String>
@@ -141,10 +141,11 @@ class TomlFile : TomlNode("rootNode", 0) {
             error("Line $lineNo contains incorrect blank table name: $content")
         }
 
-        tableName = sectionFromContent
+        fullTableName = sectionFromContent
         level = sectionFromContent.count { it == '.' }
 
         val sectionsList = sectionFromContent.split(".")
+        tableName = sectionsList.last()
         tablesList = sectionsList.mapIndexed { index, secton ->
             (0..index).map { sectionsList[it] }.joinToString(".")
         }

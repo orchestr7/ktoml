@@ -1,7 +1,6 @@
 package node.parser
 
 import com.akuleshov7.ktoml.parsers.node.TomlFile
-import com.akuleshov7.ktoml.parsers.node.TomlNode
 import com.akuleshov7.ktoml.parsers.node.TomlTable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,7 +12,7 @@ class TomlTableTest {
         assertEquals(table.tablesList, listOf("a", "a.b", "a.b.c", "a.b.c.d", "a.b.c.d.e"))
         assertEquals(table.content, "[a.b.c.d.e]")
         assertEquals(table.level, 4)
-        assertEquals(table.tableName, "a.b.c.d.e")
+        assertEquals(table.fullTableName, "a.b.c.d.e")
     }
 
     @Test
@@ -42,10 +41,10 @@ class TomlTableTest {
          *        \                        \
          *        a.d.e                   a.d.e
          */
-        assertEquals( "a", fileNode.findTableInAstByName("a", 1)?.tableName,)
-        assertEquals( "b", fileNode.findTableInAstByName("b", 1)?.tableName,)
-        assertEquals( "c", fileNode.findTableInAstByName("c", 1)?.tableName,)
-        assertEquals( "d", fileNode.findTableInAstByName("d", 1)?.tableName,)
+        assertEquals( "a", fileNode.findTableInAstByName("a", 1)?.fullTableName,)
+        assertEquals( "b", fileNode.findTableInAstByName("b", 1)?.fullTableName,)
+        assertEquals( "c", fileNode.findTableInAstByName("c", 1)?.fullTableName,)
+        assertEquals( "d", fileNode.findTableInAstByName("d", 1)?.fullTableName,)
     }
 
     @Test
@@ -71,10 +70,10 @@ class TomlTableTest {
          *                                       b.a.a.a
          */
 
-        assertEquals( "a.c", fileNode.findTableInAstByName("a.c", 2)?.tableName,)
-        assertEquals( "b.a.a.a", fileNode.findTableInAstByName("b.a.a.a", 4)?.tableName,)
-        assertEquals( "c.a.b", fileNode.findTableInAstByName("c.a.b", 3)?.tableName,)
-        assertEquals( "d.e.f", fileNode.findTableInAstByName("d.e.f", 3)?.tableName,)
+        assertEquals( "a.c", fileNode.findTableInAstByName("a.c", 2)?.fullTableName,)
+        assertEquals( "b.a.a.a", fileNode.findTableInAstByName("b.a.a.a", 4)?.fullTableName,)
+        assertEquals( "c.a.b", fileNode.findTableInAstByName("c.a.b", 3)?.fullTableName,)
+        assertEquals( "d.e.f", fileNode.findTableInAstByName("d.e.f", 3)?.fullTableName,)
 
         // checking that table [b.a.a.a] is a node in a tree that does not have children and it's grandparent is [b]
         val baaaNode = fileNode.findTableInAstByName("b.a.a.a", 4)!!
