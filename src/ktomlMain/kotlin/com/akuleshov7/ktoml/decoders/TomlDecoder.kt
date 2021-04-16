@@ -49,13 +49,11 @@ class TomlDecoder(
         }
 
         val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(keyField)
-        println("Field name: $keyField, index: $fieldWhereValueShouldBeInjected")
 
         if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME && !config.ignoreUnknownNames) {
             throw UnknownNameDecodingException(keyField)
         }
 
-        println("Indexes: $elementIndex, ${descriptor.elementsCount}")
         elementIndex++
         return fieldWhereValueShouldBeInjected
     }
@@ -66,24 +64,19 @@ class TomlDecoder(
         }
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        println("====== new structure with size ${descriptor.elementsCount}~~~~")
-        println("Came to beginStructure with ${rootNode.content}")
-        println("Structure index: $elementIndex")
-
-        return when (rootNode) {
-            is TomlFile -> TomlDecoder(rootNode.children.elementAt(0), config, descriptor.elementsCount)
-            // need to move on here, but also need to pass children into the function
-            is TomlTable -> TomlDecoder(
-                rootNode.parent!!.children.elementAt(elementIndex - 1).children.elementAt(0),
-                config,
-                descriptor.elementsCount
-            )
-            else -> throw InternalDecodingException(
-                "Internal error (beginStructure stage) - unexpected type <${rootNode}> of" +
-                        " a node <${rootNode.content}> was found during the decoding process."
-            )
-        }
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
+        is TomlFile -> TomlDecoder(rootNode.getFirstChild(), config, descriptor.elementsCount)
+        // need to move on here, but also need to pass children into the function
+        is TomlTable, is TomlKeyValue -> TomlDecoder(
+            // this is a little bit tricky index calculation, suggest not to change
+            rootNode.parent!!.children.elementAt(elementIndex - 1).getFirstChild(),
+            config,
+            descriptor.elementsCount
+        )
+        else -> throw InternalDecodingException(
+            "Internal error (beginStructure stage) - unexpected type <${rootNode}> of" +
+                    " a node <${rootNode.content}> was found during the decoding process."
+        )
     }
 
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
