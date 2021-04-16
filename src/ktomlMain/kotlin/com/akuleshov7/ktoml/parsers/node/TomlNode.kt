@@ -13,6 +13,7 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
     fun insertAfter() {}
     fun addChildAfter() {}
     fun addChildBefore() {}
+    fun getFirstChild() = children.elementAt(0)
 
     /**
      * This method performs tree traversal and returns all table Nodes that have proper name and are on the proper level

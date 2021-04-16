@@ -37,7 +37,10 @@ class DecoderTest {
     data class TwoTomlTables(val table1: Table1, val table2: Table2)
 
     @Serializable
-    data class TwoNestedTables(val table1: Table1, val table4: Table4)
+    data class TwoNestedTables(val c: Int, val table1: Table1, val table4: Table4)
+
+    @Serializable
+    data class NestedSimpleTable(val c: Int, val table1: Table1)
 
     @Test
     fun testForSimpleTomlCase() {
@@ -65,7 +68,7 @@ class DecoderTest {
     @Test
     fun testForComplexTypes() {
         assertFailsWith<InvalidEnumValueException> {
-            println("table3: (a:true, d:5, e:\"my test\", b = H)")
+            println("table3: (a:true, d:5, e:\"my test\", b: H)")
             deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = H")
         }
     }
@@ -86,10 +89,23 @@ class DecoderTest {
     }
 
     @Test
+    fun testForSimpleNestedTable() {
+        println("c: 5, table1: (b:6, a:5)")
+        val test = deserialize<NestedSimpleTable>(
+            "c = 5 \n" +
+                    "[table1] \n" +
+                    " b = 6  \n" +
+                    " a = 5  \n "
+        )
+        assertEquals(NestedSimpleTable(5, Table1(5, 6)), test)
+    }
+
+    @Test
     fun testForNestedTables() {
-        println("table1: (b:6, a:5), table2:(c:7, e:8, d:9, table1: (b:6, a:5))")
+        println("c:5, table1: (b:6, a:5), table4:(c:7, e:9 d:8, table1: (b:6, a:5))")
         val test = deserialize<TwoNestedTables>(
-            "[table1]\n" +
+            "c = 5 \n" +
+                    "[table1] \n" +
                     " b = 6  \n" +
                     " a = 5  \n " +
 
@@ -98,9 +114,21 @@ class DecoderTest {
                     " d = 8  \n" +
                     " e = 9 \n" +
                     " [table4.table1] \n" +
-                    " b = 6  \n" +
-                    " a = 5  \n "
+                    "   b = 6  \n" +
+                    "   a = 5  \n "
         )
-        assertEquals(TwoNestedTables(Table1(5, 6), Table4(7, 8, 9, Table1(6, 5))), test)
+        assertEquals(TwoNestedTables(c = 5, Table1(5, 6), Table4(7, 9, 8, Table1(5, 6))), test)
+    }
+
+    @Test
+    fun testWithoutTables() {
+        println("a:true, b:A, e: my string, d: 55")
+        val test = deserialize<Table3>(
+            "a = true \n" +
+                    " b = A\n" +
+                    " e = my string\n" +
+                    " d = 55"
+        )
+        assertEquals(Table3(true, "my string", 55, TestEnum.A), test)
     }
 }
