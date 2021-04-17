@@ -50,8 +50,11 @@ class TomlDecoder(
 
         val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(keyField)
 
-        if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME && !config.ignoreUnknownNames) {
-            throw UnknownNameDecodingException(keyField)
+        if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
+            if (!config.ignoreUnknownNames) {
+                throw UnknownNameDecodingException(keyField)
+            }
+            // FixMe: unknown names are not ignored now, need to fix it
         }
 
         elementIndex++
