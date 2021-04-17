@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.test.decoder
 
+import com.akuleshov7.ktoml.decoders.SerializationConf
 import com.akuleshov7.ktoml.deserialize
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
@@ -41,6 +42,9 @@ class DecoderTest {
 
     @Serializable
     data class NestedSimpleTable(val c: Int, val table1: Table1)
+
+    @Serializable
+    data class NullableValues(val a: Int?, val b: Table1?)
 
     @Test
     fun testForSimpleTomlCase() {
@@ -130,5 +134,32 @@ class DecoderTest {
                     " d = 55"
         )
         assertEquals(Table3(true, "my string", 55, TestEnum.A), test)
+    }
+
+    @Test
+    fun testWithUnknownFields() {
+        println("a:true, b:A, e: my string, d: 55, t: 7777")
+        val test = deserialize<Table3>(
+            " t = 7777 \n" +
+                    "a = true \n" +
+                    " b = A \n" +
+                    " e = my string \n" +
+                    " d = 55 \n",
+
+            SerializationConf(
+                ignoreUnknownNames = true
+            )
+        )
+        assertEquals(Table3(true, "my string", 55, TestEnum.A), test)
+    }
+
+    @Test
+    fun nullableFields() {
+        println("a = null, b = NULL")
+        val test = deserialize<NullableValues>(
+            "a = null \n " +
+                    "b = NULL"
+        )
+        assertEquals(NullableValues(null, null), test)
     }
 }
