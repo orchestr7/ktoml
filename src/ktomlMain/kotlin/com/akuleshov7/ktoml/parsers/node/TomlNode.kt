@@ -1,6 +1,8 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.error
+import com.akuleshov7.ktoml.exceptions.InternalAstException
+import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.parsingError
 import kotlin.system.exitProcess
 
@@ -8,12 +10,14 @@ import kotlin.system.exitProcess
 sealed class TomlNode(open val content: String, open val lineNo: Int) {
     open val children: MutableSet<TomlNode> = mutableSetOf()
     open var parent: TomlNode? = null
+    abstract val name: String
 
     fun insertBefore() {}
     fun insertAfter() {}
     fun addChildAfter() {}
     fun addChildBefore() {}
     fun getFirstChild() = children.elementAt(0)
+    abstract fun getNeighbourNodes(): MutableSet<TomlNode>
 
     /**
      * This method performs tree traversal and returns all table Nodes that have proper name and are on the proper level
@@ -26,11 +30,12 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
         searchedLevel: Int,
         currentLevel: Int
     ): List<TomlTable> {
-        val result = if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
-            mutableListOf(this)
-        } else {
-            mutableListOf()
-        }
+        val result =
+            if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
+                mutableListOf(this)
+            } else {
+                mutableListOf()
+            }
         return result + this.children.flatMap {
             if (currentLevel + 1 <= searchedLevel) {
                 it.findTableInAstByName(searchedTableName, searchedLevel, currentLevel + 1)
@@ -64,6 +69,11 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
 }
 
 class TomlFile : TomlNode("rootNode", 0) {
+    override val name = "rootNode"
+
+    override fun getNeighbourNodes() =
+        throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
+
     /**
      * This method recursively finds child toml table with the proper name in AST.
      * Stops processing if AST is broken and it has more than one table with the searched name on the same level.
@@ -123,9 +133,10 @@ class TomlFile : TomlNode("rootNode", 0) {
  * @property tablesList - a list of names of sections (tables) that are included into this particular TomlTable
  * for example: if the TomlTable is [a.b.c] this list will contain [a], [a.b], [a.b.c]
  */
- class TomlTable(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+class TomlTable(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+    override val name: String
+
     var fullTableName: String
-    var tableName: String
     var level: Int
     var tablesList: List<String>
 
@@ -146,22 +157,25 @@ class TomlFile : TomlNode("rootNode", 0) {
         level = sectionFromContent.count { it == '.' }
 
         val sectionsList = sectionFromContent.split(".")
-        tableName = sectionsList.last()
+        name = sectionsList.last()
         tablesList = sectionsList.mapIndexed { index, secton ->
             (0..index).map { sectionsList[it] }.joinToString(".")
         }
     }
+
+    override fun getNeighbourNodes() = parent!!.children
 }
 
 class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
     var key: TomlKey
     var value: TomlValue
+    override val name: String
 
     init {
         // FixMe: need to cover a case, when no value is present, because of the comment, but "=" is present: a = # comment
         // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") - is this supported?
         val keyValue = content.split("=")
-            .map { it.substringBefore("#",) }
+            .map { it.substringBefore("#") }
             .map { it.trim() }
 
         if (keyValue.size != 2) {
@@ -185,7 +199,10 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
 
         key = TomlKey(keyStr, lineNo)
         value = parseValue(valueStr, lineNo)
+        name = key.content
     }
+
+    override fun getNeighbourNodes() = parent!!.children
 
     /**
      * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
@@ -210,11 +227,10 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
         }
 }
 
-class TomlKey(content: String, lineNo: Int) : TomlNode(content, lineNo)
+class TomlKey(val content: String, val lineNo: Int)
 
-sealed class TomlValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+sealed class TomlValue(val content: String, val lineNo: Int) {
     abstract var value: Any
-
 }
 
 class TomlString(content: String, lineNo: Int) : TomlValue(content, lineNo) {
@@ -234,6 +250,5 @@ class TomlBoolean(content: String, lineNo: Int) : TomlValue(content, lineNo) {
 }
 
 class TomlNull(lineNo: Int) : TomlValue("null", lineNo) {
-    // FixMe: support null properly
     override var value: Any = "null"
 }
