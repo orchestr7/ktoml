@@ -11,7 +11,7 @@ class TomlNodeTest {
     @Test
     fun findTableChildByName() {
         val fileNode = prepareTree()
-        TomlNode.prettyPrint(fileNode)
+        fileNode.prettyPrint()
 
         assertTrue { fileNode.findTableInAstByName("a.d.e", 3)?.content == "[a.d.e]" }
         assertTrue { fileNode.findTableInAstByName("a.d", 2)?.content == "[a.d]" }

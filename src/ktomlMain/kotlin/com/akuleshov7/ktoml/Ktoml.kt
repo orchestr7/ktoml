@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml
 
-import com.akuleshov7.ktoml.decoders.SerializationConf
+import com.akuleshov7.ktoml.decoders.DecoderConf
 import com.akuleshov7.ktoml.decoders.TomlDecoder
 import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.*
@@ -18,12 +18,12 @@ import okio.Path
  */
 @OptIn(ExperimentalSerializationApi::class, ExperimentalFileSystem::class)
 public class Ktoml(
-    val config: SerializationConf,
+    val config: DecoderConf,
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        val parsedTomlNode = TomlParser(string).parseString()
-        return TomlDecoder.decode(deserializer, parsedTomlNode, config)
+        val parsedToml = TomlParser(string).parseString()
+        return TomlDecoder.decode(deserializer, parsedToml, config)
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
@@ -40,11 +40,11 @@ public class Ktoml(
 }
 
 @ExperimentalSerializationApi
-inline fun <reified T : Any> deserialize(request: String, decoderConfig: SerializationConf = SerializationConf()): T {
+inline fun <reified T : Any> deserialize(request: String, decoderConfig: DecoderConf = DecoderConf()): T {
     return Ktoml(decoderConfig).decodeFromString(serializer(), request)
 }
 
 @ExperimentalSerializationApi
-inline fun <reified T : Any> serialize(request: T, encoderConfig: SerializationConf = SerializationConf()): String {
+inline fun <reified T : Any> serialize(request: T, encoderConfig: DecoderConf = DecoderConf()): String {
     return Ktoml(encoderConfig).encodeToString(serializer(), request)
 }
