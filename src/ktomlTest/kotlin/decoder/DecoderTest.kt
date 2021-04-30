@@ -7,6 +7,7 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -14,7 +15,7 @@ import kotlin.test.assertFailsWith
 @OptIn(ExperimentalSerializationApi::class)
 class DecoderTest {
     enum class TestEnum {
-        A, B, C
+        A, B
     }
 
     @Serializable
@@ -158,9 +159,14 @@ class DecoderTest {
 
     @Test
     fun invalidAndSoMissingRequiredKeyOnRootLevel() {
-        println("a:true, d:5, e:\"my test\", b: B")
-        assertFailsWith<MissingRequiredFieldException> {
-            val test1 = deserialize<Table3>(
+        println("a:true, d:5, e:\"my test\", err: B")
+        assertFailsWith<MissingRequiredFieldException>(
+            "Invalid number of arguments provided for deserialization." +
+                    " Missing required field <b> in the input"
+        ) {
+            // 'err' key is unknown, but this should not trigger an error becuase of ignoreUnknown
+            // 'b' key is not provided and should trigger an error
+            deserialize<Table3>(
                 " a = true \n" +
                         " d = 5 \n" +
                         " e = my test \n" +
@@ -173,22 +179,24 @@ class DecoderTest {
     @Test
     fun testForUnknownFieldsWithIgnoreUnknownNamesTrueConfig() {
         println("tableUNKNOWN: (a:true, d:5, e:\"my test\", b: B)")
-        val test1 = deserialize<ComplexPlainTomlCase>(
-            "[tableUNKNOWN] \n" +
-                    " a = true \n" +
-                    " d = 5 \n" +
-                    " e = my test \n" +
-                    " b = B",
-            DecoderConf(true)
-        )
-
-        println(test1)
-        assertEquals(NullableValues(null, null), test1)
+        assertFailsWith<MissingRequiredFieldException>(
+            "Invalid number of arguments provided for deserialization." +
+                    " Missing required field <table3> in the input"
+        ) {
+            deserialize<ComplexPlainTomlCase>(
+                "[tableUNKNOWN] \n" +
+                        " a = true \n" +
+                        " d = 5 \n" +
+                        " e = my test \n" +
+                        " b = B",
+                DecoderConf(true)
+            )
+        }
 
         println("a:true, b:A, d: 55, t: 7777")
-        // e is missing, becuase it has a default value
+        // e is missing, because it has a default value
         // t - is new unknown field
-        val test2 = deserialize<Table3>(
+        val test = deserialize<Table3>(
             " t = \"7777\" \n" +
                     "a = true \n" +
                     " b = A \n" +
@@ -196,8 +204,24 @@ class DecoderTest {
 
             DecoderConf(true)
         )
-        println(test2)
-        assertEquals(Table3(true, "my string", 55, TestEnum.A), test2)
+        assertEquals(Table3(true, b = TestEnum.A, d = 55), test)
+
+
+        println("a:true, b:A, t: 7777")
+        // e is missing, because it has a default value
+        // t - is new unknown field
+        assertFailsWith<MissingRequiredFieldException>(
+            "Invalid number of arguments provided for deserialization." +
+                    " Missing required field <d> in the input"
+        ) {
+            deserialize<Table3>(
+                " t = \"7777\" \n" +
+                        "a = true \n" +
+                        " b = A \n",
+
+                DecoderConf(true)
+            )
+        }
     }
 
     @Test
@@ -214,9 +238,26 @@ class DecoderTest {
     @Test
     fun testForMissingRequiredFields() {
         println("table3: (a:true, d:5, e:\"my test\", b: B)")
-        assertFailsWith<MissingRequiredFieldException> {
+        assertFailsWith<MissingRequiredFieldException>(
+            "Invalid number of arguments provided for deserialization." +
+                    " Missing required field <d> in the input"
+        ) {
             deserialize<ComplexPlainTomlCase>(
                 "[table3] \n a = true",
+                DecoderConf(true)
+            )
+        }
+    }
+
+    @Test
+    fun testForMissingRequiredTable() {
+        println("table1: (a:5, b:6))")
+        assertFailsWith<MissingRequiredFieldException>(
+            "Invalid number of arguments provided for deserialization." +
+                    " Missing required field <table2> in the input"
+        ) {
+            deserialize<TwoTomlTables>(
+                "[table1] \n a = 5 \n b = 6",
                 DecoderConf(true)
             )
         }
