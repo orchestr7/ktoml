@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
@@ -21,7 +20,9 @@ class TomlDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeValue(): Any {
+
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
+        println("Here1: ${currentNode.name}")
 
         return when (currentNode) {
             is TomlKeyValue -> currentNode.value.value
@@ -29,30 +30,54 @@ class TomlDecoder(
         }
     }
 
+    // the iteration will go through the all elements that will be found in the input
+    fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
+
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        // the iteration will go through the all elements that will be found in the input
-        if (elementIndex == rootNode.getNeighbourNodes().size) return CompositeDecoder.DECODE_DONE
 
-        // FixMe: error here for missing fields that are not required
-        val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
+        fun iterateUntilWillFindAnyKnownName(): Int {
+            while(true) {
+                if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
+                val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
+                val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
 
-        val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
-
-        // in case we have not found the key from the input in the list of field names in the class,
-        // we need to throw exception or ignore this unknown field
-        if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
-            if (!config.ignoreUnknownNames) {
-                throw UnknownNameDecodingException(currentNode.name)
-            } else {
-                // FixMe: unknown names are not ignored now, need to fix it
+                elementIndex++
+                if (fieldWhereValueShouldBeInjected != CompositeDecoder.UNKNOWN_NAME) {
+                    println("this is index: $fieldWhereValueShouldBeInjected")
+                    return fieldWhereValueShouldBeInjected
+                }
             }
         }
 
-        elementIndex++
-        return fieldWhereValueShouldBeInjected
-    }
 
-    fun checkMissingRequiredField(children: MutableSet<TomlNode>?, descriptor: SerialDescriptor) {
+        // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
+            if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
+
+            // FixMe: error here for missing fields that are not required
+            val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
+            val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
+
+            // in case we have not found the key from the input in the list of field names in the class,
+            // we need to throw exception or ignore this unknown field and find any known key to continue processing
+            if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
+                if (config.ignoreUnknownNames) {
+                    return iterateUntilWillFindAnyKnownName()
+                } else {
+                    throw UnknownNameDecodingException(currentNode.name)
+                }
+            }
+
+            // we have found known name and we can continue processing normally
+            elementIndex++
+            return fieldWhereValueShouldBeInjected
+        }
+
+
+    /**
+     * actually this method is not needed as serialization lib should do everything for us, but let's
+     * fail-fast in the very beginning if the structure is inconsistent and required fields are missing
+     */
+    private fun checkMissingRequiredField(children: MutableSet<TomlNode>?, descriptor: SerialDescriptor) {
         val new = children?.map {
             it.name
         } ?: emptyList()
@@ -77,6 +102,7 @@ class TomlDecoder(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
         is TomlFile -> {
+            checkMissingRequiredField(rootNode.children, descriptor)
             TomlDecoder(rootNode.getFirstChild(), config, descriptor.elementsCount)
         }
         // need to move on here, but also need to pass children into the function
@@ -89,6 +115,7 @@ class TomlDecoder(
                 .getNeighbourNodes()
                 .elementAt(elementIndex - 1)
                 .getFirstChild()
+
             checkMissingRequiredField(nextProcessingNode.getNeighbourNodes(), descriptor)
 
             TomlDecoder(
@@ -121,7 +148,7 @@ class TomlDecoder(
     companion object {
         fun <T> decode(deserializer: DeserializationStrategy<T>, rootNode: TomlNode, config: DecoderConf): T {
             val decoder = TomlDecoder(rootNode, config)
-            return decoder.decodeSerializableValue(deserializer)
+             return decoder.decodeSerializableValue(deserializer)
         }
     }
 }
