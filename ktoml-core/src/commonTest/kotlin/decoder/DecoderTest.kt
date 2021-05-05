@@ -11,6 +11,7 @@ import kotlinx.serialization.SerializationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.Ignore
 
 @OptIn(ExperimentalSerializationApi::class)
 class DecoderTest {
@@ -145,6 +146,7 @@ class DecoderTest {
     }
 
     @Test
+    @Ignore
     fun testForQuotes() {
         println("a:true, b:A, e: my string, d: 55")
         val test = deserialize<Table3>(
