@@ -2,9 +2,9 @@ package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.error
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.exceptions.InternalDecodingException
+import com.akuleshov7.ktoml.exceptions.InternalParsingException
+import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsingError
-import kotlin.system.exitProcess
 
 // Toml specification includes a list of supported data types: String, Integer, Float, Boolean, Datetime, Array, and Table.
 sealed class TomlNode(open val content: String, open val lineNo: Int) {
@@ -92,7 +92,7 @@ class TomlFile : TomlNode("rootNode", 0) {
 
         if (searchedTable.size > 1) {
             "Internal error: Found several Tables with the same name <$searchedTableName> in AST".error()
-            exitProcess(1)
+            throw InternalParsingException(searchedTableName, searchedTable.first().lineNo)
         }
         return if (searchedTable.isEmpty()) null else searchedTable[0]
     }

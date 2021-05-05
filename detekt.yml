@@ -1,0 +1,4 @@
+# buildUponDefaultConfig is active; add only the rules that require explicit configuration here
+potential-bugs:
+  Deprecation:
+    active: true

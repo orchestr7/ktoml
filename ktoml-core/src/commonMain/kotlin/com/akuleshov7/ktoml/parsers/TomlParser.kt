@@ -9,7 +9,6 @@ import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path.Companion.toPath
-import kotlin.system.exitProcess
 
 /**
  * @param toml - this argument can be a path to a toml file or a string in the toml format,
@@ -26,8 +25,8 @@ internal class TomlParser(val toml: String) {
             }
             return parseStringsToTomlNode(ktomlLinesFromFile)
         } catch (e: FileNotFoundException) {
-            "Not able to find file in the following path: $toml".error()
-            exitProcess(1)
+            "Not able to find toml-file in the following path: $toml".error()
+            throw e
         }
     }
 

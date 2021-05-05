@@ -1,4 +1,4 @@
-package node.parser
+package com.akuleshov7.ktoml.test.node.parser
 
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 import com.akuleshov7.ktoml.parsers.node.TomlTable

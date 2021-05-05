@@ -2,6 +2,8 @@ package com.akuleshov7.ktoml.exceptions
 
 class TomlParsingException(message: String, lineNo: Int) : Exception("Line $lineNo: $message")
 
+class InternalParsingException(message: String, lineNo: Int) : Exception("Line $lineNo: $message")
+
 class InternalDecodingException(message: String) : Exception(message)
 
 class InternalAstException(message: String) : Exception(message)

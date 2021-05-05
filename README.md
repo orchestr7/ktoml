@@ -5,7 +5,7 @@ Native and multiplatform Kotlin serialization library for serialization/deserial
 ## How to use
 **Deserialization:**
 ```kotlin
-import com.akuleshov7.ktoml.deserialize
+import deserialize
 @Serializable
 data class MyClass(/* your fields */)
 
