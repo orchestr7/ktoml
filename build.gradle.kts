@@ -1,9 +1,4 @@
-import com.akuleshov7.buildutils.configureDetekt
-import com.akuleshov7.buildutils.configureDiktat
-import com.akuleshov7.buildutils.configureVersioning
-import com.akuleshov7.buildutils.createDetektTask
-import com.akuleshov7.buildutils.createDiktatTask
-import com.akuleshov7.buildutils.installGitHooks
+import com.akuleshov7.buildutils.*
 
 plugins {
     kotlin("multiplatform") version Versions.KOTLIN apply false
@@ -11,6 +6,8 @@ plugins {
 }
 
 configureVersioning()
+group = "com.akuleshov7"
+description = "TOML serialization library for Kotlin language (including Kotlin Native, js, jvm)"
 
 allprojects {
     repositories {
@@ -23,3 +20,5 @@ allprojects {
 createDiktatTask()
 createDetektTask()
 installGitHooks()
+
+configurePublishing()
