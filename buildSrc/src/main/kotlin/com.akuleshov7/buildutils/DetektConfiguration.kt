@@ -18,6 +18,7 @@ fun Project.configureDetekt() {
     configure<DetektExtension> {
         config = rootProject.files("detekt.yml")
         buildUponDefaultConfig = true
+        debug = true
     }
 }
 
