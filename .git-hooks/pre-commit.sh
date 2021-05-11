@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 branch_name="$(git rev-parse --abbrev-ref HEAD)"
-branch_pattern="^(feature|bugfix|hotfix|infra)/.*$"
+branch_pattern="^(feature|bugfix|hotfix|infra|main)/.*$"
 error_message="Your branch name doesn't match the pattern $branch_pattern. Please correct it before committing."
 
 if [[ ! $branch_name =~ $branch_pattern ]]

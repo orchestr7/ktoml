@@ -6,8 +6,6 @@ plugins {
 }
 
 configureVersioning()
-group = "com.akuleshov7"
-description = "TOML serialization library for Kotlin language (including Kotlin Native, js, jvm)"
 
 allprojects {
     repositories {
