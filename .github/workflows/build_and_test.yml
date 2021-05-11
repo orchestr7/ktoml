@@ -9,7 +9,10 @@ on:
 jobs:
   build_and_test_with_code_coverage:
     name: Build and test
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       # actions/checkout v1.* is needed for correct codecov upload, see https://github.com/actions/checkout/issues/237 for details
@@ -43,9 +46,10 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
-          name: gradle-reports
+          name: gradle-reports-${{ matrix.os }}
           path: '**/build/reports/'
       - name: Code coverage report
+        #if: ${{ runner.os == 'Linux' }}
         if: ${{ false }}
         uses: codecov/codecov-action@v1
         with:
