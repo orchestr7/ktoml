@@ -1,4 +1,4 @@
-name: Create release
+name: Create release to Maven Central
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ] #, macos-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -29,26 +29,12 @@ jobs:
         with:
           arguments: publishToSonatype closeAndReleaseSonatypeStagingRepository
           gradle-version: wrapper
-      - name: Upload artifact
-        id: upload_artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: save-cli-${{ runner.os }}
-          path: save-cli/build/bin/**/releaseExecutable/*
-
 
   github_release:
-
     needs: release
     name: Create Github Release
     runs-on: ubuntu-latest
     steps:
-
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          path: tmpFolder
-
       - name: Create Github Release
         id: create_release
         uses: actions/create-release@v1
@@ -59,11 +45,3 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-
-      - name: Upload save-cli
-        id: upload-release-asset
-        uses: alexellis/upload-assets@0.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          asset_paths: '["./tmpFolder/save*"]'
