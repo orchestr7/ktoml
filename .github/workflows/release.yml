@@ -11,9 +11,12 @@ env:
   OSSRH_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
 
 jobs:
-  release_linux:
-    name: Build release on main platform (Linux)
-    runs-on: ubuntu-20.04
+  release:
+    name: Build release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ] #, macos-latest ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -24,8 +27,28 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1
         name: Gradle release with caches caching
         with:
-          arguments: publishToSonatype closeSonatypeStagingRepository
+          arguments: publishToSonatype closeAndReleaseSonatypeStagingRepository
           gradle-version: wrapper
+      - name: Upload artifact
+        id: upload_artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: save-cli-${{ runner.os }}
+          path: save-cli/build/bin/**/releaseExecutable/*
+
+
+  github_release:
+
+    needs: release
+    name: Create Github Release
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          path: tmpFolder
+
       - name: Create Github Release
         id: create_release
         uses: actions/create-release@v1
@@ -36,33 +59,11 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-  release_macos:
-    name: Build release on MacOS
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+
+      - name: Upload save-cli
+        id: upload-release-asset
+        uses: alexellis/upload-assets@0.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          java-version: 1.11
-      - uses: burrunan/gradle-cache-action@v1
-        name: Gradle release with caches caching
-        with:
-          arguments: publishToSonatype closeSonatypeStagingRepository
-          gradle-version: wrapper
-  release_windows:
-    name: Build release on Windows
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.11
-      - uses: burrunan/gradle-cache-action@v1
-        name: Gradle release with caches caching
-        with:
-          arguments: publishToSonatype closeSonatypeStagingRepository
-          gradle-version: wrapper
+          asset_paths: '["./tmpFolder/save*"]'
