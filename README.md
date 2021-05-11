@@ -2,7 +2,26 @@
 
 Native and multiplatform Kotlin serialization library for serialization/deserialization of [toml](https://toml.io/en/) format. 
 
+## Dependency
+To import ktoml library you need to add following dependencies to your code: 
+
+**Maven:**
+```pom
+<dependency>
+  <groupId>com.akuleshov7</groupId>
+  <artifactId>ktoml-core</artifactId>
+  <version>0.1.0</version>
+  <type>pom</type>
+</dependency>
+```
+
+**Gradle:**
+```groovy
+implementation 'com.akuleshov7:ktoml-core:0.1.0'
+```
+
 ## How to use
+
 **Deserialization:**
 ```kotlin
 import com.akuleshov7.ktoml.deserialize

@@ -5,9 +5,11 @@ plugins {
     kotlin("plugin.serialization") version Versions.KOTLIN apply false
 }
 
-configureVersioning()
-group = "com.akuleshov7"
-description = "TOML serialization library for Kotlin language (including Kotlin Native, js, jvm)"
+
+project.group = "com.akuleshov7"
+project.description = "TOML serialization library for Kotlin language (including Kotlin Native, js, jvm)"
+project.version = "0.2.0"
+
 
 allprojects {
     repositories {
