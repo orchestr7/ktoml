@@ -22,7 +22,6 @@ class TomlDecoder(
     override fun decodeValue(): Any {
 
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
-        println("Here1: ${currentNode.name}")
 
         return when (currentNode) {
             is TomlKeyValue -> currentNode.value.value

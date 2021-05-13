@@ -30,8 +30,9 @@ public class Ktoml(
         TODO("Not yet implemented")
     }
 
-    fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, file: Path): T {
-        TODO("Not yet implemented")
+    fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlFilePath: String): T {
+        val parsedToml = TomlParser(tomlFilePath).readAndParseFile()
+        return TomlDecoder.decode(deserializer, parsedToml, config)
     }
 
     fun <T> encodeToFile(deserializer: DeserializationStrategy<T>, request: T): Path {
@@ -42,6 +43,11 @@ public class Ktoml(
 @ExperimentalSerializationApi
 inline fun <reified T : Any> deserialize(request: String, decoderConfig: DecoderConf = DecoderConf()): T {
     return Ktoml(decoderConfig).decodeFromString(serializer(), request)
+}
+
+@ExperimentalSerializationApi
+inline fun <reified T : Any> deserializeFile(tomlFilePath: String, decoderConfig: DecoderConf = DecoderConf()): T {
+    return Ktoml(decoderConfig).decodeFromFile(serializer(), tomlFilePath)
 }
 
 @ExperimentalSerializationApi

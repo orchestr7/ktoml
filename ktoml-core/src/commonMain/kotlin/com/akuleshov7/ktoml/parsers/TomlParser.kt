@@ -31,8 +31,9 @@ internal class TomlParser(val toml: String) {
     }
 
     fun parseString(): TomlNode {
-        // FixMe: need to be careful here about the newline symbol
-        return parseStringsToTomlNode(toml.split("\n"))
+        // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
+        val string = toml.replace("\\r\\n", "\n")
+        return parseStringsToTomlNode(string.split("\n"))
     }
 
     private fun parseStringsToTomlNode(ktomlLines: List<String>): TomlNode {
