@@ -14,7 +14,7 @@ import okio.Path.Companion.toPath
  * @param toml - this argument can be a path to a toml file or a string in the toml format,
  * depending on how you plan to work with it.
  */
-internal class TomlParser(val toml: String) {
+public class TomlParser(val toml: String) {
     @OptIn(ExperimentalFileSystem::class)
     fun readAndParseFile(): TomlNode {
         try {
