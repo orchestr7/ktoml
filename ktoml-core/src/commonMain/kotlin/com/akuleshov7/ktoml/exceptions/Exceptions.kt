@@ -8,8 +8,8 @@ class InternalDecodingException(message: String) : Exception(message)
 
 class InternalAstException(message: String) : Exception(message)
 
-class UnknownNameDecodingException(keyField: String) : Exception(
-    "Unknown key received: $keyField." +
+class UnknownNameDecodingException(keyField: String, parent: String?) : Exception(
+    "Unknown key received: <$keyField> in scope <$parent>." +
             " Pass 'ignoreUnknownNames' option if you would like to skip unknown keys"
 )
 

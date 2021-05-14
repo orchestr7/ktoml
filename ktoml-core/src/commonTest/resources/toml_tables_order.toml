@@ -1,0 +1,8 @@
+[fruit.apple]
+a = 5
+[animal]
+c = 7
+
+[fruit.orange]
+[fruit]
+b = 5

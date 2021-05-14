@@ -48,4 +48,30 @@ class TomlFileParserTest {
         )
         assertEquals(test, deserializeFile("src/commonTest/resources/simple_example.toml"))
     }
+
+    // ================
+    @Serializable
+    data class MyTableTest(
+        val a: A,
+        val d: D
+    )
+
+    @Serializable
+    data class A(val b: Ab, val d: InnerTest)
+
+    @Serializable
+    data class Ab(val c: InnerTest)
+
+    @Serializable
+    data class D(val a: InnerTest)
+
+    @Serializable
+    data class InnerTest(val str: String = "Undefined")
+
+    @ExperimentalSerializationApi
+    @Test
+    fun testTableDiscovery() {
+        val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
+        assertEquals(test, deserializeFile<MyTableTest>("src/commonTest/resources/complex_toml_tables.toml"))
+    }
 }
