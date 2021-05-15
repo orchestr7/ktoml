@@ -12,11 +12,8 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
     open var parent: TomlNode? = null
     abstract val name: String
 
-    fun insertBefore() {}
-    fun insertAfter() {}
-    fun addChildAfter() {}
-    fun addChildBefore() {}
-    fun getFirstChild() = children.elementAt(0)
+    fun hasNoChildren() = children.size == 0
+    fun getFirstChild() = children.elementAtOrNull(0)
     abstract fun getNeighbourNodes(): MutableSet<TomlNode>
 
     /**
@@ -52,6 +49,16 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
 
     fun prettyPrint() {
         prettyPrint(this)
+    }
+
+    /**
+     * This method returns all available table names that can be found in this particular TOML file
+     */
+    fun getAllChildTomlTables(): List<TomlTable> {
+        val result = if (this is TomlTable) mutableListOf(this) else mutableListOf()
+        return result + this.children.flatMap {
+            it.getAllChildTomlTables()
+        }
     }
 
     companion object {
@@ -179,7 +186,7 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
             .map { it.trim() }
 
         if (keyValue.size != 2) {
-            "Incorrect format of Key-Value pair. Should be <key = value>, but was $content"
+            "Incorrect format of Key-Value pair. Should be <key = value>, but was: $content"
                 .parsingError(lineNo)
         }
 
@@ -227,28 +234,14 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
         }
 }
 
-class TomlKey(val content: String, val lineNo: Int)
+/**
+ * this is a hack to cover empty TOML tables that have missing key-values\
+ * According the spec: "Empty tables are allowed and simply have no key/value pairs within them."
+ *
+ * Instances of this stub will be added as children to such parsed tables
+ */
+class TomlStubEmptyNode(lineNo: Int): TomlNode("empty_technical_node", lineNo) {
+    override val name: String = "empty_technical_node"
 
-sealed class TomlValue(val content: String, val lineNo: Int) {
-    abstract var value: Any
-}
-
-class TomlString(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    override var value: Any = content
-}
-
-class TomlInt(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    override var value: Any = content.toInt()
-}
-
-class TomlFloat(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    override var value: Any = content.toFloat()
-}
-
-class TomlBoolean(content: String, lineNo: Int) : TomlValue(content, lineNo) {
-    override var value: Any = content.toBoolean()
-}
-
-class TomlNull(lineNo: Int) : TomlValue("null", lineNo) {
-    override var value: Any = "null"
+    override fun getNeighbourNodes() = parent!!.children
 }

@@ -1,8 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
-import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
-import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
+import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -20,13 +18,12 @@ class TomlDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeValue(): Any {
-
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
-        println("Here1: ${currentNode.name}")
 
         return when (currentNode) {
             is TomlKeyValue -> currentNode.value.value
             is TomlTable, is TomlFile -> currentNode.children
+            is TomlStubEmptyNode -> println("========= ${currentNode.name}")
         }
     }
 
@@ -34,9 +31,8 @@ class TomlDecoder(
     fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-
         fun iterateUntilWillFindAnyKnownName(): Int {
-            while(true) {
+            while (true) {
                 if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
                 val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
                 val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
@@ -51,26 +47,29 @@ class TomlDecoder(
 
 
         // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
-            if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
+        if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
 
-            // FixMe: error here for missing fields that are not required
-            val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
-            val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
+        // FixMe: error here for missing fields that are not required
+        val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
+        val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
 
-            // in case we have not found the key from the input in the list of field names in the class,
-            // we need to throw exception or ignore this unknown field and find any known key to continue processing
-            if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
-                if (config.ignoreUnknownNames) {
-                    return iterateUntilWillFindAnyKnownName()
-                } else {
-                    throw UnknownNameDecodingException(currentNode.name)
-                }
+        // in case we have not found the key from the input in the list of field names in the class,
+        // we need to throw exception or ignore this unknown field and find any known key to continue processing
+        if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
+            // if we have set an option for ignoring unknown names
+            // OR in the input we had a technical node for empty tables (see the description to TomlStubEmptyNode)
+            // then we need to iterate until we will find something known for us
+            if (config.ignoreUnknownNames || currentNode is TomlStubEmptyNode ) {
+                return iterateUntilWillFindAnyKnownName()
+            } else {
+                throw UnknownNameDecodingException(currentNode.name, currentNode.parent?.name)
             }
-
-            // we have found known name and we can continue processing normally
-            elementIndex++
-            return fieldWhereValueShouldBeInjected
         }
+
+        // we have found known name and we can continue processing normally
+        elementIndex++
+        return fieldWhereValueShouldBeInjected
+    }
 
 
     /**
@@ -83,12 +82,14 @@ class TomlDecoder(
         } ?: emptyList()
 
         val missingKeysInInput = descriptor.elementNames.toSet() - new.toSet()
+
+
         missingKeysInInput.forEach {
             val index = descriptor.getElementIndex(it)
             if (!descriptor.isElementOptional(index)) {
                 throw MissingRequiredFieldException(
                     "Invalid number of arguments provided for deserialization. Missing required field " +
-                            "<${descriptor.getElementName(index)}> in the input"
+                            "<${descriptor.getElementName(index)}> from class <${descriptor.serialName}> in the input"
                 )
             }
         }
@@ -103,10 +104,15 @@ class TomlDecoder(
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
         is TomlFile -> {
             checkMissingRequiredField(rootNode.children, descriptor)
-            TomlDecoder(rootNode.getFirstChild(), config, descriptor.elementsCount)
+            val firstChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
+                "Missing child nodes (tales, key-values) for TomlFile." +
+                        " Empty toml was provided to the input?"
+            )
+
+            TomlDecoder(firstChild, config, descriptor.elementsCount)
         }
         // need to move on here, but also need to pass children into the function
-        is TomlTable, is TomlKeyValue -> {
+        is TomlTable, is TomlKeyValue, is TomlStubEmptyNode -> {
             // this is a little bit tricky index calculation, suggest not to change
             // we are using the previous node to get all neighbour nodes:
             //                          (parentNode)
@@ -114,7 +120,9 @@ class TomlDecoder(
             val nextProcessingNode = rootNode
                 .getNeighbourNodes()
                 .elementAt(elementIndex - 1)
-                .getFirstChild()
+                .getFirstChild() ?: throw InternalDecodingException(
+                "Decoding process failed due to invalid structure of parsed AST tree: missing children"
+            )
 
             checkMissingRequiredField(nextProcessingNode.getNeighbourNodes(), descriptor)
 
@@ -148,7 +156,7 @@ class TomlDecoder(
     companion object {
         fun <T> decode(deserializer: DeserializationStrategy<T>, rootNode: TomlNode, config: DecoderConf): T {
             val decoder = TomlDecoder(rootNode, config)
-             return decoder.decodeSerializableValue(deserializer)
+            return decoder.decodeSerializableValue(deserializer)
         }
     }
 }
