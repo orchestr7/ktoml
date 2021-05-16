@@ -8,7 +8,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.modules.*
 
 @OptIn(ExperimentalSerializationApi::class)
-class TomlDecoder(
+public class TomlDecoder(
     val rootNode: TomlNode,
     val config: DecoderConf,
     var elementsCount: Int = 0

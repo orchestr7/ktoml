@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.test.file
 
 import com.akuleshov7.ktoml.deserializeFile
+import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -71,7 +72,12 @@ class TomlFileParserTest {
     @ExperimentalSerializationApi
     @Test
     fun testTableDiscovery() {
+        val file = "src/commonTest/resources/complex_toml_tables.toml"
+        // ==== reading from file
         val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
-        assertEquals(test, deserializeFile<MyTableTest>("src/commonTest/resources/complex_toml_tables.toml"))
+        assertEquals(test, deserializeFile(file))
+        // ==== checking how table discovery works
+        val parsedResult = TomlParser(file).readAndParseFile()
+        assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
     }
 }
