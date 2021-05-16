@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.InternalParsingException
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsingError
+import kotlin.jvm.JvmSynthetic
 
 // Toml specification includes a list of supported data types: String, Integer, Float, Boolean, Datetime, Array, and Table.
 sealed class TomlNode(open val content: String, open val lineNo: Int) {
@@ -53,6 +54,7 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
 
     /**
      * This method returns all available table names that can be found in this particular TOML file
+     * (!) it will also return synthetic table nodes, that we generated to create a normal tree structure
      */
     fun getAllChildTomlTables(): List<TomlTable> {
         val result = if (this is TomlTable) mutableListOf(this) else mutableListOf()
@@ -60,6 +62,13 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
             it.getAllChildTomlTables()
         }
     }
+
+    /**
+     * find only real table nodes without synthetics
+     */
+    fun getRealTomlTables(): List<TomlTable> =
+        this.getAllChildTomlTables().filter { !it.isSynthetic }
+
 
     companion object {
         // number of spaces that is used to indent levels
@@ -124,8 +133,9 @@ class TomlFile : TomlNode("rootNode", 0) {
             } ?: run {
                 // hack and trick to save the link to the initial node (that was passed as an argument) in the tree
                 // so the node will be added only in the end, and it will be the initial node
+                // (!) we will mark these tables with 'isSynthetic' flag
                 if (level != tomlTable.tablesList.size - 1) {
-                    val newChildTableName = TomlTable("[$tableName]", lineNo)
+                    val newChildTableName = TomlTable("[$tableName]", lineNo, true)
                     prevParentNode.appendChild(newChildTableName)
                     prevParentNode = newChildTableName
                 } else {
@@ -138,12 +148,17 @@ class TomlFile : TomlNode("rootNode", 0) {
 
 /**
  * @property tablesList - a list of names of sections (tables) that are included into this particular TomlTable
+ * @property isSynthetic - flag to determine that this node was synthetically and there are no such table in the input
  * for example: if the TomlTable is [a.b.c] this list will contain [a], [a.b], [a.b.c]
  */
-class TomlTable(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) : TomlNode(content, lineNo) {
+    // short table name (only the name without parential prefix, like a)
     override val name: String
 
+    // full name of the table (like a.b.c.d)
     var fullTableName: String
+
+    // number of nodes in current table (starting from 0)
     var level: Int
     var tablesList: List<String>
 
@@ -240,7 +255,7 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
  *
  * Instances of this stub will be added as children to such parsed tables
  */
-class TomlStubEmptyNode(lineNo: Int): TomlNode("empty_technical_node", lineNo) {
+class TomlStubEmptyNode(lineNo: Int) : TomlNode("empty_technical_node", lineNo) {
     override val name: String = "empty_technical_node"
 
     override fun getNeighbourNodes() = parent!!.children
