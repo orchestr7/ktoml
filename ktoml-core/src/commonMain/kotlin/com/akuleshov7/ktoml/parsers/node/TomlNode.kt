@@ -196,8 +196,8 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
     init {
         // FixMe: need to cover a case, when no value is present, because of the comment, but "=" is present: a = # comment
         // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") - is this supported?
-        val keyValue = content.split("=")
-            .map { it.substringBefore("#") }
+        val keyValue = content.substringBefore("#")
+            .split("=")
             .map { it.trim() }
 
         if (keyValue.size != 2) {
@@ -205,24 +205,23 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
                 .parsingError(lineNo)
         }
 
-        val keyStr = keyValue[0].trim().also {
-            if (it.isBlank()) {
-                "Incorrect format of Key-Value pair. It has empty <key>: $content"
-                    .parsingError(lineNo)
-            }
-        }
+        val keyStr = keyValue.getKeyValuePart("value", 0)
+
         // trimming and removing the comment in the end of the string
-        val valueStr = keyValue[1].trim().also {
-            if (it.isBlank()) {
-                "Incorrect format of Key-Value pair. It has empty <value>: $content"
-                    .parsingError(lineNo)
-            }
-        }
+        val valueStr = keyValue.getKeyValuePart("value", 1)
 
         key = TomlKey(keyStr, lineNo)
         value = parseValue(valueStr, lineNo)
         name = key.content
     }
+
+    private fun List<String>.getKeyValuePart(log: String, index: Int) =
+        this[index].trim().also {
+            if (it.isBlank()) {
+                "Incorrect format of Key-Value pair. It has empty $log: $content"
+                    .parsingError(lineNo)
+            }
+        }
 
     override fun getNeighbourNodes() = parent!!.children
 

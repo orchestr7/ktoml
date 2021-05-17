@@ -17,6 +17,8 @@ class ValueParserTest {
         testTomlValue("a = 12.2345", NodeType.FLOAT)
         testTomlValue("a = true", NodeType.BOOLEAN)
         testTomlValue("a = false", NodeType.BOOLEAN)
+        // regression test related to comments with an equals symbol after it
+        testTomlValue("lineCaptureGroup = 1  # index `warningTextHasLine = false`\n", NodeType.INT)
     }
 
     @Test
