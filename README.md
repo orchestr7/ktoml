@@ -10,6 +10,9 @@
 ![Hits-of-Code](https://hitsofcode.com/github/akuleshov7/ktoml?branch=main)
 ![GitHub repo size](https://img.shields.io/github/repo-size/akuleshov7/ktoml)
 
+![codebeat badge](https://codebeat.co/badges/0518ea49-71ed-4bfd-8dd3-62da7034eebd)
+![maintainability](https://api.codeclimate.com/v1/badges/c75d2d6b0d44cea7aefe/maintainability)
+
 Absolutely Native and multiplatform Kotlin serialization library for serialization/deserialization of [toml](https://toml.io/en/) format. Uses `kotlinx.serialization`; uses only native serialization provided by Kotlin, no Java code.
 
 ## Supported platforms
@@ -25,7 +28,8 @@ All the code is written in Kotlin common module. That means that it can be built
 To import `ktoml` library you need to add following dependencies to your code: 
 
 <details>
-<summary>Maven</summary>
+<summary>Maven</summary>        "Incorrect format of Key-Value pair. It has empty <value>: $content"
+
 
 ```pom
 <dependency>
