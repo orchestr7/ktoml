@@ -23,7 +23,9 @@ public class TomlDecoder(
         return when (currentNode) {
             is TomlKeyValue -> currentNode.value.value
             is TomlTable, is TomlFile -> currentNode.children
-            is TomlStubEmptyNode -> println("========= ${currentNode.name}")
+            // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
+            // branch, we should throw an exception
+            is TomlStubEmptyNode -> throw InternalDecodingException("Empty node should not be processed")
         }
     }
 
@@ -39,7 +41,6 @@ public class TomlDecoder(
 
                 elementIndex++
                 if (fieldWhereValueShouldBeInjected != CompositeDecoder.UNKNOWN_NAME) {
-                    println("this is index: $fieldWhereValueShouldBeInjected")
                     return fieldWhereValueShouldBeInjected
                 }
             }
@@ -77,15 +78,15 @@ public class TomlDecoder(
      * fail-fast in the very beginning if the structure is inconsistent and required fields are missing
      */
     private fun checkMissingRequiredField(children: MutableSet<TomlNode>?, descriptor: SerialDescriptor) {
-        val new = children?.map {
+        val fieldNameProvidedInTheInput = children?.map {
             it.name
         } ?: emptyList()
 
-        val missingKeysInInput = descriptor.elementNames.toSet() - new.toSet()
-
+        val missingKeysInInput = descriptor.elementNames.toSet() - fieldNameProvidedInTheInput.toSet()
 
         missingKeysInInput.forEach {
             val index = descriptor.getElementIndex(it)
+
             if (!descriptor.isElementOptional(index)) {
                 throw MissingRequiredFieldException(
                     "Invalid number of arguments provided for deserialization. Missing required field " +

@@ -25,9 +25,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio-multiplatform:3.0.0-alpha.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
             }
         }
 
@@ -43,7 +41,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-junit5"))
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.0.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
             }
         }
     }

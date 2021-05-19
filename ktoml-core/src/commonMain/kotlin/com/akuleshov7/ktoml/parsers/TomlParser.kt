@@ -13,7 +13,7 @@ import okio.Path.Companion.toPath
  */
 public class TomlParser(val toml: String) {
     @OptIn(ExperimentalFileSystem::class)
-    fun readAndParseFile(): TomlNode {
+    fun readAndParseFile(): TomlFile {
         try {
             val ktomlPath = toml.toPath()
             val ktomlLinesFromFile = FileSystem.SYSTEM.read(ktomlPath) {
@@ -27,7 +27,7 @@ public class TomlParser(val toml: String) {
         }
     }
 
-    fun parseString(): TomlNode {
+    fun parseString(): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
         val tomlString = toml.replace("\\r\\n", "\n")
         return parseStringsToTomlNode(tomlString.split("\n"))
@@ -64,7 +64,6 @@ public class TomlParser(val toml: String) {
 
                     currentParent = tableSection
                 } else {
-                    println(line)
                     currentParent.appendChild(TomlKeyValue(line, lineno))
                 }
             }
