@@ -70,6 +70,18 @@ val result = deserialize<MyClass>(/* string with a toml input */)
 
 // to deserialize toml input from file
 val result = deserializeFile<MyClass>(/* string with a path to a toml file */)
+
+// if you need to deserialize only some part of the toml - provide the full name of the toml table 
+// the deserializer will work only with children of this table
+// For example: 
+// [a]
+//   b = 1
+// [c.d.e.f]
+//   d = 5
+
+val result = deserialize<MyClass>(/* string with a toml input */, "c.d.e.f")
+val result = deserializeFile<MyClass>(/* string with a path to a toml file */, "c.d.e.f")
+
 ```
 
 **Parser to AST:**
