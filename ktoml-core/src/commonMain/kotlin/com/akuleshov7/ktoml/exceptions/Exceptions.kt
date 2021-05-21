@@ -20,4 +20,9 @@ class InvalidEnumValueException(value: String, availableEnumValues: String) : Kt
             " option, permitted choices are: $availableEnumValues"
 )
 
+class NonNullableValueException(field: String, lineNo: Int) : KtomlException(
+    "Not-nullable field <$field> got a null value in the input. Please check the input (line: <$lineNo>)" +
+            " or make the field nullable"
+)
+
 class MissingRequiredFieldException(message: String) : KtomlException(message)

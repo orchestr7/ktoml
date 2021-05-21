@@ -1,11 +1,13 @@
 package com.akuleshov7.ktoml.test.file
 
 import com.akuleshov7.ktoml.deserializeFile
+import com.akuleshov7.ktoml.exceptions.NonNullableValueException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class TomlFileParserTest {
     @Serializable
@@ -82,14 +84,22 @@ class TomlFileParserTest {
     }
 
     @Serializable
-    data class RegressionTest(val a: String?, val b: String)
+    data class RegressionTest(val a: Int?, val b: Int, val c: Int, val d: Int?)
 
     @ExperimentalSerializationApi
     @Test
-    fun regressionCastTest() {
-        val file = "src/commonTest/resources/class_cast_regression.toml"
-        // ==== checking how table discovery works
+    fun regressionCast1Test() {
+        assertFailsWith<NonNullableValueException> {
+            val file = "src/commonTest/resources/class_cast_regression1.toml"
+            deserializeFile<RegressionTest>(file)
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun regressionCast2Test() {
+        val file = "src/commonTest/resources/class_cast_regression2.toml"
         val parsedResult = deserializeFile<RegressionTest>(file)
-        println(parsedResult)
+        assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 }
