@@ -28,7 +28,7 @@ All the code is written in Kotlin common module. That means that it can be built
 To import `ktoml` library you need to add following dependencies to your code: 
 
 <details>
-<summary>Maven</summary>        "Incorrect format of Key-Value pair. It has empty <value>: $content"
+<summary>Maven</summary>
 
 
 ```pom
@@ -109,15 +109,10 @@ a = 5
 
     [table2.inlineTable]
         a = "a"
-        b = A
 ```
 
 to `MyClass`
 ```kotlin
-    enum class TestEnum {
-        A, B, C
-    }
-
     @Serializable
     data class MyClass(val e: Int, val table1: Table1, val table2: Table2)
 
@@ -128,7 +123,7 @@ to `MyClass`
     data class Table2(val a: Int, val inlineTable: InlineTable)
 
     @Serializable
-    data class InlineTable(val a: String, val b: TestEnum)
+    data class InlineTable(val a: String)
 ```
 
 Or in json-terminology:
@@ -142,7 +137,6 @@ Or in json-terminology:
              "a": 5,
              "inlineTable": {
                  "a": "a",
-                  "b": A
             }
           }
         }

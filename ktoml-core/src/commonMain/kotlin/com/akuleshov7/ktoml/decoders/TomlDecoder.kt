@@ -155,7 +155,7 @@ public class TomlDecoder(
     override fun decodeNotNullMark(): Boolean = decodeString().toLowerCase() != "null"
 
     companion object {
-        fun <T> decode(deserializer: DeserializationStrategy<T>, rootNode: TomlNode, config: DecoderConf): T {
+        fun <T> decode(deserializer: DeserializationStrategy<T>, rootNode: TomlNode, config: DecoderConf = DecoderConf()): T {
             val decoder = TomlDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)
         }

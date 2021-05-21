@@ -21,7 +21,7 @@ import okio.Path
  */
 @OptIn(ExperimentalSerializationApi::class, ExperimentalFileSystem::class)
 public class Ktoml(
-    val config: DecoderConf,
+    val config: DecoderConf = DecoderConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
     // FixMe: need to fix code duplication here

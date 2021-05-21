@@ -80,4 +80,16 @@ class TomlFileParserTest {
         val parsedResult = TomlParser(file).readAndParseFile()
         assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
     }
+
+    @Serializable
+    data class RegressionTest(val a: String?, val b: String)
+
+    @ExperimentalSerializationApi
+    @Test
+    fun regressionCastTest() {
+        val file = "src/commonTest/resources/class_cast_regression.toml"
+        // ==== checking how table discovery works
+        val parsedResult = deserializeFile<RegressionTest>(file)
+        println(parsedResult)
+    }
 }

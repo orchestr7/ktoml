@@ -1,21 +1,23 @@
 package com.akuleshov7.ktoml.exceptions
 
-class TomlParsingException(message: String, lineNo: Int) : Exception("Line $lineNo: $message")
+open class KtomlException(message: String) : Exception(message)
 
-class InternalParsingException(message: String, lineNo: Int) : Exception("Line $lineNo: $message")
+class TomlParsingException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
 
-class InternalDecodingException(message: String) : Exception(message)
+class InternalParsingException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
 
-class InternalAstException(message: String) : Exception(message)
+class InternalDecodingException(message: String) : KtomlException(message)
 
-class UnknownNameDecodingException(keyField: String, parent: String?) : Exception(
+class InternalAstException(message: String) : KtomlException(message)
+
+class UnknownNameDecodingException(keyField: String, parent: String?) : KtomlException(
     "Unknown key received: <$keyField> in scope <$parent>." +
             " Pass 'ignoreUnknownNames' option if you would like to skip unknown keys"
 )
 
-class InvalidEnumValueException(value: String, availableEnumValues: String) : Exception(
+class InvalidEnumValueException(value: String, availableEnumValues: String) : KtomlException(
     "Value $value is not a valid" +
             " option, permitted choices are: $availableEnumValues"
 )
 
-class MissingRequiredFieldException(message: String) : Exception(message)
+class MissingRequiredFieldException(message: String) : KtomlException(message)
