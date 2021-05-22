@@ -18,18 +18,17 @@ public class TomlDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeValue(): Any {
-        val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
-
-        return when (currentNode) {
-            is TomlKeyValue -> currentNode.value.value
-            is TomlTable, is TomlFile -> currentNode.children
+        val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
+        return when (node) {
+            is TomlKeyValue -> node.value.value
+            is TomlTable, is TomlFile -> node.children
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception
             is TomlStubEmptyNode -> throw InternalDecodingException("Empty node should not be processed")
         }
     }
 
-    // the iteration will go through the all elements that will be found in the input
+    // the iteration will go through all elements that will be found in the input
     fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
@@ -46,13 +45,13 @@ public class TomlDecoder(
             }
         }
 
-
         // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
         if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
 
         // FixMe: error here for missing fields that are not required
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
         val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
+        checkNullability(currentNode, fieldWhereValueShouldBeInjected, descriptor)
 
         // in case we have not found the key from the input in the list of field names in the class,
         // we need to throw exception or ignore this unknown field and find any known key to continue processing
@@ -60,7 +59,7 @@ public class TomlDecoder(
             // if we have set an option for ignoring unknown names
             // OR in the input we had a technical node for empty tables (see the description to TomlStubEmptyNode)
             // then we need to iterate until we will find something known for us
-            if (config.ignoreUnknownNames || currentNode is TomlStubEmptyNode ) {
+            if (config.ignoreUnknownNames || currentNode is TomlStubEmptyNode) {
                 return iterateUntilWillFindAnyKnownName()
             } else {
                 throw UnknownNameDecodingException(currentNode.name, currentNode.parent?.name)
@@ -72,6 +71,25 @@ public class TomlDecoder(
         return fieldWhereValueShouldBeInjected
     }
 
+    /**
+     * straight-forward solution to check if we do not assign null to non-null fields
+     * @param descriptor - serial descriptor of the current node that we would like to check
+     */
+    private fun checkNullability(
+        currentNode: TomlNode,
+        fieldWhereValueShouldBeInjected: Int,
+        descriptor: SerialDescriptor
+    ) {
+        if (currentNode is TomlKeyValue &&
+            currentNode.value is TomlNull &&
+            !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
+        ) {
+            throw NonNullableValueException(
+                descriptor.getElementName(fieldWhereValueShouldBeInjected),
+                currentNode.lineNo
+            )
+        }
+    }
 
     /**
      * actually this method is not needed as serialization lib should do everything for us, but let's
@@ -152,10 +170,14 @@ public class TomlDecoder(
         return index
     }
 
-    override fun decodeNotNullMark(): Boolean = decodeString().toLowerCase() != "null"
+    override fun decodeNotNullMark(): Boolean = decodeValue().toString().toLowerCase() != "null"
 
     companion object {
-        fun <T> decode(deserializer: DeserializationStrategy<T>, rootNode: TomlNode, config: DecoderConf): T {
+        fun <T> decode(
+            deserializer: DeserializationStrategy<T>,
+            rootNode: TomlNode,
+            config: DecoderConf = DecoderConf()
+        ): T {
             val decoder = TomlDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)
         }
