@@ -20,7 +20,7 @@ public class TomlDecoder(
     override fun decodeValue(): Any {
         val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
         return when (node) {
-            is TomlKeyValue -> node.value.value
+            is TomlKeyValue -> node.value.content
             is TomlTable, is TomlFile -> node.children
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception

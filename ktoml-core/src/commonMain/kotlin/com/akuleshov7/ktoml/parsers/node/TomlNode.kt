@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.error
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.InternalParsingException
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsers.ParserConf
 import com.akuleshov7.ktoml.parsingError
 import kotlin.jvm.JvmSynthetic
 
@@ -188,14 +189,15 @@ class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) 
     override fun getNeighbourNodes() = parent!!.children
 }
 
-class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
+// be careful here as 'parserConf' has the default value (for test purposes)
+class TomlKeyValue(content: String, lineNo: Int, val parserConf: ParserConf = ParserConf()) : TomlNode(content, lineNo) {
     var key: TomlKey
     var value: TomlValue
     override val name: String
 
     init {
         // FixMe: need to cover a case, when no value is present, because of the comment, but "=" is present: a = # comment
-        // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") - is this supported?
+        // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") (supported by the spec)
         val keyValue = content.substringBefore("#")
             .split("=")
             .map { it.trim() }
@@ -217,7 +219,9 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
 
     private fun List<String>.getKeyValuePart(log: String, index: Int) =
         this[index].trim().also {
-            if (it.isBlank()) {
+            // key should never be empty, but the value can be empty (and treated as null)
+            // see the discussion: https://github.com/toml-lang/toml/issues/30
+            if ((!parserConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
                 "Incorrect format of Key-Value pair. It has empty $log: $content"
                     .parsingError(lineNo)
             }
@@ -228,34 +232,32 @@ class TomlKeyValue(content: String, lineNo: Int) : TomlNode(content, lineNo) {
     /**
      * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
      */
-    private fun parseValue(contentStr: String, lineNo: Int): TomlValue =
-        if (contentStr == "true" || contentStr == "false") {
-            TomlBoolean(contentStr, lineNo)
-        } else {
-            if (contentStr == "null") {
-                TomlNull(lineNo)
-            } else {
+    private fun parseValue(contentStr: String, lineNo: Int): TomlValue {
+        return when (contentStr) {
+            "null", "nil", "NULL", "NIL", ""  -> TomlNull(lineNo)
+            "true", "false" -> TomlBoolean(contentStr, lineNo)
+            else -> try {
+                TomlInt(contentStr, lineNo)
+            } catch (e: NumberFormatException) {
                 try {
-                    TomlInt(contentStr, lineNo)
+                    TomlFloat(contentStr, lineNo)
                 } catch (e: NumberFormatException) {
-                    try {
-                        TomlFloat(contentStr, lineNo)
-                    } catch (e: NumberFormatException) {
                         TomlString(contentStr, lineNo)
-                    }
                 }
             }
         }
+    }
 }
 
-/**
- * this is a hack to cover empty TOML tables that have missing key-values\
- * According the spec: "Empty tables are allowed and simply have no key/value pairs within them."
- *
- * Instances of this stub will be added as children to such parsed tables
- */
-class TomlStubEmptyNode(lineNo: Int) : TomlNode("empty_technical_node", lineNo) {
-    override val name: String = "empty_technical_node"
+    /**
+     * this is a hack to cover empty TOML tables that have missing key-values
+     * According the spec: "Empty tables are allowed and simply have no key/value pairs within them."
+     *
+     * Instances of this stub will be added as children to such parsed tables
+     */
+    class TomlStubEmptyNode(lineNo: Int) : TomlNode("empty_technical_node", lineNo) {
+        override val name: String = "empty_technical_node"
 
-    override fun getNeighbourNodes() = parent!!.children
-}
+        override fun getNeighbourNodes() = parent!!.children
+    }
+

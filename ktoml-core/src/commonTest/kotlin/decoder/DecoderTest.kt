@@ -7,7 +7,6 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -47,7 +46,8 @@ class DecoderTest {
     data class NestedSimpleTable(val c: Int, val table1: Table1)
 
     @Serializable
-    data class NullableValues(val a: Int?, val b: Table1?)
+    data class NullableValues(val a: Int?, val b: Table1?, val c: String?,
+                              val d: String?, val e: String?, val f: String?)
 
     @Test
     fun testForSimpleTomlCase() {
@@ -78,14 +78,14 @@ class DecoderTest {
     fun testForComplexTypes() {
         assertFailsWith<InvalidEnumValueException> {
             println("table3: (a:true, d:5, e:\"my test\", b: H)")
-            deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = H")
+            deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"H\"")
         }
     }
 
     @Test
     fun testForComplexTypesExceptionOnEnums() {
         println("table3: (a:true, d:5, e:\"my test\", b = A)")
-        val test = deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n e = my test \n b = A")
+        val test = deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"A\"")
         println(test)
         assertEquals(ComplexPlainTomlCase(Table3(true, "my test", 5, b = TestEnum.A)), test)
     }
@@ -94,7 +94,8 @@ class DecoderTest {
     fun testUnknownFieldInToml() {
         assertFailsWith<UnknownNameDecodingException> {
             println("table3: (a:true, d:5, e:\"my test\", b:A, c:unknown)")
-            deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n c = unknown \n e = my test \n b = A ")
+            deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n" +
+                    " c = \"unknown\" \n e = \"my test\" \n b = \"A\" ")
         }
     }
 
@@ -137,8 +138,8 @@ class DecoderTest {
         println("a:true, b:A, e: my string, d: 55")
         val test = deserialize<Table3>(
             "a = true \n" +
-                    " b = A\n" +
-                    " e = my string\n" +
+                    " b = \"A\"\n" +
+                    " e = \"my string\"\n" +
                     " d = 55"
         )
         println(test)
@@ -146,12 +147,11 @@ class DecoderTest {
     }
 
     @Test
-    @Ignore
     fun testForQuotes() {
         println("a:true, b:A, e: my string, d: 55")
         val test = deserialize<Table3>(
             "a = true \n" +
-                    " b = A\n" +
+                    " b = \"A\"\n" +
                     " e = \"my string\"\n" +
                     " d = 55"
         )
@@ -171,8 +171,8 @@ class DecoderTest {
             deserialize<Table3>(
                 " a = true \n" +
                         " d = 5 \n" +
-                        " e = my test \n" +
-                        " err = B",
+                        " e = \"my test\"\n" +
+                        " err = \"B\"",
                 DecoderConf(true)
             )
         }
@@ -189,8 +189,8 @@ class DecoderTest {
                 "[tableUNKNOWN] \n" +
                         " a = true \n" +
                         " d = 5 \n" +
-                        " e = my test \n" +
-                        " b = B",
+                        " e = \"my test\" \n" +
+                        " b = \"B\"",
                 DecoderConf(true)
             )
         }
@@ -201,7 +201,7 @@ class DecoderTest {
         val test = deserialize<Table3>(
             " t = \"7777\" \n" +
                     "a = true \n" +
-                    " b = A \n" +
+                    " b = \"A\" \n" +
                     " d = 55 \n",
 
             DecoderConf(true)
@@ -219,7 +219,7 @@ class DecoderTest {
             deserialize<Table3>(
                 " t = \"7777\" \n" +
                         "a = true \n" +
-                        " b = A \n",
+                        " b = \"A\" \n",
 
                 DecoderConf(true)
             )
@@ -228,13 +228,17 @@ class DecoderTest {
 
     @Test
     fun nullableFields() {
-        println("a = null, b = NULL")
+        println("a = null, b = NULL, c = nil")
         val test = deserialize<NullableValues>(
             "a = null \n " +
-                    "b = NULL"
+                    "b = NULL \n" +
+                    "c = nil \n" +
+                    "d = # hi \n" +
+                    "e = \n" +
+                    "f = NIL\n"
         )
         println(test)
-        assertEquals(NullableValues(null, null), test)
+        assertEquals(NullableValues(null, null, null, null, null, null), test)
     }
 
     @Test
@@ -270,7 +274,7 @@ class DecoderTest {
         // e - has default value and is missing in the input
         println("table3: (a:true, d:5, b: B)")
         val test = deserialize<ComplexPlainTomlCase>(
-            "[table3] \n a = true \n b = B \n d = 5",
+            "[table3] \n a = true \n b = \"B\" \n d = 5",
             DecoderConf(true)
         )
 

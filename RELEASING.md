@@ -1,4 +1,4 @@
-# How to release a new version of diKTat
+# How to release a new version of ktoml
 
 * You should have permissions to push to the main repo
 * Simply create a new git tag with format `v*` and push it. Github workflow will perform release automatically.
