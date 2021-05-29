@@ -9,7 +9,7 @@ import kotlin.test.assertFailsWith
 
 
 
-class KeyParserTest {
+class DottedKeyParserTest {
     @Test
     fun positiveParsingTest() {
         var test = TomlKey("\"a.b.c\"", 0)
@@ -31,6 +31,20 @@ class KeyParserTest {
         test = TomlKey("a.\"  b  \".c", 0)
         assertEquals("a.\"  b  \".c", test.content)
         assertEquals(true, test.isDotted)
+    }
+
+    @Test
+    fun createTable() {
+        var test = TomlKeyValue("google.com = 5", 0).createTomlTableFromDottedKey()
+        assertEquals("google", test.fullTableName)
+
+        test = TomlKeyValue("a.b.c.d = 5", 0).createTomlTableFromDottedKey()
+        assertEquals("a.b.c", test.fullTableName)
+
+        val testKeyValue = TomlKeyValue("a.b.c = 5", 0)
+        test = testKeyValue.createTomlTableFromDottedKey()
+        assertEquals("c", testKeyValue.key.content)
+        assertEquals(1, test.level)
     }
 }
 

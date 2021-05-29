@@ -24,8 +24,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.squareup.okio:okio-multiplatform:3.0.0-alpha.1")
+                implementation("com.squareup.okio:okio-multiplatform:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
             }
         }
 

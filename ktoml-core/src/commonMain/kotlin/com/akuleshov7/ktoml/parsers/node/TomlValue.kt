@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsers.trimQuotes
 
-class TomlKey(val content: String, val lineNo: Int)
 
 sealed class TomlValue(val lineNo: Int) {
     abstract var content: Any
@@ -10,7 +10,7 @@ sealed class TomlValue(val lineNo: Int) {
 
 class TomlString(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("\"") && content.endsWith("\"")) {
-        val stringWithoutQuotes = content.removePrefix("\"").removeSuffix("\"")
+        val stringWithoutQuotes = content.trimQuotes()
         checkOtherQuotesAreEscaped(stringWithoutQuotes)
         convertSpecialCharacters(stringWithoutQuotes)
     } else {

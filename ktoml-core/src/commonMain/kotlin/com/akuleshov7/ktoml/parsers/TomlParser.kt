@@ -64,7 +64,14 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
 
                     currentParent = tableSection
                 } else {
-                    currentParent.appendChild(TomlKeyValue(line, lineno, parserConf))
+                    val keyValue = TomlKeyValue(line, lineno, parserConf)
+                    if (keyValue.key.isDotted) {
+                        // in case parser has faced dot-separated complex key (a.b.c) it should create proper tables
+                        tomlFileHead.insertTableToTree(keyValue.createTomlTableFromDottedKey())
+                    } else {
+                        // otherwise it should simply append the keyValue to the parent
+                        currentParent.appendChild(keyValue)
+                    }
                 }
             }
         }
@@ -77,4 +84,6 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
+
+
 }
