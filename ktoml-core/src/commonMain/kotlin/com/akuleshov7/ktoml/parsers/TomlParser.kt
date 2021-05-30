@@ -55,19 +55,22 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
                         tableSection.appendChild(TomlStubEmptyNode(lineno))
                     }
 
-                    tomlFileHead.insertTableToTree(tableSection)
-                    // covering the case when table contains no key-value pairs
+                    val newParent = tomlFileHead.insertTableToTree(tableSection)
+                    // covering the case when table contains no key-value pairs or no tables (after our insertion)
                     // adding fake nodes to a previous table (it has no children because we have found another table right after)
                     if (currentParent.hasNoChildren()) {
                         currentParent.appendChild(TomlStubEmptyNode(currentParent.lineNo))
                     }
-
-                    currentParent = tableSection
+                    currentParent = newParent
                 } else {
                     val keyValue = TomlKeyValue(line, lineno, parserConf)
                     if (keyValue.key.isDotted) {
-                        // in case parser has faced dot-separated complex key (a.b.c) it should create proper tables
-                        tomlFileHead.insertTableToTree(keyValue.createTomlTableFromDottedKey())
+                        // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
+                        // because table is the same as dotted key
+                        val newTableSection = keyValue.createTomlTableFromDottedKey(currentParent)
+                        tomlFileHead
+                            .insertTableToTree(newTableSection)
+                            .appendChild(keyValue)
                     } else {
                         // otherwise it should simply append the keyValue to the parent
                         currentParent.appendChild(keyValue)
@@ -84,6 +87,4 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
-
-
 }
