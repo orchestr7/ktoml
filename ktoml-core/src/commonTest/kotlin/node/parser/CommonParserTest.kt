@@ -8,5 +8,7 @@ class CommonParserTest {
     fun parseDottedKey() {
         val result = TomlParser("a.\"a.b.c\".b.d = 123").parseString()
         result.prettyPrint()
+
+        throw IllegalArgumentException()
     }
 }

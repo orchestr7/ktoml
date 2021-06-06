@@ -6,13 +6,18 @@ import com.akuleshov7.ktoml.parsers.ParserConf
 
 // Toml specification includes a list of supported data types: String, Integer, Float, Boolean, Datetime, Array, and Table.
 sealed class TomlNode(open val content: String, open val lineNo: Int) {
+    constructor(keyValuePair: Pair<String, String>, lineNo: Int) : this(
+        "${keyValuePair.first}=${keyValuePair.second}",
+        lineNo
+    )
+
     open val children: MutableSet<TomlNode> = mutableSetOf()
     open var parent: TomlNode? = null
     abstract val name: String
 
     fun hasNoChildren() = children.size == 0
     fun getFirstChild() = children.elementAtOrNull(0)
-    abstract fun getNeighbourNodes(): MutableSet<TomlNode>
+    open fun getNeighbourNodes() = parent!!.children
 
     /**
      * This method performs tree traversal and returns all table Nodes that have proper name and are on the proper level
@@ -188,98 +193,27 @@ class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) 
             (0..index).map { sectionsList[it] }.joinToString(".")
         }
     }
-
-    override fun getNeighbourNodes() = parent!!.children
 }
 
-// be careful here as 'parserConf' has the default value (for test purposes)
-class TomlKeyValue(content: String, lineNo: Int, val parserConf: ParserConf = ParserConf()) :
-    TomlNode(content, lineNo) {
-    var key: TomlKey
-    var value: TomlValue
+/**
+ * class for parsing
+ */
+class TomlKeyValueList(
+    keyValuePair: Pair<String, String>,
+    override val lineNo: Int,
+) : TomlNode(keyValuePair, lineNo), TomlKeyValue {
+    override var key: TomlKey = TomlKey(keyValuePair.first, lineNo)
+    override val value: TomlValue = parseList(keyValuePair.second, lineNo)
+    override val name: String = key.content
+}
 
-    // same to the content in the TomlKey
-    override val name: String
-
-    init {
-        // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") (supported by the spec)
-        val keyValue = content.substringBefore("#")
-            .split("=")
-            .map { it.trim() }
-
-        if (keyValue.size != 2) {
-            throw TomlParsingException(
-                "Incorrect format of Key-Value pair. Should be <key = value>, but was: $content",
-                lineNo
-            )
-        }
-
-        val keyStr = keyValue.getKeyValuePart("value", 0)
-        val valueStr = keyValue.getKeyValuePart("value", 1)
-
-        key = TomlKey(keyStr, lineNo)
-        value = parseValue(valueStr, lineNo)
-        name = key.content
-    }
-
-    private fun List<String>.getKeyValuePart(log: String, index: Int) =
-        this[index].trim().also {
-            // key should never be empty, but the value can be empty (and treated as null)
-            // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!parserConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
-                throw TomlParsingException(
-                    "Incorrect format of Key-Value pair. It has empty $log: $content",
-                    lineNo
-                )
-            }
-        }
-
-    override fun getNeighbourNodes() = parent!!.children
-
-    /**
-     * this is a small hack to support dotted keys
-     * in case we have the following key: a.b.c = "val" we will simply create a new table:
-     *  [a.b]
-     *     c = "val"
-     * and we will let our Table mechanism to do everything for us
-     */
-    fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTable {
-        // for a key: a.b.c it will be [a, b]
-        val syntheticTablePrefix = this.key.keyParts.dropLast(1)
-        // creating new key with the last dor-separated fragment
-        val realKeyWithoutDottedPrefix = TomlKey(key.keyParts.last(), lineNo)
-        // updating current KeyValue with this key
-        this.key = realKeyWithoutDottedPrefix
-        // tables should contain fully qualified name, so we need to add parental name
-        val parentalPrefix = if (parentNode is TomlTable) "${parentNode.fullTableName}." else ""
-        // and creating a new table that will be created from dotted key
-        val newTable = TomlTable(
-            "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",
-            lineNo,
-            true
-        )
-
-        return newTable
-    }
-
-    /**
-     * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
-     */
-    private fun parseValue(contentStr: String, lineNo: Int): TomlValue {
-        return when (contentStr) {
-            "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
-            "true", "false" -> TomlBoolean(contentStr, lineNo)
-            else -> try {
-                TomlInt(contentStr, lineNo)
-            } catch (e: NumberFormatException) {
-                try {
-                    TomlFloat(contentStr, lineNo)
-                } catch (e: NumberFormatException) {
-                    TomlString(contentStr, lineNo)
-                }
-            }
-        }
-    }
+class TomlKeyValueSimple(
+    keyValuePair: Pair<String, String>,
+    override val lineNo: Int,
+) : TomlNode(keyValuePair, lineNo), TomlKeyValue {
+    override var key: TomlKey = TomlKey(keyValuePair.first, lineNo)
+    override val value: TomlValue = parseValue(keyValuePair.second, lineNo)
+    override val name: String = key.content
 }
 
 /**
@@ -290,6 +224,4 @@ class TomlKeyValue(content: String, lineNo: Int, val parserConf: ParserConf = Pa
  */
 class TomlStubEmptyNode(lineNo: Int) : TomlNode("empty_technical_node", lineNo) {
     override val name: String = "empty_technical_node"
-
-    override fun getNeighbourNodes() = parent!!.children
 }

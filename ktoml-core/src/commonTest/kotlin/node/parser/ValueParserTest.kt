@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.test.node.parser
 
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsers.ParserConf
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,71 +15,77 @@ enum class NodeType {
 class ValueParserTest {
     @Test
     fun parsingTest() {
-        testTomlValue("a = \"gfhgfhfg\"", NodeType.STRING)
-        testTomlValue("a = 123456", NodeType.INT)
-        testTomlValue("a = 12.2345", NodeType.FLOAT)
-        testTomlValue("a = true", NodeType.BOOLEAN)
-        testTomlValue("a = false", NodeType.BOOLEAN)
-        // regression test related to comments with an equals symbol after it
-        testTomlValue("lineCaptureGroup = 1  # index `warningTextHasLine = false`\n", NodeType.INT)
+        testTomlValue(Pair("a", "\"gfhgfhfg\""), NodeType.STRING)
+        testTomlValue(Pair("a", "123456"), NodeType.INT)
+        testTomlValue(Pair("a", "12.2345"), NodeType.FLOAT)
+        testTomlValue(Pair("a", "true"), NodeType.BOOLEAN)
+        testTomlValue(Pair("a", "false"), NodeType.BOOLEAN)
+
     }
 
     @Test
     fun quotesParsingTest() {
         assertFailsWith<TomlParsingException> {
-            TomlKeyValue("\"a = 123", 0)
+            TomlKeyValueSimple(Pair("\"a", "123"), 0)
         }
 
         assertFailsWith<TomlParsingException> {
-            TomlKeyValue("a = hello world", 0)
+            TomlKeyValueSimple(Pair("a", "hello world"), 0)
         }
         assertFailsWith<TomlParsingException> {
-            TomlKeyValue("a = \"before \" string\"", 0)
+            TomlKeyValueSimple(Pair("a", "\"before \" string\""), 0)
         }
     }
 
 
     @Test
     fun specialSymbolsParsing() {
-        assertFailsWith<TomlParsingException> { TomlKeyValue("a = \"hello\\world\"", 0) }
+        assertFailsWith<TomlParsingException> { TomlKeyValueSimple(Pair("a", "\"hello\\world\""), 0) }
 
-        var test = TomlKeyValue("a = \"hello\\tworld\"", 0)
+        var test = TomlKeyValueSimple(Pair("a", "\"hello\\tworld\""), 0)
         assertEquals("hello\tworld", test.value.content)
 
-        test = TomlKeyValue("a = \"helloworld\\n\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"helloworld\\n\""), 0)
         assertEquals("helloworld\n", test.value.content)
 
-        test = TomlKeyValue("a = \"helloworld\\\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"helloworld\\\""), 0)
         assertEquals("helloworld\\", test.value.content)
 
-        test = TomlKeyValue("a = \"hello\\nworld\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello\\nworld\""), 0)
         assertEquals("hello\nworld", test.value.content)
 
-        test = TomlKeyValue("a = \"hello\\bworld\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello\\bworld\""), 0)
         assertEquals("hello\bworld", test.value.content)
 
-        test = TomlKeyValue("a = \"hello\\rworld\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello\\rworld\""), 0)
         assertEquals("hello\rworld", test.value.content)
 
-        test = TomlKeyValue("a = \"hello\\\\tworld\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello\\\\tworld\""), 0)
         assertEquals("hello\\tworld", test.value.content)
 
-        test = TomlKeyValue("a = \"hello\\\\world\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello\\\\world\""), 0)
         assertEquals("hello\\world", test.value.content)
 
-        test = TomlKeyValue("a = \"hello tworld\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello tworld\""), 0)
         assertEquals("hello tworld", test.value.content)
 
-        test = TomlKeyValue("a = \"hello\t\\\\\\\\world\"", 0)
+        test = TomlKeyValueSimple(Pair("a", "\"hello\t\\\\\\\\world\""), 0)
         assertEquals("hello\t\\\\world", test.value.content)
+
+        // regression test related to comments with an equals symbol after it
+        val pairTest =
+            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, parserConf = ParserConf())
+        assertEquals(1, TomlKeyValueSimple(pairTest, 0).value.content)
+
     }
 
 
     @Test
     fun parsingIssueValue() {
-        assertFails { TomlKeyValue("   a  = b = c", 0) }
-        assertFails { TomlKeyValue(" = false", 0) }
-        assertFails { TomlKeyValue(" just false", 0) }
+        assertFailsWith<TomlParsingException> { "   a  = b = c".splitKeyValue(0, parserConf = ParserConf()) }
+        assertFailsWith<TomlParsingException> { " = false".splitKeyValue(0, parserConf = ParserConf()) }
+        assertFailsWith<TomlParsingException> { " just false".splitKeyValue(0, parserConf = ParserConf()) }
+        assertFailsWith<TomlParsingException> { TomlKeyValueSimple(Pair("a", "\"\\hello tworld\""), 0) }
     }
 }
 
@@ -93,6 +100,6 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
 }
 
 
-fun testTomlValue(s: String, expectedType: NodeType) {
-    assertEquals(expectedType, getNodeType(TomlKeyValue(s, 0).value))
+fun testTomlValue(keyValuePair: Pair<String, String>, expectedType: NodeType) {
+    assertEquals(expectedType, getNodeType(TomlKeyValueSimple(keyValuePair, 0).value))
 }

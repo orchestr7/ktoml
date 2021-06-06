@@ -16,8 +16,8 @@ class UnknownNameDecodingException(keyField: String, parent: String?) : KtomlExc
 )
 
 class InvalidEnumValueException(value: String, availableEnumValues: String) : KtomlException(
-    "Value $value is not a valid" +
-            " option, permitted choices are: $availableEnumValues"
+    "Value <$value> is not a valid" +
+            " enum option, permitted choices are: $availableEnumValues"
 )
 
 class NonNullableValueException(field: String, lineNo: Int) : KtomlException(

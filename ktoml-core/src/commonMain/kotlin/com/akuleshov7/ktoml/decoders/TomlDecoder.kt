@@ -11,7 +11,6 @@ import kotlinx.serialization.modules.*
 public class TomlDecoder(
     val rootNode: TomlNode,
     val config: DecoderConf,
-    var elementsCount: Int = 0
 ) : AbstractDecoder() {
     private var elementIndex = 0
 
@@ -20,16 +19,17 @@ public class TomlDecoder(
     override fun decodeValue(): Any {
         val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
         return when (node) {
-            is TomlKeyValue -> node.value.content
+            is TomlKeyValueSimple -> node.value.content
             is TomlTable, is TomlFile -> node.children
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception
-            is TomlStubEmptyNode -> throw InternalDecodingException("Empty node should not be processed")
+            is TomlStubEmptyNode, is TomlKeyValueList ->
+                throw InternalDecodingException("Empty node or KeyValueList should not be processed in TomlDecoder")
         }
     }
 
     // the iteration will go through all elements that will be found in the input
-    fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
+    private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         fun iterateUntilWillFindAnyKnownName(): Int {
@@ -114,12 +114,6 @@ public class TomlDecoder(
         }
     }
 
-    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
-        return decodeInt().also {
-            elementsCount = it
-        }
-    }
-
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
         is TomlFile -> {
             checkMissingRequiredField(rootNode.children, descriptor)
@@ -128,10 +122,15 @@ public class TomlDecoder(
                         " Empty toml was provided to the input?"
             )
 
-            TomlDecoder(firstChild, config, descriptor.elementsCount)
+            TomlDecoder(firstChild, config)
         }
+
+        is TomlKeyValueList -> {
+            TomlListDecoder(rootNode, config)
+        }
+
         // need to move on here, but also need to pass children into the function
-        is TomlTable, is TomlKeyValue, is TomlStubEmptyNode -> {
+        is TomlTable, is TomlKeyValueSimple, is TomlStubEmptyNode -> {
             // this is a little bit tricky index calculation, suggest not to change
             // we are using the previous node to get all neighbour nodes:
             //                          (parentNode)
@@ -145,12 +144,7 @@ public class TomlDecoder(
 
             checkMissingRequiredField(nextProcessingNode.getNeighbourNodes(), descriptor)
 
-            TomlDecoder(
-                // this is a little bit tricky index calculation, suggest not to change
-                nextProcessingNode,
-                config,
-                descriptor.elementsCount
-            )
+            TomlDecoder(nextProcessingNode, config)
         }
     }
 

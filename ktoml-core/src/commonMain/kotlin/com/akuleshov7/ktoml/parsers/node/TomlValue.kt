@@ -16,7 +16,7 @@ class TomlString(content: String, lineNo: Int) : TomlValue(lineNo) {
     } else {
         throw TomlParsingException(
             "According to the TOML specification string values (even Enums)" +
-                    " should be wrapped with quotes (\"\")", lineNo
+                    " should be wrapped with quotes (\"\"): <$content>", lineNo
         )
     }
 
@@ -44,8 +44,11 @@ class TomlString(content: String, lineNo: Int) : TomlValue(lineNo) {
                     'b' -> '\b'
                     'r' -> '\r'
                     'n' -> '\n'
-                    else -> throw TomlParsingException("According to TOML documentation unknown" +
-                            " escape symbols are not allowed. Please check [\\${stringWithoutQuotes[i + 1]}]", lineNo)
+                    else -> throw TomlParsingException(
+                        "According to TOML documentation unknown" +
+                                " escape symbols are not allowed. Please check [\\${stringWithoutQuotes[i + 1]}]",
+                        lineNo
+                    )
                 }
             } else {
                 stringWithoutQuotes[i]
@@ -80,6 +83,47 @@ class TomlNull(lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = "null"
 }
 
-class TomlEnum(lineNo: Int) : TomlValue(lineNo) {
-    override var content: Any = "null"
+class TomlArray(val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
+    override lateinit var content: Any
+
+    init {
+        validateBrackets()
+        var singleQuoteIsClosed = true
+        var doubleQuoteIsClosed = true
+        val dotSeparatedParts: MutableList<String> = mutableListOf()
+        var currentPart = StringBuilder()
+        // simple split won't work here, because in such case we could break following keys:
+        // a."b.c.d".e (here only three tables: a/"b.c.d"/and e)
+        rawContent.trimQuotes().forEach { ch ->
+            when (ch) {
+                '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
+                '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
+                '.' -> {
+                    if (singleQuoteIsClosed && doubleQuoteIsClosed) {
+                        dotSeparatedParts.add(currentPart.toString())
+                        currentPart = StringBuilder()
+                    } else {
+                        currentPart.append(ch)
+                    }
+                }
+                else -> currentPart.append(ch)
+            }
+        }
+        // in the end of the word we should also add buffer to the list (as we haven't faced any dots)
+        dotSeparatedParts.add(currentPart.toString())
+
+        this.content = listOf(TomlInt("1", lineNo), TomlInt("2", lineNo))
+    }
+
+    /**
+     * small validation for quotes: each quote should be closed in a key
+     */
+    private fun validateBrackets() {
+        if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
+            throw TomlParsingException(
+                "Not able to parse the key: [$rawContent] as it does not have closing bracket",
+                lineNo
+            )
+        }
+    }
 }
