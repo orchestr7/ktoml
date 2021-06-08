@@ -11,7 +11,7 @@ import okio.Path.Companion.toPath
  * @param toml - this argument can be a path to a toml file or a string in the toml format,
  * depending on how you plan to work with it.
  */
-public class TomlParser(val toml: String) {
+public class TomlParser(val toml: String, val parserConf: ParserConf = ParserConf()) {
     @OptIn(ExperimentalFileSystem::class)
     fun readAndParseFile(): TomlFile {
         try {
@@ -64,7 +64,7 @@ public class TomlParser(val toml: String) {
 
                     currentParent = tableSection
                 } else {
-                    currentParent.appendChild(TomlKeyValue(line, lineno))
+                    currentParent.appendChild(TomlKeyValue(line, lineno, parserConf))
                 }
             }
         }
