@@ -173,12 +173,13 @@ class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) 
             ?: throw Exception()
 
         if (sectionFromContent.isBlank()) {
-            error("Line $lineNo contains incorrect blank table name: $content")
+            throw TomlParsingException("Incorrect blank table name: $content", lineNo)
         }
 
         fullTableName = sectionFromContent
         level = sectionFromContent.count { it == '.' }
 
+        // FixMe: this is invalid for the following tables: "google.com" (it will be split now)
         val sectionsList = sectionFromContent.split(".")
         name = sectionsList.last()
         tablesList = sectionsList.mapIndexed { index, secton ->
@@ -193,10 +194,10 @@ class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) 
 class TomlKeyValue(content: String, lineNo: Int, val parserConf: ParserConf = ParserConf()) : TomlNode(content, lineNo) {
     var key: TomlKey
     var value: TomlValue
+    // same to the content in the TomlKey
     override val name: String
 
     init {
-        // FixMe: need to cover a case, when no value is present, because of the comment, but "=" is present: a = # comment
         // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") (supported by the spec)
         val keyValue = content.substringBefore("#")
             .split("=")
@@ -208,8 +209,6 @@ class TomlKeyValue(content: String, lineNo: Int, val parserConf: ParserConf = Pa
         }
 
         val keyStr = keyValue.getKeyValuePart("value", 0)
-
-        // trimming and removing the comment in the end of the string
         val valueStr = keyValue.getKeyValuePart("value", 1)
 
         key = TomlKey(keyStr, lineNo)
@@ -228,6 +227,56 @@ class TomlKeyValue(content: String, lineNo: Int, val parserConf: ParserConf = Pa
         }
 
     override fun getNeighbourNodes() = parent!!.children
+
+    /**
+     * this is a small hack to support dotted keys
+     * in case we have the following key: a.b.c = "val" we will simply create a new table:
+     *  [a.b]
+     *     c = "val"
+     * and we will let our Table mechanism to do everything for us
+     */
+    fun createTomlTableFromDottedKey(): TomlTable {
+        var singleQuoteIsClosed = true
+        var doubleQuoteIsClosed = true
+        val dotSeparatedParts: MutableList<String> = mutableListOf()
+        var currentPart = StringBuilder()
+        // simple split won't work here, because in such case we could break following keys:
+        // a."b.c.d".e (here only three tables: a/"b.c.d"/and e)
+        key.rawContent.forEach { ch ->
+            when (ch) {
+                '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
+                '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
+                '.' -> {
+                    if (singleQuoteIsClosed && doubleQuoteIsClosed) {
+                        dotSeparatedParts.add(currentPart.toString())
+                        currentPart = StringBuilder()
+                    } else {
+                        currentPart.append(ch)
+                    }
+                }
+                else ->  currentPart.append(ch)
+            }
+        }
+        // in the end of the word we should also add buffer to the list (as we haven't faced any dots)
+        dotSeparatedParts.add(currentPart.toString())
+
+        println(dotSeparatedParts)
+
+        // creating new key with the last dor-separated fragment
+        val realKeyWithoutDottedPrefix = TomlKey(dotSeparatedParts.last(), lineNo)
+        dotSeparatedParts.removeLast()
+        // updating current KeyValue with this key
+        this.key = realKeyWithoutDottedPrefix
+        // and creating a new table that will be created from dotted key
+        val newTable = TomlTable(
+            "[${dotSeparatedParts.joinToString(".")}]",
+            lineNo,
+            false
+        )
+
+        newTable.appendChild(this)
+        return newTable
+    }
 
     /**
      * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)

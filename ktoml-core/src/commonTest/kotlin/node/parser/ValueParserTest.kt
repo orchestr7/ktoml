@@ -26,12 +26,17 @@ class ValueParserTest {
     @Test
     fun quotesParsingTest() {
         assertFailsWith<TomlParsingException> {
+            TomlKeyValue("\"a = 123", 0)
+        }
+
+        assertFailsWith<TomlParsingException> {
             TomlKeyValue("a = hello world", 0)
         }
         assertFailsWith<TomlParsingException> {
             TomlKeyValue("a = \"before \" string\"", 0)
         }
     }
+
 
     @Test
     fun specialSymbolsParsing() {
@@ -68,6 +73,7 @@ class ValueParserTest {
         assertEquals("hello\t\\\\world", test.value.content)
     }
 
+
     @Test
     fun parsingIssueValue() {
         assertFails { TomlKeyValue("   a  = b = c", 0) }
@@ -75,6 +81,7 @@ class ValueParserTest {
         assertFails { TomlKeyValue(" just false", 0) }
     }
 }
+
 
 fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlString -> NodeType.STRING
@@ -84,6 +91,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlBoolean -> NodeType.BOOLEAN
     else -> NodeType.INCORRECT
 }
+
 
 fun testTomlValue(s: String, expectedType: NodeType) {
     assertEquals(expectedType, getNodeType(TomlKeyValue(s, 0).value))
