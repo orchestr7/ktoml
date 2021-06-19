@@ -4,10 +4,18 @@ package com.akuleshov7.ktoml.parsers
  * If this string starts and end with quotes - will return the string with quotes removed
  * Otherwise, returns this string.
  */
-fun String.trimQuotes(): String {
-    if (this.startsWith("\"") && this.endsWith("\"")) {
-        return this.removePrefix("\"").removeSuffix("\"")
-    }
+fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
 
-    return this
+/**
+ * If this string starts and end with brackets([]) - will return the string with brackets removed
+ * Otherwise, returns this string.
+ */
+fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
+
+
+private fun trimSymbols(str: String, prefix: String, suffix: String): String {
+    if (str.startsWith(prefix) && str.endsWith(suffix)) {
+        return str.removePrefix(prefix).removeSuffix(suffix)
+    }
+    return str
 }

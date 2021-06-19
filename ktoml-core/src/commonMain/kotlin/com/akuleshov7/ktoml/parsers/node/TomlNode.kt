@@ -212,7 +212,7 @@ class TomlKeyValueSimple(
     override val lineNo: Int,
 ) : TomlNode(keyValuePair, lineNo), TomlKeyValue {
     override var key: TomlKey = TomlKey(keyValuePair.first, lineNo)
-    override val value: TomlValue = parseValue(keyValuePair.second, lineNo)
+    override val value: TomlValue = keyValuePair.second.parseValue(lineNo)
     override val name: String = key.content
 }
 

@@ -16,25 +16,6 @@ interface TomlKeyValue {
     }
 
     /**
-     * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
-     */
-    fun parseValue(contentStr: String, lineNo: Int): TomlValue {
-        return when (contentStr) {
-            "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
-            "true", "false" -> TomlBoolean(contentStr, lineNo)
-            else -> try {
-                TomlInt(contentStr, lineNo)
-            } catch (e: NumberFormatException) {
-                try {
-                    TomlFloat(contentStr, lineNo)
-                } catch (e: NumberFormatException) {
-                    TomlString(contentStr, lineNo)
-                }
-            }
-        }
-    }
-
-    /**
      * this is a small hack to support dotted keys
      * in case we have the following key: a.b.c = "val" we will simply create a new table:
      *  [a.b]
@@ -93,3 +74,23 @@ fun List<String>.getKeyValuePart(log: String, index: Int, content: String, parse
             )
         }
     }
+
+
+/**
+ * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
+ */
+fun String.parseValue(lineNo: Int): TomlValue {
+    return when (this) {
+        "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
+        "true", "false" -> TomlBoolean(this, lineNo)
+        else -> try {
+            TomlInt(this, lineNo)
+        } catch (e: NumberFormatException) {
+            try {
+                TomlFloat(this, lineNo)
+            } catch (e: NumberFormatException) {
+                TomlString(this, lineNo)
+            }
+        }
+    }
+}

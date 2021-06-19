@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 
 
@@ -83,36 +84,59 @@ class TomlNull(lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = "null"
 }
 
-class TomlArray(val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
+class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
     override lateinit var content: Any
 
     init {
         validateBrackets()
-        var singleQuoteIsClosed = true
-        var doubleQuoteIsClosed = true
-        val dotSeparatedParts: MutableList<String> = mutableListOf()
-        var currentPart = StringBuilder()
-        // simple split won't work here, because in such case we could break following keys:
-        // a."b.c.d".e (here only three tables: a/"b.c.d"/and e)
-        rawContent.trimQuotes().forEach { ch ->
-            when (ch) {
-                '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
-                '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
-                '.' -> {
-                    if (singleQuoteIsClosed && doubleQuoteIsClosed) {
-                        dotSeparatedParts.add(currentPart.toString())
-                        currentPart = StringBuilder()
-                    } else {
-                        currentPart.append(ch)
-                    }
+        this.content = parse()
+    }
+
+    /**
+     * small adaptor to make proper testing of parsing
+     */
+    fun parse(): List<Any> = rawContent.parse()
+
+    /**
+     * recursively parse array
+     */
+    private fun String.parse(): List<Any> =
+        this.parseArray()
+            .map { it.trim() }
+            .map { if (it.startsWith("[")) it.parse() else it.parseValue(lineNo) }
+
+
+    /**
+     * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]
+     */
+    private fun String.parseArray(): MutableList<String> {
+        var numberOfOpenBrackets = 0
+        var numberOfClosedBrackets = 0
+        var bufferBetweenCommas = StringBuilder()
+        val result = mutableListOf<String>()
+
+        this.trimBrackets().forEach {
+            when (it) {
+                '[' -> {
+                    numberOfOpenBrackets++
+                    bufferBetweenCommas.append(it)
                 }
-                else -> currentPart.append(ch)
+                ']' -> {
+                    numberOfClosedBrackets++
+                    bufferBetweenCommas.append(it)
+                }
+                // split only if we are on the highest level of brackets (all brackets are closed)
+                ',' -> if (numberOfClosedBrackets == numberOfOpenBrackets) {
+                    result.add(bufferBetweenCommas.toString())
+                    bufferBetweenCommas = StringBuilder()
+                } else {
+                    bufferBetweenCommas.append(it)
+                }
+                else -> bufferBetweenCommas.append(it)
             }
         }
-        // in the end of the word we should also add buffer to the list (as we haven't faced any dots)
-        dotSeparatedParts.add(currentPart.toString())
-
-        this.content = listOf(TomlInt("1", lineNo), TomlInt("2", lineNo))
+        result.add(bufferBetweenCommas.toString())
+        return result
     }
 
     /**
