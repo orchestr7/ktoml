@@ -10,10 +10,9 @@ import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.Ignore
 
 @OptIn(ExperimentalSerializationApi::class)
-class DecoderTest {
+class GeneralDecoderTest {
     enum class TestEnum {
         A, B
     }
@@ -48,6 +47,13 @@ class DecoderTest {
     @Serializable
     data class NullableValues(val a: Int?, val b: Table1?, val c: String?,
                               val d: String?, val e: String?, val f: String?)
+
+    @Serializable
+    data class ChildTableBeforeParent(val a: A)
+    @Serializable
+    data class A(val b: B, val a: Boolean)
+    @Serializable
+    data class B(val c: Int)
 
     @Test
     fun testForSimpleTomlCase() {
@@ -280,5 +286,20 @@ class DecoderTest {
 
         println(test)
         assertEquals(ComplexPlainTomlCase(Table3(a = true, d = 5, b = TestEnum.B)), test)
+    }
+
+    @Test
+    fun testChildTableBeforeParent() {
+        val test = deserialize<ChildTableBeforeParent>(
+            """
+                |[a.b] 
+                |  c = 5
+                |  [a]
+                |      a = true
+            """.trimMargin(),
+            DecoderConf(true)
+        )
+        println(test)
+        assertEquals(ChildTableBeforeParent(A(B(5), true)), test)
     }
 }
