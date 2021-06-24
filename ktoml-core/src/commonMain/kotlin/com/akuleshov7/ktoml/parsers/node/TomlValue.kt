@@ -1,14 +1,23 @@
+/**
+ * All representations of TOML value nodes are stored in this file
+ */
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 
-
+/**
+ * Base class for all nodes that represent values
+ * @property lineNo - line number of original file
+ */
 sealed class TomlValue(val lineNo: Int) {
     abstract var content: Any
 }
 
+/**
+ * Toml AST Node for a representation of string values: key = "value" (always should have quotes due to TOML standard)
+ */
 class TomlString(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("\"") && content.endsWith("\"")) {
         val stringWithoutQuotes = content.trimQuotes()
@@ -68,22 +77,38 @@ class TomlString(content: String, lineNo: Int) : TomlValue(lineNo) {
     }
 }
 
+/**
+ * Toml AST Node for a representation of int types: key = 1
+ */
 class TomlInt(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = content.toInt()
 }
 
+/**
+ * Toml AST Node for a representation of float types: key = 1.01
+ */
 class TomlFloat(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = content.toFloat()
 }
 
+/**
+ * Toml AST Node for a representation of boolean types: key = true | false
+ */
 class TomlBoolean(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = content.toBoolean()
 }
 
+/**
+ * Toml AST Node for a representation of null:
+ * null, nil, NULL, NIL or empty (key = )
+ */
 class TomlNull(lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = "null"
 }
 
+/**
+ * Toml AST Node for a representation of arrays: key = [value1, value2, value3]
+ */
 class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
     override lateinit var content: Any
 
@@ -94,26 +119,28 @@ class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo)
 
     /**
      * small adaptor to make proper testing of parsing
+     *
+     * @return converted array to a list
      */
     fun parse(): List<Any> = rawContent.parse()
 
     /**
-     * recursively parse array
+     * recursively parse TOML array from the string
      */
     private fun String.parse(): List<Any> =
-        this.parseArray()
-            .map { it.trim() }
-            .map { if (it.startsWith("[")) it.parse() else it.parseValue(lineNo) }
-
+            this.parseArray()
+                .map { it.trim() }
+                .map { if (it.startsWith("[")) it.parse() else it.parseValue(lineNo) }
 
     /**
      * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]
      */
+    @Suppress("TOO_MANY_LINES_IN_LAMBDA")
     private fun String.parseArray(): MutableList<String> {
         var numberOfOpenBrackets = 0
         var numberOfClosedBrackets = 0
         var bufferBetweenCommas = StringBuilder()
-        val result = mutableListOf<String>()
+        val result: MutableList<String> = mutableListOf()
 
         this.trimBrackets().forEach {
             when (it) {

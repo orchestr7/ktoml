@@ -1,3 +1,5 @@
+@file:Suppress("FILE_WILDCARD_IMPORTS")
+
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.*
@@ -7,13 +9,16 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 import kotlinx.serialization.modules.*
 
+/**
+ * @property rootNode
+ * @property config
+ */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlDecoder(
     val rootNode: TomlNode,
     val config: DecoderConf,
 ) : AbstractDecoder() {
     private var elementIndex = 0
-
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeValue(): Any {
@@ -32,21 +37,10 @@ public class TomlDecoder(
     private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        fun iterateUntilWillFindAnyKnownName(): Int {
-            while (true) {
-                if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
-                val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
-                val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
-
-                elementIndex++
-                if (fieldWhereValueShouldBeInjected != CompositeDecoder.UNKNOWN_NAME) {
-                    return fieldWhereValueShouldBeInjected
-                }
-            }
-        }
-
         // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
-        if (isDecodingDone()) return CompositeDecoder.DECODE_DONE
+        if (isDecodingDone()) {
+            return CompositeDecoder.DECODE_DONE
+        }
 
         // FixMe: error here for missing fields that are not required
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
@@ -60,7 +54,7 @@ public class TomlDecoder(
             // OR in the input we had a technical node for empty tables (see the description to TomlStubEmptyNode)
             // then we need to iterate until we will find something known for us
             if (config.ignoreUnknownNames || currentNode is TomlStubEmptyNode) {
-                return iterateUntilWillFindAnyKnownName()
+                return iterateUntilWillFindAnyKnownName(descriptor)
             } else {
                 throw UnknownNameDecodingException(currentNode.name, currentNode.parent?.name)
             }
@@ -71,8 +65,24 @@ public class TomlDecoder(
         return fieldWhereValueShouldBeInjected
     }
 
+    private fun iterateUntilWillFindAnyKnownName(descriptor: SerialDescriptor): Int {
+        while (true) {
+            if (isDecodingDone()) {
+                return CompositeDecoder.DECODE_DONE
+            }
+            val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
+            val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
+
+            elementIndex++
+            if (fieldWhereValueShouldBeInjected != CompositeDecoder.UNKNOWN_NAME) {
+                return fieldWhereValueShouldBeInjected
+            }
+        }
+    }
+
     /**
      * straight-forward solution to check if we do not assign null to non-null fields
+     *
      * @param descriptor - serial descriptor of the current node that we would like to check
      */
     private fun checkNullability(
@@ -81,8 +91,8 @@ public class TomlDecoder(
         descriptor: SerialDescriptor
     ) {
         if (currentNode is TomlKeyValue &&
-            currentNode.value is TomlNull &&
-            !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
+                currentNode.value is TomlNull &&
+                !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
         ) {
             throw NonNullableValueException(
                 descriptor.getElementName(fieldWhereValueShouldBeInjected),
@@ -121,19 +131,16 @@ public class TomlDecoder(
                 "Missing child nodes (tales, key-values) for TomlFile." +
                         " Empty toml was provided to the input?"
             )
-
             TomlDecoder(firstChild, config)
         }
 
-        is TomlKeyValueList -> {
-            TomlListDecoder(rootNode, config)
-        }
+        is TomlKeyValueList -> TomlListDecoder(rootNode, config)
 
         // need to move on here, but also need to pass children into the function
         is TomlTable, is TomlKeyValueSimple, is TomlStubEmptyNode -> {
             // this is a little bit tricky index calculation, suggest not to change
             // we are using the previous node to get all neighbour nodes:
-            //                          (parentNode)
+            // (parentNode)
             // neighbourNodes: (current rootNode) (next node which we would like to use)
             val nextProcessingNode = rootNode
                 .getNeighbourNodes()
@@ -167,6 +174,12 @@ public class TomlDecoder(
     override fun decodeNotNullMark(): Boolean = decodeValue().toString().toLowerCase() != "null"
 
     companion object {
+        /**
+         * @param deserializer - deserializer provided by Kotlin compiler
+         * @param rootNode - root node for decoding (created after parsing)
+         * @param config - decoding configuration for parsing and serialization
+         * @return decoded (deserialized) object of type T
+         */
         fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,

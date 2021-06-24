@@ -8,10 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
-enum class NodeType {
-    STRING, NULL, INT, FLOAT, BOOLEAN, INCORRECT
-}
-
 class ValueParserTest {
     @Test
     fun parsingTest() {
@@ -20,7 +16,6 @@ class ValueParserTest {
         testTomlValue(Pair("a", "12.2345"), NodeType.FLOAT)
         testTomlValue(Pair("a", "true"), NodeType.BOOLEAN)
         testTomlValue(Pair("a", "false"), NodeType.BOOLEAN)
-
     }
 
     @Test
@@ -89,6 +84,9 @@ class ValueParserTest {
     }
 }
 
+enum class NodeType {
+    STRING, NULL, INT, FLOAT, BOOLEAN, INCORRECT
+}
 
 fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlString -> NodeType.STRING

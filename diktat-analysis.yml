@@ -5,6 +5,10 @@
     kotlinVersion: 1.4
     srcDirectories: "main,nativeMain"
     testDirs: "test,nativeTest,commonTest"
+- name: MISSING_KDOC_ON_FUNCTION
+  enabled: false
+- name: MISSING_KDOC_CLASS_ELEMENTS
+  enabled: false
 - name: ENUM_VALUE
   enabled: true
   configuration:

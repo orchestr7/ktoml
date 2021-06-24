@@ -1,8 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.parsers.node.TomlArray
 import com.akuleshov7.ktoml.parsers.node.TomlKeyValueList
-import com.akuleshov7.ktoml.parsers.node.TomlNode
 import com.akuleshov7.ktoml.parsers.node.TomlValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -11,6 +9,10 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
+/**
+ * @property rootNode
+ * @property config
+ */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlListDecoder(
     val rootNode: TomlKeyValueList,
@@ -18,9 +20,10 @@ public class TomlListDecoder(
 ) : AbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
+    override val serializersModule: SerializersModule = EmptySerializersModule
     private lateinit var currentElementDecoder: TomlScalarDecoder
 
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    private fun haveStartedReadingElements() = nextElementIndex > 0
 
     override fun decodeCollectionSize(descriptor: SerialDescriptor): Int = list.size
 
@@ -34,11 +37,8 @@ public class TomlListDecoder(
         return nextElementIndex++
     }
 
-    private val haveStartedReadingElements: Boolean
-        get() = nextElementIndex > 0
-
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        if (haveStartedReadingElements) {
+        if (haveStartedReadingElements()) {
             return currentElementDecoder
         }
         return super.beginStructure(descriptor)
