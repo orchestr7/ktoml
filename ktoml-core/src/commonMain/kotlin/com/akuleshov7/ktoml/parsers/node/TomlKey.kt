@@ -85,11 +85,9 @@ class TomlKey(val rawContent: String, val lineNo: Int) {
         }
     }
 
-    private fun Char.isLetterOrDigit(): Boolean {
-        return CharRange('A', 'Z').contains(this) ||
-               CharRange('a', 'z').contains(this) ||
-               CharRange('0', '9').contains(this)
-    }
+    private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||
+            CharRange('a', 'z').contains(this) ||
+            CharRange('0', '9').contains(this)
 
     /**
      * checking that we face a key in the following format: a."ab.c".my-key

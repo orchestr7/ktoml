@@ -1,6 +1,7 @@
 /**
  * All representations of TOML value nodes are stored in this file
  */
+
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.TomlParsingException

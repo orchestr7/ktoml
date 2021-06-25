@@ -85,7 +85,6 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
                     if (keyValue.key.isDotted) {
                         // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
                         // because table is the same as dotted key
-                        println(keyValue.key.keyParts)
                         val newTableSection = keyValue.createTomlTableFromDottedKey(currentParent)
                         tomlFileHead
                             .insertTableToTree(newTableSection)

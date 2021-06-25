@@ -11,7 +11,7 @@ class CommonParserTest {
     @Test
     @Ignore
     fun parseDottedKey() {
-        val result = TomlParser("a.\"a.b.c\".b.d = 123").parseString()
+        TomlParser("a.\"a.b.c\".b.d = 123").parseString()
         // FixMe: some dotted keys are incorrectly parsed
         throw IllegalArgumentException()
     }

@@ -240,7 +240,7 @@ class TomlTable(
         // FixMe: this is invalid for the following tables: "google.com" (it will be split now)
         val sectionsList = sectionFromContent.split(".")
         name = sectionsList.last()
-        tablesList = sectionsList.mapIndexed { index, secton ->
+        tablesList = sectionsList.mapIndexed { index, _ ->
             (0..index).map { sectionsList[it] }.joinToString(".")
         }
     }
