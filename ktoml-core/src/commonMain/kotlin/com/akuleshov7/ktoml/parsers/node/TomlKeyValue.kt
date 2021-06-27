@@ -113,13 +113,17 @@ fun List<String>.getKeyValuePart(
 fun String.parseValue(lineNo: Int) = when (this) {
     "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
     "true", "false" -> TomlBoolean(this, lineNo)
-    else -> try {
-        TomlInt(this, lineNo)
-    } catch (e: NumberFormatException) {
+    else -> if (this.startsWith("\"")) {
+        TomlBasicString(this, lineNo)
+    } else {
         try {
-            TomlFloat(this, lineNo)
+            TomlInt(this, lineNo)
         } catch (e: NumberFormatException) {
-            TomlString(this, lineNo)
+            try {
+                TomlFloat(this, lineNo)
+            } catch (e: NumberFormatException) {
+                TomlBasicString(this, lineNo)
+            }
         }
     }
 }

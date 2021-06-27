@@ -23,7 +23,7 @@ class GeneralDecoderTest {
     data class Regression(val general: General)
 
     @Serializable
-    data class General(val execCmd: String, val description: String)
+    data class General(val execCmd: String)
 
     @Serializable
     data class SimpleTomlCase(val table1: Table1)
@@ -331,13 +331,17 @@ class GeneralDecoderTest {
     }
 
     @Test
-    @Ignore
-    fun regressionTest() {
+    fun kotlinRegressionTest() {
         // this test is NOT failing on JVM but fails on mingw64 with 39 SYMBOLS and NOT failing with 38
-            deserialize<Regression>(
+            val test = deserialize<Regression>(
                 "[general] \n" +
-                        "execCmd = \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" \n" +
-                        "description = \"Test for diktat - linter and formater for Kotlin\""
+                        "execCmd = \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
             )
+        assertEquals(
+            Regression(
+                General("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+            ),
+            test
+        )
     }
 }

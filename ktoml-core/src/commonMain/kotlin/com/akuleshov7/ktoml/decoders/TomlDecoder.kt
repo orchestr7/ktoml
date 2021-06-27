@@ -27,7 +27,7 @@ public class TomlDecoder(
             is TomlKeyValueSimple -> node.value.content
             is TomlTable, is TomlFile -> node.children
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
-            // branch, we should throw an exception
+            // branch, we should throw an exception as it is not expected at all
             is TomlStubEmptyNode, is TomlKeyValueList ->
                 throw InternalDecodingException("Empty node or KeyValueList should not be processed in TomlDecoder")
         }
