@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.error
+import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.parsers.node.*
 import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
@@ -22,7 +22,7 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
             }
             return parseStringsToTomlNode(ktomlLinesFromFile)
         } catch (e: FileNotFoundException) {
-            "Not able to find toml-file in the following path: $toml".error()
+            println("Not able to find toml-file in the following path: $toml")
             throw e
         }
     }
@@ -45,14 +45,14 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
         }
 
         mutableKtomlLines.forEachIndexed { index, line ->
-            val lineno = index + 1
+            val lineNo = index + 1
             if (!line.isComment() && !line.isEmptyLine()) {
                 if (line.isTableNode()) {
-                    val tableSection = TomlTable(line, lineno)
+                    val tableSection = TomlTable(line, lineNo)
                     // if the table is the last line in toml, than it has no children and we need to
                     // add at least fake node as a child
                     if (index == mutableKtomlLines.size - 1) {
-                        tableSection.appendChild(TomlStubEmptyNode(lineno))
+                        tableSection.appendChild(TomlStubEmptyNode(lineNo))
                     }
 
                     val newParent = tomlFileHead.insertTableToTree(tableSection)
@@ -63,7 +63,11 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
                     }
                     currentParent = newParent
                 } else {
-                    val keyValue = TomlKeyValue(line, lineno, parserConf)
+                    val keyValue = line.parseTomlKeyValue(lineNo, parserConf)
+                    if (keyValue !is TomlNode)
+
+                        throw InternalAstException("All Toml nodes should always inherit TomlNode class")
+
                     if (keyValue.key.isDotted) {
                         // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
                         // because table is the same as dotted key
@@ -78,8 +82,18 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
                 }
             }
         }
-
         return tomlFileHead
+    }
+
+    /**
+     * factory adaptor to split the logic of parsing simple values from the logic of parsing collections (like Arrays)
+     */
+    private fun String.parseTomlKeyValue(lineNo: Int, parserConf: ParserConf): TomlKeyValue {
+        val keyValuePair = this.splitKeyValue(lineNo, parserConf)
+        return when {
+            keyValuePair.second.startsWith("[") -> TomlKeyValueList(keyValuePair, lineNo)
+            else -> TomlKeyValueSimple(keyValuePair, lineNo)
+        }
     }
 
     private fun String.isTableNode() = "\\[(.*?)]".toRegex().matches(this.trim())

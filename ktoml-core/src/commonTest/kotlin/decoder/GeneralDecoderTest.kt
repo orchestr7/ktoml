@@ -9,6 +9,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -16,6 +17,12 @@ class GeneralDecoderTest {
     enum class TestEnum {
         A, B
     }
+
+    @Serializable
+    data class Regression(val general: General)
+
+    @Serializable
+    data class General(val execCmd: String, val description: String)
 
     @Serializable
     data class SimpleTomlCase(val table1: Table1)
@@ -45,13 +52,17 @@ class GeneralDecoderTest {
     data class NestedSimpleTable(val c: Int, val table1: Table1)
 
     @Serializable
-    data class NullableValues(val a: Int?, val b: Table1?, val c: String?,
-                              val d: String?, val e: String?, val f: String?)
+    data class NullableValues(
+        val a: Int?, val b: Table1?, val c: String?,
+        val d: String?, val e: String?, val f: String?
+    )
 
     @Serializable
     data class ChildTableBeforeParent(val a: A)
+
     @Serializable
     data class A(val b: B, val a: Boolean)
+
     @Serializable
     data class B(val c: Int)
 
@@ -100,8 +111,10 @@ class GeneralDecoderTest {
     fun testUnknownFieldInToml() {
         assertFailsWith<UnknownNameDecodingException> {
             println("table3: (a:true, d:5, e:\"my test\", b:A, c:unknown)")
-            deserialize<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n" +
-                    " c = \"unknown\" \n e = \"my test\" \n b = \"A\" ")
+            deserialize<ComplexPlainTomlCase>(
+                "[table3] \n a = true \n d = 5 \n" +
+                        " c = \"unknown\" \n e = \"my test\" \n b = \"A\" "
+            )
         }
     }
 
@@ -301,5 +314,27 @@ class GeneralDecoderTest {
         )
         println(test)
         assertEquals(ChildTableBeforeParent(A(B(5), true)), test)
+    }
+
+    @Test
+    fun testIncorrectEnumValue() {
+        println("a:true, b:F, e: my string, d: 55")
+        assertFailsWith<InvalidEnumValueException> {
+            deserialize<Table3>(
+                "a = true \n" +
+                        " b = \"F\"\n" +
+                        " e = \"my string\"\n" +
+                        " d = 55"
+            )
+        }
+    }
+
+    @Test
+    fun regressionTest() {
+            deserialize<Regression>(
+                "[general] \n" +
+                        "execCmd = \"java -jar ktlint && java -jar ktlint -R diktat.0.6.2.jar\" \n" +
+                        "description = \"Test for diktat - linter and formater for Kotlin\""
+            )
     }
 }
