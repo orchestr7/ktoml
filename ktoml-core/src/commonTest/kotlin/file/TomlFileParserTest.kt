@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.exceptions.NonNullableValueException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import okio.ExperimentalFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -71,8 +72,9 @@ class TomlFileParserTest {
     @Serializable
     data class InnerTest(val str: String = "Undefined")
 
-    @ExperimentalSerializationApi
     @Test
+    @ExperimentalFileSystem
+    @ExperimentalSerializationApi
     fun testTableDiscovery() {
         val file = "src/commonTest/resources/complex_toml_tables.toml"
         // ==== reading from file

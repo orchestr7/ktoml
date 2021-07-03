@@ -6,11 +6,10 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 
-import okio.ExperimentalFileSystem
-
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import okio.ExperimentalFileSystem
 
 /**
  * KtomlSerializer class - is a general class, that should be used to serialize/deserialize TOML file or string
@@ -18,9 +17,9 @@ import kotlinx.serialization.modules.SerializersModule
  * @property config - configuration for the serialization
  * @property serializersModule - default overridden
  */
-@OptIn(ExperimentalSerializationApi::class, ExperimentalFileSystem::class)
+@ExperimentalSerializationApi
 public class KtomlSerializer(
-    val config: DecoderConf = DecoderConf(),
+    private val config: DecoderConf = DecoderConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
     // FixMe: need to fix code duplication here
@@ -50,6 +49,7 @@ public class KtomlSerializer(
      * @param tomlFilePath
      * @return decoded object of type T
      */
+    @ExperimentalFileSystem
     fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlFilePath: String): T {
         val parsedToml = TomlParser(tomlFilePath).readAndParseFile()
         return TomlDecoder.decode(deserializer, parsedToml, config)
@@ -61,6 +61,7 @@ public class KtomlSerializer(
      * @param tomlTableName
      * @return decoded object of type T
      */
+    @ExperimentalFileSystem
     fun <T> decodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,

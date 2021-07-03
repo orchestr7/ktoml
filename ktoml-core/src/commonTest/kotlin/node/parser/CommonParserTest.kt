@@ -3,19 +3,10 @@ package node.parser
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlArray
 import com.akuleshov7.ktoml.parsers.node.TomlBasicString
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CommonParserTest {
-    @Test
-    @Ignore
-    fun parseDottedKey() {
-        TomlParser("a.\"a.b.c\".b.d = 123").parseString()
-        // FixMe: some dotted keys are incorrectly parsed
-        throw IllegalArgumentException()
-    }
-
     @Test
     fun parseArray() {
         var highLevelValues = 0

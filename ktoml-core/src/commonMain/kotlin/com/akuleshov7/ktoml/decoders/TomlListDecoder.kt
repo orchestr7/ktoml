@@ -13,7 +13,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @property rootNode
  * @property config
  */
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
 public class TomlListDecoder(
     val rootNode: TomlKeyValueList,

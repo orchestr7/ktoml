@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimQuotes
 
 /**
@@ -11,7 +12,7 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
  * @property lineNo
  */
 class TomlKey(val rawContent: String, val lineNo: Int) {
-    val keyParts = splitKeyToTokens()
+    val keyParts = rawContent.splitKeyToTokens()
     val content = keyParts.last().trimQuotes().trim()
     val isDotted = isDottedKey()
 
@@ -31,32 +32,6 @@ class TomlKey(val rawContent: String, val lineNo: Int) {
                 lineNo
             )
         }
-    }
-
-    private fun splitKeyToTokens(): List<String> {
-        var singleQuoteIsClosed = true
-        var doubleQuoteIsClosed = true
-        val dotSeparatedParts: MutableList<String> = mutableListOf()
-        var currentPart = StringBuilder()
-        // simple split won't work here, because in such case we could break following keys:
-        // a."b.c.d".e (here only three tables: a/"b.c.d"/and e)
-        // ALSO removed quotes at the beginning and at the end of input
-        rawContent.forEach { ch ->
-            when (ch) {
-                '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
-                '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
-                '.' -> if (singleQuoteIsClosed && doubleQuoteIsClosed) {
-                    dotSeparatedParts.add(currentPart.toString())
-                    currentPart = StringBuilder()
-                } else {
-                    currentPart.append(ch)
-                }
-                else -> currentPart.append(ch)
-            }
-        }
-        // in the end of the word we should also add buffer to the list (as we haven't faced any dots)
-        dotSeparatedParts.add(currentPart.toString())
-        return dotSeparatedParts
     }
 
     /**
