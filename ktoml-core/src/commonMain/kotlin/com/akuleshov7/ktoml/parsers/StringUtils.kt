@@ -7,6 +7,7 @@ package com.akuleshov7.ktoml.parsers
 /**
  * Splitting dot-separated string to tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
+ *
  * @return list with strings after the initial string was split
  */
 fun String.splitKeyToTokens(): List<String> {

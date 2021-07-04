@@ -6,10 +6,11 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 
+import okio.ExperimentalFileSystem
+
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import okio.ExperimentalFileSystem
 
 /**
  * KtomlSerializer class - is a general class, that should be used to serialize/deserialize TOML file or string

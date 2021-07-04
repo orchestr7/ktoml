@@ -13,12 +13,12 @@ class DottedKeyParserTest {
 
         test = TomlKey("\"a.b.c\".b.c", 0)
         assertEquals("c", test.content)
-        assertEquals(listOf("a.b.c", "b", "c"), test.keyParts)
+        assertEquals(listOf("\"a.b.c\"", "b", "c"), test.keyParts)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"a\".b.c", 0)
         assertEquals("c", test.content)
-        assertEquals(listOf("a", "b", "c"), test.keyParts)
+        assertEquals(listOf("\"a\"", "b", "c"), test.keyParts)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"  a  \"", 0)

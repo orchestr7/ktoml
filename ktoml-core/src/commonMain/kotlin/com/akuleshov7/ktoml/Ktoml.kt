@@ -5,9 +5,11 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.DecoderConf
+
+import okio.ExperimentalFileSystem
+
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.serializer
-import okio.ExperimentalFileSystem
 
 /**
  * simple deserializer of a string in a toml format (separated by newlines)

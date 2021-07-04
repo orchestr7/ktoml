@@ -24,7 +24,7 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
      * Method for parsing of TOML file (reading line by line and parsing to a special TOML AST tree)
      *
      * @return the TomlFile root node
-     * @throws FileNotFoundException if the toml file is missing
+     * @throws e: FileNotFoundException if the toml file is missing
      */
     @ExperimentalFileSystem
     fun readAndParseFile(): TomlFile {
