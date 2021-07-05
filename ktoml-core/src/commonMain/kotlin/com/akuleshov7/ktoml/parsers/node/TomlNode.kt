@@ -1,29 +1,52 @@
+/**
+ * File contains all classes used in Toml AST node
+ */
+
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
-import com.akuleshov7.ktoml.parsers.ParserConf
 
-// Toml specification includes a list of supported data types: String, Integer, Float, Boolean, Datetime, Array, and Table.
+/**
+ * Base Node class for AST.
+ * Toml specification includes a list of supported data types:
+ * String, Integer, Float, Boolean, Datetime, Array, and Table.
+ *
+ * @property content - original node content (used for logging and tests only)
+ * @property lineNo - the number of a line from TOML that is linked to the current node
+ */
 sealed class TomlNode(open val content: String, open val lineNo: Int) {
+    open val children: MutableSet<TomlNode> = mutableSetOf()
+    open var parent: TomlNode? = null
+    abstract val name: String
     constructor(keyValuePair: Pair<String, String>, lineNo: Int) : this(
         "${keyValuePair.first}=${keyValuePair.second}",
         lineNo
     )
 
-    open val children: MutableSet<TomlNode> = mutableSetOf()
-    open var parent: TomlNode? = null
-    abstract val name: String
-
+    /**
+     * @return true if has no children
+     */
     fun hasNoChildren() = children.size == 0
+
+    /**
+     * @return first child or null
+     */
     fun getFirstChild() = children.elementAtOrNull(0)
+
+    /**
+     * @return all neighbours (all children of current node's parent)
+     */
     open fun getNeighbourNodes() = parent!!.children
 
     /**
      * This method performs tree traversal and returns all table Nodes that have proper name and are on the proper level
+     *
      * @param searchedTableName - name of the table without braces and trimmed
      * @param searchedLevel - level inside of the tree where this table is stored,
      *                        count of levels in a normal tree that has a TomlFile as a root usually starts from 0
+     * @param currentLevel
+     * @return a list of table nodes with the same name and that stay on the same level
      */
     protected fun findTableInAstByName(
         searchedTableName: String,
@@ -31,11 +54,11 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
         currentLevel: Int
     ): List<TomlTable> {
         val result =
-            if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
-                mutableListOf(this)
-            } else {
-                mutableListOf()
-            }
+                if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
+                    mutableListOf(this)
+                } else {
+                    mutableListOf()
+                }
         return result + this.children.flatMap {
             if (currentLevel + 1 <= searchedLevel) {
                 it.findTableInAstByName(searchedTableName, searchedLevel, currentLevel + 1)
@@ -48,6 +71,7 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
     /**
      * This method recursively finds child toml table with the proper name in AST.
      * Stops processing if AST is broken and it has more than one table with the searched name on the same level.
+     *
      * @param searchedTableName - the table name that is expected to be found in the list of children of this node
      * @param searchedLevel - the level of nested child node that is searched level (indexed from 1)
      *
@@ -57,6 +81,8 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
      *   a.c a.d
      *        \
      *        a.d.e
+     * @return table that was found or null in case of not found
+     * @throws TomlParsingException if found several tables with the same name
      */
     fun findTableInAstByName(searchedTableName: String, searchedLevel: Int): TomlTable? {
         val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0)
@@ -71,17 +97,18 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
     }
 
     /**
-     * Method inserts a table (section) to tree. It parses the section name and creates all missing nodes in the tree (even parental).
-     * for [a.b.c] it will create 3 nodes: a, b, and c
+     * Method inserts a table (section) to tree. It parses the section name and creates all missing nodes in the tree
+     * (even parental). For [a.b.c] it will create 3 nodes: a, b, and c
      *
      * @param tomlTable - a table (section) that should be inserted into the tree
+     * @return inserted table
      */
     fun insertTableToTree(tomlTable: TomlTable): TomlNode {
         // prevParentNode - saved node that is used in a chain
         var prevParentNode: TomlNode = this
         // [a.b.c.d] -> for each section node checking existing node in a tree
         // [a], [a.b], [a.b.c], [a.b.c.d] -> if any of them does not exist we create and insert that in a tree
-        //
+        // 
         // the only trick here is to save the link to the initial tomlTable (append it in the end)
         tomlTable.tablesList.forEachIndexed { level, tableName ->
             val foundTableName = this.findTableInAstByName(tableName, level + 1)
@@ -106,6 +133,9 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
         return prevParentNode
     }
 
+    /**
+     * @param child
+     */
     fun appendChild(child: TomlNode) {
         children.add(child)
         child.parent = this
@@ -118,6 +148,8 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
     /**
      * This method returns all available table names that can be found in this particular TOML file
      * (!) it will also return synthetic table nodes, that we generated to create a normal tree structure
+     *
+     * @return all detected toml tables
      */
     fun getAllChildTomlTables(): List<TomlTable> {
         val result = if (this is TomlTable) mutableListOf(this) else mutableListOf()
@@ -128,15 +160,22 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
 
     /**
      * find only real table nodes without synthetics
+     *
+     * @return all real table nodes
      */
     fun getRealTomlTables(): List<TomlTable> =
-        this.getAllChildTomlTables().filter { !it.isSynthetic }
-
+            this.getAllChildTomlTables().filter { !it.isSynthetic }
 
     companion object {
         // number of spaces that is used to indent levels
         const val INDENTING_LEVEL = 4
 
+        /**
+         * recursive print the tree using the current node
+         *
+         * @param node
+         * @param level
+         */
         fun prettyPrint(node: TomlNode, level: Int = 0) {
             val spaces = " ".repeat(INDENTING_LEVEL * level)
             println("$spaces - ${node::class.simpleName} (${node.content})")
@@ -147,19 +186,31 @@ sealed class TomlNode(open val content: String, open val lineNo: Int) {
     }
 }
 
+/**
+ * A root node for TOML Abstract Syntax Tree
+ */
 class TomlFile : TomlNode("rootNode", 0) {
     override val name = "rootNode"
 
     override fun getNeighbourNodes() =
-        throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
+            throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
 }
 
 /**
- * @property tablesList - a list of names of sections (tables) that are included into this particular TomlTable
+ * tablesList - a list of names of sections (tables) that are included into this particular TomlTable
  * @property isSynthetic - flag to determine that this node was synthetically and there are no such table in the input
  * for example: if the TomlTable is [a.b.c] this list will contain [a], [a.b], [a.b.c]
  */
-class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) : TomlNode(content, lineNo) {
+// FixMe: as diktat fixer can in some cases break the code (https://github.com/cqfn/diKTat/issues/966),
+// we will suppress this rule
+@Suppress("MULTIPLE_INIT_BLOCKS")
+class TomlTable(
+    content: String,
+    lineNo: Int,
+    val isSynthetic: Boolean = false) : TomlNode(content, lineNo) {
+    // list of tables ({a, b, c} in [a.b.c])
+    var tablesList: List<String>
+
     // short table name (only the name without parential prefix, like a)
     override val name: String
 
@@ -168,9 +219,9 @@ class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) 
 
     // number of nodes in current table (starting from 0)
     var level: Int
-    var tablesList: List<String>
 
     init {
+        // getting the content inside brackets ([a.b] -> a.b)
         val sectionFromContent = "\\[(.*?)]"
             .toRegex()
             .find(content)
@@ -189,14 +240,15 @@ class TomlTable(content: String, lineNo: Int, val isSynthetic: Boolean = false) 
         // FixMe: this is invalid for the following tables: "google.com" (it will be split now)
         val sectionsList = sectionFromContent.split(".")
         name = sectionsList.last()
-        tablesList = sectionsList.mapIndexed { index, secton ->
+        tablesList = sectionsList.mapIndexed { index, _ ->
             (0..index).map { sectionsList[it] }.joinToString(".")
         }
     }
 }
 
 /**
- * class for parsing
+ * class for parsing and storing Array in AST
+ * @property lineNo
  */
 class TomlKeyValueList(
     keyValuePair: Pair<String, String>,
@@ -207,6 +259,10 @@ class TomlKeyValueList(
     override val name: String = key.content
 }
 
+/**
+ * class for parsing and storing simple single value types in AST
+ * @property lineNo
+ */
 class TomlKeyValueSimple(
     keyValuePair: Pair<String, String>,
     override val lineNo: Int,

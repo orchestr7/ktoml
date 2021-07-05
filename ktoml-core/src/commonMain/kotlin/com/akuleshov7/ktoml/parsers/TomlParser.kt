@@ -1,18 +1,32 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.parsers.node.*
+import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValueList
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValueSimple
+import com.akuleshov7.ktoml.parsers.node.TomlNode
+import com.akuleshov7.ktoml.parsers.node.TomlStubEmptyNode
+import com.akuleshov7.ktoml.parsers.node.TomlTable
+import com.akuleshov7.ktoml.parsers.node.splitKeyValue
 import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path.Companion.toPath
 
 /**
- * @param toml - this argument can be a path to a toml file or a string in the toml format,
+ * @property toml - this argument can be a string with path to a toml file or a raw string in the toml format,
  * depending on how you plan to work with it.
+ * @property parserConf - object that stores configuration options for a parser
  */
+@OptIn(ExperimentalFileSystem::class)
 public class TomlParser(val toml: String, val parserConf: ParserConf = ParserConf()) {
-    @OptIn(ExperimentalFileSystem::class)
+    /**
+     * Method for parsing of TOML file (reading line by line and parsing to a special TOML AST tree)
+     *
+     * @return the TomlFile root node
+     * @throws e: FileNotFoundException if the toml file is missing
+     */
     fun readAndParseFile(): TomlFile {
         try {
             val ktomlPath = toml.toPath()
@@ -27,6 +41,11 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
         }
     }
 
+    /**
+     * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
+     *
+     * @return the root TomlFile node of the Tree that we have built after parsing
+     */
     fun parseString(): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
         val tomlString = toml.replace("\\r\\n", "\n")
@@ -34,15 +53,10 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
     }
 
     private fun parseStringsToTomlNode(ktomlLines: List<String>): TomlFile {
-        // FixMe: should be done in parallel
+        // FixMe: should be done in parallel somehow
         var currentParent: TomlNode = TomlFile()
         val tomlFileHead = currentParent as TomlFile
-        val mutableKtomlLines = ktomlLines.toMutableList()
-
-        // removing all empty lines at the end, to cover empty tables properly
-        while (mutableKtomlLines.last().isEmptyLine()) {
-            mutableKtomlLines.removeLast()
-        }
+        val mutableKtomlLines = ktomlLines.toMutableList().trimEmptyLines()
 
         mutableKtomlLines.forEachIndexed { index, line ->
             val lineNo = index + 1
@@ -64,9 +78,9 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
                     currentParent = newParent
                 } else {
                     val keyValue = line.parseTomlKeyValue(lineNo, parserConf)
-                    if (keyValue !is TomlNode)
-
+                    if (keyValue !is TomlNode) {
                         throw InternalAstException("All Toml nodes should always inherit TomlNode class")
+                    }
 
                     if (keyValue.key.isDotted) {
                         // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
@@ -83,6 +97,14 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
             }
         }
         return tomlFileHead
+    }
+
+    private fun MutableList<String>.trimEmptyLines(): MutableList<String> {
+        // removing all empty lines at the end, to cover empty tables properly
+        while (this.last().isEmptyLine()) {
+            this.removeLast()
+        }
+        return this
     }
 
     /**

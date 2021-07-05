@@ -1,8 +1,14 @@
+/**
+ * Gradle configuration for making a release to maven central
+ */
+
+@file:Suppress("FILE_WILDCARD_IMPORTS", "TOO_LONG_FUNCTION")
+
 package com.akuleshov7.buildutils
 
-import org.gradle.api.Project
-import io.github.gradlenexus.publishplugin.NexusPublishPlugin
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
+import io.github.gradlenexus.publishplugin.NexusPublishPlugin
+import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
@@ -13,6 +19,9 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 
+/**
+ * configuration for publishing to Nexus (will be used in build.gradle script)
+ */
 fun Project.configurePublishing() {
     // If present, set properties from env variables. If any are absent, release will fail.
     System.getenv("OSSRH_USERNAME")?.let {
@@ -63,13 +72,13 @@ fun Project.configurePublishing() {
                             }
                         }
                     }
-                }
+            }
         }
     }
 }
 
 private fun Project.configurePublications() {
-    val dokkaJar = tasks.create<Jar>("dokkaJar") {
+    val dokkaJar: Jar = tasks.create<Jar>("dokkaJar") {
         group = "documentation"
         archiveClassifier.set("javadoc")
         from(tasks.findByName("dokkaHtml"))
@@ -118,7 +127,8 @@ private fun Project.configureSigning() {
 private fun Project.configureNexusPublishing() {
     configure<NexusPublishExtension> {
         repositories {
-            sonatype {  //only for users registered in Sonatype after 24 Feb 2021
+            sonatype {
+                // only for users registered in Sonatype after 24 Feb 2021
                 nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
                 snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
                 username.set(property("sonatypeUsername") as String)

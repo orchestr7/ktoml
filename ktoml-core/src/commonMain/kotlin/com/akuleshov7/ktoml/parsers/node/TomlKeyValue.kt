@@ -3,17 +3,23 @@ package com.akuleshov7.ktoml.parsers.node
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.ParserConf
 
+/**
+ * Interface that contains all common methods that are used in KeyValue nodes
+ */
 interface TomlKeyValue {
     var key: TomlKey
     val value: TomlValue
     val lineNo: Int
 
     /**
-     * in TOML arrays have a very complex functionality (trailing commas, values of different types, e.t.c)
+     * in TOML specification arrays have a very complex functionality (trailing commas, values of different types, etdc)
+     * so we need a separate parser for these arrays
+     *
+     * @param contentStr
+     * @param lineNo
+     * @return an object of type Array that was parsed from string
      */
-    fun parseList(contentStr: String, lineNo: Int): TomlArray {
-        return TomlArray(contentStr, lineNo)
-    }
+    fun parseList(contentStr: String, lineNo: Int) = TomlArray(contentStr, lineNo)
 
     /**
      * this is a small hack to support dotted keys
@@ -21,6 +27,9 @@ interface TomlKeyValue {
      *  [a.b]
      *     c = "val"
      * and we will let our Table mechanism to do everything for us
+     *
+     * @param parentNode
+     * @return the table that is parsed from a dotted key
      */
     fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTable {
         // for a key: a.b.c it will be [a, b]
@@ -42,6 +51,14 @@ interface TomlKeyValue {
     }
 }
 
+/**
+ * parse and split a string in a key-value format
+ *
+ * @param lineNo
+ * @param parserConf
+ * @return a resulted key-value pair
+ * @throws TomlParsingException
+ */
 fun String.splitKeyValue(lineNo: Int, parserConf: ParserConf): Pair<String, String> {
     // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") (supported by the spec)
     val keyValue = this.substringBefore("#")
@@ -62,35 +79,47 @@ fun String.splitKeyValue(lineNo: Int, parserConf: ParserConf): Pair<String, Stri
 
 /**
  * method to get proper value from content to get key or value
+ *
+ * @param log
+ * @param index
+ * @param content
+ * @param parserConf
+ * @param lineNo
  */
-fun List<String>.getKeyValuePart(log: String, index: Int, content: String, parserConf: ParserConf, lineNo: Int) =
-    this[index].trim().also {
-        // key should never be empty, but the value can be empty (and treated as null)
-        // see the discussion: https://github.com/toml-lang/toml/issues/30
-        if ((!parserConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
-            throw TomlParsingException(
-                "Incorrect format of Key-Value pair. It has empty $log: $content",
-                lineNo
-            )
+fun List<String>.getKeyValuePart(
+    log: String,
+    index: Int,
+    content: String,
+    parserConf: ParserConf,
+    lineNo: Int) =
+        this[index].trim().also {
+            // key should never be empty, but the value can be empty (and treated as null)
+            // see the discussion: https://github.com/toml-lang/toml/issues/30
+            if ((!parserConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
+                throw TomlParsingException(
+                    "Incorrect format of Key-Value pair. It has empty $log: $content",
+                    lineNo
+                )
+            }
         }
-    }
-
 
 /**
- * parsing content of the string to the proper Node type (for date -> TomlDate, string -> TomlString, e.t.c)
+ * factory method for parsing content of the string to the proper Node type
+ * (for date -> TomlDate, string -> TomlString, e.t.c)
+ *
+ * @param lineNo
+ * @return parsed TomlNode value
  */
-fun String.parseValue(lineNo: Int): TomlValue {
-    return when (this) {
-        "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
-        "true", "false" -> TomlBoolean(this, lineNo)
-        else -> try {
-            TomlInt(this, lineNo)
+fun String.parseValue(lineNo: Int) = when (this) {
+    "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
+    "true", "false" -> TomlBoolean(this, lineNo)
+    else -> try {
+        TomlInt(this, lineNo)
+    } catch (e: NumberFormatException) {
+        try {
+            TomlFloat(this, lineNo)
         } catch (e: NumberFormatException) {
-            try {
-                TomlFloat(this, lineNo)
-            } catch (e: NumberFormatException) {
-                TomlString(this, lineNo)
-            }
+            TomlString(this, lineNo)
         }
     }
 }

@@ -20,7 +20,7 @@ fun Project.configureDiktat() {
         inputs = files(
             "src/**/*.kt"
         )
-        debug = true
+        excludes = files("src/commonTest")
     }
 }
 
@@ -36,6 +36,7 @@ fun Project.createDiktatTask() {
             inputs = files(
                 "$rootDir/buildSrc/src/**/*.kt"
             )
+            excludes = files("src/commonTest")
         }
     }
     tasks.register("diktatCheckAll") {

@@ -1,10 +1,14 @@
+/**
+ * Internal exceptions used in the project
+ */
+
+@file:Suppress("MISSING_KDOC_TOP_LEVEL")
+
 package com.akuleshov7.ktoml.exceptions
 
-open class KtomlException(message: String) : Exception(message)
+sealed class KtomlException(message: String) : Exception(message)
 
 class TomlParsingException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
-
-class InternalParsingException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
 
 class InternalDecodingException(message: String) : KtomlException(message)
 
