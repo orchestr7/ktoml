@@ -11,3 +11,6 @@
   
 After the release workflow has started, version number is determined from tag. Binaries are uploaded to maven repo and 
 a new github release is created with fat jar.
+
+* We are using both maven central and github to publish releases. 
+To prevent invalid files reaching Nexus you should manually promote releases in [staging](https://s01.oss.sonatype.org/#stagingRepositories)

@@ -19,7 +19,7 @@ sealed class TomlValue(val lineNo: Int) {
 /**
  * Toml AST Node for a representation of string values: key = "value" (always should have quotes due to TOML standard)
  */
-class TomlString(content: String, lineNo: Int) : TomlValue(lineNo) {
+class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("\"") && content.endsWith("\"")) {
         val stringWithoutQuotes = content.trimQuotes()
         checkOtherQuotesAreEscaped(stringWithoutQuotes)

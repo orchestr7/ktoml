@@ -5,7 +5,6 @@ import com.akuleshov7.ktoml.parsers.ParserConf
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 class ValueParserTest {
@@ -89,7 +88,7 @@ enum class NodeType {
 }
 
 fun getNodeType(v: TomlValue): NodeType = when (v) {
-    is TomlString -> NodeType.STRING
+    is TomlBasicString -> NodeType.STRING
     is TomlNull -> NodeType.NULL
     is TomlInt -> NodeType.INT
     is TomlFloat -> NodeType.FLOAT

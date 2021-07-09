@@ -2,7 +2,7 @@ package node.parser
 
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlArray
-import com.akuleshov7.ktoml.parsers.node.TomlString
+import com.akuleshov7.ktoml.parsers.node.TomlBasicString
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -24,10 +24,10 @@ class CommonParserTest {
 
         TomlArray("[[\"a\", [\"b\"]], \"c\", \"d\"]", 0).parse().forEach {
             when (it) {
-                is TomlString -> highLevelValues++
+                is TomlBasicString -> highLevelValues++
                 is List<*> -> it.forEach {
                     when (it) {
-                        is TomlString -> midLevelValues++
+                        is TomlBasicString -> midLevelValues++
                         is List<*> -> it.forEach {
                             lowLevelValues++
                         }

@@ -14,6 +14,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @property config
  */
 @OptIn(ExperimentalSerializationApi::class)
+@Suppress("UNCHECKED_CAST")
 public class TomlListDecoder(
     val rootNode: TomlKeyValueList,
     val config: DecoderConf,
