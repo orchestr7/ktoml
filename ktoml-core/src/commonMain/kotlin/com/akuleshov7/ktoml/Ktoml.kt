@@ -5,6 +5,9 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.DecoderConf
+
+import okio.ExperimentalFileSystem
+
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.serializer
 
@@ -15,7 +18,7 @@ import kotlinx.serialization.serializer
  * @param decoderConfig - optional config to configure extra options (not required)
  * @return deserialized object of type T
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T : Any> deserialize(
     request: String,
     decoderConfig: DecoderConf = DecoderConf()
@@ -30,7 +33,7 @@ inline fun <reified T : Any> deserialize(
  * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
  * @return deserialized object of type T
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T : Any> deserialize(
     request: String,
     tomlTableName: String,
@@ -44,7 +47,7 @@ inline fun <reified T : Any> deserialize(
  * @param decoderConfig - optional config to configure extra options (not required)
  * @return deserialized object of type T
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalFileSystem::class, ExperimentalSerializationApi::class)
 inline fun <reified T : Any> deserializeFile(
     tomlFilePath: String,
     decoderConfig: DecoderConf = DecoderConf()
@@ -59,7 +62,7 @@ inline fun <reified T : Any> deserializeFile(
  * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
  * @return deserialized object of type T
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalFileSystem::class, ExperimentalSerializationApi::class)
 inline fun <reified T : Any> deserializeFile(
     tomlFilePath: String,
     tomlTableName: String,

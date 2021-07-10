@@ -2,11 +2,13 @@ package decoder
 
 import com.akuleshov7.ktoml.decoders.DecoderConf
 import com.akuleshov7.ktoml.deserialize
+import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.test.decoder.GeneralDecoderTest
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @ExperimentalSerializationApi
 class DottedKeysDecoderTest {
@@ -143,6 +145,98 @@ class DottedKeysDecoderTest {
                       |f = 7
                       """.trimMargin(),
             DecoderConf(true)
+        )
+    }
+
+    @Serializable
+    data class DottedTable(
+        @SerialName("a")
+        val a1: AClass
+    )
+
+    @Serializable
+    data class AClass(
+        @SerialName("b.c..")
+        val bc1: BCClass,
+    )
+
+    @Serializable
+    data class BCClass(
+        @SerialName("val")
+        val variable: Int,
+        val d: DClass,
+        val inner: InnerClass
+    )
+
+    @Serializable
+    data class DClass(
+        @SerialName("e.f")
+        val ef: EFClass,
+    )
+
+    @Serializable
+    data class EFClass(
+        @SerialName("val")
+        val variable: Int
+    )
+
+    @Serializable
+    data class InnerClass(
+        @SerialName("val")
+        val variable: Int
+    )
+
+    @Test
+    fun dottedTableDecoder() {
+        assertEquals(
+            DottedTable(
+                a1 = AClass(
+                    bc1 = BCClass(
+                        variable = 2,
+                        d = DClass(ef = EFClass(variable = 1)),
+                        inner = InnerClass(variable = 3)
+                    )
+                )
+            ),
+            deserialize(
+                """
+            |[a."b.c..".d."e.f"]
+            |    val = 1
+            | [a]
+            | [a."b.c.."]
+            |    val = 2
+            | [a."b.c..".inner]
+            |    val = 3
+        """.trimMargin()
+            )
+        )
+    }
+
+    @Serializable
+    data class QuotedKey(val a: AQ)
+
+    @Serializable
+    data class AQ(
+        @SerialName("a.b.c")
+        val b: ABCQ
+    )
+
+    @Serializable
+    data class ABCQ(
+        @SerialName("b")
+        val b: BQ
+    )
+
+    @Serializable
+    data class BQ(
+        val d: Int
+    )
+
+    @Test
+    fun decodeQuotedKey() {
+        assertEquals(
+            QuotedKey(a = AQ(b = ABCQ(b = BQ(d = 123)))),
+            deserialize("a.\"a.b.c\".b.d = 123")
         )
     }
 }

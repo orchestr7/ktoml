@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 class PartialDecoderTest {
     @Serializable
     data class TwoTomlTables(val table1: Table1, val table2: Table2)

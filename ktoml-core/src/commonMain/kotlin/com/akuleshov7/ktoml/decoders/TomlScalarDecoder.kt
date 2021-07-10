@@ -10,7 +10,7 @@ import kotlinx.serialization.modules.SerializersModule
 /**
  * @property rootNode
  */
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 public class TomlScalarDecoder(
     val rootNode: TomlValue
 ) : AbstractDecoder() {

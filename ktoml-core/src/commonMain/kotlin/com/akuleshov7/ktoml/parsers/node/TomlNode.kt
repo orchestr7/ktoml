@@ -6,6 +6,8 @@ package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.parsers.splitKeyToTokens
+import com.akuleshov7.ktoml.parsers.trimQuotes
 
 /**
  * Base Node class for AST.
@@ -208,11 +210,14 @@ class TomlTable(
     content: String,
     lineNo: Int,
     val isSynthetic: Boolean = false) : TomlNode(content, lineNo) {
-    // list of tables ({a, b, c} in [a.b.c])
+    // list of tables that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
     var tablesList: List<String>
 
-    // short table name (only the name without parential prefix, like a)
+    // short table name (only the name without parential prefix, like a - it is used in decoder and encoder)
     override val name: String
+
+    // this name is used during the injection of the table to the AST
+    val nameWithQuotes: String
 
     // full name of the table (like a.b.c.d)
     var fullTableName: String
@@ -237,11 +242,12 @@ class TomlTable(
         fullTableName = sectionFromContent
         level = sectionFromContent.count { it == '.' }
 
-        // FixMe: this is invalid for the following tables: "google.com" (it will be split now)
-        val sectionsList = sectionFromContent.split(".")
-        name = sectionsList.last()
+        // FixMe: this is invalid for the following tables: cite."google.com" (it will be split now)
+        val sectionsList = sectionFromContent.splitKeyToTokens()
+        name = sectionsList.last().trimQuotes()
+        nameWithQuotes = sectionsList.last()
         tablesList = sectionsList.mapIndexed { index, _ ->
-            (0..index).map { sectionsList[it] }.joinToString(".")
+            (0..index).joinToString(".") { sectionsList[it] }
         }
     }
 }

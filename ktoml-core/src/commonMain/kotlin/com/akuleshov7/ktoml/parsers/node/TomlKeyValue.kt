@@ -34,20 +34,18 @@ interface TomlKeyValue {
     fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTable {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
-        // creating new key with the last dor-separated fragment
-        val realKeyWithoutDottedPrefix = TomlKey(key.keyParts.last(), lineNo)
+        // creating new key with the last dot-separated fragment
+        val realKeyWithoutDottedPrefix = TomlKey(key.content, lineNo)
         // updating current KeyValue with this key
         this.key = realKeyWithoutDottedPrefix
         // tables should contain fully qualified name, so we need to add parental name
         val parentalPrefix = if (parentNode is TomlTable) "${parentNode.fullTableName}." else ""
         // and creating a new table that will be created from dotted key
-        val newTable = TomlTable(
+        return TomlTable(
             "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",
             lineNo,
             true
         )
-
-        return newTable
     }
 }
 

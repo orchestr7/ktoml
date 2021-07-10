@@ -13,7 +13,7 @@ import kotlinx.serialization.modules.*
  * @property rootNode
  * @property config
  */
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 public class TomlDecoder(
     val rootNode: TomlNode,
     val config: DecoderConf,

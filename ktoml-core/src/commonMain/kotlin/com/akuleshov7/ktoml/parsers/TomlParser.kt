@@ -19,7 +19,6 @@ import okio.Path.Companion.toPath
  * depending on how you plan to work with it.
  * @property parserConf - object that stores configuration options for a parser
  */
-@OptIn(ExperimentalFileSystem::class)
 public class TomlParser(val toml: String, val parserConf: ParserConf = ParserConf()) {
     /**
      * Method for parsing of TOML file (reading line by line and parsing to a special TOML AST tree)
@@ -27,6 +26,7 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
      * @return the TomlFile root node
      * @throws e: FileNotFoundException if the toml file is missing
      */
+    @ExperimentalFileSystem
     fun readAndParseFile(): TomlFile {
         try {
             val ktomlPath = toml.toPath()

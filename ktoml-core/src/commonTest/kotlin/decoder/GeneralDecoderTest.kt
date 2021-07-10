@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 class GeneralDecoderTest {
     enum class TestEnum {
         A, B

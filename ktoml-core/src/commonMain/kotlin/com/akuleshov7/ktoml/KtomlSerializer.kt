@@ -18,9 +18,9 @@ import kotlinx.serialization.modules.SerializersModule
  * @property config - configuration for the serialization
  * @property serializersModule - default overridden
  */
-@OptIn(ExperimentalSerializationApi::class, ExperimentalFileSystem::class)
+@ExperimentalSerializationApi
 public class KtomlSerializer(
-    val config: DecoderConf = DecoderConf(),
+    private val config: DecoderConf = DecoderConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
     // FixMe: need to fix code duplication here
@@ -50,6 +50,7 @@ public class KtomlSerializer(
      * @param tomlFilePath
      * @return decoded object of type T
      */
+    @ExperimentalFileSystem
     fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlFilePath: String): T {
         val parsedToml = TomlParser(tomlFilePath).readAndParseFile()
         return TomlDecoder.decode(deserializer, parsedToml, config)
@@ -61,6 +62,7 @@ public class KtomlSerializer(
      * @param tomlTableName
      * @return decoded object of type T
      */
+    @ExperimentalFileSystem
     fun <T> decodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
