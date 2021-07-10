@@ -86,10 +86,12 @@ class TomlInt(content: String, lineNo: Int) : TomlValue(lineNo) {
 }
 
 /**
- * Toml AST Node for a representation of float types: key = 1.01
+ * Toml AST Node for a representation of float types: key = 1.01.
+ * Toml specification requires floating point numbers to be IEEE 754 binary64 values,
+ * so it should be Kotlin Double (64 bits)
  */
-class TomlFloat(content: String, lineNo: Int) : TomlValue(lineNo) {
-    override var content: Any = content.toFloat()
+class TomlDouble(content: String, lineNo: Int) : TomlValue(lineNo) {
+    override var content: Any = content.toDouble()
 }
 
 /**

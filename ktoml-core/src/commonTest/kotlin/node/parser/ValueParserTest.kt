@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.test.node.parser
 
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
-import com.akuleshov7.ktoml.parsers.ParserConf
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -68,7 +68,7 @@ class ValueParserTest {
 
         // regression test related to comments with an equals symbol after it
         val pairTest =
-            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, parserConf = ParserConf())
+            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
         assertEquals(1, TomlKeyValueSimple(pairTest, 0).value.content)
 
     }
@@ -76,9 +76,9 @@ class ValueParserTest {
 
     @Test
     fun parsingIssueValue() {
-        assertFailsWith<TomlParsingException> { "   a  = b = c".splitKeyValue(0, parserConf = ParserConf()) }
-        assertFailsWith<TomlParsingException> { " = false".splitKeyValue(0, parserConf = ParserConf()) }
-        assertFailsWith<TomlParsingException> { " just false".splitKeyValue(0, parserConf = ParserConf()) }
+        assertFailsWith<TomlParsingException> { "   a  = b = c".splitKeyValue(0, ktomlConf = KtomlConf()) }
+        assertFailsWith<TomlParsingException> { " = false".splitKeyValue(0, ktomlConf = KtomlConf()) }
+        assertFailsWith<TomlParsingException> { " just false".splitKeyValue(0, ktomlConf = KtomlConf()) }
         assertFailsWith<TomlParsingException> { TomlKeyValueSimple(Pair("a", "\"\\hello tworld\""), 0) }
     }
 }
@@ -91,7 +91,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlBasicString -> NodeType.STRING
     is TomlNull -> NodeType.NULL
     is TomlInt -> NodeType.INT
-    is TomlFloat -> NodeType.FLOAT
+    is TomlDouble -> NodeType.FLOAT
     is TomlBoolean -> NodeType.BOOLEAN
     else -> NodeType.INCORRECT
 }

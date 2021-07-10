@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers.node
 
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
-import com.akuleshov7.ktoml.parsers.ParserConf
 
 /**
  * Interface that contains all common methods that are used in KeyValue nodes
@@ -53,11 +53,11 @@ interface TomlKeyValue {
  * parse and split a string in a key-value format
  *
  * @param lineNo
- * @param parserConf
+ * @param ktomlConf
  * @return a resulted key-value pair
  * @throws TomlParsingException
  */
-fun String.splitKeyValue(lineNo: Int, parserConf: ParserConf): Pair<String, String> {
+fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String> {
     // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") (supported by the spec)
     val keyValue = this.substringBefore("#")
         .split("=")
@@ -65,13 +65,15 @@ fun String.splitKeyValue(lineNo: Int, parserConf: ParserConf): Pair<String, Stri
 
     if (keyValue.size != 2) {
         throw TomlParsingException(
-            "Incorrect format of Key-Value pair. Should be <key = value>, but was: $this",
+            "Incorrect format of Key-Value pair." +
+                    " Should be <key = value>, but was: $this." +
+                    " If you wanted to define table - use brackets []",
             lineNo
         )
     }
 
-    val keyStr = keyValue.getKeyValuePart("key", 0, this, parserConf, lineNo)
-    val valueStr = keyValue.getKeyValuePart("value", 1, this, parserConf, lineNo)
+    val keyStr = keyValue.getKeyValuePart("key", 0, this, ktomlConf, lineNo)
+    val valueStr = keyValue.getKeyValuePart("value", 1, this, ktomlConf, lineNo)
     return Pair(keyStr, valueStr)
 }
 
@@ -81,19 +83,19 @@ fun String.splitKeyValue(lineNo: Int, parserConf: ParserConf): Pair<String, Stri
  * @param log
  * @param index
  * @param content
- * @param parserConf
+ * @param ktomlConf
  * @param lineNo
  */
 fun List<String>.getKeyValuePart(
     log: String,
     index: Int,
     content: String,
-    parserConf: ParserConf,
+    ktomlConf: KtomlConf,
     lineNo: Int) =
         this[index].trim().also {
             // key should never be empty, but the value can be empty (and treated as null)
             // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!parserConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
+            if ((!ktomlConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
                 throw TomlParsingException(
                     "Incorrect format of Key-Value pair. It has empty $log: $content",
                     lineNo
@@ -118,7 +120,7 @@ fun String.parseValue(lineNo: Int) = when (this) {
             TomlInt(this, lineNo)
         } catch (e: NumberFormatException) {
             try {
-                TomlFloat(this, lineNo)
+                TomlDouble(this, lineNo)
             } catch (e: NumberFormatException) {
                 TomlBasicString(this, lineNo)
             }
