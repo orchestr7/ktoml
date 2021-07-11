@@ -13,7 +13,7 @@
 ![Run diKTat](https://github.com/akuleshov7/ktoml/actions/workflows/diktat.yml/badge.svg)
 
 Fully Native and Multiplatform Kotlin serialization library for serialization/deserialization of [toml](https://toml.io/en/) format.
-Uses native `kotlinx.serialization`, provided by Kotlin. This library contains no Java code and no Java dependencies.
+Uses native [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization), provided by Kotlin. This library contains no Java code and no Java dependencies.
 We believe that TOML is actually the most readable and user-friendly **configuration file** format.
 So we decided to support this format for the `kotlinx` serialization library.  
 
