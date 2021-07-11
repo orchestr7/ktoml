@@ -141,8 +141,8 @@ public class TomlDecoder(
         else -> {
             // this is a little bit tricky index calculation, suggest not to change
             // we are using the previous node to get all neighbour nodes:
-            // (parentNode)
-            // neighbourNodes: (current rootNode) (next node which we would like to use)
+            // | (parentNode)
+            // |--- neighbourNodes: (current rootNode) (next node which we would like to process now)
             val nextProcessingNode = rootNode
                 .getNeighbourNodes()
                 .elementAt(elementIndex - 1)
