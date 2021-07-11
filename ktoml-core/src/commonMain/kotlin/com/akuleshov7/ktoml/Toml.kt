@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml
 
-import com.akuleshov7.ktoml.decoders.DecoderConf
 import com.akuleshov7.ktoml.decoders.TomlDecoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
@@ -13,22 +12,31 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
- * KtomlSerializer class - is a general class, that should be used to serialize/deserialize TOML file or string
+ * KtomlSerializer class - is a general class in the core, that is used to serialize/deserialize TOML file or string
  *
  * @property config - configuration for the serialization
  * @property serializersModule - default overridden
  */
 @ExperimentalSerializationApi
-public class KtomlSerializer(
-    private val config: DecoderConf = DecoderConf(),
+class Toml(
+    private val config: KtomlConf = KtomlConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
+    // this is moved to properties to reduce the number of created classes for each toml
+    val tomlParser = TomlParser(config)
+
     // FixMe: need to fix code duplication here
-    // ================== decoders ===============
+    // ================== basic overrides ===============
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        val parsedToml = TomlParser(string).parseString()
+        val parsedToml = tomlParser.parseString(string)
         return TomlDecoder.decode(deserializer, parsedToml, config)
     }
+
+    override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
+        TODO("Not yet implemented")
+    }
+
+    // ================== custom decoding methods ===============
 
     /**
      * @param deserializer
@@ -36,7 +44,7 @@ public class KtomlSerializer(
      * @param tomlTableName
      * @return decoded object of type T
      */
-    fun <T> decodeFromString(
+    fun <T> partiallyDecodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: String,
         tomlTableName: String
@@ -52,7 +60,7 @@ public class KtomlSerializer(
      */
     @ExperimentalFileSystem
     fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlFilePath: String): T {
-        val parsedToml = TomlParser(tomlFilePath).readAndParseFile()
+        val parsedToml = TomlParser(config).readAndParseFile(tomlFilePath)
         return TomlDecoder.decode(deserializer, parsedToml, config)
     }
 
@@ -63,7 +71,7 @@ public class KtomlSerializer(
      * @return decoded object of type T
      */
     @ExperimentalFileSystem
-    fun <T> decodeFromFile(
+    fun <T> partiallyDecodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
         tomlTableName: String
@@ -73,12 +81,13 @@ public class KtomlSerializer(
         return TomlDecoder.decode(deserializer, fakeFileNode, config)
     }
 
+    @Suppress("TYPE_ALIAS")
     private fun generateFakeTomlStructureForPartialParsing(
         toml: String,
         tomlTableName: String,
-        parsingFunction: (TomlParser) -> TomlFile
+        parsingFunction: (TomlParser, String) -> TomlFile
     ): TomlFile {
-        val parsedToml = parsingFunction(TomlParser(toml))
+        val parsedToml = parsingFunction(TomlParser(config), toml)
             .findTableInAstByName(tomlTableName, tomlTableName.count { it == '.' } + 1)
             ?: throw MissingRequiredFieldException(
                 "Table with <$tomlTableName> name is missing in the toml input. " +
@@ -92,9 +101,5 @@ public class KtomlSerializer(
         }
 
         return fakeFileNode
-    }
-
-    override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        TODO("Not yet implemented")
     }
 }

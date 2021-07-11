@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
@@ -15,19 +16,18 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 
 /**
- * @property toml - this argument can be a string with path to a toml file or a raw string in the toml format,
- * depending on how you plan to work with it.
- * @property parserConf - object that stores configuration options for a parser
+ * @property ktomlConf - object that stores configuration options for a parser
  */
-public class TomlParser(val toml: String, val parserConf: ParserConf = ParserConf()) {
+public inline class TomlParser(val ktomlConf: KtomlConf) {
     /**
      * Method for parsing of TOML file (reading line by line and parsing to a special TOML AST tree)
      *
+     * @param toml - a string with path to a toml file
      * @return the TomlFile root node
      * @throws e: FileNotFoundException if the toml file is missing
      */
     @ExperimentalFileSystem
-    fun readAndParseFile(): TomlFile {
+    fun readAndParseFile(toml: String): TomlFile {
         try {
             val ktomlPath = toml.toPath()
             val ktomlLinesFromFile = FileSystem.SYSTEM.read(ktomlPath) {
@@ -44,9 +44,10 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
      *
+     * @param toml a raw string in the toml format with '\n' separator
      * @return the root TomlFile node of the Tree that we have built after parsing
      */
-    fun parseString(): TomlFile {
+    fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
         val tomlString = toml.replace("\\r\\n", "\n")
         return parseStringsToTomlNode(tomlString.split("\n"))
@@ -77,7 +78,7 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
                     }
                     currentParent = newParent
                 } else {
-                    val keyValue = line.parseTomlKeyValue(lineNo, parserConf)
+                    val keyValue = line.parseTomlKeyValue(lineNo, ktomlConf)
                     if (keyValue !is TomlNode) {
                         throw InternalAstException("All Toml nodes should always inherit TomlNode class")
                     }
@@ -110,8 +111,8 @@ public class TomlParser(val toml: String, val parserConf: ParserConf = ParserCon
     /**
      * factory adaptor to split the logic of parsing simple values from the logic of parsing collections (like Arrays)
      */
-    private fun String.parseTomlKeyValue(lineNo: Int, parserConf: ParserConf): TomlKeyValue {
-        val keyValuePair = this.splitKeyValue(lineNo, parserConf)
+    private fun String.parseTomlKeyValue(lineNo: Int, ktomlConf: KtomlConf): TomlKeyValue {
+        val keyValuePair = this.splitKeyValue(lineNo, ktomlConf)
         return when {
             keyValuePair.second.startsWith("[") -> TomlKeyValueList(keyValuePair, lineNo)
             else -> TomlKeyValueSimple(keyValuePair, lineNo)
