@@ -107,9 +107,11 @@ val result = /* string with a toml input */.deserializeToml<MyClass>()
 // to deserialize toml input from file (2)
 val result = /* string with path to a toml file */.deserializeTomlFile<MyClass>()
 
-// in case you need optimized code, you can create serialization object once (1): 
-val mySerializer = Toml()
-val result = mySerializer.deserializeToml<MyClass>( /* string with a toml input */ )
+// in case you need optimized code, you can create object of serialization class only once (1)
+// it is a useful optimization for loops 
+val myTomlSerializer = Toml()
+val resultFirst: MyClass1 = myTomlSerializer.decodeFromString(serializer(), /* string with a toml input */ )
+val resultSecond: MyClass2 = myTomlSerializer.decodeFromString(serializer(), /* string with a toml input */ )
 ```
 
 **Partial Deserialization:**
