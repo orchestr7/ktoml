@@ -11,13 +11,13 @@
 ![maintainability](https://api.codeclimate.com/v1/badges/c75d2d6b0d44cea7aefe/maintainability)
 
 Fully Native and Multiplatform Kotlin serialization library for serialization/deserialization of [toml](https://toml.io/en/) format.
-Uses native `kotlinx.serialization`, provided by Kotlin. This library contains no Java code or Java dependencies.
+Uses native `kotlinx.serialization`, provided by Kotlin. This library contains no Java code and no Java dependencies.
 We believe that TOML is actually the most readable and user-friendly **configuration file** format.
-So we decided to support this format in the kotlinx serialization library.  
+So we decided to support this format for the `kotlinx` serialization library.  
 
 ### Contribution
 As this young and big project [is needed](https://github.com/Kotlin/kotlinx.serialization/issues/1092) by the Kotlin community, we need your help.
-We will be glad if you will test `ktoml` or contribute to this project.
+We will be glad if you will test `ktoml` or contribute to this project. 
 In case you don't have much time for this - at least spend 5 seconds to give us a star to attract other contributors!
 **Thanks!** :pray:
 
@@ -29,7 +29,7 @@ However, to reduce the scope, ktoml now supports only the following platforms:
  - linuxx64
  - macosx64
 
-Other platforms could be added later on the demand or easily built by users.
+Other platforms could be added later on the demand or easily built by users on their machines.
 
 ## Current limitations
 **General** \
@@ -87,12 +87,12 @@ implementation("com.akuleshov7:ktoml-core:0.2.6")
 
 
 ## How to use
-:heavy_exclamation_mark: as TOML is a foremost configuration language, we also have supported the deserialization from file.
-However, to read the file we are using [okio](https://github.com/square/okio), so it will be added as a dependency.
+:heavy_exclamation_mark: as TOML is a foremost language for config files, we have also supported the deserialization from file.
+However, we are using [okio](https://github.com/square/okio) to read the file, so it will be added as a dependency to your project.
 
-:bangbang: there are two ways of calling TOML serialization API
-- Fast and mutable: you need to create a serialization instance once and call serialization methods on it later;
-- Slow and immutable: in case you need to read a few TOML configurations you can use String extension methods; 
+:bangbang: there are two ways of calling TOML serialization API:
+- Mutable: you need to create a serialization instance once and call serialization methods on it later (1);
+- Immutable: in case you need to read a few TOML configurations you can use String extension API methods (2); 
 
 **Deserialization:**
 ```kotlin
@@ -101,25 +101,25 @@ import com.akuleshov7.ktoml.deserialize
 @Serializable
 data class MyClass(/* your fields */)
 
-// to deserialize toml input in a string format (separated by newlines '\n')
+// to deserialize toml input in a string format (separated by newlines '\n') (2)
 val result = /* string with a toml input */.deserializeToml<MyClass>()
 
-// to deserialize toml input from file
+// to deserialize toml input from file (2)
 val result = /* string with path to a toml file */.deserializeTomlFile<MyClass>()
 
-// in case you need optimized code, you can create serialization object once:
+// in case you need optimized code, you can create serialization object once (1): 
 val mySerializer = Toml()
 val result = mySerializer.deserializeToml<MyClass>( /* string with a toml input */ )
 ```
 
 **Partial Deserialization:**
-Partial Deserialization is useful when you would like to deserialize only ONE table and you do not want
- to reproduce whole object structure in the code.
+Partial Deserialization can be useful when you would like to deserialize only **one single** table and you do not want 
+to reproduce whole object structure in your code.
  
 ```kotlin
-// if you need to deserialize only some part of the toml - provide the full name of the toml table 
-// the deserializer will work only with children of this table
-// For example if you have the following toml, but want only to decode [c.d.e.f]: 
+// If you need to deserialize only some part of the toml - provide the full name of the toml table. 
+// The deserializer will work only with this table and it's children.
+// For example if you have the following toml, but you want only to decode [c.d.e.f] table: 
 // [a]
 //   b = 1
 // [c.d.e.f]
@@ -133,8 +133,8 @@ val result = /* string with path to a toml file */.deserializeTomlFile<MyClassOn
 ```kotlin
 import com.akuleshov7.ktoml.parsers.TomlParser
 /* ========= */
-TomlParser(/* path to your file */).readAndParseFile()
-TomlParser(/* the string that you will try to parse */).parseString()
+TomlParser(KtomlConf()).readAndParseFile(/* path to your file */)
+TomlParser(KtomlConf()).parseString/* the string that you will try to parse */()
 ```
 
 ## How ktoml works: examples
@@ -195,7 +195,7 @@ with the following code:
 stringWhereTomlIsStored.deserialize<MyClass>()
 ```
 
-The example above in json-terminology:
+Translation of the example above to json-terminology:
 ```json
 {
   "someBooleanProperty": true,
