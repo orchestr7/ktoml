@@ -2,6 +2,7 @@
 
 package com.akuleshov7.ktoml.decoders
 
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlinx.serialization.*
@@ -16,7 +17,7 @@ import kotlinx.serialization.modules.*
 @ExperimentalSerializationApi
 public class TomlDecoder(
     val rootNode: TomlNode,
-    val config: DecoderConf,
+    val config: KtomlConf,
 ) : AbstractDecoder() {
     private var elementIndex = 0
     override val serializersModule: SerializersModule = EmptySerializersModule
@@ -124,34 +125,44 @@ public class TomlDecoder(
         }
     }
 
+    /**
+     * this method does all the iteration logic for processing code structures and collections
+     * treat it as an !entry point! and the orchestrator of the decoding
+     */
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
         is TomlFile -> {
             checkMissingRequiredField(rootNode.children, descriptor)
-            val firstChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
+            val firstFileChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
                 "Missing child nodes (tales, key-values) for TomlFile." +
                         " Empty toml was provided to the input?"
             )
-            TomlDecoder(firstChild, config)
+            TomlDecoder(firstFileChild, config)
         }
-
-        is TomlKeyValueList -> TomlListDecoder(rootNode, config)
-
-        // need to move on here, but also need to pass children into the function
-        is TomlTable, is TomlKeyValueSimple, is TomlStubEmptyNode -> {
+        else -> {
             // this is a little bit tricky index calculation, suggest not to change
             // we are using the previous node to get all neighbour nodes:
-            // (parentNode)
-            // neighbourNodes: (current rootNode) (next node which we would like to use)
+            // | (parentNode)
+            // |--- neighbourNodes: (current rootNode) (next node which we would like to process now)
             val nextProcessingNode = rootNode
                 .getNeighbourNodes()
                 .elementAt(elementIndex - 1)
-                .getFirstChild() ?: throw InternalDecodingException(
-                "Decoding process failed due to invalid structure of parsed AST tree: missing children"
-            )
 
-            checkMissingRequiredField(nextProcessingNode.getNeighbourNodes(), descriptor)
-
-            TomlDecoder(nextProcessingNode, config)
+            when (nextProcessingNode) {
+                is TomlKeyValueList -> TomlListDecoder(nextProcessingNode, config)
+                is TomlKeyValueSimple, is TomlStubEmptyNode -> TomlDecoder(nextProcessingNode, config)
+                is TomlTable -> {
+                    val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
+                        "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
+                                " in a table <${nextProcessingNode.fullTableName}>"
+                    )
+                    checkMissingRequiredField(firstTableChild.getNeighbourNodes(), descriptor)
+                    TomlDecoder(firstTableChild, config)
+                }
+                else -> throw InternalDecodingException(
+                    "Incorrect decdong state in the beginStructure()" +
+                            " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
+                )
+            }
         }
     }
 
@@ -183,7 +194,7 @@ public class TomlDecoder(
         fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,
-            config: DecoderConf = DecoderConf()
+            config: KtomlConf = KtomlConf()
         ): T {
             val decoder = TomlDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)

@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.test.file
 
-import com.akuleshov7.ktoml.deserializeFile
+import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.deserializeTomlFile
 import com.akuleshov7.ktoml.exceptions.NonNullableValueException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -50,7 +51,7 @@ class TomlFileParserTest {
                 "192.168.1.1"
             )
         )
-        assertEquals(test, deserializeFile("src/commonTest/resources/simple_example.toml"))
+        assertEquals(test, "src/commonTest/resources/simple_example.toml".deserializeTomlFile())
     }
 
     // ================
@@ -79,9 +80,9 @@ class TomlFileParserTest {
         val file = "src/commonTest/resources/complex_toml_tables.toml"
         // ==== reading from file
         val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
-        assertEquals(test, deserializeFile(file))
+        assertEquals(test, file.deserializeTomlFile())
         // ==== checking how table discovery works
-        val parsedResult = TomlParser(file).readAndParseFile()
+        val parsedResult = TomlParser(KtomlConf()).readAndParseFile(file)
         assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
     }
 
@@ -93,7 +94,7 @@ class TomlFileParserTest {
     fun regressionCast1Test() {
         assertFailsWith<NonNullableValueException> {
             val file = "src/commonTest/resources/class_cast_regression1.toml"
-            deserializeFile<RegressionTest>(file)
+            file.deserializeTomlFile<RegressionTest>()
         }
     }
 
@@ -101,7 +102,7 @@ class TomlFileParserTest {
     @Test
     fun regressionCast2Test() {
         val file = "src/commonTest/resources/class_cast_regression2.toml"
-        val parsedResult = deserializeFile<RegressionTest>(file)
+        val parsedResult = file.deserializeTomlFile<RegressionTest>()
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 }

@@ -4,8 +4,6 @@
 
 package com.akuleshov7.ktoml
 
-import com.akuleshov7.ktoml.decoders.DecoderConf
-
 import okio.ExperimentalFileSystem
 
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -14,57 +12,65 @@ import kotlinx.serialization.serializer
 /**
  * simple deserializer of a string in a toml format (separated by newlines)
  *
- * @param request - string in toml format with '\n' or '\r\n' separation
- * @param decoderConfig - optional config to configure extra options (not required)
+ * this: request-string in toml format with '\n' or '\r\n' separation
+ *
+ * @param ktomlConfig - optional config to configure extra options (not required)
  * @return deserialized object of type T
  */
 @OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T : Any> deserialize(
-    request: String,
-    decoderConfig: DecoderConf = DecoderConf()
-): T = KtomlSerializer(decoderConfig).decodeFromString(serializer(), request)
+inline fun <reified T : Any> String.deserializeToml(
+    ktomlConfig: KtomlConf = KtomlConf()
+): T = Toml(ktomlConfig).decodeFromString(serializer(), this)
 
 /**
- * partial deserializer of a string in a toml format (separated by newlines). Will deserialize only the part presented
- * under the tomlTableName table. If such table is missing in he input - will throw an exception
+ * partial deserializer of a string in a toml format (separated by newlines).
+ * Will deserialize only the part presented under the tomlTableName table.
+ * If such table is missing in he input - will throw an exception
  *
- * @param request - string in toml format with '\n' or '\r\n' separation
- * @param decoderConfig - optional config to configure extra options (not required)
+ * (!) Useful when you would like to deserialize only ONE table
+ * and you do not want to reproduce whole object structure in the code
+ *
+ * this: request-string in toml format with '\n' or '\r\n' separation
+ *
+ * @param ktomlConfig - optional config to configure extra options (not required)
  * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
  * @return deserialized object of type T
  */
 @OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T : Any> deserialize(
-    request: String,
+inline fun <reified T : Any> String.deserializeToml(
     tomlTableName: String,
-    decoderConfig: DecoderConf = DecoderConf()
-): T = KtomlSerializer(decoderConfig).decodeFromString(serializer(), request, tomlTableName)
+    ktomlConfig: KtomlConf = KtomlConf()
+): T = Toml(ktomlConfig).partiallyDecodeFromString(serializer(), this, tomlTableName)
 
 /**
  * simple deserializer of a file that contains toml. Reading file with okio native library
  *
- * @param tomlFilePath - path to the file where toml is stored
- * @param decoderConfig - optional config to configure extra options (not required)
+ * this: path to the file where toml is stored
+ *
+ * @param ktomlConfig - optional config to configure extra options (not required)
  * @return deserialized object of type T
  */
 @OptIn(ExperimentalFileSystem::class, ExperimentalSerializationApi::class)
-inline fun <reified T : Any> deserializeFile(
-    tomlFilePath: String,
-    decoderConfig: DecoderConf = DecoderConf()
-): T = KtomlSerializer(decoderConfig).decodeFromFile(serializer(), tomlFilePath)
+inline fun <reified T : Any> String.deserializeTomlFile(
+    ktomlConfig: KtomlConf = KtomlConf()
+): T = Toml(ktomlConfig).decodeFromFile(serializer(), this)
 
 /**
- * partial deserializer of a file that contains toml. Reading file with okio native library. Will deserialize only the part presented
- * under the tomlTableName table. If such table is missing in he input - will throw an exception.
+ * partial deserializer of a file that contains toml. Reading file with okio native library.
+ * Will deserialize only the part presented under the tomlTableName table.
+ * If such table is missing in he input - will throw an exception.
  *
- * @param tomlFilePath - path to the file where toml is stored
- * @param decoderConfig - optional config to configure extra options (not required)
+ * (!) Useful when you would like to deserialize only ONE table
+ * and you do not want to reproduce whole object structure in the code
+ *
+ * this: path to the file where toml is stored
+ *
+ * @param ktomlConfig - optional config to configure extra options (not required)
  * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
  * @return deserialized object of type T
  */
 @OptIn(ExperimentalFileSystem::class, ExperimentalSerializationApi::class)
-inline fun <reified T : Any> deserializeFile(
-    tomlFilePath: String,
+inline fun <reified T : Any> String.deserializeTomlFile(
     tomlTableName: String,
-    decoderConfig: DecoderConf = DecoderConf()
-): T = KtomlSerializer(decoderConfig).decodeFromFile(serializer(), tomlFilePath, tomlTableName)
+    ktomlConfig: KtomlConf = KtomlConf()
+): T = Toml(ktomlConfig).partiallyDecodeFromFile(serializer(), this, tomlTableName)
