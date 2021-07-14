@@ -18,10 +18,13 @@ class GeneralDecoderTest {
     }
 
     @Serializable
-    data class Regression(val general: General)
+    data class Regression<T>(val general: T)
 
     @Serializable
-    data class General(val execCmd: String)
+    data class General(val execCmd: String?)
+
+    @Serializable
+    data class GeneralInt(val execCmd: Int)
 
     @Serializable
     data class SimpleTomlCase(val table1: Table1)
@@ -100,7 +103,8 @@ class GeneralDecoderTest {
     @Test
     fun testForComplexTypesExceptionOnEnums() {
         println("table3: (a:true, d:5, e:\"my test\", b = A)")
-        val test = "[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"A\"".deserializeToml<ComplexPlainTomlCase>()
+        val test =
+            "[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"A\"".deserializeToml<ComplexPlainTomlCase>()
         println(test)
         assertEquals(ComplexPlainTomlCase(Table3(true, "my test", 5, b = TestEnum.A)), test)
     }
@@ -311,13 +315,52 @@ class GeneralDecoderTest {
     fun kotlinRegressionTest() {
         // this test is NOT failing on JVM but fails on mingw64 with 39 SYMBOLS and NOT failing with 38
         val test = ("[general] \n" +
-                "execCmd = \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"").deserializeToml<Regression>()
+                "execCmd = \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"")
+            .deserializeToml<Regression<General>>()
 
         assertEquals(
             Regression(
                 General("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             ),
             test
+        )
+    }
+
+    @Test
+    fun commentParsingTest() {
+        assertEquals(
+            Regression(General("dgfdgfd # f # hi")),
+            """
+            [general]
+            execCmd = "dgfdgfd # f # hi"
+        """.trimIndent().deserializeToml<Regression<General>>(),
+        )
+
+        assertEquals(
+            Regression(General(null)),
+
+            """
+            [general]
+            execCmd = # hello
+        """.trimIndent().deserializeToml<Regression<General>>(),
+        )
+
+        assertEquals(
+            Regression(General(" hello ")),
+
+            """
+            [general]
+            execCmd = " hello " # hello
+        """.trimIndent().deserializeToml<Regression<General>>(),
+        )
+
+        assertEquals(
+            Regression(GeneralInt(0)),
+
+            """
+            [general]
+            execCmd = 0 # hello
+        """.trimIndent().deserializeToml<Regression<GeneralInt>>(),
         )
     }
 }

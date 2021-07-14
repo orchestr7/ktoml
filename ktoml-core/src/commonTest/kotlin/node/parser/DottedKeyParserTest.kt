@@ -1,8 +1,10 @@
 package com.akuleshov7.ktoml.test.node.parser
 
+import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class DottedKeyParserTest {
     @Test
@@ -29,13 +31,15 @@ class DottedKeyParserTest {
         assertEquals("c", test.content)
         assertEquals(true, test.isDotted)
 
-        test = TomlKey("a.\"  b .c \"", 0)
-        assertEquals("b .c", test.content)
+        test = TomlKey("a.\"  b  .c \"", 0)
+        assertEquals("b  .c", test.content)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a  .  b .  c ", 0)
         assertEquals("c", test.content)
         assertEquals(true, test.isDotted)
+
+        assertFailsWith<TomlParsingException> { TomlKey("SPACE AND SPACE", 0) }
     }
 
     @Test

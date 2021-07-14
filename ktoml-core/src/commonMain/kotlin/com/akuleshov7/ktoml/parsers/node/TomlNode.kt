@@ -242,8 +242,7 @@ class TomlTable(
         fullTableName = sectionFromContent
         level = sectionFromContent.count { it == '.' }
 
-        // FixMe: this is invalid for the following tables: cite."google.com" (it will be split now)
-        val sectionsList = sectionFromContent.splitKeyToTokens()
+        val sectionsList = sectionFromContent.splitKeyToTokens(lineNo)
         name = sectionsList.last().trimQuotes()
         nameWithQuotes = sectionsList.last()
         tablesList = sectionsList.mapIndexed { index, _ ->

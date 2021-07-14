@@ -58,8 +58,16 @@ interface TomlKeyValue {
  * @throws TomlParsingException
  */
 fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String> {
-    // FixMe: need to cover a case, when '#' symbol is used inside the string ( a = "# hi") (supported by the spec)
-    val keyValue = this.substringBefore("#")
+    // finding the index of the last quote, if no quotes are found, then use the length of the string
+    val closingQuoteIndex = listOf(
+        this.lastIndexOf("\""),
+        this.lastIndexOf("\'"),
+        this.lastIndexOf("\"\"\"")
+    ).filterNot { it == -1 }.maxOrNull() ?: 0
+
+    val firstHash = (closingQuoteIndex until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
+
+    val keyValue = this.substring(0, firstHash)
         .split("=")
         .map { it.trim() }
 
@@ -91,7 +99,8 @@ fun List<String>.getKeyValuePart(
     index: Int,
     content: String,
     ktomlConf: KtomlConf,
-    lineNo: Int) =
+    lineNo: Int
+) =
         this[index].trim().also {
             // key should never be empty, but the value can be empty (and treated as null)
             // see the discussion: https://github.com/toml-lang/toml/issues/30

@@ -26,11 +26,11 @@ public class TomlDecoder(
         val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
         return when (node) {
             is TomlKeyValueSimple -> node.value.content
-            is TomlTable, is TomlFile -> node.children
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception as it is not expected at all
-            is TomlStubEmptyNode, is TomlKeyValueList ->
-                throw InternalDecodingException("Empty node or KeyValueList should not be processed in TomlDecoder")
+            is TomlStubEmptyNode, is TomlKeyValueList, is TomlTable, is TomlFile ->
+                throw InternalDecodingException("This kind of node should not be processed in" +
+                        " TomlDecoder.decodeValue(): $node")
         }
     }
 
