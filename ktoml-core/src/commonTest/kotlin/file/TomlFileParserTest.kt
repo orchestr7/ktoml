@@ -10,6 +10,7 @@ import okio.ExperimentalFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class TomlFileParserTest {
     @Serializable
@@ -104,5 +105,75 @@ class TomlFileParserTest {
         val file = "src/commonTest/resources/class_cast_regression2.toml"
         val parsedResult = file.deserializeTomlFile<RegressionTest>()
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
+    }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun regressionPartialTest() {
+        val file = "src/commonTest/resources/class_cast_regression2.toml"
+        val parsedResult = file.deserializeTomlFile<RegressionTest>()
+        assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
+    }
+
+
+    @Serializable
+    data class TestRegression(
+        val list1: List<Double>,
+        val general: GeneralConfig,
+        val list2: List<Int>,
+        val warn: WarnConfig,
+        val list3: List<String>
+    )
+
+    @Serializable
+    data class GeneralConfig(
+        val execCmd: String? = null,
+        val tags: List<String>? = null,
+        val description: String? = null,
+        val suiteName: String? = null,
+        val excludedTests: List<String>? = null,
+        val includedTests: List<String>? = null,
+        val ignoreSaveComments: Boolean? = null
+    )
+
+    @Serializable
+    data class WarnConfig(
+        val list: List<String>
+    )
+
+    @ExperimentalSerializationApi
+    @Test
+    fun regressionInvalidIndex() {
+        val file = "src/commonTest/resources/partial_parser_regression.toml"
+        assertEquals(
+            GeneralConfig(
+                execCmd = "echo hello world",
+                tags = listOf("Tag", "Other tag"),
+                description = "My description",
+                suiteName = "DocsCheck",
+                excludedTests = null,
+                includedTests = null,
+                ignoreSaveComments = null
+            ),
+            file.deserializeTomlFile<GeneralConfig>("general")
+        )
+        assertEquals(
+            TestRegression(
+                list1 = listOf(1.0, 2.0),
+                general = GeneralConfig(
+                    execCmd = "echo hello world",
+                    tags = listOf("Tag", "Other tag"),
+                    description = "My description",
+                    suiteName = "DocsCheck",
+                    excludedTests = null,
+                    includedTests = null,
+                    ignoreSaveComments = null
+                ),
+                list2 = listOf(1, 3, 5),
+                warn = WarnConfig(list = listOf("12a", "12f")),
+                list3 = listOf("mystr", "2", "3")
+            ),
+            file.deserializeTomlFile<TestRegression>()
+        )
     }
 }
