@@ -65,7 +65,6 @@ fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String
         this.lastIndexOf("\"\"\"")
     ).filterNot { it == -1 }.maxOrNull() ?: 0
 
-
     val firstHash = (closingQuoteIndex until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
 
     val keyValue = this.substring(0, firstHash)
@@ -102,14 +101,15 @@ fun List<String>.getKeyValuePart(
     ktomlConf: KtomlConf,
     lineNo: Int
 ) =
-    this[index].trim().also {
-        // key should never be empty, but the value can be empty (and treated as null)
-        // see the discussion: https://github.com/toml-lang/toml/issues/30
-        if ((!ktomlConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
-            throw TomlParsingException(
-                "Incorrect format of Key-Value pair. It has empty $log: $content",
-                lineNo
-            )
+        this[index].trim().also {
+            // key should never be empty, but the value can be empty (and treated as null)
+            // see the discussion: https://github.com/toml-lang/toml/issues/30
+            if ((!ktomlConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
+                throw TomlParsingException(
+                    "Incorrect format of Key-Value pair. It has empty $log: $content",
+                    lineNo
+                )
+            }
         }
     }
 
