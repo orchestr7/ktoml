@@ -95,8 +95,8 @@ public class TomlDecoder(
         descriptor: SerialDescriptor
     ) {
         if (currentNode is TomlKeyValue &&
-            currentNode.value is TomlNull &&
-            !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
+                currentNode.value is TomlNull &&
+                !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
         ) {
             throw NonNullableValueException(
                 descriptor.getElementName(fieldWhereValueShouldBeInjected),

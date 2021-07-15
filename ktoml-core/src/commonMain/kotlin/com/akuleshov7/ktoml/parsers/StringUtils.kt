@@ -10,6 +10,7 @@ import com.akuleshov7.ktoml.exceptions.TomlParsingException
  * Splitting dot-separated string to tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
  *
+ * @param lineNo - the line number in toml
  * @return list with strings after the initial string was split
  */
 fun String.splitKeyToTokens(lineNo: Int): List<String> {
@@ -65,17 +66,6 @@ fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
  */
 fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
 
-private fun trimSymbols(
-    str: String,
-    prefix: String,
-    suffix: String
-): String {
-    if (str.startsWith(prefix) && str.endsWith(suffix)) {
-        return str.removePrefix(prefix).removeSuffix(suffix)
-    }
-    return str
-}
-
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
         throw TomlParsingException(
@@ -108,18 +98,16 @@ private fun String.validateSymbols(lineNo: Int) {
         when (ch) {
             '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
             '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
-            else -> {
-                if (doubleQuoteIsClosed && singleQuoteIsClosed &&
+            else -> if (doubleQuoteIsClosed && singleQuoteIsClosed &&
                     // FixMe: isLetterOrDigit is not supported in Kotlin 1.4, but 1.5 is not compiling right now
                     !setOf('_', '-', '.', '"', '\'', ' ', '\t').contains(ch) && !ch.isLetterOrDigit()
-                ) {
-                    throw TomlParsingException(
-                        "Not able to parse the key: [$this] as it contains invalid symbols." +
-                                " In case you would like to use special symbols - use quotes as" +
-                                " it is required by TOML standard: \"My key ~ with special % symbols\"",
-                        lineNo
-                    )
-                }
+            ) {
+                throw TomlParsingException(
+                    "Not able to parse the key: [$this] as it contains invalid symbols." +
+                            " In case you would like to use special symbols - use quotes as" +
+                            " it is required by TOML standard: \"My key ~ with special % symbols\"",
+                    lineNo
+                )
             }
         }
     }
@@ -130,3 +118,14 @@ private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||
         CharRange('0', '9').contains(this)
 
 private fun String.isNotQuoted() = !(this.startsWith("\"") && this.endsWith("\""))
+
+private fun trimSymbols(
+    str: String,
+    prefix: String,
+    suffix: String
+): String {
+    if (str.startsWith(prefix) && str.endsWith(suffix)) {
+        return str.removePrefix(prefix).removeSuffix(suffix)
+    }
+    return str
+}

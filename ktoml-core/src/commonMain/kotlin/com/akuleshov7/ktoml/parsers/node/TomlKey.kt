@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.parsers.node
 
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimQuotes
 
@@ -12,7 +11,6 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
  * @property lineNo
  */
 class TomlKey(val rawContent: String, val lineNo: Int) {
-
     val keyParts = rawContent.splitKeyToTokens(lineNo)
     val content = keyParts.last().trimQuotes().trim()
     val isDotted = isDottedKey()
