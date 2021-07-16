@@ -1,6 +1,7 @@
 package decoder
 
-import com.akuleshov7.ktoml.deserializeToml
+import com.akuleshov7.ktoml.Toml
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -51,7 +52,6 @@ class ReadMeExampleTest {
             |otherNumber = 5.56
             |       
             """.trimMargin()
-                .deserializeToml<MyClass>()
 
         assertEquals(
             MyClass(
@@ -63,7 +63,7 @@ class ReadMeExampleTest {
                     otherNumber = 5.56
                 )
             ),
-            test
+            Toml.decodeFromString(test)
         )
     }
 }

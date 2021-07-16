@@ -1,6 +1,7 @@
 package decoder
 
-import com.akuleshov7.ktoml.deserializeToml
+import com.akuleshov7.ktoml.Toml
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
@@ -50,8 +51,8 @@ data class TestArraysAndSimple(
 class SimpleArrayDecoderTest {
     @Test
     fun testSimpleArrayDecoder() {
-        val test = "a = [1, 2,      3]".deserializeToml<SimpleArray>()
-        assertEquals(SimpleArray(listOf(1, 2, 3)), test)
+        val test = "a = [1, 2,      3]"
+        assertEquals(SimpleArray(listOf(1, 2, 3)), Toml.decodeFromString(test))
     }
 
     @Test
@@ -61,14 +62,11 @@ class SimpleArrayDecoderTest {
             |name = "my name"
             |configurationList = ["a",  "b",  "c"]
             """.trimMargin()
-            .deserializeToml<ArrayInInlineTable>()
-
-        println(test)
 
         assertEquals(
             ArrayInInlineTable(
                 table = InlineTable(name = "my name", overriddenName = listOf("a", "b", "c"))
-            ), test
+            ), Toml.decodeFromString(test)
         )
 
         test =
@@ -77,14 +75,11 @@ class SimpleArrayDecoderTest {
             |configurationList = ["a",  "b",  "c"]
             |name = "my name"
             """.trimMargin()
-                .deserializeToml<ArrayInInlineTable>()
-
-        println(test)
 
         assertEquals(
             ArrayInInlineTable(
                 table = InlineTable(name = "my name", overriddenName = listOf("a", "b", "c"))
-            ), test
+            ), Toml.decodeFromString(test)
         )
 
         val testTable = """
@@ -93,16 +88,13 @@ class SimpleArrayDecoderTest {
             |[table]
             |name = "my name"
             """.trimMargin()
-            .deserializeToml<TestArrays>()
-
-        println(testTable)
 
         assertEquals(
             TestArrays(
                 overriddenName1 = listOf("a", "b", "c"),
                 overriddenName2 = listOf("a", "b", "c"),
                 table = Table(name = "my name")
-            ), testTable
+            ), Toml.decodeFromString(testTable)
         )
 
         val testTableAndVariables = """
@@ -113,15 +105,13 @@ class SimpleArrayDecoderTest {
             |[table]
             |name = "my name"
             """.trimMargin()
-            .deserializeToml<TestArraysAndSimple>()
 
-        println(testTableAndVariables)
 
         assertEquals(
             TestArraysAndSimple(
                 name1 = "simple", overriddenName1 = listOf("a", "b", "c"),
                 overriddenName2 = listOf("a", "b", "c"), table = Table(name = "my name"), name2 = "simple"
-            ), testTableAndVariables
+            ), Toml.decodeFromString(testTableAndVariables)
         )
     }
 
@@ -129,7 +119,7 @@ class SimpleArrayDecoderTest {
     @Ignore
     fun testNestedArrayDecoder() {
         // FixMe: nested array decoding causes issues and is not supported yet
-        val test = "a = [[1, 2],      [3,  4]]".deserializeToml<NestedArray>()
-        assertEquals(NestedArray(listOf(listOf(1, 2), listOf(3, 4))), test)
+        val test = "a = [[1, 2],      [3,  4]]"
+        assertEquals(NestedArray(listOf(listOf(1, 2), listOf(3, 4))), Toml.decodeFromString(test))
     }
 }

@@ -92,28 +92,22 @@ implementation("com.akuleshov7:ktoml-core:0.2.6")
 :heavy_exclamation_mark: as TOML is a foremost language for config files, we have also supported the deserialization from file.
 However, we are using [okio](https://github.com/square/okio) to read the file, so it will be added as a dependency to your project.
 
-:bangbang: there are two ways of calling TOML serialization API:
-- Mutable: you need to create a serialization instance once and call serialization methods on it later (1);
-- Immutable: in case you need to read a few TOML configurations you can use String extension API methods (2); 
-
 **Deserialization:**
 ```kotlin
+// include extensions from 'kotlinx' lib to improve user experience 
+import kotlinx.serialization.decodeFromString
 import com.akuleshov7.ktoml.deserialize
-/* ========= */
+
 @Serializable
 data class MyClass(/* your fields */)
 
-// to deserialize toml input in a string format (separated by newlines '\n') (2)
-val result = /* string with a toml input */.deserializeToml<MyClass>()
+// to deserialize toml input in a string format (separated by newlines '\n')
+// no need to provide serializer explicitly if you will use extentio method from
+// <kotlinx.serialization.decodeFromString> 
+val result = Toml.decodeFromString<MyClass>(/* string with a toml input */)
 
-// to deserialize toml input from file (2)
-val result = /* string with path to a toml file */.deserializeTomlFile<MyClass>()
-
-// in case you need optimized code, you can create object of serialization class only once (1)
-// it is a useful optimization for loops 
-val myTomlSerializer = Toml()
-val result1: MyClass1 = myTomlSerializer.decodeFromString(serializer(), /* string with a toml input */)
-val result2: MyClass2 = myTomlSerializer.decodeFromString(serializer(), /* string with a toml input */)
+// to deserialize toml input from file
+val result = Toml.decodeTomlFile<MyClass>(/* string with toml path */)
 ```
 
 **Partial Deserialization:** \
@@ -129,16 +123,17 @@ to reproduce whole object structure in your code.
 // [c.d.e.f]
 //   d = "5"
 
-val result = /* string with a toml input */.deserializeToml<MyClassOnlyForTable>("c.d.e.f")
-val result = /* string with path to a toml file */.deserializeTomlFile<MyClassOnlyForTable>("c.d.e.f")
+val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /* string with a toml input */, "c.d.e.f")
+val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /* string with toml path */, "c.d.e.f")
 ```
 
 **Parser to AST:**
 ```kotlin
 import com.akuleshov7.ktoml.parsers.TomlParser
 /* ========= */
-TomlParser(KtomlConf()).readAndParseFile(/* path to your file */)
-TomlParser(KtomlConf()).parseString(/* the string that you will try to parse */)
+var tomlAST = TomlParser(KtomlConf()).readAndParseFile(/* path to your file */)
+tomlAST = TomlParser(KtomlConf()).parseString(/* the string that you will try to parse */)
+tomlAST.prettyPrint()
 ```
 
 ## How ktoml works: examples
@@ -196,7 +191,7 @@ can be deserialized to `MyClass`:
 
 with the following code:
 ```kotlin
-stringWhereTomlIsStored.deserialize<MyClass>()
+Toml.decodeFromString<MyClass>(/* toml string */)
 ```
 
 Translation of the example above to json-terminology:

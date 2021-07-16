@@ -1,9 +1,9 @@
 package com.akuleshov7.ktoml.test.decoder
 
-import com.akuleshov7.ktoml.deserializeToml
-import com.akuleshov7.ktoml.deserializeTomlFile
+import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -20,17 +20,26 @@ class PartialDecoderTest {
 
     @Test
     fun testPartialDecoding() {
-        val test = TwoTomlTables(Table1(1, 2), Table2(1,2,3))
-        assertEquals(test.table1,
-            "[table1] \n a = 1 \n b = 2 \n [table2] \n c = 1 \n e = 2 \n d = 3".deserializeToml("table1"))
+        val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
+        assertEquals(
+            test.table1,
+            Toml.partiallyDecodeFromString(
+                serializer(),
+                "[table1] \n a = 1 \n b = 2 \n [table2] \n c = 1 \n e = 2 \n d = 3",
+                "table1"
+            )
+        )
     }
 
     @Test
     fun testPartialFileDecoding() {
         val file = "src/commonTest/resources/partial_decoder.toml"
-        val test = TwoTomlTables(Table1(1, 2), Table2(1,2,3))
-        assertEquals(test.table1,
-            file.deserializeTomlFile("table1")
+        val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
+        assertEquals(
+            test.table1,
+            Toml.partiallyDecodeFromFile(
+                serializer(), file, "table1"
+            )
         )
     }
 }

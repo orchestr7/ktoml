@@ -7,26 +7,34 @@ import com.akuleshov7.ktoml.parsers.node.TomlFile
 
 import okio.ExperimentalFileSystem
 
+import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
- * KtomlSerializer class - is a general class in the core, that is used to serialize/deserialize TOML file or string
+ * KtomlSerializer class - is a general entry point in the core,
+ * that is used to serialize/deserialize TOML file or string
  *
  * @property config - configuration for the serialization
  * @property serializersModule - default overridden
  */
-@ExperimentalSerializationApi
-class Toml(
+@OptIn(ExperimentalSerializationApi::class, ExperimentalFileSystem:: class)
+public open class Toml(
     private val config: KtomlConf = KtomlConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
-    // this is moved to properties to reduce the number of created classes for each toml
-    val tomlParser = TomlParser(config)
+    // parser is created once after the creation of the class, to reduce the number of created classes for each toml
+    public val tomlParser: TomlParser = TomlParser(config)
 
-    // FixMe: need to fix code duplication here
     // ================== basic overrides ===============
+
+    /**
+     * simple deserializer of a string in a toml format (separated by newlines)
+     *
+     * @param string - request-string in toml format with '\n' or '\r\n' separation
+     * @return deserialized object of type T
+     */
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parsedToml = tomlParser.parseString(string)
         return TomlDecoder.decode(deserializer, parsedToml, config)
@@ -39,12 +47,19 @@ class Toml(
     // ================== custom decoding methods ===============
 
     /**
-     * @param deserializer
-     * @param toml
-     * @param tomlTableName
-     * @return decoded object of type T
+     * partial deserializer of a string in a toml format (separated by newlines).
+     * Will deserialize only the part presented under the tomlTableName table.
+     * If such table is missing in he input - will throw an exception
+     *
+     * (!) Useful when you would like to deserialize only ONE table
+     * and you do not want to reproduce whole object structure in the code
+     *
+     * @param deserializer deserialization strategy
+     * @param toml request-string in toml format with '\n' or '\r\n' separation
+     * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
+     * @return deserialized object of type T
      */
-    fun <T> partiallyDecodeFromString(
+    public fun <T> partiallyDecodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: String,
         tomlTableName: String
@@ -53,25 +68,35 @@ class Toml(
         return TomlDecoder.decode(deserializer, fakeFileNode, config)
     }
 
+    // ================== file decoding methods ===============
+    // FixMe: will be removed from here and moved to a separate module in this project to reduce dependencies
+
     /**
-     * @param deserializer
-     * @param tomlFilePath
-     * @return decoded object of type T
+     * simple deserializer of a file that contains toml. Reading file with okio native library
+     *
+     * @param deserializer deserialization strategy
+     * @param tomlFilePath path to the file where toml is stored
+     * @return deserialized object of type T
      */
-    @ExperimentalFileSystem
-    fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlFilePath: String): T {
+    public fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, tomlFilePath: String): T {
         val parsedToml = TomlParser(config).readAndParseFile(tomlFilePath)
         return TomlDecoder.decode(deserializer, parsedToml, config)
     }
 
     /**
-     * @param deserializer
-     * @param tomlFilePath
-     * @param tomlTableName
-     * @return decoded object of type T
+     * partial deserializer of a file that contains toml. Reading file with okio native library.
+     * Will deserialize only the part presented under the tomlTableName table.
+     * If such table is missing in he input - will throw an exception.
+     *
+     * (!) Useful when you would like to deserialize only ONE table
+     * and you do not want to reproduce whole object structure in the code
+     *
+     * @param deserializer deserialization strategy
+     * @param tomlFilePath path to the file where toml is stored
+     * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
+     * @return deserialized object of type T
      */
-    @ExperimentalFileSystem
-    fun <T> partiallyDecodeFromFile(
+    public fun <T> partiallyDecodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
         tomlTableName: String
@@ -102,4 +127,12 @@ class Toml(
 
         return fakeFileNode
     }
+
+    /**
+     * The default instance of [Toml] with the default configuration.
+     * See [KtomlConf] for the list of the default options
+     * ThreadLocal annotation is used here for caching.
+     */
+    @ThreadLocal
+    public companion object Default : Toml(KtomlConf())
 }

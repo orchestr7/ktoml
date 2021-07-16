@@ -16,17 +16,31 @@ import kotlinx.serialization.modules.*
  */
 @ExperimentalSerializationApi
 public class TomlDecoder(
-    val rootNode: TomlNode,
-    val config: KtomlConf,
+    private val rootNode: TomlNode,
+    private val config: KtomlConf,
 ) : AbstractDecoder() {
     private var elementIndex = 0
     override val serializersModule: SerializersModule = EmptySerializersModule
 
-    override fun decodeValue(): Any {
+    override fun decodeValue(): Any = decodeKeyValue().value.content
+
+    // the iteration will go through all elements that will be found in the input
+    private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
+
+    /**
+     * Trying to decode the value (iterating by the element index)
+     * | rootNode
+     * |--- child1, child2, ... , childN
+     * ------------elementIndex------->
+     *
+     * This method should process only leaf elements that implement TomlKeyValue, because
+     *
+     */
+    private fun decodeKeyValue(): TomlKeyValue {
         val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
         return when (node) {
-            is TomlKeyValueSimple -> node.value.content
-            is TomlKeyValueList -> node.value.content
+            is TomlKeyValueSimple -> node
+            is TomlKeyValueList -> node
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception as it is not expected at all
             is TomlStubEmptyNode, is TomlTable, is TomlFile ->
@@ -36,9 +50,6 @@ public class TomlDecoder(
                 )
         }
     }
-
-    // the iteration will go through all elements that will be found in the input
-    private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
@@ -187,14 +198,14 @@ public class TomlDecoder(
 
     override fun decodeNotNullMark(): Boolean = decodeValue().toString().toLowerCase() != "null"
 
-    companion object {
+    public companion object {
         /**
          * @param deserializer - deserializer provided by Kotlin compiler
          * @param rootNode - root node for decoding (created after parsing)
          * @param config - decoding configuration for parsing and serialization
          * @return decoded (deserialized) object of type T
          */
-        fun <T> decode(
+        public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,
             config: KtomlConf = KtomlConf()

@@ -9,6 +9,7 @@ plugins {
 
 kotlin {
 
+    explicitApi()
     jvm {
         compilations.all {
             kotlinOptions {
@@ -25,7 +26,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio-multiplatform:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
             }
         }
@@ -43,6 +44,9 @@ kotlin {
                 implementation(kotlin("test-junit5"))
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.0.0")
             }
+        }
+        all {
+            languageSettings.enableLanguageFeature("InlineClasses")
         }
     }
 }

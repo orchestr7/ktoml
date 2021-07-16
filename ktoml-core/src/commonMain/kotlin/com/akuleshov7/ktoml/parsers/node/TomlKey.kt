@@ -10,10 +10,10 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
  * @property rawContent
  * @property lineNo
  */
-class TomlKey(val rawContent: String, val lineNo: Int) {
-    val keyParts = rawContent.splitKeyToTokens(lineNo)
-    val content = keyParts.last().trimQuotes().trim()
-    val isDotted = isDottedKey()
+public class TomlKey(public val rawContent: String, public val lineNo: Int) {
+    internal val keyParts = rawContent.splitKeyToTokens(lineNo)
+    public val content: String = keyParts.last().trimQuotes().trim()
+    internal val isDotted = isDottedKey()
 
     /**
      * checking that we face a key in the following format: a."ab.c".my-key

@@ -1,6 +1,5 @@
 package node.parser
 
-import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlArray
 import com.akuleshov7.ktoml.parsers.node.TomlBasicString
 import kotlin.test.Test
