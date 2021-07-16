@@ -17,8 +17,8 @@ import kotlinx.serialization.modules.SerializersModule
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
 public class TomlListDecoder(
-    val rootNode: TomlKeyValueList,
-    val config: KtomlConf,
+    public val rootNode: TomlKeyValueList,
+    public val config: KtomlConf,
 ) : AbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>

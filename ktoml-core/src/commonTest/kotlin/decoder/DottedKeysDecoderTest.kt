@@ -1,10 +1,11 @@
 package decoder
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.deserializeToml
+import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -101,7 +102,14 @@ class DottedKeysDecoderTest {
     @ExperimentalSerializationApi
     @Test
     fun testDottedKeys() {
-        """
+        assertEquals(
+            TestExample(
+                table1 = Table1(a = AC(c = 1), table2 = InnerTable2in1(b = BA(b = A(a = 1)))),
+                table2 = Table2(b = B(f = 2, d = 2), table2 = InnerTable2in2(myFieldWithSerialName = C(d = 2))),
+                table3 = Table3(notRequiredFieldBecauseOfEmptyTable = 0)
+            ),
+            Toml().decodeFromString(
+                """
                       |table2.b.d = 2
                       |[table1] 
                       |a.c = 1 
@@ -112,28 +120,30 @@ class DottedKeysDecoderTest {
                       |table2."foo bar".d = 2
                       |[table3]
                       """.trimMargin()
-            .deserializeToml<TestExample>(
-                KtomlConf(true)
             )
+        )
     }
 
     @Test
     fun tableTest() {
-        """
+        assertEquals(
+            SimpleNestedExample(table2 = Table4(b = B(f = 2, d = 2), e = 5)),
+            Toml(KtomlConf(true)).decodeFromString(
+                """
                       |table2.b.d = 2
                       |[table2]
                       |e = 5
                       |b.f = 2
                       """.trimMargin()
-            .deserializeToml<SimpleNestedExample>(
-                KtomlConf(true)
             )
-
+        )
     }
 
     @Test
     fun tableAndDottedKeys() {
-        """
+        println(
+            Toml(KtomlConf(true)).decodeFromString<SimpleNestedExample>(
+                """
                       |[table2]
                       |table2."foo bar".d = 2
                       |e = 6
@@ -141,9 +151,21 @@ class DottedKeysDecoderTest {
                       |d = 2
                       |f = 7
                       """.trimMargin()
-            .deserializeToml<SimpleNestedExample>(
-                KtomlConf(true)
             )
+        )
+        assertEquals(
+            SimpleNestedExample(table2 = Table4(b = B(f = 7, d = 2), e = 6)),
+            Toml(KtomlConf(true)).decodeFromString(
+                """
+                      |[table2]
+                      |table2."foo bar".d = 2
+                      |e = 6
+                      |[table2.b]
+                      |d = 2
+                      |f = 7
+                      """.trimMargin()
+            )
+        )
     }
 
     @Serializable
@@ -196,7 +218,8 @@ class DottedKeysDecoderTest {
                     )
                 )
             ),
-            """
+            Toml.decodeFromString(
+                """
             |[a."b.c..".d."e.f"]
             |    val = 1
             | [a]
@@ -204,7 +227,8 @@ class DottedKeysDecoderTest {
             |    val = 2
             | [a."b.c..".inner]
             |    val = 3
-        """.trimMargin().deserializeToml()
+        """.trimMargin()
+            )
         )
     }
 
@@ -232,7 +256,7 @@ class DottedKeysDecoderTest {
     fun decodeQuotedKey() {
         assertEquals(
             QuotedKey(a = AQ(b = ABCQ(b = BQ(d = 123)))),
-            "a.\"a.b.c\".b.d = 123".deserializeToml()
+            Toml.decodeFromString("a.\"a.b.c\".b.d = 123")
         )
     }
 }

@@ -1,16 +1,16 @@
 package com.akuleshov7.ktoml.test.file
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.deserializeTomlFile
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.NonNullableValueException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import okio.ExperimentalFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 class TomlFileParserTest {
     @Serializable
@@ -41,7 +41,7 @@ class TomlFileParserTest {
     @ExperimentalSerializationApi
     @Test
     fun readParseAndDecodeFile() {
-        val test = TestClass(
+        val expected = TestClass(
             "TOML Example",
             Owner(
                 "Tom Preston-Werner",
@@ -52,7 +52,7 @@ class TomlFileParserTest {
                 "192.168.1.1"
             )
         )
-        assertEquals(test, "src/commonTest/resources/simple_example.toml".deserializeTomlFile())
+        assertEquals(expected, Toml.decodeFromFile(serializer(), "src/commonTest/resources/simple_example.toml"))
     }
 
     // ================
@@ -81,7 +81,7 @@ class TomlFileParserTest {
         val file = "src/commonTest/resources/complex_toml_tables.toml"
         // ==== reading from file
         val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
-        assertEquals(test, file.deserializeTomlFile())
+        assertEquals(test, Toml.decodeFromFile(serializer(), file))
         // ==== checking how table discovery works
         val parsedResult = TomlParser(KtomlConf()).readAndParseFile(file)
         assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
@@ -95,7 +95,7 @@ class TomlFileParserTest {
     fun regressionCast1Test() {
         assertFailsWith<NonNullableValueException> {
             val file = "src/commonTest/resources/class_cast_regression1.toml"
-            file.deserializeTomlFile<RegressionTest>()
+            Toml.decodeFromFile<RegressionTest>(serializer(), file)
         }
     }
 
@@ -103,7 +103,7 @@ class TomlFileParserTest {
     @Test
     fun regressionCast2Test() {
         val file = "src/commonTest/resources/class_cast_regression2.toml"
-        val parsedResult = file.deserializeTomlFile<RegressionTest>()
+        val parsedResult = Toml.decodeFromFile<RegressionTest>(serializer(), file)
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
@@ -111,7 +111,7 @@ class TomlFileParserTest {
     @Test
     fun regressionPartialTest() {
         val file = "src/commonTest/resources/class_cast_regression2.toml"
-        val parsedResult = file.deserializeTomlFile<RegressionTest>()
+        val parsedResult = Toml.decodeFromFile<RegressionTest>(serializer(), file)
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
@@ -155,7 +155,7 @@ class TomlFileParserTest {
                 includedTests = null,
                 ignoreSaveComments = null
             ),
-            file.deserializeTomlFile<GeneralConfig>("general")
+            Toml.partiallyDecodeFromFile(serializer(), file, "general")
         )
         assertEquals(
             TestRegression(
@@ -173,7 +173,7 @@ class TomlFileParserTest {
                 warn = WarnConfig(list = listOf("12a", "12f")),
                 list3 = listOf("mystr", "2", "3")
             ),
-            file.deserializeTomlFile<TestRegression>()
+            Toml.decodeFromFile(serializer(), file)
         )
     }
 }

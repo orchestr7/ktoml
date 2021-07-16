@@ -6,7 +6,7 @@ import com.akuleshov7.ktoml.exceptions.TomlParsingException
 /**
  * Interface that contains all common methods that are used in KeyValue nodes
  */
-interface TomlKeyValue {
+internal interface TomlKeyValue {
     var key: TomlKey
     val value: TomlValue
     val lineNo: Int
@@ -57,7 +57,7 @@ interface TomlKeyValue {
  * @return a resulted key-value pair
  * @throws TomlParsingException
  */
-fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String> {
+public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String> {
     // finding the index of the last quote, if no quotes are found, then use the length of the string
     val closingQuoteIndex = listOf(
         this.lastIndexOf("\""),
@@ -86,40 +86,13 @@ fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String
 }
 
 /**
- * method to get proper value from content to get key or value
- *
- * @param log
- * @param index
- * @param content
- * @param ktomlConf
- * @param lineNo
- */
-fun List<String>.getKeyValuePart(
-    log: String,
-    index: Int,
-    content: String,
-    ktomlConf: KtomlConf,
-    lineNo: Int
-) =
-        this[index].trim().also {
-            // key should never be empty, but the value can be empty (and treated as null)
-            // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!ktomlConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
-                throw TomlParsingException(
-                    "Incorrect format of Key-Value pair. It has empty $log: $content",
-                    lineNo
-                )
-            }
-        }
-
-/**
  * factory method for parsing content of the string to the proper Node type
  * (for date -> TomlDate, string -> TomlString, e.t.c)
  *
  * @param lineNo
  * @return parsed TomlNode value
  */
-fun String.parseValue(lineNo: Int) = when (this) {
+public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
     "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
     "true", "false" -> TomlBoolean(this, lineNo)
     else -> if (this.startsWith("\"")) {
@@ -136,3 +109,24 @@ fun String.parseValue(lineNo: Int) = when (this) {
         }
     }
 }
+
+/**
+ * method to get proper value from content to get key or value
+ */
+private fun List<String>.getKeyValuePart(
+    log: String,
+    index: Int,
+    content: String,
+    ktomlConf: KtomlConf,
+    lineNo: Int
+): String =
+        this[index].trim().also {
+            // key should never be empty, but the value can be empty (and treated as null)
+            // see the discussion: https://github.com/toml-lang/toml/issues/30
+            if ((!ktomlConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
+                throw TomlParsingException(
+                    "Incorrect format of Key-Value pair. It has empty $log: $content",
+                    lineNo
+                )
+            }
+        }

@@ -18,7 +18,7 @@ import okio.Path.Companion.toPath
 /**
  * @property ktomlConf - object that stores configuration options for a parser
  */
-public inline class TomlParser(val ktomlConf: KtomlConf) {
+public inline class TomlParser(private val ktomlConf: KtomlConf) {
     /**
      * Method for parsing of TOML file (reading line by line and parsing to a special TOML AST tree)
      *
@@ -27,7 +27,7 @@ public inline class TomlParser(val ktomlConf: KtomlConf) {
      * @throws e: FileNotFoundException if the toml file is missing
      */
     @ExperimentalFileSystem
-    fun readAndParseFile(toml: String): TomlFile {
+    internal fun readAndParseFile(toml: String): TomlFile {
         try {
             val ktomlPath = toml.toPath()
             val ktomlLinesFromFile = FileSystem.SYSTEM.read(ktomlPath) {
@@ -47,7 +47,7 @@ public inline class TomlParser(val ktomlConf: KtomlConf) {
      * @param toml a raw string in the toml format with '\n' separator
      * @return the root TomlFile node of the Tree that we have built after parsing
      */
-    fun parseString(toml: String): TomlFile {
+    internal fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
         val tomlString = toml.replace("\\r\\n", "\n")
         return parseStringsToTomlNode(tomlString.split("\n"))

@@ -12,9 +12,9 @@ import kotlinx.serialization.modules.SerializersModule
  */
 @ExperimentalSerializationApi
 public class TomlScalarDecoder(
-    val rootNode: TomlValue
+    public val rootNode: TomlValue
 ) : AbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule
-    override fun decodeValue() = rootNode.content
+    override fun decodeValue(): Any = rootNode.content
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = 0
 }

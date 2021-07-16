@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.test.decoder
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.deserializeToml
+import com.akuleshov7.ktoml.Toml
+import kotlinx.serialization.decodeFromString
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
@@ -70,15 +71,12 @@ class GeneralDecoderTest {
 
     @Test
     fun testForSimpleTomlCase() {
-        println("table1: (a:5, b:6)")
-        val test = "[table1]\n b = 6  \n a = 5 ".deserializeToml<SimpleTomlCase>()
-        println(test)
-        assertEquals(SimpleTomlCase(Table1(5, 6)), test)
+        val test = "[table1]\n b = 6  \n a = 5 "
+        assertEquals(SimpleTomlCase(Table1(5, 6)), Toml.decodeFromString(test))
     }
 
     @Test
     fun testForTwoTomlTablesCase() {
-        println("table1: (b:6, a:5), table2:(c:7, d:8)")
         val test = ("[table1]\n" +
                 " b = 6  \n" +
                 " a = 5  \n " +
@@ -87,51 +85,45 @@ class GeneralDecoderTest {
                 " c = 7  \n" +
                 " d = 8  \n" +
                 " e = 9 \n")
-            .deserializeToml<TwoTomlTables>()
-        println(test)
-        assertEquals(TwoTomlTables(Table1(5, 6), Table2(7, 9, 8)), test)
+
+        assertEquals(TwoTomlTables(Table1(5, 6), Table2(7, 9, 8)), Toml.decodeFromString(test))
     }
 
     @Test
     fun testForComplexTypes() {
         assertFailsWith<InvalidEnumValueException> {
-            println("table3: (a:true, d:5, e:\"my test\", b: H)")
-            "[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"H\"".deserializeToml<ComplexPlainTomlCase>()
+            Toml.decodeFromString<ComplexPlainTomlCase>("[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"H\"")
         }
     }
 
     @Test
     fun testForComplexTypesExceptionOnEnums() {
-        println("table3: (a:true, d:5, e:\"my test\", b = A)")
         val test =
-            "[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"A\"".deserializeToml<ComplexPlainTomlCase>()
-        println(test)
-        assertEquals(ComplexPlainTomlCase(Table3(true, "my test", 5, b = TestEnum.A)), test)
+            "[table3] \n a = true \n d = 5 \n e = \"my test\" \n b = \"A\""
+        assertEquals(ComplexPlainTomlCase(Table3(true, "my test", 5, b = TestEnum.A)), Toml.decodeFromString(test))
     }
 
     @Test
     fun testUnknownFieldInToml() {
         assertFailsWith<UnknownNameDecodingException> {
-            println("table3: (a:true, d:5, e:\"my test\", b:A, c:unknown)")
-            ("[table3] \n a = true \n d = 5 \n" +
-                    " c = \"unknown\" \n e = \"my test\" \n b = \"A\" ").deserializeToml<ComplexPlainTomlCase>()
+            Toml.decodeFromString<ComplexPlainTomlCase>(
+                "[table3] \n a = true \n d = 5 \n" +
+                        " c = \"unknown\" \n e = \"my test\" \n b = \"A\" "
+            )
         }
     }
 
     @Test
     fun testForSimpleNestedTable() {
-        println("c: 5, table1: (b:6, a:5)")
         val test = ("c = 5 \n" +
                 "[table1] \n" +
                 " b = 6  \n" +
-                " a = 5  \n ").deserializeToml<NestedSimpleTable>()
-        println(test)
-        assertEquals(NestedSimpleTable(5, Table1(5, 6)), test)
+                " a = 5  \n ")
+        assertEquals(NestedSimpleTable(5, Table1(5, 6)), Toml.decodeFromString(test))
     }
 
     @Test
     fun testForNestedTables() {
-        println("c:5, table1: (b:6, a:5), table4:(c:7, e:9 d:8, table1: (b:6, a:5))")
         val test = ("c = 5 \n" +
                 "[table1] \n" +
                 " b = 6  \n" +
@@ -144,131 +136,116 @@ class GeneralDecoderTest {
                 " [table4.table1] \n" +
                 "   b = 6  \n" +
                 "   a = 5  \n ")
-            .deserializeToml<TwoNestedTables>()
-        println(test)
-        assertEquals(TwoNestedTables(c = 5, Table1(5, 6), Table4(7, 9, 8, Table1(5, 6))), test)
+
+        assertEquals(TwoNestedTables(c = 5, Table1(5, 6), Table4(7, 9, 8, Table1(5, 6))), Toml.decodeFromString(test))
     }
 
     @Test
     fun testWithoutTables() {
-        println("a:true, b:A, e: my string, d: 55")
         val test = ("a = true \n" +
                 " b = \"A\"\n" +
                 " e = \"my string\"\n" +
                 " d = 55")
-            .deserializeToml<Table3>()
-        println(test)
-        assertEquals(Table3(true, "my string", 55, TestEnum.A), test)
+
+        assertEquals(Table3(true, "my string", 55, TestEnum.A), Toml.decodeFromString(test))
     }
 
     @Test
     fun testForQuotes() {
-        println("a:true, b:A, e: my string, d: 55")
         val test = ("a = true \n" +
                 " b = \"A\"\n" +
                 " e = \"my string\"\n" +
-                " d = 55").deserializeToml<Table3>()
-        println(test)
-        assertEquals(Table3(true, "my string", 55, TestEnum.A), test)
+                " d = 55")
+
+        assertEquals(Table3(true, "my string", 55, TestEnum.A), Toml.decodeFromString(test))
     }
 
     @Test
     fun invalidAndSoMissingRequiredKeyOnRootLevel() {
-        println("a:true, d:5, e:\"my test\", err: B")
         assertFailsWith<MissingRequiredFieldException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <b> in the input"
         ) {
             // 'err' key is unknown, but this should not trigger an error becuase of ignoreUnknown
             // 'b' key is not provided and should trigger an error
-            (" a = true \n" +
-                    " d = 5 \n" +
-                    " e = \"my test\"\n" +
-                    " err = \"B\"").deserializeToml<Table3>(
-                KtomlConf(true)
+            Toml(KtomlConf(true)).decodeFromString<Table3>(
+                " a = true \n" +
+                        " d = 5 \n" +
+                        " e = \"my test\"\n" +
+                        " err = \"B\""
             )
         }
     }
 
     @Test
     fun testForUnknownFieldsWithIgnoreUnknownNamesTrueConfig() {
-        println("tableUNKNOWN: (a:true, d:5, e:\"my test\", b: B)")
         assertFailsWith<MissingRequiredFieldException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table3> in the input"
         ) {
-            ("[tableUNKNOWN] \n" +
-                    " a = true \n" +
-                    " d = 5 \n" +
-                    " e = \"my test\" \n" +
-                    " b = \"B\"").deserializeToml<ComplexPlainTomlCase>(
-                KtomlConf(true)
+            Toml(KtomlConf(true)).decodeFromString<ComplexPlainTomlCase>(
+                "[tableUNKNOWN] \n" +
+                        " a = true \n" +
+                        " d = 5 \n" +
+                        " e = \"my test\" \n" +
+                        " b = \"B\""
             )
         }
 
-        println("a:true, b:A, d: 55, t: 7777")
         // e is missing, because it has a default value
         // t - is new unknown field
         val test = (" t = \"7777\" \n" +
                 "a = true \n" +
                 " b = \"A\" \n" +
-                " d = 55 \n").deserializeToml<Table3>(
-            KtomlConf(true)
-        )
-        assertEquals(Table3(true, b = TestEnum.A, d = 55), test)
+                " d = 55 \n")
+
+        assertEquals(Table3(true, b = TestEnum.A, d = 55), Toml(KtomlConf(true)).decodeFromString(test))
 
 
-        println("a:true, b:A, t: 7777")
         // e is missing, because it has a default value
         // t - is new unknown field
         assertFailsWith<MissingRequiredFieldException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <d> in the input"
         ) {
-            (" t = \"7777\" \n" +
+            val failMissing = " t = \"7777\" \n" +
                     "a = true \n" +
-                    " b = \"A\" \n").deserializeToml<Table3>(
-                KtomlConf(true)
-            )
+                    " b = \"A\" \n"
+
+            Toml(KtomlConf(true)).decodeFromString<Table3>(failMissing)
         }
     }
 
     @Test
     fun nullableFields() {
-        println("a = null, b = NULL, c = nil")
         val test = ("a = null \n " +
                 "b = NULL \n" +
                 "c = nil \n" +
                 "d = # hi \n" +
                 "e = \n" +
                 "f = NIL\n")
-            .deserializeToml<NullableValues>()
-        println(test)
-        assertEquals(NullableValues(null, null, null, null, null, null), test)
+
+        assertEquals(NullableValues(null, null, null, null, null, null), Toml.decodeFromString(test))
     }
 
     @Test
     fun testForMissingRequiredFields() {
-        println("table3: (a:true, d:5, e:\"my test\", b: B)")
         assertFailsWith<MissingRequiredFieldException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <d> in the input"
         ) {
-            "[table3] \n a = true".deserializeToml<ComplexPlainTomlCase>(
-                KtomlConf(true)
-            )
+            Toml(KtomlConf(true)).decodeFromString<Table3>("[table3] \n a = true")
         }
     }
 
     @Test
     fun testForMissingRequiredTable() {
-        println("table1: (a:5, b:6))")
         assertFailsWith<MissingRequiredFieldException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table2> in the input"
         ) {
-            "[table1] \n a = 5 \n b = 6".deserializeToml<TwoTomlTables>(
-                KtomlConf(true)
+            Toml(KtomlConf(true)).decodeFromString<Table3>(
+                "[table1] \n a = 5 \n b = 6"
             )
         }
     }
@@ -276,14 +253,13 @@ class GeneralDecoderTest {
     @Test
     fun testForMissingRequiredFieldWithDefaultValue() {
         // e - has default value and is missing in the input
-        println("table3: (a:true, d:5, b: B)")
-        val test = "[table3] \n a = true \n b = \"B\" \n d = 5".deserializeToml<ComplexPlainTomlCase>(
+        val test = "[table3] \n a = true \n b = \"B\" \n d = 5"
 
-            KtomlConf(true)
+        assertEquals(
+            ComplexPlainTomlCase(Table3(a = true, d = 5, b = TestEnum.B)), Toml(
+                KtomlConf(true)
+            ).decodeFromString(test)
         )
-
-        println(test)
-        assertEquals(ComplexPlainTomlCase(Table3(a = true, d = 5, b = TestEnum.B)), test)
     }
 
     @Test
@@ -293,21 +269,21 @@ class GeneralDecoderTest {
                 |  c = 5
                 |  [a]
                 |      a = true
-            """.trimMargin().deserializeToml<ChildTableBeforeParent>(
-            KtomlConf(true)
-        )
-        println(test)
-        assertEquals(ChildTableBeforeParent(A(B(5), true)), test)
+            """.trimMargin()
+        KtomlConf(true)
+
+        assertEquals(ChildTableBeforeParent(A(B(5), true)), Toml.decodeFromString(test))
     }
 
     @Test
     fun testIncorrectEnumValue() {
-        println("a:true, b:F, e: my string, d: 55")
         assertFailsWith<InvalidEnumValueException> {
-            ("a = true \n" +
-                    " b = \"F\"\n" +
-                    " e = \"my string\"\n" +
-                    " d = 55").deserializeToml<Table3>()
+            Toml(KtomlConf(true)).decodeFromString<Table3>(
+                ("a = true \n" +
+                        " b = \"F\"\n" +
+                        " e = \"my string\"\n" +
+                        " d = 55")
+            )
         }
     }
 
@@ -316,51 +292,98 @@ class GeneralDecoderTest {
         // this test is NOT failing on JVM but fails on mingw64 with 39 SYMBOLS and NOT failing with 38
         val test = ("[general] \n" +
                 "execCmd = \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"")
-            .deserializeToml<Regression<General>>()
 
         assertEquals(
             Regression(
                 General("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             ),
-            test
+            Toml().decodeFromString(test)
         )
     }
 
     @Test
     fun commentParsingTest() {
-        assertEquals(
-            Regression(General("dgfdgfd # f # hi")),
-            """
+        var test = """
             [general]
             execCmd = "dgfdgfd # f # hi"
-        """.trimIndent().deserializeToml<Regression<General>>(),
+        """.trimIndent()
+        assertEquals(
+            Regression(General("dgfdgfd # f # hi")),
+            Toml().decodeFromString(test)
         )
+
+        test = """
+            [general]
+            execCmd = # hello
+        """.trimIndent()
 
         assertEquals(
             Regression(General(null)),
 
-            """
-            [general]
-            execCmd = # hello
-        """.trimIndent().deserializeToml<Regression<General>>(),
+            Toml().decodeFromString(test)
         )
 
+        test = """
+            [general]
+            execCmd = " hello " # hello
+        """.trimIndent()
         assertEquals(
             Regression(General(" hello ")),
 
-            """
-            [general]
-            execCmd = " hello " # hello
-        """.trimIndent().deserializeToml<Regression<General>>(),
+            Toml().decodeFromString(test)
         )
 
+        test = """
+            [general]
+            execCmd = 0 # hello
+        """.trimIndent()
         assertEquals(
             Regression(GeneralInt(0)),
 
-            """
-            [general]
-            execCmd = 0 # hello
-        """.trimIndent().deserializeToml<Regression<GeneralInt>>(),
+            Toml().decodeFromString(test)
+        )
+    }
+
+    @Serializable
+    data class MyTest(val table: Table)
+
+    @Serializable
+    data class Table(val `1`: Inner, val `2`: Inner)
+
+    @Serializable
+    data class Inner(
+        val a: Int,
+        val `1`: InnerInner,
+        val `2`: InnerInner
+    )
+
+    @Serializable
+    data class InnerInner(val a: Int)
+
+    @Test
+    fun severalTablesOnTheSameLevel() {
+        val test = """|[table]
+           |[table.1]
+           |    a = 1
+           |    [table.1.1]
+           |        a = 1
+           |    [table.1.2]
+           |        a = 1
+           |[table.2]
+           |    a = 1
+           |    [table.2.1]
+           |        a = 1
+           |    [table.2.2]
+           |        a = 1
+        """.trimMargin()
+
+        assertEquals(
+            MyTest(
+                table = Table(
+                    `1` = Inner(a = 1, `1` = InnerInner(a = 1), `2` = InnerInner(a = 1)),
+                    `2` = Inner(a = 1, `1` = InnerInner(a = 1), `2` = InnerInner(a = 1))
+                )
+            ), Toml.decodeFromString(test)
         )
     }
 }

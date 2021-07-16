@@ -12,14 +12,14 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
  * Base class for all nodes that represent values
  * @property lineNo - line number of original file
  */
-sealed class TomlValue(val lineNo: Int) {
-    abstract var content: Any
+public sealed class TomlValue(public val lineNo: Int) {
+    public abstract var content: Any
 }
 
 /**
  * Toml AST Node for a representation of string values: key = "value" (always should have quotes due to TOML standard)
  */
-class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("\"") && content.endsWith("\"")) {
         val stringWithoutQuotes = content.trimQuotes()
         checkOtherQuotesAreEscaped(stringWithoutQuotes)
@@ -81,7 +81,7 @@ class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
 /**
  * Toml AST Node for a representation of int types: key = 1
  */
-class TomlInt(content: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlInt(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = content.toInt()
 }
 
@@ -90,14 +90,14 @@ class TomlInt(content: String, lineNo: Int) : TomlValue(lineNo) {
  * Toml specification requires floating point numbers to be IEEE 754 binary64 values,
  * so it should be Kotlin Double (64 bits)
  */
-class TomlDouble(content: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlDouble(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = content.toDouble()
 }
 
 /**
  * Toml AST Node for a representation of boolean types: key = true | false
  */
-class TomlBoolean(content: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlBoolean(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = content.toBoolean()
 }
 
@@ -105,14 +105,14 @@ class TomlBoolean(content: String, lineNo: Int) : TomlValue(lineNo) {
  * Toml AST Node for a representation of null:
  * null, nil, NULL, NIL or empty (key = )
  */
-class TomlNull(lineNo: Int) : TomlValue(lineNo) {
+public class TomlNull(lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = "null"
 }
 
 /**
  * Toml AST Node for a representation of arrays: key = [value1, value2, value3]
  */
-class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
     override lateinit var content: Any
 
     init {
@@ -125,7 +125,7 @@ class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo)
      *
      * @return converted array to a list
      */
-    fun parse(): List<Any> = rawContent.parse()
+    public fun parse(): List<Any> = rawContent.parse()
 
     /**
      * recursively parse TOML array from the string

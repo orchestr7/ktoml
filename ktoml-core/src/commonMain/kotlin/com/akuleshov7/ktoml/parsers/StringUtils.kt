@@ -13,7 +13,7 @@ import com.akuleshov7.ktoml.exceptions.TomlParsingException
  * @param lineNo - the line number in toml
  * @return list with strings after the initial string was split
  */
-fun String.splitKeyToTokens(lineNo: Int): List<String> {
+internal fun String.splitKeyToTokens(lineNo: Int): List<String> {
     this.validateQuotes(lineNo)
     this.validateSymbols(lineNo)
 
@@ -56,7 +56,7 @@ fun String.splitKeyToTokens(lineNo: Int): List<String> {
  *
  * @return string with the result
  */
-fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
+internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
 
 /**
  * If this string starts and end with brackets([]) - will return the string with brackets removed
@@ -64,7 +64,7 @@ fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
  *
  * @return string with the result
  */
-fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
+internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
