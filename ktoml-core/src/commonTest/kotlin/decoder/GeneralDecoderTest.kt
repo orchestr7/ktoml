@@ -25,22 +25,22 @@ class GeneralDecoderTest {
     data class General(val execCmd: String?)
 
     @Serializable
-    data class GeneralInt(val execCmd: Int)
+    data class GeneralInt(val execCmd: Long)
 
     @Serializable
     data class SimpleTomlCase(val table1: Table1)
 
     @Serializable
-    data class Table1(val a: Int, val b: Int)
+    data class Table1(val a: Long, val b: Long)
 
     @Serializable
-    data class Table2(val c: Int, val e: Int, val d: Int)
+    data class Table2(val c: Long, val e: Long, val d: Long)
 
     @Serializable
-    data class Table3(val a: Boolean, val e: String = "default", val d: Int, val b: TestEnum)
+    data class Table3(val a: Boolean, val e: String = "default", val d: Long, val b: TestEnum)
 
     @Serializable
-    data class Table4(val c: Int, val e: Int, val d: Int, val table1: Table1)
+    data class Table4(val c: Long, val e: Long, val d: Long, val table1: Table1)
 
     @Serializable
     data class ComplexPlainTomlCase(val table3: Table3)
@@ -49,14 +49,14 @@ class GeneralDecoderTest {
     data class TwoTomlTables(val table1: Table1, val table2: Table2)
 
     @Serializable
-    data class TwoNestedTables(val c: Int, val table1: Table1, val table4: Table4)
+    data class TwoNestedTables(val c: Long, val table1: Table1, val table4: Table4)
 
     @Serializable
-    data class NestedSimpleTable(val c: Int, val table1: Table1)
+    data class NestedSimpleTable(val c: Long, val table1: Table1)
 
     @Serializable
     data class NullableValues(
-        val a: Int?, val b: Table1?, val c: String?,
+        val a: Long?, val b: Table1?, val c: String?,
         val d: String?, val e: String?, val f: String?
     )
 
@@ -67,7 +67,7 @@ class GeneralDecoderTest {
     data class A(val b: B, val a: Boolean)
 
     @Serializable
-    data class B(val c: Int)
+    data class B(val c: Long)
 
     @Test
     fun testForSimpleTomlCase() {
@@ -352,13 +352,13 @@ class GeneralDecoderTest {
 
     @Serializable
     data class Inner(
-        val a: Int,
+        val a: Long,
         val `1`: InnerInner,
         val `2`: InnerInner
     )
 
     @Serializable
-    data class InnerInner(val a: Int)
+    data class InnerInner(val a: Long)
 
     @Test
     fun severalTablesOnTheSameLevel() {

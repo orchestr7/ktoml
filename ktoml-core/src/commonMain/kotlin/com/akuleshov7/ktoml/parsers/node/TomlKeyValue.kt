@@ -99,7 +99,7 @@ public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
         TomlBasicString(this, lineNo)
     } else {
         try {
-            TomlInt(this, lineNo)
+            TomlLong(this, lineNo)
         } catch (e: NumberFormatException) {
             try {
                 TomlDouble(this, lineNo)

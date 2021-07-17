@@ -34,6 +34,11 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 Other platforms could be added later on the demand or easily built by users on their machines.
 
 ## Current limitations
+:heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc.
+You can check types that are supported in TOML [here](https://toml.io/en/v1.0.0#string).
+We will support all Kotlin primitive types in the future with the non-strict configuration of ktoml, but now
+only String, Long, Double and Boolean are supported from the list of Kotlin primitives.
+
 **General** \
 We are still developing and testing this library, so it has several limitations: \
 :white_check_mark: deserialization (with some parsing limitations) \

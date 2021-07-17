@@ -13,10 +13,10 @@ class PartialDecoderTest {
     data class TwoTomlTables(val table1: Table1, val table2: Table2)
 
     @Serializable
-    data class Table1(val a: Int, val b: Int)
+    data class Table1(val a: Long, val b: Long)
 
     @Serializable
-    data class Table2(val c: Int, val e: Int, val d: Int)
+    data class Table2(val c: Long, val e: Long, val d: Long)
 
     @Test
     fun testPartialDecoding() {

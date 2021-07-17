@@ -69,7 +69,7 @@ class ValueParserTest {
         // regression test related to comments with an equals symbol after it
         val pairTest =
             "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
-        assertEquals(1, TomlKeyValueSimple(pairTest, 0).value.content)
+        assertEquals(1L, TomlKeyValueSimple(pairTest, 0).value.content)
 
     }
 
@@ -90,7 +90,7 @@ enum class NodeType {
 fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlBasicString -> NodeType.STRING
     is TomlNull -> NodeType.NULL
-    is TomlInt -> NodeType.INT
+    is TomlLong -> NodeType.INT
     is TomlDouble -> NodeType.FLOAT
     is TomlBoolean -> NodeType.BOOLEAN
     else -> NodeType.INCORRECT
