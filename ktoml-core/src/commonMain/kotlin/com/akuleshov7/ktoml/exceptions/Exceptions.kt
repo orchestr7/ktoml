@@ -29,6 +29,8 @@ internal class NonNullableValueException(field: String, lineNo: Int) : KtomlExce
             " or make the field nullable"
 )
 
-internal class TomlCastException(message: String, lineNo: Int) : KtomlException(message)
+internal class TomlCastException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
+
+internal class IllegalTomlTypeException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
 
 internal class MissingRequiredFieldException(message: String) : KtomlException(message)

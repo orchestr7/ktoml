@@ -24,6 +24,55 @@ public class TomlDecoder(
 
     override fun decodeValue(): Any = decodeKeyValue().value.content
 
+    override fun decodeByte(): Byte = invalidType("Byte", "Long")
+    override fun decodeShort(): Short = invalidType("Short", "Long")
+    override fun decodeInt(): Int = invalidType("Int", "Long")
+    override fun decodeFloat(): Float = invalidType("Float", "Double")
+    override fun decodeChar(): Char = invalidType("Char", "String")
+    override fun decodeBoolean(): Boolean = decodeType()
+    override fun decodeLong(): Long = decodeType()
+    override fun decodeDouble(): Double = decodeType()
+    override fun decodeString(): String = decodeType()
+    override fun decodeNotNullMark(): Boolean = decodeValue().toString().toLowerCase() != "null"
+
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
+        val value = decodeValue().toString()
+        val index = enumDescriptor.getElementIndex(value)
+
+        if (index == CompositeDecoder.UNKNOWN_NAME) {
+            val choices = (0 until enumDescriptor.elementsCount)
+                .map { enumDescriptor.getElementName(it) }
+                .sorted()
+                .joinToString(", ")
+
+            throw InvalidEnumValueException(value, choices)
+        }
+
+        return index
+    }
+
+    private fun invalidType(typeName: String, requiredType: String): Nothing {
+        val keyValue = decodeKeyValue()
+        throw IllegalTomlTypeException(
+            "<$typeName> type is not allowed by toml specification," +
+                    " use <$requiredType> instead" +
+                    " (field = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
+        )
+    }
+
+    private inline fun <reified T> decodeType(): T {
+        val keyValue = decodeKeyValue()
+        try {
+            return keyValue.value.content as T
+        } catch (e: ClassCastException) {
+            throw TomlCastException(
+                "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
+                        " with the provided type [${T::class}]. Please check the type in your Serializable class",
+                keyValue.lineNo
+            )
+        }
+    }
+
     // the iteration will go through all elements that will be found in the input
     private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
@@ -179,24 +228,6 @@ public class TomlDecoder(
             }
         }
     }
-
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
-        val value = decodeValue().toString()
-        val index = enumDescriptor.getElementIndex(value)
-
-        if (index == CompositeDecoder.UNKNOWN_NAME) {
-            val choices = (0 until enumDescriptor.elementsCount)
-                .map { enumDescriptor.getElementName(it) }
-                .sorted()
-                .joinToString(", ")
-
-            throw InvalidEnumValueException(value, choices)
-        }
-
-        return index
-    }
-
-    override fun decodeNotNullMark(): Boolean = decodeValue().toString().toLowerCase() != "null"
 
     public companion object {
         /**

@@ -26,7 +26,7 @@ class DottedKeysDecoderTest {
     @Serializable
     data class Table4(
         val b: B,
-        val e: Int
+        val e: Long
     )
 
     @Serializable
@@ -37,13 +37,13 @@ class DottedKeysDecoderTest {
 
     @Serializable
     data class B(
-        val f: Int,
-        val d: Int,
+        val f: Long,
+        val d: Long,
     )
 
     @Serializable
     data class C(
-        val d: Int
+        val d: Long
     )
 
     @Serializable
@@ -54,7 +54,7 @@ class DottedKeysDecoderTest {
 
     @Serializable
     data class AC(
-        val c: Int
+        val c: Long
     )
 
     @Serializable
@@ -64,7 +64,7 @@ class DottedKeysDecoderTest {
 
     @Serializable
     data class A(
-        val a: Int
+        val a: Long
     )
 
     @Serializable
@@ -80,7 +80,7 @@ class DottedKeysDecoderTest {
 
     @Serializable
     data class Table3(
-        val notRequiredFieldBecauseOfEmptyTable: Int = 0
+        val notRequiredFieldBecauseOfEmptyTable: Long = 0
     )
 
 
@@ -183,7 +183,7 @@ class DottedKeysDecoderTest {
     @Serializable
     data class BCClass(
         @SerialName("val")
-        val variable: Int,
+        val variable: Long,
         val d: DClass,
         val inner: InnerClass
     )
@@ -197,13 +197,13 @@ class DottedKeysDecoderTest {
     @Serializable
     data class EFClass(
         @SerialName("val")
-        val variable: Int
+        val variable: Long
     )
 
     @Serializable
     data class InnerClass(
         @SerialName("val")
-        val variable: Int
+        val variable: Long
     )
 
     @Test
@@ -249,7 +249,7 @@ class DottedKeysDecoderTest {
 
     @Serializable
     data class BQ(
-        val d: Int
+        val d: Long
     )
 
     @Test

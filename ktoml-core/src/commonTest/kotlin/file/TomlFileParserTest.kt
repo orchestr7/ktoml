@@ -88,7 +88,7 @@ class TomlFileParserTest {
     }
 
     @Serializable
-    data class RegressionTest(val a: Int?, val b: Int, val c: Int, val d: Int?)
+    data class RegressionTest(val a: Long?, val b: Long, val c: Long, val d: Long?)
 
     @ExperimentalSerializationApi
     @Test
@@ -120,7 +120,7 @@ class TomlFileParserTest {
     data class TestRegression(
         val list1: List<Double>,
         val general: GeneralConfig,
-        val list2: List<Int>,
+        val list2: List<Long>,
         val warn: WarnConfig,
         val list3: List<String>
     )

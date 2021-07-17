@@ -9,10 +9,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @Serializable
-data class SimpleArray(val a: List<Int>)
+data class SimpleArray(val a: List<Long>)
 
 @Serializable
-data class NestedArray(val a: List<List<Int>>)
+data class NestedArray(val a: List<List<Long>>)
 
 @Serializable
 data class ArrayInInlineTable(val table: InlineTable)

@@ -12,11 +12,11 @@ class ReadMeExampleTest {
     data class MyClass(val someBooleanProperty: Boolean, val table1: Table1, val table2: Table2)
 
     @Serializable
-    data class Table1(val property1: Int, val property2: Int)
+    data class Table1(val property1: Long, val property2: Long)
 
     @Serializable
     data class Table2(
-        val someNumber: Int,
+        val someNumber: Long,
         @SerialName("akuleshov7.com")
         val inlineTable: InlineTable,
         val otherNumber: Double

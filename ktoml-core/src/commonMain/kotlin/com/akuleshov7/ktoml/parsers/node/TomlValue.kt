@@ -79,10 +79,10 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
 }
 
 /**
- * Toml AST Node for a representation of int types: key = 1
+ * Toml AST Node for a representation of Arbitrary 64-bit signed integers: key = 1
  */
-public class TomlInt(content: String, lineNo: Int) : TomlValue(lineNo) {
-    override var content: Any = content.toInt()
+public class TomlLong(content: String, lineNo: Int) : TomlValue(lineNo) {
+    override var content: Any = content.toLong()
 }
 
 /**
