@@ -150,7 +150,7 @@ class TomlFileParserTest {
                 execCmd = "echo hello world",
                 tags = listOf("Tag", "Other tag"),
                 description = "My description",
-                suiteName = "DocsCheck",
+                suiteName = "// DocsCheck",
                 excludedTests = null,
                 includedTests = null,
                 ignoreSaveComments = null
@@ -164,7 +164,7 @@ class TomlFileParserTest {
                     execCmd = "echo hello world",
                     tags = listOf("Tag", "Other tag"),
                     description = "My description",
-                    suiteName = "DocsCheck",
+                    suiteName = "// DocsCheck",
                     excludedTests = null,
                     includedTests = null,
                     ignoreSaveComments = null
