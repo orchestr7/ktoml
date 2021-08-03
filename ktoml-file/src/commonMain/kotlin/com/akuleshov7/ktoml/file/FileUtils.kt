@@ -1,10 +1,21 @@
-package com.akuleshov7.ktoml
+/**
+ * File utils to read files using okio
+ */
+
+package com.akuleshov7.ktoml.file
 
 import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path.Companion.toPath
 
+/**
+ * Simple file reading with okio (returning a list with strings)
+ *
+ * @param toml string with a path to a file
+ * @return list with strings
+ * @throws e FileNotFoundException if the toml file is missing
+ */
 @ExperimentalFileSystem
 internal fun readAndParseFile(toml: String): List<String> {
     try {
