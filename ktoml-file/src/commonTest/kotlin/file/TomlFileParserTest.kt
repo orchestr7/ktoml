@@ -1,4 +1,4 @@
-package file
+package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.*
 import com.akuleshov7.ktoml.file.TomlFileReader

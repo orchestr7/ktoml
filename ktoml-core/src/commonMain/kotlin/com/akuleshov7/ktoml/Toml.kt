@@ -5,8 +5,6 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 
-import okio.ExperimentalFileSystem
-
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -19,7 +17,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @property config - configuration for the serialization
  * @property serializersModule - default overridden
  */
-@OptIn(ExperimentalSerializationApi::class, ExperimentalFileSystem:: class)
+@OptIn(ExperimentalSerializationApi::class)
 public open class Toml(
     private val config: KtomlConf = KtomlConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
