@@ -71,7 +71,12 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.2.6</version>
+  <version>0.2.7</version>
+</dependency>
+<dependency>
+  <groupId>com.akuleshov7</groupId>
+  <artifactId>ktoml-file</artifactId>
+  <version>0.2.7</version>
 </dependency>
 ```
 </details>
@@ -80,7 +85,8 @@ To import `ktoml` library you need to add following dependencies to your code:
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.2.6'
+implementation 'com.akuleshov7:ktoml-core:0.2.7'
+implementation 'com.akuleshov7:ktoml-file:0.2.7'
 ```
 </details>
 
@@ -88,34 +94,42 @@ implementation 'com.akuleshov7:ktoml-core:0.2.6'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.2.6")
+implementation("com.akuleshov7:ktoml-core:0.2.7")
+implementation("com.akuleshov7:ktoml-file:0.2.7")
 ```
 </details>
 
-
 ## How to use
 :heavy_exclamation_mark: as TOML is a foremost language for config files, we have also supported the deserialization from file.
-However, we are using [okio](https://github.com/square/okio) to read the file, so it will be added as a dependency to your project.
+However, we are using [okio](https://github.com/square/okio) to read the file, so it will be added as a dependency to your
+project if you will import [ktoml-file](https://search.maven.org/artifact/com.akuleshov7/ktoml-file).
+For basic scenarios of decoding strings you can simple use [ktoml-core](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
 
 **Deserialization:**
+<details>
+<summary>Straight-forward deserialization</summary>
+
 ```kotlin
 // include extensions from 'kotlinx' lib to improve user experience 
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.serializer
+// including com.akuleshov7:ktoml-core
 import com.akuleshov7.ktoml.deserialize
 
 @Serializable
 data class MyClass(/* your fields */)
 
 // to deserialize toml input in a string format (separated by newlines '\n')
-// no need to provide serializer explicitly if you will use extentio method from
-// <kotlinx.serialization.decodeFromString> 
-val result = Toml.decodeFromString<MyClass>(/* string with a toml input */)
-
-// to deserialize toml input from file
-val result = Toml.decodeTomlFile<MyClass>(/* string with toml path */)
+// no need to provide serializer() explicitly if you will use extension method from
+// <kotlinx.serialization.decodeFromString>
+val resultFromString = Toml.decodeFromString<MyClass>(/* string with a toml input */)
+val resultFromList = Toml.decodeFromString<MyClass>(serializer(), /* list with lines of strings with a toml input */)
 ```
+</details>
 
-**Partial Deserialization:** \
+<details>
+<summary>Partial deserialization</summary>
+
 Partial Deserialization can be useful when you would like to deserialize only **one single** table and you do not want 
 to reproduce whole object structure in your code.
  
@@ -129,16 +143,51 @@ to reproduce whole object structure in your code.
 //   d = "5"
 
 val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /* string with a toml input */, "c.d.e.f")
-val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /* string with toml path */, "c.d.e.f")
+val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /* list with toml strings */, "c.d.e.f")
 ```
+</details>
+
+<details>
+<summary>Toml File deserialization</summary>
+
+```kotlin
+// including com.akuleshov7:ktoml-file
+import com.akuleshov7.ktoml.deserialize
+
+val resultFromString = TomlFileReader.decodeFromFile<MyClass>(serializer(), /* file path to toml file */)
+val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(),  /* file path to toml file */, /* table name */)
+```
+</details>
 
 **Parser to AST:**
+<details>
+<summary>Simple parser</summary>
+
 ```kotlin
 import com.akuleshov7.ktoml.parsers.TomlParser
+import com.akuleshov7.ktoml.KtomlConf
 /* ========= */
-var tomlAST = TomlParser(KtomlConf()).readAndParseFile(/* path to your file */)
-tomlAST = TomlParser(KtomlConf()).parseString(/* the string that you will try to parse */)
+var tomlAST = TomlParser(KtomlConf()).parseStringsToTomlTree(/* list with toml strings */)
+tomlAST = TomlParser(KtomlConf()).parseString(/* the string that you want to parse */)
 tomlAST.prettyPrint()
+```
+</details>
+
+### Configuration
+Ktoml parsing and deserialization was made configurable to fit all the requirements from users. We have created a
+special configuration class that can be passed to the decoder method:
+
+```kotlin
+Toml(
+    ktomlConf = KtomlConf(
+        // allow/prohibit unknown names during the deserialization, default false
+        ignoreUnknownNames = false,
+        // allow/prohibit empty values like "a = # comment", default true
+        emptyValuesAllowed = true
+    )
+).decodeFromString<MyClass>(
+    tomlString
+)
 ```
 
 ## How ktoml works: examples
@@ -219,17 +268,3 @@ Translation of the example above to json-terminology:
 ``` 
 
 You can check how this example works in [ReadMeExampleTest](ktoml-core/src/commonTest/kotlin/decoder/ReadMeExampleTest.kt).
-
-### Configuration
-Ktoml parsing and deserialization was made configurable to fit all the requirements from users.
-We have created a special configuration class that can be passed to the decoder method:
-```kotlin
-stringWhereTomlIsStored.deserialize<MyClass>(
-    ktomlConf = KtomlConf(
-        // allow/prohibit unknown names during the deserialization
-        ignoreUnknownNames= false, 
-        // allow/prohibit empty values like "a = # comment"
-        emptyValuesAllowed = true
-    )   
-)
-```

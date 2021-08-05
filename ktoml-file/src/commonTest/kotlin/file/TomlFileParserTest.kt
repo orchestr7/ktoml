@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.file
 import com.akuleshov7.ktoml.*
 import com.akuleshov7.ktoml.file.TomlFileReader
 import com.akuleshov7.ktoml.parsers.TomlParser
+import com.akuleshov7.ktoml.parsers.node.TomlTable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -51,7 +52,10 @@ class TomlFileParserTest {
                 "192.168.1.1"
             )
         )
-        assertEquals(expected, TomlFileReader().decodeFromFile(serializer(), "src/commonTest/resources/simple_example.toml"))
+        assertEquals(
+            expected,
+            TomlFileReader().decodeFromFile(serializer(), "src/commonTest/resources/simple_example.toml")
+        )
     }
 
     // ================
@@ -190,6 +194,22 @@ class TomlFileParserTest {
             TomlFileReader.partiallyDecodeFromFile(
                 serializer(), file, "table1"
             )
+        )
+    }
+
+    @OptIn(ExperimentalFileSystem::class)
+    @Test
+    fun readTopLevelTables() {
+        val file = "src/commonTest/resources/simple_example.toml"
+        val lines = readAndParseFile(file)
+        assertEquals(
+            listOf("owner", "database"),
+            TomlParser(KtomlConf())
+                .parseStringsToTomlTree(lines)
+                .children
+                .filterIsInstance<TomlTable>()
+                .filter { !it.isSynthetic }
+                .map { it.fullTableName }
         )
     }
 }
