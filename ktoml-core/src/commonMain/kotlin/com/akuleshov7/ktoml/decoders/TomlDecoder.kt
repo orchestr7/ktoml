@@ -33,7 +33,16 @@ public class TomlDecoder(
     override fun decodeLong(): Long = decodeType()
     override fun decodeDouble(): Double = decodeType()
     override fun decodeString(): String = decodeType()
-    override fun decodeNotNullMark(): Boolean = decodeValue().toString().toLowerCase() != "null"
+    override fun decodeNotNullMark(): Boolean {
+        val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
+        return if (node is TomlKeyValueSimple || node is TomlKeyValueSimple) {
+            decodeValue().toString().toLowerCase() != "null"
+        } else {
+            // all other technical nodes (like tables) should not contain null values
+            // so we will mark them with a not null mark
+            true
+        }
+    }
 
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
         val value = decodeValue().toString()
@@ -82,7 +91,8 @@ public class TomlDecoder(
      * |--- child1, child2, ... , childN
      * ------------elementIndex------->
      *
-     * This method should process only leaf elements that implement TomlKeyValue, because
+     * This method should process only leaf elements that implement TomlKeyValue, because this node should contain the
+     * decoding value. Other types of nodes are more technical
      *
      */
     private fun decodeKeyValue(): TomlKeyValue {
@@ -92,11 +102,11 @@ public class TomlDecoder(
             is TomlKeyValueList -> node
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception as it is not expected at all
-            is TomlStubEmptyNode, is TomlTable, is TomlFile ->
+            is TomlStubEmptyNode, is TomlTable, is TomlFile -> {
                 throw InternalDecodingException(
-                    "This kind of node should not be processed in" +
-                            " TomlDecoder.decodeValue(): $node"
+                    "This kind of node should not be processed in TomlDecoder.decodeValue(): ${node.content}"
                 )
+            }
         }
     }
 
@@ -155,8 +165,8 @@ public class TomlDecoder(
         descriptor: SerialDescriptor
     ) {
         if (currentNode is TomlKeyValue &&
-                currentNode.value is TomlNull &&
-                !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
+            currentNode.value is TomlNull &&
+            !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
         ) {
             throw NonNullableValueException(
                 descriptor.getElementName(fieldWhereValueShouldBeInjected),
