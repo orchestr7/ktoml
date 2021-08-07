@@ -35,11 +35,11 @@ public class TomlDecoder(
     override fun decodeString(): String = decodeType()
     override fun decodeNotNullMark(): Boolean {
         val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
-        return if (node is TomlKeyValueSimple || node is TomlKeyValueSimple) {
+        return if (node is TomlKeyValueSimple || node is TomlKeyValueList) {
             decodeValue().toString().toLowerCase() != "null"
         } else {
             // all other technical nodes (like tables) should not contain null values
-            // so we will mark them with a not null mark
+            // so we will mark them with a "not-null" mark
             true
         }
     }
@@ -102,11 +102,10 @@ public class TomlDecoder(
             is TomlKeyValueList -> node
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
             // branch, we should throw an exception as it is not expected at all
-            is TomlStubEmptyNode, is TomlTable, is TomlFile -> {
+            is TomlStubEmptyNode, is TomlTable, is TomlFile ->
                 throw InternalDecodingException(
                     "This kind of node should not be processed in TomlDecoder.decodeValue(): ${node.content}"
                 )
-            }
         }
     }
 
@@ -165,8 +164,8 @@ public class TomlDecoder(
         descriptor: SerialDescriptor
     ) {
         if (currentNode is TomlKeyValue &&
-            currentNode.value is TomlNull &&
-            !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
+                currentNode.value is TomlNull &&
+                !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
         ) {
             throw NonNullableValueException(
                 descriptor.getElementName(fieldWhereValueShouldBeInjected),
