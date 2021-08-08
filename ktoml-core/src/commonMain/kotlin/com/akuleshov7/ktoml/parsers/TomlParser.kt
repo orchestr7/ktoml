@@ -74,9 +74,15 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
     }
 
     private fun MutableList<String>.trimEmptyLines(): MutableList<String> {
+        if (this.isEmpty()) {
+            return this
+        }
         // removing all empty lines at the end, to cover empty tables properly
         while (this.last().isEmptyLine()) {
             this.removeLast()
+            if (this.isEmpty()) {
+                return this
+            }
         }
         return this
     }
