@@ -5,11 +5,13 @@ import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.decodeFromString
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
+import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 @ExperimentalSerializationApi
@@ -73,6 +75,12 @@ class GeneralDecoderTest {
     fun testForSimpleTomlCase() {
         val test = "[table1]\n b = 6  \n a = 5 "
         assertEquals(SimpleTomlCase(Table1(5, 6)), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testForSimpleTomlCaseWithIssueInParsing() {
+        val test = "[table1]\n b = 6 = 7  \n a = 5 "
+        assertFailsWith<TomlParsingException> { Toml.decodeFromString(test) }
     }
 
     @Test

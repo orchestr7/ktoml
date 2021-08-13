@@ -27,7 +27,7 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
     } else {
         throw TomlParsingException(
             "According to the TOML specification string values (even Enums)" +
-                    " should be wrapped with quotes (\"\"): <$content>", lineNo
+                    " should be wrapped with quotes (\"\"), but the following value was not: <$content>", lineNo
         )
     }
 

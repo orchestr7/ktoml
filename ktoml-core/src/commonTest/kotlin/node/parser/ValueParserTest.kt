@@ -67,16 +67,17 @@ class ValueParserTest {
         assertEquals("hello\t\\\\world", test.value.content)
 
         // regression test related to comments with an equals symbol after it
-        val pairTest =
+        var pairTest =
             "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
         assertEquals(1L, TomlKeyValueSimple(pairTest, 0).value.content)
 
+        pairTest = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
+        assertEquals("1 = 2", TomlKeyValueSimple(pairTest, 0).value.content)
     }
 
 
     @Test
     fun parsingIssueValue() {
-        assertFailsWith<TomlParsingException> { "   a  = b = c".splitKeyValue(0, ktomlConf = KtomlConf()) }
         assertFailsWith<TomlParsingException> { " = false".splitKeyValue(0, ktomlConf = KtomlConf()) }
         assertFailsWith<TomlParsingException> { " just false".splitKeyValue(0, ktomlConf = KtomlConf()) }
         assertFailsWith<TomlParsingException> { TomlKeyValueSimple(Pair("a", "\"\\hello tworld\""), 0) }

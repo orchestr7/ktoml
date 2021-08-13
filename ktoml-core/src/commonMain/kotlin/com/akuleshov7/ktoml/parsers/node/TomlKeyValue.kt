@@ -65,24 +65,32 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String,
         this.lastIndexOf("\"\"\"")
     ).filterNot { it == -1 }.maxOrNull() ?: 0
 
+    // finding the index of a commented part of the string
+    // search starts goes from the closingQuoteIndex to the end of the string
     val firstHash = (closingQuoteIndex until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
 
-    val keyValue = this.substring(0, firstHash)
-        .split("=")
-        .map { it.trim() }
+    // searching for an equals sign that should be placed main part of the string (not in the comment)
+    val firstEqualsSign = this.substring(0, firstHash).indexOfFirst { it == '=' }
 
-    if (keyValue.size != 2) {
+    // equals sign not found in the string
+    if (firstEqualsSign == -1) {
         throw TomlParsingException(
-            "Incorrect format of Key-Value pair." +
+            "Incorrect format of Key-Value pair (missing equals sign)." +
                     " Should be <key = value>, but was: $this." +
                     " If you wanted to define table - use brackets []",
             lineNo
         )
     }
 
-    val keyStr = keyValue.getKeyValuePart("key", 0, this, ktomlConf, lineNo)
-    val valueStr = keyValue.getKeyValuePart("value", 1, this, ktomlConf, lineNo)
-    return Pair(keyStr, valueStr)
+    // aaaa = bbbb # comment -> aaaa
+    val key = this.substring(0, firstEqualsSign).trim()
+    // aaaa = bbbb # comment -> bbbb
+    val value = this.substring(firstEqualsSign + 1, firstHash).trim()
+
+    return Pair(
+        key.checkNotEmpty("key", this, ktomlConf, lineNo),
+        value.checkNotEmpty("value", this, ktomlConf, lineNo)
+    )
 }
 
 /**
@@ -113,17 +121,16 @@ public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
 /**
  * method to get proper value from content to get key or value
  */
-private fun List<String>.getKeyValuePart(
+private fun String.checkNotEmpty(
     log: String,
-    index: Int,
     content: String,
     ktomlConf: KtomlConf,
     lineNo: Int
 ): String =
-        this[index].trim().also {
+        this.also {
             // key should never be empty, but the value can be empty (and treated as null)
             // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!ktomlConf.emptyValuesAllowed || index == 0) && it.isBlank()) {
+            if ((!ktomlConf.emptyValuesAllowed || log == "key") && it.isBlank()) {
                 throw TomlParsingException(
                     "Incorrect format of Key-Value pair. It has empty $log: $content",
                     lineNo
