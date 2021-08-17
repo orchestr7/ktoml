@@ -10,51 +10,24 @@ import com.akuleshov7.ktoml.parsers.node.TomlNode
 import com.akuleshov7.ktoml.parsers.node.TomlStubEmptyNode
 import com.akuleshov7.ktoml.parsers.node.TomlTable
 import com.akuleshov7.ktoml.parsers.node.splitKeyValue
-import okio.ExperimentalFileSystem
-import okio.FileNotFoundException
-import okio.FileSystem
-import okio.Path.Companion.toPath
 
 /**
  * @property ktomlConf - object that stores configuration options for a parser
  */
 public inline class TomlParser(private val ktomlConf: KtomlConf) {
     /**
-     * Method for parsing of TOML file (reading line by line and parsing to a special TOML AST tree)
-     *
-     * @param toml - a string with path to a toml file
-     * @return the TomlFile root node
-     * @throws e: FileNotFoundException if the toml file is missing
-     */
-    @ExperimentalFileSystem
-    internal fun readAndParseFile(toml: String): TomlFile {
-        try {
-            val ktomlPath = toml.toPath()
-            val ktomlLinesFromFile = FileSystem.SYSTEM.read(ktomlPath) {
-                // FixMe: may be we need to read and at the same time parse (to make it parallel)
-                generateSequence { readUtf8Line() }.toList()
-            }
-            return parseStringsToTomlNode(ktomlLinesFromFile)
-        } catch (e: FileNotFoundException) {
-            println("Not able to find toml-file in the following path: $toml")
-            throw e
-        }
-    }
-
-    /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
      *
      * @param toml a raw string in the toml format with '\n' separator
      * @return the root TomlFile node of the Tree that we have built after parsing
      */
-    internal fun parseString(toml: String): TomlFile {
+    public fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
-        val tomlString = toml.replace("\\r\\n", "\n")
-        return parseStringsToTomlNode(tomlString.split("\n"))
+        val tomlString = toml.replace("\r\n", "\n")
+        return parseStringsToTomlTree(tomlString.split("\n"))
     }
 
-    private fun parseStringsToTomlNode(ktomlLines: List<String>): TomlFile {
-        // FixMe: should be done in parallel somehow
+    public fun parseStringsToTomlTree(ktomlLines: List<String>): TomlFile {
         var currentParent: TomlNode = TomlFile()
         val tomlFileHead = currentParent as TomlFile
         val mutableKtomlLines = ktomlLines.toMutableList().trimEmptyLines()

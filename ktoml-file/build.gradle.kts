@@ -8,7 +8,6 @@ plugins {
 }
 
 kotlin {
-
     explicitApi()
     jvm {
         compilations.all {
@@ -25,8 +24,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
+                implementation("com.squareup.okio:okio-multiplatform:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
+                implementation(project(":ktoml-core"))
             }
         }
 

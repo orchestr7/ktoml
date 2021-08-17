@@ -30,16 +30,4 @@ class PartialDecoderTest {
             )
         )
     }
-
-    @Test
-    fun testPartialFileDecoding() {
-        val file = "src/commonTest/resources/partial_decoder.toml"
-        val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
-        assertEquals(
-            test.table1,
-            Toml.partiallyDecodeFromFile(
-                serializer(), file, "table1"
-            )
-        )
-    }
 }
