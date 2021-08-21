@@ -11,3 +11,4 @@ server = "192.168.1.1"
 
     [owner.mytest]
         myserver = "test"
+        myotherserver = 'this is my \ special " [ value " / '

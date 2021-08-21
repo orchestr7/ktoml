@@ -15,6 +15,7 @@ class ValueParserTest {
         testTomlValue(Pair("a", "12.2345"), NodeType.FLOAT)
         testTomlValue(Pair("a", "true"), NodeType.BOOLEAN)
         testTomlValue(Pair("a", "false"), NodeType.BOOLEAN)
+        testTomlValue(Pair("a", "\'false\'"), NodeType.LITERAL_STRING)
     }
 
     @Test
@@ -85,7 +86,7 @@ class ValueParserTest {
 }
 
 enum class NodeType {
-    STRING, NULL, INT, FLOAT, BOOLEAN, INCORRECT
+    STRING, NULL, INT, FLOAT, BOOLEAN, INCORRECT, LITERAL_STRING
 }
 
 fun getNodeType(v: TomlValue): NodeType = when (v) {
@@ -94,6 +95,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlLong -> NodeType.INT
     is TomlDouble -> NodeType.FLOAT
     is TomlBoolean -> NodeType.BOOLEAN
+    is TomlLiteralString -> NodeType.LITERAL_STRING
     else -> NodeType.INCORRECT
 }
 

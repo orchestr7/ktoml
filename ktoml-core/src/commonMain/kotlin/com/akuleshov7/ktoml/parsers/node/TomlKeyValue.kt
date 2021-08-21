@@ -101,22 +101,30 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String,
  * @return parsed TomlNode value
  */
 public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
+    // ===== null values
     "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
+    // ===== boolean vales
     "true", "false" -> TomlBoolean(this, lineNo)
-    else -> if (this.startsWith("\"")) {
-        TomlBasicString(this, lineNo)
-    } else {
-        try {
-            TomlLong(this, lineNo)
-        } catch (e: NumberFormatException) {
+    else -> when(this[0]) {
+        // ===== literal strings
+        '\'' ->  if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo)
+        // ===== basic strings
+        '\"' ->  TomlBasicString(this, lineNo)
+        else ->
             try {
-                TomlDouble(this, lineNo)
+                // ===== integer values
+                TomlLong(this, lineNo)
             } catch (e: NumberFormatException) {
-                TomlBasicString(this, lineNo)
+                try {
+                    // ===== float values
+                    TomlDouble(this, lineNo)
+                } catch (e: NumberFormatException) {
+                    // ===== fallback strategy in case of invalid value
+                    TomlBasicString(this, lineNo)
+                }
             }
         }
     }
-}
 
 /**
  * method to get proper value from content to get key or value
