@@ -58,7 +58,6 @@ internal fun String.splitKeyToTokens(lineNo: Int): List<String> {
  */
 internal fun String.trimSingleQuotes(): String = trimSymbols(this, "'", "'")
 
-
 /**
  * If this string starts and end with quotes("") - will return the string with quotes removed
  * Otherwise, returns this string.

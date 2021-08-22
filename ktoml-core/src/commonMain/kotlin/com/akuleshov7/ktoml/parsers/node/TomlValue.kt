@@ -22,7 +22,7 @@ public sealed class TomlValue(public val lineNo: Int) {
  * The only difference from the TOML specification (https://toml.io/en/v1.0.0) is that we will have one escaped symbol -
  * single quote and so it will be possible to use a single quote inside.
  */
-public class TomlLiteralString (content: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlLiteralString(content: String, lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("'") && content.endsWith("'")) {
         content.trimSingleQuotes().convertSingleQuotes()
     } else {
@@ -165,9 +165,9 @@ public class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(
      * recursively parse TOML array from the string
      */
     private fun String.parse(): List<Any> =
-        this.parseArray()
-            .map { it.trim() }
-            .map { if (it.startsWith("[")) it.parse() else it.parseValue(lineNo) }
+            this.parseArray()
+                .map { it.trim() }
+                .map { if (it.startsWith("[")) it.parse() else it.parseValue(lineNo) }
 
     /**
      * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]

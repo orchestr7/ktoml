@@ -105,11 +105,11 @@ public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
     "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
     // ===== boolean vales
     "true", "false" -> TomlBoolean(this, lineNo)
-    else -> when(this[0]) {
+    else -> when (this[0]) {
         // ===== literal strings
-        '\'' ->  if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo)
+        '\'' -> if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo)
         // ===== basic strings
-        '\"' ->  TomlBasicString(this, lineNo)
+        '\"' -> TomlBasicString(this, lineNo)
         else ->
             try {
                 // ===== integer values
@@ -123,8 +123,8 @@ public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
                     TomlBasicString(this, lineNo)
                 }
             }
-        }
     }
+}
 
 /**
  * method to get proper value from content to get key or value
