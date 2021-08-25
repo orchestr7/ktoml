@@ -51,8 +51,8 @@ public open class Toml(
      * @param deserializer deserialization strategy
      * @return deserialized object of type T
      */
-    public fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, toml: List<String>): T {
-        val parsedToml = tomlParser.parseStringsToTomlTree(toml)
+    public fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, toml: List<String>, ktomlConf: KtomlConf): T {
+        val parsedToml = tomlParser.parseStringsToTomlTree(toml, ktomlConf)
         return TomlDecoder.decode(deserializer, parsedToml, config)
     }
 
@@ -72,9 +72,10 @@ public open class Toml(
     public fun <T> partiallyDecodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: String,
-        tomlTableName: String
+        tomlTableName: String,
+        ktomlConf: KtomlConf = KtomlConf()
     ): T {
-        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, TomlParser::parseString)
+        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, ktomlConf, TomlParser::parseString)
         return TomlDecoder.decode(deserializer, fakeFileNode, config)
     }
 
@@ -94,12 +95,14 @@ public open class Toml(
     public fun <T> partiallyDecodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
-        tomlTableName: String
+        tomlTableName: String,
+        ktomlConf: KtomlConf = KtomlConf()
     ): T {
         val fakeFileNode = generateFakeTomlStructureForPartialParsing(
             toml.joinToString("\n"),
             tomlTableName,
-            TomlParser::parseString
+            ktomlConf,
+            TomlParser::parseString,
         )
         return TomlDecoder.decode(deserializer, fakeFileNode, config)
     }
@@ -109,6 +112,7 @@ public open class Toml(
     private fun generateFakeTomlStructureForPartialParsing(
         toml: String,
         tomlTableName: String,
+        ktomlConf: KtomlConf = KtomlConf(),
         parsingFunction: (TomlParser, String) -> TomlFile
     ): TomlFile {
         val parsedToml = parsingFunction(TomlParser(config), toml)
@@ -119,7 +123,7 @@ public open class Toml(
             )
 
         // adding a fake file node to restore the structure and parse only the part of te toml
-        val fakeFileNode = TomlFile()
+        val fakeFileNode = TomlFile(ktomlConf)
         parsedToml.children.forEach {
             fakeFileNode.appendChild(it)
         }

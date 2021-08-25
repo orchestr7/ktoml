@@ -4,6 +4,7 @@
 
 package com.akuleshov7.ktoml.parsers.node
 
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
@@ -22,9 +23,10 @@ public sealed class TomlValue(public val lineNo: Int) {
  * The only difference from the TOML specification (https://toml.io/en/v1.0.0) is that we will have one escaped symbol -
  * single quote and so it will be possible to use a single quote inside.
  */
-public class TomlLiteralString(content: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlLiteralString(content: String, lineNo: Int, ktomlConf: KtomlConf = KtomlConf()) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("'") && content.endsWith("'")) {
-        content.trimSingleQuotes().convertSingleQuotes()
+        val contentString = content.trimSingleQuotes()
+        if(ktomlConf.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
     } else {
         throw TomlParsingException(
             "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
@@ -146,7 +148,11 @@ public class TomlNull(lineNo: Int) : TomlValue(lineNo) {
 /**
  * Toml AST Node for a representation of arrays: key = [value1, value2, value3]
  */
-public class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(lineNo) {
+public class TomlArray(
+    private val rawContent: String,
+    lineNo: Int,
+    ktomlConf: KtomlConf = KtomlConf()
+) : TomlValue(lineNo) {
     override lateinit var content: Any
 
     init {
@@ -159,15 +165,15 @@ public class TomlArray(private val rawContent: String, lineNo: Int) : TomlValue(
      *
      * @return converted array to a list
      */
-    public fun parse(): List<Any> = rawContent.parse()
+    public fun parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> = rawContent.parse(ktomlConf)
 
     /**
      * recursively parse TOML array from the string
      */
-    private fun String.parse(): List<Any> =
+    private fun String.parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> =
             this.parseArray()
                 .map { it.trim() }
-                .map { if (it.startsWith("[")) it.parse() else it.parseValue(lineNo) }
+                .map { if (it.startsWith("[")) it.parse(ktomlConf) else it.parseValue(lineNo, ktomlConf) }
 
     /**
      * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]

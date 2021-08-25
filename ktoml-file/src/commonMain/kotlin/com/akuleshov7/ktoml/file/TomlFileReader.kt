@@ -33,7 +33,7 @@ public open class TomlFileReader(
         tomlFilePath: String,
     ): T {
         val parsedToml = readAndParseFile(tomlFilePath)
-        return decodeFromString(deserializer, parsedToml)
+        return decodeFromString(deserializer, parsedToml, config)
     }
 
     /**
@@ -56,7 +56,7 @@ public open class TomlFileReader(
         tomlTableName: String,
     ): T {
         val parsedToml = readAndParseFile(tomlFilePath)
-        return partiallyDecodeFromString(deserializer, parsedToml, tomlTableName)
+        return partiallyDecodeFromString(deserializer, parsedToml, tomlTableName, config)
     }
 
     /**

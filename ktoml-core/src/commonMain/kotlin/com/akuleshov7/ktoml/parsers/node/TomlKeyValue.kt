@@ -31,7 +31,7 @@ internal interface TomlKeyValue {
      * @param parentNode
      * @return the table that is parsed from a dotted key
      */
-    fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTable {
+    fun createTomlTableFromDottedKey(parentNode: TomlNode, ktomlConf: KtomlConf = KtomlConf()): TomlTable {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
         // creating new key with the last dot-separated fragment
@@ -44,6 +44,7 @@ internal interface TomlKeyValue {
         return TomlTable(
             "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",
             lineNo,
+            ktomlConf,
             true
         )
     }
@@ -57,7 +58,7 @@ internal interface TomlKeyValue {
  * @return a resulted key-value pair
  * @throws TomlParsingException
  */
-public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String, String> {
+public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()): Pair<String, String> {
     // finding the index of the last quote, if no quotes are found, then use the length of the string
     val closingQuoteIndex = listOf(
         this.lastIndexOf("\""),
@@ -100,14 +101,14 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf): Pair<String,
  * @param lineNo
  * @return parsed TomlNode value
  */
-public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
+public fun String.parseValue(lineNo: Int, ktomlConf: KtomlConf): TomlValue = when (this) {
     // ===== null values
     "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
     // ===== boolean vales
     "true", "false" -> TomlBoolean(this, lineNo)
     else -> when (this[0]) {
         // ===== literal strings
-        '\'' -> if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo)
+        '\'' -> if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo, ktomlConf)
         // ===== basic strings
         '\"' -> TomlBasicString(this, lineNo)
         else ->
@@ -132,7 +133,7 @@ public fun String.parseValue(lineNo: Int): TomlValue = when (this) {
 private fun String.checkNotEmpty(
     log: String,
     content: String,
-    ktomlConf: KtomlConf,
+    ktomlConf: KtomlConf = KtomlConf(),
     lineNo: Int
 ): String =
         this.also {

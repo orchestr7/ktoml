@@ -6,5 +6,6 @@ package com.akuleshov7.ktoml
  */
 public data class KtomlConf(
     val ignoreUnknownNames: Boolean = false,
-    val emptyValuesAllowed: Boolean = true
+    val emptyValuesAllowed: Boolean = true,
+    val escapedQuotesInLiteralStringsAllowed: Boolean = false
 )
