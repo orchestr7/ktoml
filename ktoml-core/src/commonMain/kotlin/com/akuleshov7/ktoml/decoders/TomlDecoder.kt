@@ -205,7 +205,7 @@ public class TomlDecoder(
         is TomlFile -> {
             checkMissingRequiredField(rootNode.children, descriptor)
             val firstFileChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
-                "Missing child nodes (tales, key-values) for TomlFile." +
+                "Missing child nodes (tables, key-values) for TomlFile." +
                         " Empty toml was provided to the input?"
             )
             TomlDecoder(firstFileChild, config)

@@ -2,10 +2,12 @@ package decoder
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 @Serializable
@@ -21,9 +23,12 @@ data class Config2(val key: Key? = null)
 data class Config3(val key: Key = Key(0L))
 
 @Serializable
+data class Config(val key: Key? = Key(0L))
+
+@Serializable
 data class Config4(val key: Key)
 
-class RegressionScenariosTest {
+class NullableTablesTest {
     @Test
     fun nullableKey() {
         val mapper = Toml(
@@ -62,7 +67,7 @@ class RegressionScenariosTest {
         assertNotNull(toml3)
         assertEquals(1L, toml3.key.value)
 
-        val toml4 = mapper.decodeFromString<Config3>(
+        val toml4 = mapper.decodeFromString<Config4>(
             """            
             [key]
             value = 1            
@@ -71,5 +76,25 @@ class RegressionScenariosTest {
 
         assertNotNull(toml4)
         assertEquals(1L, toml4.key.value)
+    }
+}
+
+class EmptyTomlTest {
+    @Test
+    fun emptyToml() {
+        assertFailsWith<InternalDecodingException> {
+            Toml().decodeFromString<Config>(
+                """            
+             
+             
+                """.trimIndent()
+            )
+        }
+
+        assertFailsWith<InternalDecodingException> {
+            Toml().decodeFromString(
+                "".trimIndent()
+            )
+        }
     }
 }
