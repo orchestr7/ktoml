@@ -1,4 +1,5 @@
 import com.akuleshov7.buildutils.configurePublishing
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
@@ -9,6 +10,8 @@ plugins {
 
 kotlin {
     explicitApi()
+
+    // building jvm task only on windows
     jvm {
         compilations.all {
             kotlinOptions {
@@ -17,11 +20,14 @@ kotlin {
         }
     }
 
-    js(LEGACY)
+    val os = getCurrentOperatingSystem()
 
-    linuxX64()
-    mingwX64()
-    macosX64()
+    when {
+        os.isWindows -> mingwX64()
+        os.isLinux -> linuxX64()
+        os.isMacOsX -> macosX64()
+        else -> throw GradleException("Unknown operating system $os")
+    }
 
     sourceSets {
         all {

@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
 
 env:
   PGP_SEC: ${{ secrets.PGP_SEC }}
