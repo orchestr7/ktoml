@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml
 
-import com.akuleshov7.ktoml.decoders.TomlDecoder
+import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlFile
@@ -35,7 +35,7 @@ public open class Toml(
      */
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parsedToml = tomlParser.parseString(string)
-        return TomlDecoder.decode(deserializer, parsedToml, config)
+        return TomlMainDecoder.decode(deserializer, parsedToml, config)
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
@@ -49,11 +49,15 @@ public open class Toml(
      *
      * @param toml list with strings in toml format
      * @param deserializer deserialization strategy
+     * @param ktomlConf
      * @return deserialized object of type T
      */
-    public fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, toml: List<String>, ktomlConf: KtomlConf): T {
+    public fun <T> decodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        toml: List<String>,
+        ktomlConf: KtomlConf): T {
         val parsedToml = tomlParser.parseStringsToTomlTree(toml, ktomlConf)
-        return TomlDecoder.decode(deserializer, parsedToml, config)
+        return TomlMainDecoder.decode(deserializer, parsedToml, config)
     }
 
     /**
@@ -67,6 +71,7 @@ public open class Toml(
      * @param deserializer deserialization strategy
      * @param toml request-string in toml format with '\n' or '\r\n' separation
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
+     * @param ktomlConf
      * @return deserialized object of type T
      */
     public fun <T> partiallyDecodeFromString(
@@ -76,7 +81,7 @@ public open class Toml(
         ktomlConf: KtomlConf = KtomlConf()
     ): T {
         val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, ktomlConf, TomlParser::parseString)
-        return TomlDecoder.decode(deserializer, fakeFileNode, config)
+        return TomlMainDecoder.decode(deserializer, fakeFileNode, config)
     }
 
     /**
@@ -90,6 +95,7 @@ public open class Toml(
      * @param deserializer deserialization strategy
      * @param toml list of strings with toml input
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
+     * @param ktomlConf
      * @return deserialized object of type T
      */
     public fun <T> partiallyDecodeFromString(
@@ -104,7 +110,7 @@ public open class Toml(
             ktomlConf,
             TomlParser::parseString,
         )
-        return TomlDecoder.decode(deserializer, fakeFileNode, config)
+        return TomlMainDecoder.decode(deserializer, fakeFileNode, config)
     }
 
     // ================== other ===============

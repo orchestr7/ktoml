@@ -17,13 +17,28 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
  *
  * @property content - original node content (used for logging and tests only)
  * @property lineNo - the number of a line from TOML that is linked to the current node
+ * @property ktomlConf
  */
-public sealed class TomlNode(public open val content: String, public open val lineNo: Int, public open val ktomlConf: KtomlConf = KtomlConf()) {
+public sealed class TomlNode(
+    public open val content: String,
+    public open val lineNo: Int,
+    public open val ktomlConf: KtomlConf = KtomlConf()) {
     public open val children: MutableSet<TomlNode> = mutableSetOf()
     public open var parent: TomlNode? = null
+
+    // the real toml name of a structure (for table [a] it will be "a", for key b = 1 it will be "b")
+    // used for logging and errors AND for matching the name of the node to the name of the fields in the class
+    // see: [checkMissingRequiredField]
     public abstract val name: String
-    constructor(keyValuePair: Pair<String, String>, lineNo: Int, ktomlConf: KtomlConf = KtomlConf()) : this(
-        "${keyValuePair.first}=${keyValuePair.second}",
+
+    // this constructor is used by TomlKeyValueList and TomlKeyValuePrimitive and we concatenate keyValuePair to the content
+    // only for logging, debug information and unification of the code
+    constructor(
+        key: TomlKey,
+        value: TomlValue,
+        lineNo: Int,
+        ktomlConf: KtomlConf = KtomlConf()) : this(
+        "${key.content}=${value.content}",
         lineNo,
         ktomlConf
     )
@@ -52,7 +67,7 @@ public sealed class TomlNode(public open val content: String, public open val li
      * @param currentLevel
      * @return a list of table nodes with the same name and that stay on the same level
      */
-    protected fun findTableInAstByName(
+    private fun findTableInAstByName(
         searchedTableName: String,
         searchedLevel: Int,
         currentLevel: Int
@@ -193,7 +208,10 @@ public sealed class TomlNode(public open val content: String, public open val li
 /**
  * A root node for TOML Abstract Syntax Tree
  */
-public class TomlFile(ktomlConf: KtomlConf = KtomlConf()) : TomlNode("rootNode", 0, ktomlConf) {
+public class TomlFile(ktomlConf: KtomlConf = KtomlConf()) : TomlNode(
+    "rootNode",
+    0,
+    ktomlConf) {
     override val name: String = "rootNode"
 
     override fun getNeighbourNodes(): MutableSet<TomlNode> =
@@ -212,7 +230,10 @@ public class TomlTable(
     content: String,
     lineNo: Int,
     ktomlConf: KtomlConf = KtomlConf(),
-    public val isSynthetic: Boolean = false) : TomlNode(content, lineNo, ktomlConf) {
+    public val isSynthetic: Boolean = false) : TomlNode(
+    content,
+    lineNo,
+    ktomlConf) {
     // list of tables that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
     public var tablesList: List<String>
 
@@ -255,31 +276,66 @@ public class TomlTable(
 }
 
 /**
- * class for parsing and storing Array in AST
+ * Class for parsing and storing Array in AST. It receives a pair of two strings as an input and converts it to a pair
+ * of TomlKey and TomlValue (as TomlArray)
  * @property lineNo
+ * @property key
+ * @property value
+ * @property name
  */
-public class TomlKeyValueList(
-    keyValuePair: Pair<String, String>,
+public class TomlKeyValueArray(
+    override var key: TomlKey,
+    override val value: TomlValue,
     override val lineNo: Int,
-    ktomlConf:KtomlConf,
-) : TomlNode(keyValuePair, lineNo, ktomlConf), TomlKeyValue {
-    override var key: TomlKey = TomlKey(keyValuePair.first, lineNo)
-    override val value: TomlValue = parseList(keyValuePair.second, lineNo)
-    override val name: String = key.content
+    override val name: String,
+    ktomlConf: KtomlConf = KtomlConf()
+) : TomlNode(
+    key,
+    value,
+    lineNo,
+    ktomlConf), TomlKeyValue {
+    // adaptor for string pair of key-value
+    public constructor(
+        keyValuePair: Pair<String, String>,
+        lineNo: Int,
+        ktomlConf: KtomlConf = KtomlConf()
+    ) : this(
+        TomlKey(keyValuePair.first, lineNo),
+        keyValuePair.second.parseList(lineNo, ktomlConf),
+        lineNo,
+        TomlKey(keyValuePair.first, lineNo).content
+    )
 }
 
 /**
  * class for parsing and storing simple single value types in AST
  * @property lineNo
+ * @property key
+ * @property value
+ * @property name
  */
-public class TomlKeyValueSimple(
-    keyValuePair: Pair<String, String>,
+public class TomlKeyValuePrimitive(
+    override var key: TomlKey,
+    override val value: TomlValue,
     override val lineNo: Int,
+    override val name: String,
     ktomlConf: KtomlConf = KtomlConf()
-) : TomlNode(keyValuePair, lineNo, ktomlConf), TomlKeyValue {
-    override var key: TomlKey = TomlKey(keyValuePair.first, lineNo)
-    override val value: TomlValue = keyValuePair.second.parseValue(lineNo, ktomlConf)
-    override val name: String = key.content
+) : TomlNode(
+    key,
+    value,
+    lineNo,
+    ktomlConf), TomlKeyValue {
+    // adaptor for string pair of key-value
+    public constructor(
+        keyValuePair: Pair<String, String>,
+        lineNo: Int,
+        ktomlConf: KtomlConf = KtomlConf()
+    ) : this(
+        TomlKey(keyValuePair.first, lineNo),
+        keyValuePair.second.parseValue(lineNo, ktomlConf),
+        lineNo,
+        TomlKey(keyValuePair.first, lineNo).content
+    )
 }
 
 /**
@@ -288,6 +344,9 @@ public class TomlKeyValueSimple(
  *
  * Instances of this stub will be added as children to such parsed tables
  */
-public class TomlStubEmptyNode(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()) : TomlNode("empty_technical_node", lineNo, ktomlConf) {
+public class TomlStubEmptyNode(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()) : TomlNode(
+    "empty_technical_node",
+    lineNo,
+    ktomlConf) {
     override val name: String = "empty_technical_node"
 }

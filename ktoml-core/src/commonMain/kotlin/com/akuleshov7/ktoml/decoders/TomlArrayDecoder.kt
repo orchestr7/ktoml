@@ -1,29 +1,32 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValueList
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValueArray
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.parsers.node.TomlNull
 import com.akuleshov7.ktoml.parsers.node.TomlValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
  * @property rootNode
- * @property config
+ * @property ktomlConf
  */
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
-public class TomlListDecoder(
-    public val rootNode: TomlKeyValueList,
-    public val config: KtomlConf,
-) : AbstractDecoder() {
+public class TomlArrayDecoder(
+    private val rootNode: TomlKeyValueArray,
+    private val ktomlConf: KtomlConf,
+) : TomlAbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
     override val serializersModule: SerializersModule = EmptySerializersModule
-    private lateinit var currentElementDecoder: TomlScalarDecoder
+    private lateinit var currentElementDecoder: TomlPrimitiveDecoder
+    private lateinit var currentPrimitiveElementOfArray: TomlValue
 
     private fun haveStartedReadingElements() = nextElementIndex > 0
 
@@ -33,8 +36,18 @@ public class TomlListDecoder(
         if (nextElementIndex == list.size) {
             return CompositeDecoder.DECODE_DONE
         }
-        currentElementDecoder = TomlScalarDecoder(
-            list[nextElementIndex]
+
+        currentPrimitiveElementOfArray = list[nextElementIndex]
+
+        currentElementDecoder = TomlPrimitiveDecoder(
+            // a small hack that creates a PrimitiveKeyValue node that is used in the decoder
+            TomlKeyValuePrimitive(
+                rootNode.key,
+                currentPrimitiveElementOfArray,
+                rootNode.lineNo,
+                rootNode.key.content,
+                ktomlConf
+            )
         )
         return nextElementIndex++
     }
@@ -46,6 +59,9 @@ public class TomlListDecoder(
         return super.beginStructure(descriptor)
     }
 
+    override fun decodeKeyValue(): TomlKeyValue = throw NotImplementedError("Method `decodeKeyValue`" +
+            " should never be called for TomlListDecoder, it should use ")
+
     override fun decodeString(): String = currentElementDecoder.decodeString()
     override fun decodeInt(): Int = currentElementDecoder.decodeInt()
     override fun decodeLong(): Long = currentElementDecoder.decodeLong()
@@ -56,4 +72,7 @@ public class TomlListDecoder(
     override fun decodeBoolean(): Boolean = currentElementDecoder.decodeBoolean()
     override fun decodeChar(): Char = currentElementDecoder.decodeChar()
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = currentElementDecoder.decodeEnum(enumDescriptor)
+
+    // this should be applied to [currentPrimitiveElementOfArray] and not to the [rootNode], because
+    override fun decodeNotNullMark(): Boolean = currentPrimitiveElementOfArray !is TomlNull
 }

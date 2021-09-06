@@ -14,7 +14,7 @@ import okio.Path.Companion.toPath
  *
  * @param tomlFile string with a path to a file
  * @return list with strings
- * @throws e FileNotFoundException if the toml file is missing
+ * @throws FileNotFoundException if the toml file is missing
  */
 @ExperimentalFileSystem
 internal fun readAndParseFile(tomlFile: String): List<String> {

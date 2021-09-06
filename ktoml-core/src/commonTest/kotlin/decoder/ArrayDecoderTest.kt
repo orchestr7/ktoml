@@ -1,12 +1,15 @@
 package decoder
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.exceptions.TomlCastException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 
 @Serializable
 data class SimpleArray(val a: List<Long>)
@@ -47,8 +50,38 @@ data class TestArraysAndSimple(
     val name2: String
 )
 
+@Serializable
+data class ClassWithMutableList (val field: MutableList<Long>? = null)
+
+@Serializable
+data class ClassWithImmutableList(val field: List<Long?>? = null)
 
 class SimpleArrayDecoderTest {
+    @Test
+    fun testRegressions() {
+        // ==== #77 ====
+        val testClassWithMutableList: ClassWithMutableList = Toml.decodeFromString("field = []")
+        assertEquals(emptyList(), testClassWithMutableList.field)
+
+        val testClassWithImmutableList: ClassWithImmutableList = Toml.decodeFromString("field = []")
+        assertEquals(emptyList(), testClassWithImmutableList.field)
+
+        val testWithNullArray1: ClassWithImmutableList = Toml.decodeFromString("field = null")
+        assertEquals(null, testWithNullArray1.field)
+
+        val testWithNullArray2: ClassWithMutableList = Toml.decodeFromString("field = null")
+        assertEquals(null, testWithNullArray2.field)
+
+        assertFailsWith<TomlCastException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
+
+        val testWithOnlyNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null ]")
+        assertEquals(listOf(null), testWithOnlyNullInArray.field)
+
+        val testWithNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null, 1 ]")
+        assertEquals(listOf<Long?>(null, 1), testWithNullInArray.field)
+    }
+
+
     @Test
     fun testSimpleArrayDecoder() {
         val test = "a = [1, 2,      3]"
