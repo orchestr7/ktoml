@@ -4,10 +4,9 @@ package com.akuleshov7.ktoml.file
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
 
-import okio.ExperimentalFileSystem
-
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -16,6 +15,7 @@ import kotlinx.serialization.modules.SerializersModule
  * that is used to serialize/deserialize TOML file or string
  * @property serializersModule
  */
+@OptIn(ExperimentalSerializationApi::class)
 public open class TomlFileReader(
     private val config: KtomlConf = KtomlConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
@@ -27,7 +27,6 @@ public open class TomlFileReader(
      * @param tomlFilePath path to the file where toml is stored
      * @return deserialized object of type T
      */
-    @ExperimentalFileSystem
     public fun <T> decodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
@@ -49,7 +48,6 @@ public open class TomlFileReader(
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
      * @return deserialized object of type T
      */
-    @ExperimentalFileSystem
     public fun <T> partiallyDecodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,

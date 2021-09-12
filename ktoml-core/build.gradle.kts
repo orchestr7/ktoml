@@ -8,7 +8,6 @@ plugins {
 }
 
 kotlin {
-
     explicitApi()
     jvm {
         compilations.all {
@@ -18,11 +17,17 @@ kotlin {
         }
     }
 
+    js(LEGACY)
+
     linuxX64()
     mingwX64()
     macosX64()
 
     sourceSets {
+        all {
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
@@ -49,8 +54,6 @@ kotlin {
         }
     }
 }
-
-configurePublishing()
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()

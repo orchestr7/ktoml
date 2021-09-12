@@ -6,7 +6,6 @@ import com.akuleshov7.ktoml.parsers.node.TomlTable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
-import okio.ExperimentalFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,8 +35,6 @@ class TomlFileParserTest {
         val myotherserver: String
     )
 
-    @OptIn(ExperimentalFileSystem::class)
-    @ExperimentalSerializationApi
     @Test
     fun readParseAndDecodeFile() {
         val expected = TestClass(
@@ -77,7 +74,6 @@ class TomlFileParserTest {
     data class InnerTest(val str: String = "Undefined")
 
     @Test
-    @ExperimentalFileSystem
     @ExperimentalSerializationApi
     fun testTableDiscovery() {
         val file = "src/commonTest/resources/complex_toml_tables.toml"
@@ -93,7 +89,6 @@ class TomlFileParserTest {
     @Serializable
     data class RegressionTest(val a: Long?, val b: Long, val c: Long, val d: Long?)
 
-    @OptIn(ExperimentalFileSystem::class)
     @ExperimentalSerializationApi
     @Test
     fun regressionCast2Test() {
@@ -102,7 +97,6 @@ class TomlFileParserTest {
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
-    @OptIn(ExperimentalFileSystem::class)
     @ExperimentalSerializationApi
     @Test
     fun regressionPartialTest() {
@@ -137,7 +131,6 @@ class TomlFileParserTest {
         val list: List<String>
     )
 
-    @OptIn(ExperimentalFileSystem::class)
     @ExperimentalSerializationApi
     @Test
     fun regressionInvalidIndex() {
@@ -183,7 +176,6 @@ class TomlFileParserTest {
     @Serializable
     data class TwoTomlTables(val table1: Table1, val table2: Table2)
 
-    @OptIn(ExperimentalFileSystem::class)
     @Test
     fun testPartialFileDecoding() {
         val file = "src/commonTest/resources/partial_decoder.toml"
@@ -196,7 +188,6 @@ class TomlFileParserTest {
         )
     }
 
-    @OptIn(ExperimentalFileSystem::class)
     @Test
     fun readTopLevelTables() {
         val file = "src/commonTest/resources/simple_example.toml"

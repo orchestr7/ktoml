@@ -61,7 +61,7 @@ class SimpleArrayDecoderTest {
     fun testRegressions() {
         // ==== #77 ====
         val testClassWithMutableList: ClassWithMutableList = Toml.decodeFromString("field = []")
-        assertEquals(emptyList(), testClassWithMutableList.field)
+        assertEquals(mutableListOf(), testClassWithMutableList.field)
 
         val testClassWithImmutableList: ClassWithImmutableList = Toml.decodeFromString("field = []")
         assertEquals(emptyList(), testClassWithImmutableList.field)

@@ -4,7 +4,6 @@
 
 package com.akuleshov7.ktoml.file
 
-import okio.ExperimentalFileSystem
 import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path.Companion.toPath
@@ -16,11 +15,10 @@ import okio.Path.Companion.toPath
  * @return list with strings
  * @throws FileNotFoundException if the toml file is missing
  */
-@ExperimentalFileSystem
 internal fun readAndParseFile(tomlFile: String): List<String> {
     try {
         val ktomlPath = tomlFile.toPath()
-        return FileSystem.SYSTEM.read(ktomlPath) {
+        return getOsSpecificFileSystem().read(ktomlPath) {
             // FixMe: may be we need to read and at the same time parse (to make it parallel)
             generateSequence { readUtf8Line() }.toList()
         }
@@ -29,3 +27,5 @@ internal fun readAndParseFile(tomlFile: String): List<String> {
         throw e
     }
 }
+
+internal expect fun getOsSpecificFileSystem(): FileSystem
