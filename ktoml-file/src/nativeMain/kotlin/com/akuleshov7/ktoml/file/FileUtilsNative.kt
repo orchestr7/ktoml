@@ -6,4 +6,9 @@ package com.akuleshov7.ktoml.file
 
 import okio.FileSystem
 
+/**
+ * Implementation for getting proper file system to read files with okio
+ *
+ * @return proper FileSystem
+ */
 internal actual fun getOsSpecificFileSystem(): FileSystem = FileSystem.SYSTEM

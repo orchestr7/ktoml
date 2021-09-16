@@ -28,4 +28,9 @@ internal fun readAndParseFile(tomlFile: String): List<String> {
     }
 }
 
+/**
+ * Implementation for getting proper file system to read files with okio
+ *
+ * @return proper FileSystem
+ */
 internal expect fun getOsSpecificFileSystem(): FileSystem
