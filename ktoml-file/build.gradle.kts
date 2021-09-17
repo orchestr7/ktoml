@@ -18,21 +18,30 @@ kotlin {
         }
     }
 
-    val os = getCurrentOperatingSystem()
-
-    val target = listOf(when {
-        os.isWindows -> mingwX64()
-        os.isLinux -> linuxX64()
-        os.isMacOsX -> macosX64()
-        else -> throw GradleException("Unknown operating system $os")
-    })
+    mingwX64()
+    linuxX64()
+    macosX64()
 
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
-         val nativeMain by creating {
+        val linuxX64Main by getting {
+            dependencies {
+                implementation("com.squareup.okio:okio:${Versions.OKIO}")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
+            }
+        }
+
+        val mingwX64Main by getting {
+            dependencies {
+                implementation("com.squareup.okio:okio:${Versions.OKIO}")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
+            }
+        }
+
+        val macosX64Main by getting {
             dependencies {
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
@@ -52,10 +61,6 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
                 implementation(project(":ktoml-core"))
             }
-        }
-
-        target.forEach {
-            getByName("${it.name}Main").dependsOn(nativeMain)
         }
 
         val commonTest by getting {
