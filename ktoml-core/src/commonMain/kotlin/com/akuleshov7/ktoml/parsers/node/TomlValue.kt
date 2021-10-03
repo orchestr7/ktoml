@@ -35,8 +35,9 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
         stringWithoutQuotes.forEachIndexed { index, ch ->
             if (ch == '\"' && (index == 0 || stringWithoutQuotes[index - 1] != '\\')) {
                 throw TomlParsingException(
-                    "Found invalid quote that is not escaped, index = [$index]." +
-                            " Please remove the quote or use escape symbols in <$content>", lineNo
+                    "Found invalid quote that is not escaped." +
+                            " Please remove the quote or use escaping" +
+                            " in <$stringWithoutQuotes> at position = [$index].", lineNo
                 )
             }
         }
@@ -50,14 +51,17 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
             val newCharacter = if (stringWithoutQuotes[i] == '\\' && i != stringWithoutQuotes.length - 1) {
                 updatedOnPreviousStep = true
                 when (stringWithoutQuotes[i + 1]) {
-                    '\\' -> '\\'
+                    // table that is used to convert escaped string literals to proper char symbols
                     't' -> '\t'
                     'b' -> '\b'
                     'r' -> '\r'
                     'n' -> '\n'
+                    '\\' -> '\\'
+                    '\'' -> '\''
+                    '"' -> '"'
                     else -> throw TomlParsingException(
                         "According to TOML documentation unknown" +
-                                " escape symbols are not allowed. Please check [\\${stringWithoutQuotes[i + 1]}]",
+                                " escape symbols are not allowed. Please check: [\\${stringWithoutQuotes[i + 1]}]",
                         lineNo
                     )
                 }

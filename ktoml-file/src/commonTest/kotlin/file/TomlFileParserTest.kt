@@ -42,7 +42,7 @@ class TomlFileParserTest {
     @Test
     fun readParseAndDecodeFile() {
         val expected = TestClass(
-            "TOML Example",
+            "TOML \"Example\"",
             Owner(
                 "Tom Preston-Werner",
                 "1979-05-27T07:32:00-08:00",
