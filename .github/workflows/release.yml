@@ -39,11 +39,11 @@ jobs:
       - name: gradle release from tag
         # if workflow is triggered after push of a tag, deploy full release
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        run: ./gradlew --build-cache -Prelease linkReleaseExecutableMultiplatform publishToSonatype
+        run: ./gradlew --build-cache -Prelease publishToSonatype
       - name: gradle snapshot release
         # if workflow is triggered after push to a branch, deploy snapshot
         if: ${{ startsWith(github.ref, 'refs/heads/') }}
-        run: ./gradlew --build-cache -Prelease -Preckon.stage=snapshot linkReleaseExecutableMultiplatform publishToSonatype
+        run: ./gradlew --build-cache -Prelease -Preckon.stage=snapshot publishToSonatype
         shell: bash
       - name: Status git after
         if: ${{ always() }}

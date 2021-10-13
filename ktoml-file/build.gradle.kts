@@ -17,9 +17,14 @@ kotlin {
         }
     }
 
-    linuxX64()
-    mingwX64()
-    macosX64()
+    val os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()
+
+    when {
+        os.isWindows -> mingwX64()
+        os.isLinux -> linuxX64()
+        os.isMacOsX -> macosX64()
+        else -> throw GradleException("Unknown operating system $os")
+    }
 
     sourceSets {
         val commonMain by getting {
