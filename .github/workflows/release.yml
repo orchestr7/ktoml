@@ -16,19 +16,35 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [  ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
+        with:
+          # release workflow should have access to all tags
+          fetch-depth: 0
       - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 1.11
+      - name: Status git before
+        run: git status
       - uses: burrunan/gradle-cache-action@v1
-        name: Gradle release with caches caching
         with:
-          arguments: publishToSonatype closeSonatypeStagingRepository
           gradle-version: wrapper
+      # Until https://github.com/burrunan/gradle-cache-action/issues/42 is addressed, gradle should be run as a separate step
+      - name: gradle release from tag
+        # if workflow is triggered after push of a tag, deploy full release
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        run: ./gradlew --build-cache -Prelease linkReleaseExecutableMultiplatform publishToSonatype
+      - name: gradle snapshot release
+        # if workflow is triggered after push to a branch, deploy snapshot
+        if: ${{ startsWith(github.ref, 'refs/heads/') }}
+        run: ./gradlew --build-cache -Prelease -Preckon.stage=snapshot linkReleaseExecutableMultiplatform publishToSonatype
+        shell: bash
+      - name: Status git after
+        if: ${{ always() }}
+        run: git status
 
   github_release:
     needs: release
