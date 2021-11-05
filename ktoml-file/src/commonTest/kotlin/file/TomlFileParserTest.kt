@@ -28,14 +28,14 @@ class TomlFileParserTest {
 
     @Serializable
     data class Database(
-        val server: String
+        val server: String,
     )
 
     @Serializable
     data class MyTest(
-        val myserver: String
+        val myserver: String,
+        val myotherserver: String
     )
-
 
     @OptIn(ExperimentalFileSystem::class)
     @ExperimentalSerializationApi
@@ -46,7 +46,7 @@ class TomlFileParserTest {
             Owner(
                 "Tom Preston-Werner",
                 "1979-05-27T07:32:00-08:00",
-                MyTest("test")
+                MyTest("test", "this is my \\ special \" [ value \" / ")
             ),
             Database(
                 "192.168.1.1"
@@ -87,7 +87,7 @@ class TomlFileParserTest {
         assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
         // ==== checking how table discovery works
         val lines = readAndParseFile(file)
-        val parsedResult = TomlParser(KtomlConf()).parseStringsToTomlTree(lines)
+        val parsedResult = TomlParser(KtomlConf()).parseStringsToTomlTree(lines, KtomlConf())
         assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
     }
 
@@ -205,7 +205,7 @@ class TomlFileParserTest {
         assertEquals(
             listOf("owner", "database"),
             TomlParser(KtomlConf())
-                .parseStringsToTomlTree(lines)
+                .parseStringsToTomlTree(lines, KtomlConf())
                 .children
                 .filterIsInstance<TomlTable>()
                 .filter { !it.isSynthetic }

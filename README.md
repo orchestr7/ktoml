@@ -54,8 +54,8 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Boolean type \
 :white_check_mark: Simple Arrays \
 :white_check_mark: Comments \
+:white_check_mark: Literal Strings \
 :x: Arrays: nested; multiline; of Different Types \
-:x: Literal Strings \
 :x: Multiline Strings \
 :x: Inline Tables \
 :x: Array of Tables \

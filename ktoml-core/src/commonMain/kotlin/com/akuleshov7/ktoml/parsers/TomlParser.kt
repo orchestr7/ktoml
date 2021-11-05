@@ -24,7 +24,7 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
     public fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
         val tomlString = toml.replace("\r\n", "\n")
-        return parseStringsToTomlTree(tomlString.split("\n"))
+        return parseStringsToTomlTree(tomlString.split("\n"), ktomlConf)
     }
 
     /**
@@ -34,8 +34,8 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
      * @return the root node of the resulted toml tree
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
-    public fun parseStringsToTomlTree(ktomlLines: List<String>): TomlFile {
-        var currentParent: TomlNode = TomlFile()
+    public fun parseStringsToTomlTree(ktomlLines: List<String>, ktomlConf: KtomlConf): TomlFile {
+        var currentParent: TomlNode = TomlFile(ktomlConf)
         val tomlFileHead = currentParent as TomlFile
         // need to trim empty lines BEFORE the start of processing
         val mutableKtomlLines = ktomlLines.toMutableList().trimEmptyLines()
@@ -44,16 +44,16 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
             val lineNo = index + 1
             if (!line.isComment() && !line.isEmptyLine()) {
                 if (line.isTableNode()) {
-                    val tableSection = TomlTable(line, lineNo)
+                    val tableSection = TomlTable(line, lineNo, ktomlConf)
                     // if the table is the last line in toml, than it has no children and we need to
                     // add at least fake node as a child
                     if (index == mutableKtomlLines.lastIndex) {
-                        tableSection.appendChild(TomlStubEmptyNode(lineNo))
+                        tableSection.appendChild(TomlStubEmptyNode(lineNo, ktomlConf))
                     }
                     // covering the case when processed table contains no key-value pairs or no tables (after our insertion)
                     // adding fake nodes to a previous table (it has no children because we have found another table right after)
                     if (currentParent.hasNoChildren()) {
-                        currentParent.appendChild(TomlStubEmptyNode(currentParent.lineNo))
+                        currentParent.appendChild(TomlStubEmptyNode(currentParent.lineNo, ktomlConf))
                     }
                     currentParent = tomlFileHead.insertTableToTree(tableSection)
                 } else {
@@ -65,7 +65,7 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
                     if (keyValue.key.isDotted) {
                         // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
                         // because table is the same as dotted key
-                        val newTableSection = keyValue.createTomlTableFromDottedKey(currentParent)
+                        val newTableSection = keyValue.createTomlTableFromDottedKey(currentParent, ktomlConf)
                         tomlFileHead
                             .insertTableToTree(newTableSection)
                             .appendChild(keyValue)
@@ -99,8 +99,8 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
     private fun String.parseTomlKeyValue(lineNo: Int, ktomlConf: KtomlConf): TomlKeyValue {
         val keyValuePair = this.splitKeyValue(lineNo, ktomlConf)
         return when {
-            keyValuePair.second.startsWith("[") -> TomlKeyValueList(keyValuePair, lineNo)
-            else -> TomlKeyValueSimple(keyValuePair, lineNo)
+            keyValuePair.second.startsWith("[") -> TomlKeyValueList(keyValuePair, lineNo, ktomlConf)
+            else -> TomlKeyValueSimple(keyValuePair, lineNo, ktomlConf)
         }
     }
 
