@@ -45,13 +45,13 @@ class DottedKeyParserTest {
 
     @Test
     fun createTable() {
-        var test = TomlKeyValueSimple(Pair("google.com","5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
+        var test = TomlKeyValuePrimitive(Pair("google.com","5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
         assertEquals("google", test.fullTableName)
 
-        test = TomlKeyValueSimple(Pair("a.b.c.d", "5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
+        test = TomlKeyValuePrimitive(Pair("a.b.c.d", "5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
         assertEquals("a.b.c", test.fullTableName)
 
-        val testKeyValue = TomlKeyValueSimple(Pair("a.b.c", "5"), 0, KtomlConf())
+        val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0, KtomlConf())
         test = testKeyValue.createTomlTableFromDottedKey(TomlFile())
         assertEquals("c", testKeyValue.key.content)
         assertEquals(1, test.level)

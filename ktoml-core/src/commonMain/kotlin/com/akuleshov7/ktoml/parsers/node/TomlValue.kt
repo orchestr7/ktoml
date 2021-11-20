@@ -23,10 +23,13 @@ public sealed class TomlValue(public val lineNo: Int) {
  * The only difference from the TOML specification (https://toml.io/en/v1.0.0) is that we will have one escaped symbol -
  * single quote and so it will be possible to use a single quote inside.
  */
-public class TomlLiteralString(content: String, lineNo: Int, ktomlConf: KtomlConf = KtomlConf()) : TomlValue(lineNo) {
+public class TomlLiteralString(
+    content: String,
+    lineNo: Int,
+    ktomlConf: KtomlConf = KtomlConf()) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("'") && content.endsWith("'")) {
         val contentString = content.trimSingleQuotes()
-        if(ktomlConf.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
+        if (ktomlConf.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
     } else {
         throw TomlParsingException(
             "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
@@ -163,12 +166,13 @@ public class TomlArray(
     /**
      * small adaptor to make proper testing of parsing
      *
+     * @param ktomlConf
      * @return converted array to a list
      */
     public fun parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> = rawContent.parse(ktomlConf)
 
     /**
-     * recursively parse TOML array from the string
+     * recursively parse TOML array from the string: [ParsingArray -> Trimming values -> Parsing Nested Arrays]
      */
     private fun String.parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> =
             this.parseArray()
@@ -180,6 +184,11 @@ public class TomlArray(
      */
     @Suppress("TOO_MANY_LINES_IN_LAMBDA")
     private fun String.parseArray(): MutableList<String> {
+        // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
+        if (this.trimBrackets().isBlank()) {
+            return mutableListOf()
+        }
+
         var numberOfOpenBrackets = 0
         var numberOfClosedBrackets = 0
         var bufferBetweenCommas = StringBuilder()

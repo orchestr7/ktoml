@@ -16,7 +16,7 @@ internal class InternalAstException(message: String) : KtomlException(message)
 
 internal class UnknownNameDecodingException(keyField: String, parent: String?) : KtomlException(
     "Unknown key received: <$keyField> in scope <$parent>." +
-            " Pass 'ignoreUnknownNames' option if you would like to skip unknown keys"
+            " Pass 'ignoreUnknownNames' option in KtomlConf if you would like to skip unknown keys"
 )
 
 internal class InvalidEnumValueException(value: String, availableEnumValues: String) : KtomlException(

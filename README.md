@@ -183,7 +183,9 @@ Toml(
         // allow/prohibit unknown names during the deserialization, default false
         ignoreUnknownNames = false,
         // allow/prohibit empty values like "a = # comment", default true
-        emptyValuesAllowed = true
+        emptyValuesAllowed = true,
+        // allow/prohibit escaping of single quotes in literal strings, default true
+        escapedQuotesInLiteralStringsAllowed = true
     )
 ).decodeFromString<MyClass>(
     tomlString
@@ -199,14 +201,17 @@ The following example:
 someBooleanProperty = true
 
 [table1]
-property1 = 5
+# it can be null or nil, but don't forget to mark it with '?' in the codes
+property1 = null
 property2 = 6
+# check property3 in Table1 below. As it has the default value, it is not required and can be not provided 
  
 [table2]
 someNumber = 5
    [table2."akuleshov7.com"]
-       name = "my name"
-       configurationList = ["a",  "b",  "c"]
+       name = 'this is a "literal" string'
+       # empty lists are also supported
+       configurationList = ["a",  "b",  "c", null]
 
 # such redeclaration of table2
 # is prohibited in toml specification;
@@ -218,34 +223,37 @@ otherNumber = 5.56
 can be deserialized to `MyClass`:
 ```kotlin
     @Serializable
-    data class MyClass(
-        val someBooleanProperty: Boolean,
-        val table1: Table1,
-        val table2: Table2
-    )
+data class MyClass(val someBooleanProperty: Boolean, val table1: Table1, val table2: Table2)
 
-    @Serializable
-    data class Table1(val property1: Int, val property2: Int)
+@Serializable
+data class Table1(
+    // nullable values, from toml you can pass null/nil/empty value to this kind of a field
+    val property1: Long?,
+    // please note, that according to the specification of toml integer values should be represented with Long
+    val property2: Long,
+    // no need to pass this value as it has the default value and is NOT REQUIRED
+    val property3: Long = 5
+)
 
-    @Serializable
-    data class Table2(
-        val someNumber: Int,
-        @SerialName("akuleshov7.com")
-        val inlineTable: InlineTable,
-        val otherNumber: Double
-    )
+@Serializable
+data class Table2(
+    val someNumber: Long,
+    @SerialName("akuleshov7.com")
+    val inlineTable: InlineTable,
+    val otherNumber: Double
+)
 
-    @Serializable
-    data class InlineTable(
-        val name: String,
-        @SerialName("configurationList")
-        val overriddenName: List<String>
-    )
+@Serializable
+data class InlineTable(
+    val name: String,
+    @SerialName("configurationList")
+    val overriddenName: List<String?>
+)
 ```
 
 with the following code:
 ```kotlin
-Toml.decodeFromString<MyClass>(/* toml string */)
+Toml.decodeFromString<MyClass>(/* your toml string */)
 ```
 
 Translation of the example above to json-terminology:
@@ -267,4 +275,4 @@ Translation of the example above to json-terminology:
 }
 ``` 
 
-You can check how this example works in [ReadMeExampleTest](ktoml-core/src/commonTest/kotlin/decoder/ReadMeExampleTest.kt).
+:heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](ktoml-core/src/commonTest/kotlin/decoder/ReadMeExampleTest.kt).

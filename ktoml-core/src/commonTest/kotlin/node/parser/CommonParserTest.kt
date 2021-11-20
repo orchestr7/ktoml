@@ -18,7 +18,7 @@ class CommonParserTest {
                 is List<*> -> it.forEach {
                     when (it) {
                         is TomlBasicString -> midLevelValues++
-                        is List<*> -> it.forEach {
+                        is List<*> -> it.forEach { _ ->
                             lowLevelValues++
                         }
                     }

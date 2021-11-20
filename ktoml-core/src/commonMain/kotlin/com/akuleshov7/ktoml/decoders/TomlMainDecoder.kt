@@ -11,36 +11,28 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.modules.*
 
 /**
+ * Main entry point into the decoding process. It can create less common decoders inside, for example:
+ * TomlListDecoder, TomlPrimitiveDecoder, etc.
+ *
  * @property rootNode
  * @property config
  */
 @ExperimentalSerializationApi
-public class TomlDecoder(
+public class TomlMainDecoder(
     private val rootNode: TomlNode,
     private val config: KtomlConf,
-) : AbstractDecoder() {
+) : TomlAbstractDecoder() {
     private var elementIndex = 0
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeValue(): Any = decodeKeyValue().value.content
 
-    override fun decodeByte(): Byte = invalidType("Byte", "Long")
-    override fun decodeShort(): Short = invalidType("Short", "Long")
-    override fun decodeInt(): Int = invalidType("Int", "Long")
-    override fun decodeFloat(): Float = invalidType("Float", "Double")
-    override fun decodeChar(): Char = invalidType("Char", "String")
-    override fun decodeBoolean(): Boolean = decodeType()
-    override fun decodeLong(): Long = decodeType()
-    override fun decodeDouble(): Double = decodeType()
-    override fun decodeString(): String = decodeType()
     override fun decodeNotNullMark(): Boolean {
-        val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
-        return if (node is TomlKeyValueSimple || node is TomlKeyValueList) {
-            decodeValue().toString().toLowerCase() != "null"
-        } else {
-            // all other technical nodes (like tables) should not contain null values
-            // so we will mark them with a "not-null" mark
-            true
+        // we have a special node type in the tree to check nullability (TomlNull). It is one of the implementations of TomlValue
+        return when (val node = getCurrentNode()) {
+            is TomlKeyValuePrimitive -> node.value !is TomlNull
+            is TomlKeyValueArray -> node.value !is TomlNull
+            else -> true
         }
     }
 
@@ -60,53 +52,35 @@ public class TomlDecoder(
         return index
     }
 
-    private fun invalidType(typeName: String, requiredType: String): Nothing {
-        val keyValue = decodeKeyValue()
-        throw IllegalTomlTypeException(
-            "<$typeName> type is not allowed by toml specification," +
-                    " use <$requiredType> instead" +
-                    " (field = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
-        )
-    }
-
-    private inline fun <reified T> decodeType(): T {
-        val keyValue = decodeKeyValue()
-        try {
-            return keyValue.value.content as T
-        } catch (e: ClassCastException) {
-            throw TomlCastException(
-                "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
-                        " with the provided type [${T::class}]. Please check the type in your Serializable class",
-                keyValue.lineNo
-            )
-        }
-    }
-
     // the iteration will go through all elements that will be found in the input
     private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
 
     /**
-     * Trying to decode the value (iterating by the element index)
+     * Getting the node with the value
      * | rootNode
+     * |--- child1, child2, ... , childN
+     * ------------elementIndex------->
+     */
+    private fun getCurrentNode() = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
+
+    /**
+     * Trying to decode the value (ite
      * |--- child1, child2, ... , childN
      * ------------elementIndex------->
      *
      * This method should process only leaf elements that implement TomlKeyValue, because this node should contain the
-     * decoding value. Other types of nodes are more technical
+     * real value for decoding. Other types of nodes are more technical
      *
      */
-    private fun decodeKeyValue(): TomlKeyValue {
-        val node = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
-        return when (node) {
-            is TomlKeyValueSimple -> node
-            is TomlKeyValueList -> node
-            // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
-            // branch, we should throw an exception as it is not expected at all
-            is TomlStubEmptyNode, is TomlTable, is TomlFile ->
-                throw InternalDecodingException(
-                    "This kind of node should not be processed in TomlDecoder.decodeValue(): ${node.content}"
-                )
-        }
+    override fun decodeKeyValue(): TomlKeyValue = when (val node = getCurrentNode()) {
+        is TomlKeyValuePrimitive -> node
+        is TomlKeyValueArray -> node
+        // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
+        // branch, we should throw an exception as it is not expected at all and we should catch this in tests
+        is TomlStubEmptyNode, is TomlTable, is TomlFile ->
+            throw InternalDecodingException(
+                "This kind of node should not be processed in TomlDecoder.decodeValue(): ${node.content}"
+            )
     }
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
@@ -190,7 +164,8 @@ public class TomlDecoder(
 
             if (!descriptor.isElementOptional(index)) {
                 throw MissingRequiredFieldException(
-                    "Invalid number of arguments provided for deserialization. Missing required field " +
+                    "Invalid number of key-value arguments provided in the input for deserialization." +
+                            " Missing the required field " +
                             "<${descriptor.getElementName(index)}> from class <${descriptor.serialName}> in the input"
                 )
             }
@@ -206,9 +181,9 @@ public class TomlDecoder(
             checkMissingRequiredField(rootNode.children, descriptor)
             val firstFileChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
                 "Missing child nodes (tables, key-values) for TomlFile." +
-                        " Empty toml was provided to the input?"
+                        " Was empty toml provided to the input?"
             )
-            TomlDecoder(firstFileChild, config)
+            TomlMainDecoder(firstFileChild, config)
         }
         else -> {
             // this is a little bit tricky index calculation, suggest not to change
@@ -220,15 +195,15 @@ public class TomlDecoder(
                 .elementAt(elementIndex - 1)
 
             when (nextProcessingNode) {
-                is TomlKeyValueList -> TomlListDecoder(nextProcessingNode, config)
-                is TomlKeyValueSimple, is TomlStubEmptyNode -> TomlDecoder(nextProcessingNode, config)
+                is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
+                is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
                 is TomlTable -> {
                     val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                         "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
                                 " in a table <${nextProcessingNode.fullTableName}>"
                     )
                     checkMissingRequiredField(firstTableChild.getNeighbourNodes(), descriptor)
-                    TomlDecoder(firstTableChild, config)
+                    TomlMainDecoder(firstTableChild, config)
                 }
                 else -> throw InternalDecodingException(
                     "Incorrect decdong state in the beginStructure()" +
@@ -250,7 +225,7 @@ public class TomlDecoder(
             rootNode: TomlNode,
             config: KtomlConf = KtomlConf()
         ): T {
-            val decoder = TomlDecoder(rootNode, config)
+            val decoder = TomlMainDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)
         }
     }

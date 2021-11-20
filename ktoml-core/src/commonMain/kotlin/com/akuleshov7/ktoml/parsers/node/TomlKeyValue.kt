@@ -12,16 +12,6 @@ internal interface TomlKeyValue {
     val lineNo: Int
 
     /**
-     * in TOML specification arrays have a very complex functionality (trailing commas, values of different types, etdc)
-     * so we need a separate parser for these arrays
-     *
-     * @param contentStr
-     * @param lineNo
-     * @return an object of type Array that was parsed from string
-     */
-    fun parseList(contentStr: String, lineNo: Int) = TomlArray(contentStr, lineNo)
-
-    /**
      * this is a small hack to support dotted keys
      * in case we have the following key: a.b.c = "val" we will simply create a new table:
      *  [a.b]
@@ -29,6 +19,7 @@ internal interface TomlKeyValue {
      * and we will let our Table mechanism to do everything for us
      *
      * @param parentNode
+     * @param ktomlConf
      * @return the table that is parsed from a dotted key
      */
     fun createTomlTableFromDottedKey(parentNode: TomlNode, ktomlConf: KtomlConf = KtomlConf()): TomlTable {
@@ -49,6 +40,16 @@ internal interface TomlKeyValue {
         )
     }
 }
+
+/**
+ * in TOML specification arrays have a very complex functionality (trailing commas, values of different types, etdc)
+ * so we need a separate parser for these arrays. This: the string with the content
+ *
+ * @param lineNo
+ * @param ktomlConf
+ * @return an object of type Array that was parsed from string
+ */
+public fun String.parseList(lineNo: Int, ktomlConf: KtomlConf): TomlArray = TomlArray(this, lineNo, ktomlConf)
 
 /**
  * parse and split a string in a key-value format
@@ -99,6 +100,7 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf())
  * (for date -> TomlDate, string -> TomlString, e.t.c)
  *
  * @param lineNo
+ * @param ktomlConf
  * @return parsed TomlNode value
  */
 public fun String.parseValue(lineNo: Int, ktomlConf: KtomlConf): TomlValue = when (this) {

@@ -4,8 +4,8 @@ import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValueList
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValueSimple
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValueArray
+import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
 import com.akuleshov7.ktoml.parsers.node.TomlNode
 import com.akuleshov7.ktoml.parsers.node.TomlStubEmptyNode
 import com.akuleshov7.ktoml.parsers.node.TomlTable
@@ -31,6 +31,7 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
      * Parsing the list of strings to the TOML intermediate representation (TOML- abstract syntax tree).
      *
      * @param ktomlLines list with toml strings (line by line)
+     * @param ktomlConf
      * @return the root node of the resulted toml tree
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
@@ -59,7 +60,8 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
                 } else {
                     val keyValue = line.parseTomlKeyValue(lineNo, ktomlConf)
                     if (keyValue !is TomlNode) {
-                        throw InternalAstException("All Toml nodes should always inherit TomlNode class")
+                        throw InternalAstException("All Toml nodes should always inherit TomlNode class." +
+                                " Check [${keyValue.key}] with $keyValue type")
                     }
 
                     if (keyValue.key.isDotted) {
@@ -99,8 +101,8 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
     private fun String.parseTomlKeyValue(lineNo: Int, ktomlConf: KtomlConf): TomlKeyValue {
         val keyValuePair = this.splitKeyValue(lineNo, ktomlConf)
         return when {
-            keyValuePair.second.startsWith("[") -> TomlKeyValueList(keyValuePair, lineNo, ktomlConf)
-            else -> TomlKeyValueSimple(keyValuePair, lineNo, ktomlConf)
+            keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, ktomlConf)
+            else -> TomlKeyValuePrimitive(keyValuePair, lineNo, ktomlConf)
         }
     }
 

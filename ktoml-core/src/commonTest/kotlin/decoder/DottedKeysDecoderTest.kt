@@ -141,18 +141,6 @@ class DottedKeysDecoderTest {
 
     @Test
     fun tableAndDottedKeys() {
-        println(
-            Toml(KtomlConf(true)).decodeFromString<SimpleNestedExample>(
-                """
-                      |[table2]
-                      |table2."foo bar".d = 2
-                      |e = 6
-                      |[table2.b]
-                      |d = 2
-                      |f = 7
-                      """.trimMargin()
-            )
-        )
         assertEquals(
             SimpleNestedExample(table2 = Table4(b = B(f = 7, d = 2), e = 6)),
             Toml(KtomlConf(true)).decodeFromString(
