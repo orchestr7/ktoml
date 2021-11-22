@@ -30,8 +30,11 @@ However, to reduce the scope, ktoml now supports only the following platforms:
  - mingwx64
  - linuxx64
  - macosx64
+ - js (only for ktoml-core)
 
-Other platforms could be added later on the demand or easily built by users on their machines.
+Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
+
+:globe_with_meridians: ktoml supports Kotlin 1.6
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc.

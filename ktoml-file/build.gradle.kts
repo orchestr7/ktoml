@@ -1,5 +1,4 @@
-import com.akuleshov7.buildutils.configurePublishing
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
 plugins {
@@ -9,6 +8,7 @@ plugins {
 
 kotlin {
     explicitApi()
+
     jvm {
         compilations.all {
             kotlinOptions {
@@ -17,22 +17,44 @@ kotlin {
         }
     }
 
-    val os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()
+    val os = getCurrentOperatingSystem()
 
-    when {
+    val target = listOf(when {
         os.isWindows -> mingwX64()
         os.isLinux -> linuxX64()
         os.isMacOsX -> macosX64()
         else -> throw GradleException("Unknown operating system $os")
-    }
+    })
 
     sourceSets {
+        all {
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+
+         val nativeMain by creating {
+            dependencies {
+                implementation("com.squareup.okio:okio:${Versions.OKIO}")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
+            }
+        }
+
+        val jvmMain by getting {
+            dependencies {
+                implementation("com.squareup.okio:okio:${Versions.OKIO}")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
+            }
+        }
+
         val commonMain by getting {
             dependencies {
-                implementation("com.squareup.okio:okio-multiplatform:${Versions.OKIO}")
+                implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
                 implementation(project(":ktoml-core"))
             }
+        }
+
+        target.forEach {
+            getByName("${it.name}Main").dependsOn(nativeMain)
         }
 
         val commonTest by getting {
@@ -49,13 +71,12 @@ kotlin {
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.0.0")
             }
         }
+
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
         }
     }
 }
-
-configurePublishing()
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()

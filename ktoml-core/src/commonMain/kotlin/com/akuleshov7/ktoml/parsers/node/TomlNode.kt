@@ -33,7 +33,7 @@ public sealed class TomlNode(
 
     // this constructor is used by TomlKeyValueList and TomlKeyValuePrimitive and we concatenate keyValuePair to the content
     // only for logging, debug information and unification of the code
-    constructor(
+    private constructor(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
