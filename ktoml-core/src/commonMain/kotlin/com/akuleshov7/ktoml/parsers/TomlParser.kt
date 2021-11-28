@@ -106,7 +106,10 @@ public inline class TomlParser(private val ktomlConf: KtomlConf) {
         }
     }
 
-    private fun String.isTableNode() = "\\[(.*?)]".toRegex().matches(this.trim())
+    private fun String.isTableNode(): Boolean {
+        val trimmed = this.trim()
+        return trimmed.startsWith("[") && trimmed.endsWith("]")
+    }
 
     private fun String.isComment() = this.trim().startsWith("#")
 

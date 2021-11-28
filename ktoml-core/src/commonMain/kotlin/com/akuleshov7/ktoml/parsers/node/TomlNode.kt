@@ -8,6 +8,7 @@ import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
+import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 
 /**
@@ -251,13 +252,7 @@ public class TomlTable(
 
     init {
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = "\\[(.*?)]"
-            .toRegex()
-            .find(content)
-            ?.groupValues
-            ?.get(1)
-            ?.trim()
-            ?: throw Exception()
+        val sectionFromContent = content.trim().trimBrackets().trim()
 
         if (sectionFromContent.isBlank()) {
             throw TomlParsingException("Incorrect blank table name: $content", lineNo)

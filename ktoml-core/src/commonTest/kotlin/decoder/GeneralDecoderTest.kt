@@ -355,13 +355,13 @@ class GeneralDecoderTest {
     data class MyTest(val table: Table)
 
     @Serializable
-    data class Table(val `1`: Inner, val `2`: Inner)
+    data class Table(val in1: Inner, val in2: Inner)
 
     @Serializable
     data class Inner(
         val a: Long,
-        val `1`: InnerInner,
-        val `2`: InnerInner
+        val in1: InnerInner,
+        val in2: InnerInner
     )
 
     @Serializable
@@ -370,25 +370,25 @@ class GeneralDecoderTest {
     @Test
     fun severalTablesOnTheSameLevel() {
         val test = """|[table]
-           |[table.1]
+           |[table.in1]
            |    a = 1
-           |    [table.1.1]
+           |    [table.in1.in1]
            |        a = 1
-           |    [table.1.2]
+           |    [table.in1.in2]
            |        a = 1
-           |[table.2]
+           |[table.in2]
            |    a = 1
-           |    [table.2.1]
+           |    [table.in2.in1]
            |        a = 1
-           |    [table.2.2]
+           |    [table.in2.in2]
            |        a = 1
         """.trimMargin()
 
         assertEquals(
             MyTest(
                 table = Table(
-                    `1` = Inner(a = 1, `1` = InnerInner(a = 1), `2` = InnerInner(a = 1)),
-                    `2` = Inner(a = 1, `1` = InnerInner(a = 1), `2` = InnerInner(a = 1))
+                    in1 = Inner(a = 1, in1 = InnerInner(a = 1), in2 = InnerInner(a = 1)),
+                    in2 = Inner(a = 1, in1 = InnerInner(a = 1), in2 = InnerInner(a = 1))
                 )
             ), Toml.decodeFromString(test)
         )
