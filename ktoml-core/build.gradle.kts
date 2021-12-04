@@ -25,14 +25,9 @@ kotlin {
         }
     }
 
-    val os = getCurrentOperatingSystem()
-
-    when {
-        os.isWindows -> mingwX64()
-        os.isLinux -> linuxX64()
-        os.isMacOsX -> macosX64()
-        else -> throw GradleException("Unknown operating system $os")
-    }
+    mingwX64()
+    linuxX64()
+    macosX64()
 
     sourceSets {
         all {

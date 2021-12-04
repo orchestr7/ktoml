@@ -56,7 +56,7 @@ fun Project.configurePublishing() {
     // https://kotlinlang.org/docs/mpp-publish-lib.html#avoid-duplicate-publications
     // `configureNexusPublishing` adds sonatype publication tasks inside `afterEvaluate`.
     afterEvaluate {
-        val publicationsFromMainHost = listOf("jvm", "js", "linuxX64", "kotlinMultiplatform", "metadata")
+        val publicationsFromMainHost = listOf("jvm", "js", "linuxX64", "mingwX64", "kotlinMultiplatform", "metadata")
         configure<PublishingExtension> {
             publications.matching { it.name in publicationsFromMainHost }.all {
                 val targetPublication = this@all
