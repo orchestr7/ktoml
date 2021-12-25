@@ -8,5 +8,14 @@ package com.akuleshov7.ktoml
 public data class KtomlConf(
     val ignoreUnknownNames: Boolean = false,
     val emptyValuesAllowed: Boolean = true,
-    val escapedQuotesInLiteralStringsAllowed: Boolean = true
+    val escapedQuotesInLiteralStringsAllowed: Boolean = true,
+    val indentation: Indentation = Indentation.FourSpaces
 )
+{
+    public enum class Indentation(public val string: String) {
+        None(""),
+        TwoSpaces("  "),
+        FourSpaces("    "),
+        Tab("\t")
+    }
+}
