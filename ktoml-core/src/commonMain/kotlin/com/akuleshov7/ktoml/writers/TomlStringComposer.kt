@@ -2,10 +2,10 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.KtomlConf
 
-internal class TomlStringTextWriter(
+internal class TomlStringComposer(
     private val stringBuilder: StringBuilder,
     ktomlConf: KtomlConf
-) : AbstractTomlTextWriter(ktomlConf) {
+) : AbstractTomlComposer(ktomlConf) {
     override fun emit(fragment: String) {
         stringBuilder.append(fragment)
     }

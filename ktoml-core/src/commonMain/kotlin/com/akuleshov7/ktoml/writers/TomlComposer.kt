@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.writers
 
-public interface TomlTextWriter {
+public interface TomlComposer {
     public val indentDepth: Int
 
     public fun indent(): Int

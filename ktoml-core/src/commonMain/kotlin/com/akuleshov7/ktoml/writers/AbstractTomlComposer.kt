@@ -4,7 +4,7 @@ import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlin.jvm.JvmStatic
 
-public abstract class AbstractTomlTextWriter(ktomlConf: KtomlConf) : TomlTextWriter {
+public abstract class AbstractTomlComposer(ktomlConf: KtomlConf) : TomlComposer {
     private val indentation = ktomlConf.indentation.string
 
     final override var indentDepth: Int = 0; protected set
