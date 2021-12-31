@@ -2,7 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.IllegalTomlTypeException
 import com.akuleshov7.ktoml.exceptions.TomlCastException
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
+import com.akuleshov7.ktoml.tree.TomlKeyValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encoding.AbstractDecoder
 

@@ -2,14 +2,7 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.parsers.node.TomlFile
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValueArray
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.parsers.node.TomlNode
-import com.akuleshov7.ktoml.parsers.node.TomlStubEmptyNode
-import com.akuleshov7.ktoml.parsers.node.TomlTable
-import com.akuleshov7.ktoml.parsers.node.splitKeyValue
+import com.akuleshov7.ktoml.tree.*
 
 /**
  * @property ktomlConf - object that stores configuration options for a parser

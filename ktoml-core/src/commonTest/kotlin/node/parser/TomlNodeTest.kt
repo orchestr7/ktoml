@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.test.node.parser
 
-import com.akuleshov7.ktoml.parsers.node.TomlFile
-import com.akuleshov7.ktoml.parsers.node.TomlTable
+import com.akuleshov7.ktoml.tree.TomlFile
+import com.akuleshov7.ktoml.tree.TomlTable
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

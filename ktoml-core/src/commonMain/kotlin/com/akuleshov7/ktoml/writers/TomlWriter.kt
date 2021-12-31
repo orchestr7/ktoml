@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.parsers.node.*
+import com.akuleshov7.ktoml.tree.*
 import kotlin.jvm.JvmInline
 
 @JvmInline

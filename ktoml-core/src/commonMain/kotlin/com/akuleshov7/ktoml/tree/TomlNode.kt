@@ -2,7 +2,7 @@
  * File contains all classes used in Toml AST node
  */
 
-package com.akuleshov7.ktoml.parsers.node
+package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException

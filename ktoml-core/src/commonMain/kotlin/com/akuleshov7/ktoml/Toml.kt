@@ -3,7 +3,7 @@ package com.akuleshov7.ktoml
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.writers.TomlWriter
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi

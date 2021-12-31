@@ -3,7 +3,7 @@ package com.akuleshov7.ktoml.file
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.encoders.TomlMainEncoder
-import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.tree.TomlFile
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.EmptySerializersModule
