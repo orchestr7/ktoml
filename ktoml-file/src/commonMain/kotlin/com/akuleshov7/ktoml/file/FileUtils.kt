@@ -4,9 +4,11 @@
 
 package com.akuleshov7.ktoml.file
 
+import okio.BufferedSink
 import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path.Companion.toPath
+import okio.buffer
 
 /**
  * Simple file reading with okio (returning a list with strings)
@@ -24,6 +26,16 @@ internal fun readAndParseFile(tomlFile: String): List<String> {
         }
     } catch (e: FileNotFoundException) {
         println("Not able to find toml-file in the following path: $tomlFile")
+        throw e
+    }
+}
+
+internal fun openFileForWrite(tomlFile: String): BufferedSink {
+    try {
+        val ktomlPath = tomlFile.toPath()
+        return getOsSpecificFileSystem().sink(ktomlPath).buffer()
+    } catch (e: FileNotFoundException) {
+        println("Not able to fine toml-file in the following path: $tomlFile")
         throw e
     }
 }
