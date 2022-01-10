@@ -30,6 +30,13 @@ internal fun readAndParseFile(tomlFile: String): List<String> {
     }
 }
 
+/**
+ * Opens a file for writing via a [BufferedSink].
+ *
+ * @param tomlFile The path string pointing to a .toml file.
+ * @return A [BufferedSink] writing to the specified [tomlFile] path.
+ * @throws FileNotFoundException
+ */
 internal fun openFileForWrite(tomlFile: String): BufferedSink {
     try {
         val ktomlPath = tomlFile.toPath()

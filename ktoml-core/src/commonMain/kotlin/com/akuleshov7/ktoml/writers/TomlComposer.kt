@@ -1,5 +1,10 @@
 package com.akuleshov7.ktoml.writers
 
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
+
+/**
+ * Abstracts the specifics of writing TOML files into "emit" operations.
+ */
 public interface TomlComposer {
     public val indentDepth: Int
 
@@ -23,12 +28,15 @@ public interface TomlComposer {
     public fun startTableArrayHeaderStart()
     public fun emitTableArrayHeaderEnd()
 
-    public fun emitValue(string: String, isLiteral: Boolean = false, isMultiline: Boolean = false)
-    public fun emitValue(integer: Long, representation: IntegerRepresentation = IntegerRepresentation.Decimal)
+    public fun emitValue(
+        string: String,
+        isLiteral: Boolean = false,
+        isMultiline: Boolean = false)
+    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL)
     public fun emitValue(float: Double)
     public fun emitValue(boolean: Boolean)
     // Todo: Add the KotlinX DateTime library and add support for date-time primitives
-    //  in deserialization for consistency.
+    // in deserialization for consistency.
     // public fun emitValue(dateTime: OffsetDateTime)
     // public fun emitValue(dateTime: LocalDateTime)
     // public fun emitValue(date: LocalDate)

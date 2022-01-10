@@ -4,12 +4,18 @@ import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.tree.TomlFile
+
+import okio.use
+
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import okio.use
 
+/**
+ * Writes to a file in the TOML format.
+ * @property serializersModule
+ */
 @OptIn(ExperimentalSerializationApi::class)
 public open class TomlFileWriter(
     private val config: KtomlConf = KtomlConf(),
@@ -19,8 +25,7 @@ public open class TomlFileWriter(
         serializer: SerializationStrategy<T>,
         value: T,
         tomlFilePath: String
-    )
-    {
+    ) {
         val fileTree = TomlFile(config)
         val encoder = TomlMainEncoder(fileTree, config)
 
