@@ -2,7 +2,6 @@ package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.tree.TomlFile
 
 import okio.use
@@ -27,9 +26,8 @@ public open class TomlFileWriter(
         tomlFilePath: String
     ) {
         val fileTree = TomlFile(config)
-        val encoder = TomlMainEncoder(fileTree, config)
 
-        serializer.serialize(encoder, value)
+        // Todo: Write an encoder implementation.
 
         TomlSinkComposer(
             openFileForWrite(tomlFilePath),
