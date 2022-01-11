@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.parsers.node
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 
 /**
@@ -19,10 +19,10 @@ internal interface TomlKeyValue {
      * and we will let our Table mechanism to do everything for us
      *
      * @param parentNode
-     * @param ktomlConf
+     * @param tomlConfig
      * @return the table that is parsed from a dotted key
      */
-    fun createTomlTableFromDottedKey(parentNode: TomlNode, ktomlConf: KtomlConf = KtomlConf()): TomlTable {
+    fun createTomlTableFromDottedKey(parentNode: TomlNode, tomlConfig: TomlConfig = TomlConfig()): TomlTable {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
         // creating new key with the last dot-separated fragment
@@ -35,7 +35,7 @@ internal interface TomlKeyValue {
         return TomlTable(
             "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",
             lineNo,
-            ktomlConf,
+            tomlConfig,
             true
         )
     }
@@ -46,20 +46,20 @@ internal interface TomlKeyValue {
  * so we need a separate parser for these arrays. This: the string with the content
  *
  * @param lineNo
- * @param ktomlConf
+ * @param tomlConfig
  * @return an object of type Array that was parsed from string
  */
-public fun String.parseList(lineNo: Int, ktomlConf: KtomlConf): TomlArray = TomlArray(this, lineNo, ktomlConf)
+public fun String.parseList(lineNo: Int, tomlConfig: TomlConfig): TomlArray = TomlArray(this, lineNo, tomlConfig)
 
 /**
  * parse and split a string in a key-value format
  *
  * @param lineNo
- * @param ktomlConf
+ * @param tomlConfig
  * @return a resulted key-value pair
  * @throws TomlParsingException
  */
-public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()): Pair<String, String> {
+public fun String.splitKeyValue(lineNo: Int, tomlConfig: TomlConfig = TomlConfig()): Pair<String, String> {
     // finding the index of the last quote, if no quotes are found, then use the length of the string
     val closingQuoteIndex = listOf(
         this.lastIndexOf("\""),
@@ -90,8 +90,8 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf())
     val value = this.substring(firstEqualsSign + 1, firstHash).trim()
 
     return Pair(
-        key.checkNotEmpty("key", this, ktomlConf, lineNo),
-        value.checkNotEmpty("value", this, ktomlConf, lineNo)
+        key.checkNotEmpty("key", this, tomlConfig, lineNo),
+        value.checkNotEmpty("value", this, tomlConfig, lineNo)
     )
 }
 
@@ -100,17 +100,17 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf())
  * (for date -> TomlDate, string -> TomlString, e.t.c)
  *
  * @param lineNo
- * @param ktomlConf
+ * @param tomlConfig
  * @return parsed TomlNode value
  */
-public fun String.parseValue(lineNo: Int, ktomlConf: KtomlConf): TomlValue = when (this) {
+public fun String.parseValue(lineNo: Int, tomlConfig: TomlConfig): TomlValue = when (this) {
     // ===== null values
     "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
     // ===== boolean vales
     "true", "false" -> TomlBoolean(this, lineNo)
     else -> when (this[0]) {
         // ===== literal strings
-        '\'' -> if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo, ktomlConf)
+        '\'' -> if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo, tomlConfig)
         // ===== basic strings
         '\"' -> TomlBasicString(this, lineNo)
         else ->
@@ -135,13 +135,13 @@ public fun String.parseValue(lineNo: Int, ktomlConf: KtomlConf): TomlValue = whe
 private fun String.checkNotEmpty(
     log: String,
     content: String,
-    ktomlConf: KtomlConf = KtomlConf(),
+    tomlConfig: TomlConfig = TomlConfig(),
     lineNo: Int
 ): String =
         this.also {
             // key should never be empty, but the value can be empty (and treated as null)
             // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!ktomlConf.emptyValuesAllowed || log == "key") && it.isBlank()) {
+            if ((!tomlConfig.emptyValuesAllowed || log == "key") && it.isBlank()) {
                 throw TomlParsingException(
                     "Incorrect format of Key-Value pair. It has empty $log: $content",
                     lineNo

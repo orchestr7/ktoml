@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.test.decoder
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.decodeFromString
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
@@ -175,7 +175,7 @@ class GeneralDecoderTest {
         ) {
             // 'err' key is unknown, but this should not trigger an error becuase of ignoreUnknown
             // 'b' key is not provided and should trigger an error
-            Toml(KtomlConf(true)).decodeFromString<Table3>(
+            Toml(TomlConfig(true)).decodeFromString<Table3>(
                 " a = true \n" +
                         " d = 5 \n" +
                         " e = \"my test\"\n" +
@@ -190,7 +190,7 @@ class GeneralDecoderTest {
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table3> in the input"
         ) {
-            Toml(KtomlConf(true)).decodeFromString<ComplexPlainTomlCase>(
+            Toml(TomlConfig(true)).decodeFromString<ComplexPlainTomlCase>(
                 "[tableUNKNOWN] \n" +
                         " a = true \n" +
                         " d = 5 \n" +
@@ -206,7 +206,7 @@ class GeneralDecoderTest {
                 " b = \"A\" \n" +
                 " d = 55 \n")
 
-        assertEquals(Table3(true, b = TestEnum.A, d = 55), Toml(KtomlConf(true)).decodeFromString(test))
+        assertEquals(Table3(true, b = TestEnum.A, d = 55), Toml(TomlConfig(true)).decodeFromString(test))
 
 
         // e is missing, because it has a default value
@@ -219,7 +219,7 @@ class GeneralDecoderTest {
                     "a = true \n" +
                     " b = \"A\" \n"
 
-            Toml(KtomlConf(true)).decodeFromString<Table3>(failMissing)
+            Toml(TomlConfig(true)).decodeFromString<Table3>(failMissing)
         }
     }
 
@@ -241,7 +241,7 @@ class GeneralDecoderTest {
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <d> in the input"
         ) {
-            Toml(KtomlConf(true)).decodeFromString<Table3>("[table3] \n a = true")
+            Toml(TomlConfig(true)).decodeFromString<Table3>("[table3] \n a = true")
         }
     }
 
@@ -251,7 +251,7 @@ class GeneralDecoderTest {
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table2> in the input"
         ) {
-            Toml(KtomlConf(true)).decodeFromString<Table3>(
+            Toml(TomlConfig(true)).decodeFromString<Table3>(
                 "[table1] \n a = 5 \n b = 6"
             )
         }
@@ -264,7 +264,7 @@ class GeneralDecoderTest {
 
         assertEquals(
             ComplexPlainTomlCase(Table3(a = true, d = 5, b = TestEnum.B)), Toml(
-                KtomlConf(true)
+                TomlConfig(true)
             ).decodeFromString(test)
         )
     }
@@ -277,7 +277,7 @@ class GeneralDecoderTest {
                 |  [a]
                 |      a = true
             """.trimMargin()
-        KtomlConf(true)
+        TomlConfig(true)
 
         assertEquals(ChildTableBeforeParent(A(B(5), true)), Toml.decodeFromString(test))
     }
@@ -285,7 +285,7 @@ class GeneralDecoderTest {
     @Test
     fun testIncorrectEnumValue() {
         assertFailsWith<InvalidEnumValueException> {
-            Toml(KtomlConf(true)).decodeFromString<Table3>(
+            Toml(TomlConfig(true)).decodeFromString<Table3>(
                 ("a = true \n" +
                         " b = \"F\"\n" +
                         " e = \"my string\"\n" +
