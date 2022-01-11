@@ -141,7 +141,7 @@ private fun String.checkNotEmpty(
         this.also {
             // key should never be empty, but the value can be empty (and treated as null)
             // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!tomlConfig.emptyValuesAllowed || log == "key") && it.isBlank()) {
+            if ((!tomlConfig.allowEmptyValues || log == "key") && it.isBlank()) {
                 throw TomlParsingException(
                     "Incorrect format of Key-Value pair. It has empty $log: $content",
                     lineNo
