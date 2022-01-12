@@ -31,21 +31,15 @@ public value class TomlWriter(private val ktomlConf: KtomlConf) {
     public fun write(file: TomlFile, emitter: TomlEmitter): Unit =
             file.children.forEach { emitter.writeChild(it) }
 
-    private fun TomlEmitter.writeChild(node: TomlNode) = when (node) {
+    private fun TomlEmitter.writeChild(node: TomlNode): Unit = when (node) {
         is TomlFile ->
             throw TomlWritingException(
                 "A file node is not allowed as a child of another file node."
             )
-        is TomlKeyValueArray -> {
-
-        }
-        is TomlKeyValuePrimitive -> {
-
-        }
-        is TomlStubEmptyNode -> { }
-        is TomlTable -> {
-
-        }
+        is TomlKeyValueArray -> TODO()
+        is TomlKeyValuePrimitive -> TODO()
+        is TomlStubEmptyNode -> TODO()
+        is TomlTable -> TODO()
     }
 
     private fun TomlEmitter.writeKey(key: TomlKey) {
