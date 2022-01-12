@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.test.node.parser
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.ParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -40,7 +40,7 @@ class DottedKeyParserTest {
         assertEquals("c", test.content)
         assertEquals(true, test.isDotted)
 
-        assertFailsWith<ParsingException> { TomlKey("SPACE AND SPACE", 0) }
+        assertFailsWith<ParseException> { TomlKey("SPACE AND SPACE", 0) }
     }
 
     @Test

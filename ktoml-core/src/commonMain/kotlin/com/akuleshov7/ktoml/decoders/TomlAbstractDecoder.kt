@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.IllegalTomlTypeException
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.CastException
 import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -29,7 +29,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
 
     private fun invalidType(typeName: String, requiredType: String): Nothing {
         val keyValue = decodeKeyValue()
-        throw IllegalTomlTypeException(
+        throw IllegalTypeException(
             "<$typeName> type is not allowed by toml specification," +
                     " use <$requiredType> instead" +
                     " (key = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo

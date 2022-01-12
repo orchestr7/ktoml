@@ -41,12 +41,7 @@ public class TomlMainDecoder(
         val index = enumDescriptor.getElementIndex(value)
 
         if (index == CompositeDecoder.UNKNOWN_NAME) {
-            val choices = (0 until enumDescriptor.elementsCount)
-                .map { enumDescriptor.getElementName(it) }
-                .sorted()
-                .joinToString(", ")
-
-            throw InvalidEnumValueException(value, choices)
+            throw InvalidEnumValueException(value, enumDescriptor)
         }
 
         return index

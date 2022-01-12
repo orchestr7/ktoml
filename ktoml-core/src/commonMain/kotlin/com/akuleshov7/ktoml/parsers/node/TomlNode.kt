@@ -6,7 +6,7 @@ package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.exceptions.ParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
@@ -102,13 +102,13 @@ public sealed class TomlNode(
      *        \
      *        a.d.e
      * @return table that was found or null in case of not found
-     * @throws ParsingException if found several tables with the same name
+     * @throws ParseException if found several tables with the same name
      */
     public fun findTableInAstByName(searchedTableName: String, searchedLevel: Int): TomlTable? {
         val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0)
 
         if (searchedTable.size > 1) {
-            throw ParsingException(
+            throw ParseException(
                 "Internal error: Found several Tables with the same name <$searchedTableName> in AST",
                 searchedTable.first().lineNo
             )
@@ -255,7 +255,7 @@ public class TomlTable(
         val sectionFromContent = content.trim().trimBrackets().trim()
 
         if (sectionFromContent.isBlank()) {
-            throw ParsingException("Incorrect blank table name: $content", lineNo)
+            throw ParseException("Incorrect blank table name: $content", lineNo)
         }
 
         fullTableName = sectionFromContent

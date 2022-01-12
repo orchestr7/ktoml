@@ -5,7 +5,7 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.ParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
@@ -31,7 +31,7 @@ public class TomlLiteralString(
         val contentString = content.trimSingleQuotes()
         if (ktomlConf.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
     } else {
-        throw ParsingException(
+        throw ParseException(
             "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
                     " the single quote in the end of the following string: <$content>", lineNo
         )
@@ -57,7 +57,7 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
             .checkOtherQuotesAreEscaped()
             .convertSpecialCharacters()
     } else {
-        throw ParsingException(
+        throw ParseException(
             "According to the TOML specification string values (even Enums)" +
                     " should be wrapped (start and end) with quotes (\"\"), but the following value was not: <$content>." +
                     " Please note that multiline strings are not yet supported.",
@@ -68,7 +68,7 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
     private fun String.checkOtherQuotesAreEscaped(): String {
         this.forEachIndexed { index, ch ->
             if (ch == '\"' && (index == 0 || this[index - 1] != '\\')) {
-                throw ParsingException(
+                throw ParseException(
                     "Found invalid quote that is not escaped." +
                             " Please remove the quote or use escaping" +
                             " in <$this> at position = [$index].", lineNo
@@ -94,7 +94,7 @@ public class TomlBasicString(content: String, lineNo: Int) : TomlValue(lineNo) {
                     '\\' -> '\\'
                     '\'' -> '\''
                     '"' -> '"'
-                    else -> throw ParsingException(
+                    else -> throw ParseException(
                         "According to TOML documentation unknown" +
                                 " escape symbols are not allowed. Please check: [\\${this[i + 1]}]",
                         lineNo
@@ -223,7 +223,7 @@ public class TomlArray(
      */
     private fun validateBrackets() {
         if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
-            throw ParsingException(
+            throw ParseException(
                 "Not able to parse the key: [$rawContent] as it does not have closing bracket",
                 lineNo
             )
