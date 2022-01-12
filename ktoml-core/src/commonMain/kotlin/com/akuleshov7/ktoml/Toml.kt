@@ -5,13 +5,16 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.writers.TomlWriter
+
+import kotlin.native.concurrent.ThreadLocal
+
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
+
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Toml class - is a general entry point in the core,

@@ -3,11 +3,13 @@ package com.akuleshov7.ktoml.file
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.tree.TomlFile
+
+import okio.use
+
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import okio.use
 
 /**
  * Writes to a file in the TOML format.
