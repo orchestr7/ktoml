@@ -12,12 +12,12 @@ public data class KtomlConf(
     val ignoreUnknownNames: Boolean = false,
     val emptyValuesAllowed: Boolean = true,
     val escapedQuotesInLiteralStringsAllowed: Boolean = true,
-    val indentation: Indentation = FOUR_SPACES
+    val indentation: Indentation = FOUR_SPACES,
 ) {
     /**
-     * @property string
+     * @property value
      */
-    public enum class Indentation(public val string: String) {
+    public enum class Indentation(public val value: String) {
         FOUR_SPACES("    "),
         NONE(""),
         TAB("\t"),

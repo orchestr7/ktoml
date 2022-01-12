@@ -5,14 +5,13 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.writers.TomlWriter
-
-import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Toml class - is a general entry point in the core,
@@ -26,7 +25,8 @@ public open class Toml(
     private val config: KtomlConf = KtomlConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
-    // parser is created once after the creation of the class, to reduce the number of created parsers for each toml
+    // parser and writer are created once after the creation of the class, to reduce
+    // the number of created parsers and writers for each toml
     public val tomlParser: TomlParser = TomlParser(config)
     public val tomlWriter: TomlWriter = TomlWriter(config)
 

@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlKey
 import com.akuleshov7.ktoml.tree.TomlKeyValueArray
@@ -22,17 +23,17 @@ public value class TomlWriter(private val ktomlConf: KtomlConf) {
     ): String = "${write(file, stringBuilder)}"
 
     private fun write(file: TomlFile, stringBuilder: StringBuilder): StringBuilder {
-        write(file, TomlStringComposer(stringBuilder, ktomlConf))
+        write(file, TomlStringEmitter(stringBuilder, ktomlConf))
 
         return stringBuilder
     }
 
-    public fun write(file: TomlFile, composer: TomlComposer): Unit =
-            file.children.forEach { composer.writeChild(it) }
+    public fun write(file: TomlFile, emitter: TomlEmitter): Unit =
+            file.children.forEach { emitter.writeChild(it) }
 
-    private fun TomlComposer.writeChild(node: TomlNode) = when (node) {
+    private fun TomlEmitter.writeChild(node: TomlNode) = when (node) {
         is TomlFile ->
-            error(
+            throw TomlWritingException(
                 "A file node is not allowed as a child of another file node."
             )
         is TomlKeyValueArray -> {
@@ -47,7 +48,7 @@ public value class TomlWriter(private val ktomlConf: KtomlConf) {
         }
     }
 
-    private fun TomlComposer.writeKey(key: TomlKey) {
+    private fun TomlEmitter.writeKey(key: TomlKey) {
         val keys = key.keyParts
 
         if (keys.isEmpty()) {

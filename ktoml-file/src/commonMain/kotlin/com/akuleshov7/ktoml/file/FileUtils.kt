@@ -42,7 +42,7 @@ internal fun openFileForWrite(tomlFile: String): BufferedSink {
         val ktomlPath = tomlFile.toPath()
         return getOsSpecificFileSystem().sink(ktomlPath).buffer()
     } catch (e: FileNotFoundException) {
-        println("Not able to fine toml-file in the following path: $tomlFile")
+        println("Not able to find toml-file in the following path: $tomlFile")
         throw e
     }
 }

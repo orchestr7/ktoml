@@ -10,6 +10,8 @@ public sealed class KtomlException(message: String) : Exception(message)
 
 internal class TomlParsingException(message: String, lineNo: Int) : KtomlException("Line $lineNo: $message")
 
+internal class TomlWritingException(message: String) : KtomlException(message)
+
 internal class InternalDecodingException(message: String) : KtomlException(message)
 
 internal class InternalAstException(message: String) : KtomlException(message)
