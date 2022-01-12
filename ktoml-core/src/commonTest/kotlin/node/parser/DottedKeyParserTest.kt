@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.test.node.parser
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
@@ -45,13 +45,13 @@ class DottedKeyParserTest {
 
     @Test
     fun createTable() {
-        var test = TomlKeyValuePrimitive(Pair("google.com","5"), 0, TomlConfig()).createTomlTableFromDottedKey(TomlFile())
+        var test = TomlKeyValuePrimitive(Pair("google.com","5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
         assertEquals("google", test.fullTableName)
 
-        test = TomlKeyValuePrimitive(Pair("a.b.c.d", "5"), 0, TomlConfig()).createTomlTableFromDottedKey(TomlFile())
+        test = TomlKeyValuePrimitive(Pair("a.b.c.d", "5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
         assertEquals("a.b.c", test.fullTableName)
 
-        val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0, TomlConfig())
+        val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0, KtomlConf())
         test = testKeyValue.createTomlTableFromDottedKey(TomlFile())
         assertEquals("c", testKeyValue.key.content)
         assertEquals(1, test.level)

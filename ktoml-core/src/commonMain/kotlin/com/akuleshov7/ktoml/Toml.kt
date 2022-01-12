@@ -19,7 +19,7 @@ import kotlinx.serialization.modules.SerializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public open class Toml(
-    private val config: TomlConfig = TomlConfig(),
+    private val config: KtomlConf = KtomlConf(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
     // parser is created once after the creation of the class, to reduce the number of created parsers for each toml
@@ -49,14 +49,14 @@ public open class Toml(
      *
      * @param toml list with strings in toml format
      * @param deserializer deserialization strategy
-     * @param tomlConfig
+     * @param ktomlConf
      * @return deserialized object of type T
      */
     public fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
-        tomlConfig: TomlConfig): T {
-        val parsedToml = tomlParser.parseStringsToTomlTree(toml, tomlConfig)
+        ktomlConf: KtomlConf): T {
+        val parsedToml = tomlParser.parseStringsToTomlTree(toml, ktomlConf)
         return TomlMainDecoder.decode(deserializer, parsedToml, config)
     }
 
@@ -71,16 +71,16 @@ public open class Toml(
      * @param deserializer deserialization strategy
      * @param toml request-string in toml format with '\n' or '\r\n' separation
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
-     * @param tomlConfig
+     * @param ktomlConf
      * @return deserialized object of type T
      */
     public fun <T> partiallyDecodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: String,
         tomlTableName: String,
-        tomlConfig: TomlConfig = TomlConfig()
+        ktomlConf: KtomlConf = KtomlConf()
     ): T {
-        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, tomlConfig, TomlParser::parseString)
+        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, ktomlConf, TomlParser::parseString)
         return TomlMainDecoder.decode(deserializer, fakeFileNode, config)
     }
 
@@ -95,19 +95,19 @@ public open class Toml(
      * @param deserializer deserialization strategy
      * @param toml list of strings with toml input
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
-     * @param tomlConfig
+     * @param ktomlConf
      * @return deserialized object of type T
      */
     public fun <T> partiallyDecodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
         tomlTableName: String,
-        tomlConfig: TomlConfig = TomlConfig()
+        ktomlConf: KtomlConf = KtomlConf()
     ): T {
         val fakeFileNode = generateFakeTomlStructureForPartialParsing(
             toml.joinToString("\n"),
             tomlTableName,
-            tomlConfig,
+            ktomlConf,
             TomlParser::parseString,
         )
         return TomlMainDecoder.decode(deserializer, fakeFileNode, config)
@@ -118,7 +118,7 @@ public open class Toml(
     private fun generateFakeTomlStructureForPartialParsing(
         toml: String,
         tomlTableName: String,
-        tomlConfig: TomlConfig = TomlConfig(),
+        ktomlConf: KtomlConf = KtomlConf(),
         parsingFunction: (TomlParser, String) -> TomlFile
     ): TomlFile {
         val parsedToml = parsingFunction(TomlParser(config), toml)
@@ -129,7 +129,7 @@ public open class Toml(
             )
 
         // adding a fake file node to restore the structure and parse only the part of te toml
-        val fakeFileNode = TomlFile(tomlConfig)
+        val fakeFileNode = TomlFile(ktomlConf)
         parsedToml.children.forEach {
             fakeFileNode.appendChild(it)
         }
@@ -139,9 +139,9 @@ public open class Toml(
 
     /**
      * The default instance of [Toml] with the default configuration.
-     * See [TomlConfig] for the list of the default options
+     * See [KtomlConf] for the list of the default options
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : Toml(TomlConfig())
+    public companion object Default : Toml(KtomlConf())
 }

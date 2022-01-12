@@ -82,7 +82,7 @@ class TomlFileParserTest {
         assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
         // ==== checking how table discovery works
         val lines = readAndParseFile(file)
-        val parsedResult = TomlParser(TomlConfig()).parseStringsToTomlTree(lines, TomlConfig())
+        val parsedResult = TomlParser(KtomlConf()).parseStringsToTomlTree(lines, KtomlConf())
         assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
     }
 
@@ -194,8 +194,8 @@ class TomlFileParserTest {
         val lines = readAndParseFile(file)
         assertEquals(
             listOf("owner", "database"),
-            TomlParser(TomlConfig())
-                .parseStringsToTomlTree(lines, TomlConfig())
+            TomlParser(KtomlConf())
+                .parseStringsToTomlTree(lines, KtomlConf())
                 .children
                 .filterIsInstance<TomlTable>()
                 .filter { !it.isSynthetic }

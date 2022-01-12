@@ -2,7 +2,7 @@
 
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlinx.serialization.*
@@ -20,7 +20,7 @@ import kotlinx.serialization.modules.*
 @ExperimentalSerializationApi
 public class TomlMainDecoder(
     private val rootNode: TomlNode,
-    private val config: TomlConfig,
+    private val config: KtomlConf,
 ) : TomlAbstractDecoder() {
     private var elementIndex = 0
     override val serializersModule: SerializersModule = EmptySerializersModule
@@ -223,7 +223,7 @@ public class TomlMainDecoder(
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,
-            config: TomlConfig = TomlConfig()
+            config: KtomlConf = KtomlConf()
         ): T {
             val decoder = TomlMainDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)
