@@ -34,7 +34,7 @@ class NullableTablesTest {
         val mapper = Toml(
             config = TomlConfig(
                 ignoreUnknownNames = true,
-                allowEmptyValues = true
+                emptyValuesAllowed = true
             )
         )
         val toml1 = mapper.decodeFromString<Config1>(

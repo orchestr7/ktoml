@@ -6,7 +6,7 @@ import kotlinx.serialization.decodeFromString
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
-import com.akuleshov7.ktoml.exceptions.UnknownNameException
+import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -112,7 +112,7 @@ class GeneralDecoderTest {
 
     @Test
     fun testUnknownFieldInToml() {
-        assertFailsWith<UnknownNameException> {
+        assertFailsWith<UnknownNameDecodingException> {
             Toml.decodeFromString<ComplexPlainTomlCase>(
                 "[table3] \n a = true \n d = 5 \n" +
                         " c = \"unknown\" \n e = \"my test\" \n b = \"A\" "

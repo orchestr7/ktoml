@@ -103,7 +103,7 @@ public class TomlMainDecoder(
             if (config.ignoreUnknownNames || currentNode is TomlStubEmptyNode) {
                 return iterateUntilWillFindAnyKnownName(descriptor)
             } else {
-                throw UnknownNameException(currentNode.name, currentNode.parent?.name)
+                throw UnknownNameDecodingException(currentNode.name, currentNode.parent?.name)
             }
         }
 
@@ -141,7 +141,7 @@ public class TomlMainDecoder(
                 currentNode.value is TomlNull &&
                 !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
         ) {
-            throw NonNullValueException(
+            throw NonNullableValueException(
                 descriptor.getElementName(fieldWhereValueShouldBeInjected),
                 currentNode.lineNo
             )

@@ -29,7 +29,7 @@ public class TomlLiteralString(
     tomlConfig: TomlConfig = TomlConfig()) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("'") && content.endsWith("'")) {
         val contentString = content.trimSingleQuotes()
-        if (tomlConfig.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
+        if (tomlConfig.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
     } else {
         throw TomlParsingException(
             "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
