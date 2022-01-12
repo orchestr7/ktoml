@@ -2,7 +2,7 @@ package decoder
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTomlTypeException
-import com.akuleshov7.ktoml.exceptions.TomlCastException
+import com.akuleshov7.ktoml.exceptions.CastException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
@@ -44,9 +44,9 @@ class DecodingTypeTest {
         assertFailsWith<IllegalTomlTypeException> { Toml.decodeFromString<I>("a = true") }
         assertFailsWith<IllegalTomlTypeException> { Toml.decodeFromString<C>("a = true") }
 
-        assertFailsWith<TomlCastException> { Toml.decodeFromString<Bool>("a = \"test\"") }
-        assertFailsWith<TomlCastException> { Toml.decodeFromString<Str>("a = true") }
-        assertFailsWith<TomlCastException> { Toml.decodeFromString<L>("a = 12.0") }
-        assertFailsWith<TomlCastException> { Toml.decodeFromString<D>("a = 1") }
+        assertFailsWith<CastException> { Toml.decodeFromString<Bool>("a = \"test\"") }
+        assertFailsWith<CastException> { Toml.decodeFromString<Str>("a = true") }
+        assertFailsWith<CastException> { Toml.decodeFromString<L>("a = 12.0") }
+        assertFailsWith<CastException> { Toml.decodeFromString<D>("a = 1") }
     }
 }

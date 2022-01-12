@@ -6,7 +6,7 @@ package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParsingException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
@@ -28,8 +28,8 @@ public sealed class TomlNode(
     public open var parent: TomlNode? = null
 
     // the real toml name of a structure (for table [a] it will be "a", for key b = 1 it will be "b")
-    // used for logging and errors AND for matching the name of the node to the name of the fields in the class
-    // see: [checkMissingRequiredField]
+    // used for logging and errors AND for matching the name of the node to the name of the properties in the class
+    // see: [checkMissingRequiredProperties]
     public abstract val name: String
 
     // this constructor is used by TomlKeyValueList and TomlKeyValuePrimitive and we concatenate keyValuePair to the content
@@ -102,13 +102,13 @@ public sealed class TomlNode(
      *        \
      *        a.d.e
      * @return table that was found or null in case of not found
-     * @throws TomlParsingException if found several tables with the same name
+     * @throws ParsingException if found several tables with the same name
      */
     public fun findTableInAstByName(searchedTableName: String, searchedLevel: Int): TomlTable? {
         val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0)
 
         if (searchedTable.size > 1) {
-            throw TomlParsingException(
+            throw ParsingException(
                 "Internal error: Found several Tables with the same name <$searchedTableName> in AST",
                 searchedTable.first().lineNo
             )
@@ -255,7 +255,7 @@ public class TomlTable(
         val sectionFromContent = content.trim().trimBrackets().trim()
 
         if (sectionFromContent.isBlank()) {
-            throw TomlParsingException("Incorrect blank table name: $content", lineNo)
+            throw ParsingException("Incorrect blank table name: $content", lineNo)
         }
 
         fullTableName = sectionFromContent

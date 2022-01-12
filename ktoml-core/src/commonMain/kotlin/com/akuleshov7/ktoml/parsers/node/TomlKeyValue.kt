@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParsingException
 
 /**
  * Interface that contains all common methods that are used in KeyValue nodes
@@ -57,7 +57,7 @@ public fun String.parseList(lineNo: Int, ktomlConf: KtomlConf): TomlArray = Toml
  * @param lineNo
  * @param ktomlConf
  * @return a resulted key-value pair
- * @throws TomlParsingException
+ * @throws ParsingException
  */
 public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()): Pair<String, String> {
     // finding the index of the last quote, if no quotes are found, then use the length of the string
@@ -76,7 +76,7 @@ public fun String.splitKeyValue(lineNo: Int, ktomlConf: KtomlConf = KtomlConf())
 
     // equals sign not found in the string
     if (firstEqualsSign == -1) {
-        throw TomlParsingException(
+        throw ParsingException(
             "Incorrect format of Key-Value pair (missing equals sign)." +
                     " Should be <key = value>, but was: $this." +
                     " If you wanted to define table - use brackets []",
@@ -142,7 +142,7 @@ private fun String.checkNotEmpty(
             // key should never be empty, but the value can be empty (and treated as null)
             // see the discussion: https://github.com/toml-lang/toml/issues/30
             if ((!ktomlConf.emptyValuesAllowed || log == "key") && it.isBlank()) {
-                throw TomlParsingException(
+                throw ParsingException(
                     "Incorrect format of Key-Value pair. It has empty $log: $content",
                     lineNo
                 )

@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
-import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
+import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.parsers.node.TomlFile
 
@@ -123,8 +123,8 @@ public open class Toml(
     ): TomlFile {
         val parsedToml = parsingFunction(TomlParser(config), toml)
             .findTableInAstByName(tomlTableName, tomlTableName.count { it == '.' } + 1)
-            ?: throw MissingRequiredFieldException(
-                "Table with <$tomlTableName> name is missing in the toml input. " +
+            ?: throw MissingRequiredPropertyException(
+                "Cannot find table with name <$tomlTableName> in the toml input. " +
                         "Not able to decode this toml part."
             )
 

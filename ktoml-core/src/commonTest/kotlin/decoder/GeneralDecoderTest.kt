@@ -1,12 +1,12 @@
-package com.akuleshov7.ktoml.test.decoder
+package decoder
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.decodeFromString
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
-import com.akuleshov7.ktoml.exceptions.MissingRequiredFieldException
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
-import com.akuleshov7.ktoml.exceptions.UnknownNameDecodingException
+import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
+import com.akuleshov7.ktoml.exceptions.ParsingException
+import com.akuleshov7.ktoml.exceptions.UnknownNameException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -79,7 +79,7 @@ class GeneralDecoderTest {
     @Test
     fun testForSimpleTomlCaseWithIssueInParsing() {
         val test = "[table1]\n b = 6 = 7  \n a = 5 "
-        assertFailsWith<TomlParsingException> { Toml.decodeFromString(test) }
+        assertFailsWith<ParsingException> { Toml.decodeFromString(test) }
     }
 
     @Test
@@ -112,7 +112,7 @@ class GeneralDecoderTest {
 
     @Test
     fun testUnknownFieldInToml() {
-        assertFailsWith<UnknownNameDecodingException> {
+        assertFailsWith<UnknownNameException> {
             Toml.decodeFromString<ComplexPlainTomlCase>(
                 "[table3] \n a = true \n d = 5 \n" +
                         " c = \"unknown\" \n e = \"my test\" \n b = \"A\" "
@@ -169,7 +169,7 @@ class GeneralDecoderTest {
 
     @Test
     fun invalidAndSoMissingRequiredKeyOnRootLevel() {
-        assertFailsWith<MissingRequiredFieldException>(
+        assertFailsWith<MissingRequiredPropertyException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <b> in the input"
         ) {
@@ -186,7 +186,7 @@ class GeneralDecoderTest {
 
     @Test
     fun testForUnknownFieldsWithIgnoreUnknownNamesTrueConfig() {
-        assertFailsWith<MissingRequiredFieldException>(
+        assertFailsWith<MissingRequiredPropertyException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table3> in the input"
         ) {
@@ -211,7 +211,7 @@ class GeneralDecoderTest {
 
         // e is missing, because it has a default value
         // t - is new unknown field
-        assertFailsWith<MissingRequiredFieldException>(
+        assertFailsWith<MissingRequiredPropertyException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <d> in the input"
         ) {
@@ -237,7 +237,7 @@ class GeneralDecoderTest {
 
     @Test
     fun testForMissingRequiredFields() {
-        assertFailsWith<MissingRequiredFieldException>(
+        assertFailsWith<MissingRequiredPropertyException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <d> in the input"
         ) {
@@ -247,7 +247,7 @@ class GeneralDecoderTest {
 
     @Test
     fun testForMissingRequiredTable() {
-        assertFailsWith<MissingRequiredFieldException>(
+        assertFailsWith<MissingRequiredPropertyException>(
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table2> in the input"
         ) {

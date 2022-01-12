@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.test.node.parser
 
 import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParsingException
 import com.akuleshov7.ktoml.parsers.node.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,14 +20,14 @@ class ValueParserTest {
 
     @Test
     fun quotesParsingTest() {
-        assertFailsWith<TomlParsingException> {
+        assertFailsWith<ParsingException> {
             TomlKeyValuePrimitive(Pair("\"a", "123"), 0)
         }
 
-        assertFailsWith<TomlParsingException> {
+        assertFailsWith<ParsingException> {
             TomlKeyValuePrimitive(Pair("a", "hello world"), 0)
         }
-        assertFailsWith<TomlParsingException> {
+        assertFailsWith<ParsingException> {
             TomlKeyValuePrimitive(Pair("a", "\"before \" string\""), 0)
         }
     }
@@ -35,7 +35,7 @@ class ValueParserTest {
 
     @Test
     fun specialSymbolsParsing() {
-        assertFailsWith<TomlParsingException> { TomlKeyValuePrimitive(Pair("a", "\"hello\\world\""), 0) }
+        assertFailsWith<ParsingException> { TomlKeyValuePrimitive(Pair("a", "\"hello\\world\""), 0) }
 
         var test = TomlKeyValuePrimitive(Pair("a", "\"hello\\tworld\""), 0)
         assertEquals("hello\tworld", test.value.content)
@@ -79,9 +79,9 @@ class ValueParserTest {
 
     @Test
     fun parsingIssueValue() {
-        assertFailsWith<TomlParsingException> { " = false".splitKeyValue(0, ktomlConf = KtomlConf()) }
-        assertFailsWith<TomlParsingException> { " just false".splitKeyValue(0, ktomlConf = KtomlConf()) }
-        assertFailsWith<TomlParsingException> { TomlKeyValuePrimitive(Pair("a", "\"\\hello tworld\""), 0) }
+        assertFailsWith<ParsingException> { " = false".splitKeyValue(0, ktomlConf = KtomlConf()) }
+        assertFailsWith<ParsingException> { " just false".splitKeyValue(0, ktomlConf = KtomlConf()) }
+        assertFailsWith<ParsingException> { TomlKeyValuePrimitive(Pair("a", "\"\\hello tworld\""), 0) }
     }
 }
 
