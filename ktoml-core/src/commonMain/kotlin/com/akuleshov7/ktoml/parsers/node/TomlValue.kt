@@ -4,7 +4,7 @@
 
 package com.akuleshov7.ktoml.parsers.node
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
@@ -26,10 +26,10 @@ public sealed class TomlValue(public val lineNo: Int) {
 public class TomlLiteralString(
     content: String,
     lineNo: Int,
-    ktomlConf: KtomlConf = KtomlConf()) : TomlValue(lineNo) {
+    config: TomlConfig = TomlConfig()) : TomlValue(lineNo) {
     override var content: Any = if (content.startsWith("'") && content.endsWith("'")) {
         val contentString = content.trimSingleQuotes()
-        if (ktomlConf.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
+        if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
     } else {
         throw ParseException(
             "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
@@ -154,7 +154,7 @@ public class TomlNull(lineNo: Int) : TomlValue(lineNo) {
 public class TomlArray(
     private val rawContent: String,
     lineNo: Int,
-    ktomlConf: KtomlConf = KtomlConf()
+    config: TomlConfig = TomlConfig()
 ) : TomlValue(lineNo) {
     override lateinit var content: Any
 
@@ -166,18 +166,18 @@ public class TomlArray(
     /**
      * small adaptor to make proper testing of parsing
      *
-     * @param ktomlConf
+     * @param config
      * @return converted array to a list
      */
-    public fun parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> = rawContent.parse(ktomlConf)
+    public fun parse(config: TomlConfig = TomlConfig()): List<Any> = rawContent.parse(config)
 
     /**
      * recursively parse TOML array from the string: [ParsingArray -> Trimming values -> Parsing Nested Arrays]
      */
-    private fun String.parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> =
+    private fun String.parse(config: TomlConfig = TomlConfig()): List<Any> =
             this.parseArray()
                 .map { it.trim() }
-                .map { if (it.startsWith("[")) it.parse(ktomlConf) else it.parseValue(lineNo, ktomlConf) }
+                .map { if (it.startsWith("[")) it.parse(config) else it.parseValue(lineNo, config) }
 
     /**
      * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]

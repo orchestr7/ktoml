@@ -69,18 +69,18 @@ class ValueParserTest {
 
         // regression test related to comments with an equals symbol after it
         var pairTest =
-            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
+            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, config = KtomlConf())
         assertEquals(1L, TomlKeyValuePrimitive(pairTest, 0).value.content)
 
-        pairTest = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
+        pairTest = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0, config = KtomlConf())
         assertEquals("1 = 2", TomlKeyValuePrimitive(pairTest, 0).value.content)
     }
 
 
     @Test
     fun parsingIssueValue() {
-        assertFailsWith<ParseException> { " = false".splitKeyValue(0, ktomlConf = KtomlConf()) }
-        assertFailsWith<ParseException> { " just false".splitKeyValue(0, ktomlConf = KtomlConf()) }
+        assertFailsWith<ParseException> { " = false".splitKeyValue(0, config = KtomlConf()) }
+        assertFailsWith<ParseException> { " just false".splitKeyValue(0, config = KtomlConf()) }
         assertFailsWith<ParseException> { TomlKeyValuePrimitive(Pair("a", "\"\\hello tworld\""), 0) }
     }
 }

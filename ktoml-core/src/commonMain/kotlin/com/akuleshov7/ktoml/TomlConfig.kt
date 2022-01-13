@@ -1,22 +1,24 @@
+@file:Suppress("HEADER_MISSING_IN_NON_SINGLE_CLASS_FILE", "MISSING_KDOC_TOP_LEVEL")
+
 package com.akuleshov7.ktoml
 
 @Deprecated(
     message = "Class name changed for convention.",
     replaceWith = ReplaceWith("TomlConfig", "com.akuleshov7.ktoml.TomlConfig")
 )
-public data class KtomlConf(
-    val ignoreUnknownNames: Boolean = false,
-    val emptyValuesAllowed: Boolean = true,
-    val escapedQuotesInLiteralStringsAllowed: Boolean = true
-)
+public class KtomlConf(
+    ignoreUnknownNames: Boolean = false,
+    emptyValuesAllowed: Boolean = true,
+    escapedQuotesInLiteralStringsAllowed: Boolean = true
+) : TomlConfig(ignoreUnknownNames, emptyValuesAllowed, escapedQuotesInLiteralStringsAllowed)
 
 /**
  * @property ignoreUnknownNames - a control to allow/prohibit unknown names during the deserialization
  * @property allowEmptyValues - a control to allow/prohibit empty values: a = # comment
  * @property allowEscapedQuotesInLiteralStrings - a control to allow/prohibit escaping of single quotes in literal strings
  */
-public data class TomlConfig(
-    val ignoreUnknownNames: Boolean = false,
-    val allowEmptyValues: Boolean = true,
-    val allowEscapedQuotesInLiteralStrings: Boolean = true
+public open class TomlConfig(
+    public val ignoreUnknownNames: Boolean = false,
+    public val allowEmptyValues: Boolean = true,
+    public val allowEscapedQuotesInLiteralStrings: Boolean = true
 )
