@@ -10,7 +10,11 @@ public class KtomlConf(
     ignoreUnknownNames: Boolean = false,
     emptyValuesAllowed: Boolean = true,
     escapedQuotesInLiteralStringsAllowed: Boolean = true
-) : TomlConfig(ignoreUnknownNames, emptyValuesAllowed, escapedQuotesInLiteralStringsAllowed)
+) : TomlConfig(
+    ignoreUnknownNames,
+    emptyValuesAllowed,
+    escapedQuotesInLiteralStringsAllowed
+)
 
 /**
  * @property ignoreUnknownNames - a control to allow/prohibit unknown names during the deserialization
