@@ -168,10 +168,10 @@ val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(
 
 ```kotlin
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 /* ========= */
-var tomlAST = TomlParser(KtomlConf()).parseStringsToTomlTree(/* list with toml strings */)
-tomlAST = TomlParser(KtomlConf()).parseString(/* the string that you want to parse */)
+var tomlAST = TomlParser(TomlConfig()).parseStringsToTomlTree(/* list with toml strings */)
+tomlAST = TomlParser(TomlConfig()).parseString(/* the string that you want to parse */)
 tomlAST.prettyPrint()
 ```
 </details>

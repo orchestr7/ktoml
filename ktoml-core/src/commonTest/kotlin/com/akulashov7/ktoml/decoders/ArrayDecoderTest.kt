@@ -1,4 +1,4 @@
-package decoder
+package com.akulashov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.CastException

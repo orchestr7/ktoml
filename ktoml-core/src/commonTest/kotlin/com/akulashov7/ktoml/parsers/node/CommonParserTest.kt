@@ -1,4 +1,4 @@
-package node.parser
+package com.akulashov7.ktoml.parsers.node
 
 import com.akuleshov7.ktoml.parsers.node.TomlArray
 import com.akuleshov7.ktoml.parsers.node.TomlBasicString

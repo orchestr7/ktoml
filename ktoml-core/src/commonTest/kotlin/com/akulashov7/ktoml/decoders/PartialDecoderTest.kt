@@ -1,6 +1,5 @@
-package com.akuleshov7.ktoml.test.decoder
+package com.akulashov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -27,8 +26,7 @@ class PartialDecoderTest {
             Toml.partiallyDecodeFromString(
                 serializer(),
                 "[table1] \n a = 1 \n b = 2 \n [table2] \n c = 1 \n e = 2 \n d = 3",
-                "table1",
-                KtomlConf()
+                "table1"
             )
         )
     }
