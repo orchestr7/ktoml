@@ -16,6 +16,7 @@ import kotlin.jvm.JvmInline
  * @property config - object that stores configuration options for a parser
  */
 @JvmInline
+@Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")
 public value class TomlParser(private val config: TomlConfig) {
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)

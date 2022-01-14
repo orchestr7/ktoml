@@ -21,7 +21,11 @@ So we decided to support this format for the `kotlinx` serialization library.
 As this young and big project [is needed](https://github.com/Kotlin/kotlinx.serialization/issues/1092) by the Kotlin community, we need your help.
 We will be glad if you will test `ktoml` or contribute to this project. 
 In case you don't have much time for this - at least spend 5 seconds to give us a star to attract other contributors!
+
 **Thanks!** :pray:
+
+### Acknowledgement
+Special thanks to those devoted who help us maintain and improve the project: @NightEule5, @Peanuuutz, @petertrr, @Olivki and @edrd-f.
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
