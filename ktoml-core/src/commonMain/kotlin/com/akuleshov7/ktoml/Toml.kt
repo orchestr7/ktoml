@@ -3,10 +3,16 @@ package com.akuleshov7.ktoml
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.parsers.node.TomlFile
+import com.akuleshov7.ktoml.tree.TomlFile
+import com.akuleshov7.ktoml.writers.TomlWriter
 
 import kotlin.native.concurrent.ThreadLocal
-import kotlinx.serialization.*
+
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.StringFormat
+
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -22,8 +28,10 @@ public open class Toml(
     private val config: TomlConfig = TomlConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
-    // parser is created once after the creation of the class, to reduce the number of created parsers for each toml
+    // parser and writer are created once after the creation of the class, to reduce
+    // the number of created parsers and writers for each toml
     public val tomlParser: TomlParser = TomlParser(config)
+    public val tomlWriter: TomlWriter = TomlWriter(config)
 
     // ================== basic overrides ===============
 

@@ -2,14 +2,14 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.parsers.node.TomlFile
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValueArray
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.parsers.node.TomlNode
-import com.akuleshov7.ktoml.parsers.node.TomlStubEmptyNode
-import com.akuleshov7.ktoml.parsers.node.TomlTable
-import com.akuleshov7.ktoml.parsers.node.splitKeyValue
+import com.akuleshov7.ktoml.tree.TomlFile
+import com.akuleshov7.ktoml.tree.TomlKeyValue
+import com.akuleshov7.ktoml.tree.TomlKeyValueArray
+import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.TomlNode
+import com.akuleshov7.ktoml.tree.TomlStubEmptyNode
+import com.akuleshov7.ktoml.tree.TomlTable
+import com.akuleshov7.ktoml.tree.splitKeyValue
 import kotlin.jvm.JvmInline
 
 /**

@@ -1,15 +1,7 @@
-package com.akulashov7.ktoml.parsers.node
+package com.akulashov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.node.splitKeyValue
-import com.akuleshov7.ktoml.parsers.node.TomlBasicString
-import com.akuleshov7.ktoml.parsers.node.TomlBoolean
-import com.akuleshov7.ktoml.parsers.node.TomlDouble
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.parsers.node.TomlLiteralString
-import com.akuleshov7.ktoml.parsers.node.TomlLong
-import com.akuleshov7.ktoml.parsers.node.TomlNull
-import com.akuleshov7.ktoml.parsers.node.TomlValue
+import com.akuleshov7.ktoml.tree.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

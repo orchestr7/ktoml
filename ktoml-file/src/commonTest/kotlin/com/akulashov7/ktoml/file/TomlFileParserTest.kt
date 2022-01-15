@@ -4,7 +4,7 @@ import com.akuleshov7.ktoml.*
 import com.akuleshov7.ktoml.file.TomlFileReader
 import com.akuleshov7.ktoml.file.readAndParseFile
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.parsers.node.TomlTable
+import com.akuleshov7.ktoml.tree.TomlTable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer

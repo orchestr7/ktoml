@@ -20,9 +20,22 @@ public class KtomlConf(
  * @property ignoreUnknownNames - a control to allow/prohibit unknown names during the deserialization
  * @property allowEmptyValues - a control to allow/prohibit empty values: a = # comment
  * @property allowEscapedQuotesInLiteralStrings - a control to allow/prohibit escaping of single quotes in literal strings
+ * @property indentation
  */
 public open class TomlConfig(
     public val ignoreUnknownNames: Boolean = false,
     public val allowEmptyValues: Boolean = true,
-    public val allowEscapedQuotesInLiteralStrings: Boolean = true
-)
+    public val allowEscapedQuotesInLiteralStrings: Boolean = true,
+    public val indentation: Indentation = Indentation.FOUR_SPACES,
+) {
+    /**
+     * @property value
+     */
+    public enum class Indentation(public val value: String) {
+        FOUR_SPACES("    "),
+        NONE(""),
+        TAB("\t"),
+        TWO_SPACES("  "),
+        ;
+    }
+}

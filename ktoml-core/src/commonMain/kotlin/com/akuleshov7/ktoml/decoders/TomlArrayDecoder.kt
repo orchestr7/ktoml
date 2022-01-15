@@ -1,11 +1,11 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValue
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValueArray
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.parsers.node.TomlNull
-import com.akuleshov7.ktoml.parsers.node.TomlValue
+import com.akuleshov7.ktoml.tree.TomlKeyValue
+import com.akuleshov7.ktoml.tree.TomlKeyValueArray
+import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.TomlNull
+import com.akuleshov7.ktoml.tree.TomlValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder

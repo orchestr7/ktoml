@@ -1,9 +1,9 @@
-package com.akulashov7.ktoml.parsers.node
+package com.akulashov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.node.TomlFile
-import com.akuleshov7.ktoml.parsers.node.TomlKey
-import com.akuleshov7.ktoml.parsers.node.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.TomlFile
+import com.akuleshov7.ktoml.tree.TomlKey
+import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
