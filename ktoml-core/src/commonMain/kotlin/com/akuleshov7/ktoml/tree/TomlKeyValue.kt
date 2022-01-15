@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.parsers.node
+package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
