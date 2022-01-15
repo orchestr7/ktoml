@@ -1,7 +1,7 @@
 package node.parser
 
-import com.akuleshov7.ktoml.parsers.node.TomlArray
-import com.akuleshov7.ktoml.parsers.node.TomlBasicString
+import com.akuleshov7.ktoml.tree.TomlArray
+import com.akuleshov7.ktoml.tree.TomlBasicString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

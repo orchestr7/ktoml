@@ -2,7 +2,7 @@ package com.akuleshov7.ktoml.test.node.parser
 
 import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.exceptions.TomlParsingException
-import com.akuleshov7.ktoml.parsers.node.*
+import com.akuleshov7.ktoml.tree.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
