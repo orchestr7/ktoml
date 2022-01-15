@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.IllegalTomlTypeException
-import com.akuleshov7.ktoml.exceptions.TomlCastException
+import com.akuleshov7.ktoml.exceptions.CastException
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.TomlKeyValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encoding.AbstractDecoder
@@ -29,10 +29,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
 
     private fun invalidType(typeName: String, requiredType: String): Nothing {
         val keyValue = decodeKeyValue()
-        throw IllegalTomlTypeException(
+        throw IllegalTypeException(
             "<$typeName> type is not allowed by toml specification," +
                     " use <$requiredType> instead" +
-                    " (field = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
+                    " (key = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
         )
     }
 
@@ -41,7 +41,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         try {
             return keyValue.value.content as T
         } catch (e: ClassCastException) {
-            throw TomlCastException(
+            throw CastException(
                 "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
                         " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo

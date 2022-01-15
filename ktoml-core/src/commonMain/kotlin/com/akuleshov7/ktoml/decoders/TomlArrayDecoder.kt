@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.tree.TomlKeyValue
 import com.akuleshov7.ktoml.tree.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
@@ -14,13 +14,13 @@ import kotlinx.serialization.modules.SerializersModule
 
 /**
  * @property rootNode
- * @property ktomlConf
+ * @property config
  */
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
 public class TomlArrayDecoder(
     private val rootNode: TomlKeyValueArray,
-    private val ktomlConf: KtomlConf,
+    private val config: TomlConfig,
 ) : TomlAbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
@@ -46,7 +46,7 @@ public class TomlArrayDecoder(
                 currentPrimitiveElementOfArray,
                 rootNode.lineNo,
                 rootNode.key.content,
-                ktomlConf
+                config
             )
         )
         return nextElementIndex++

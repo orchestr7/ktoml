@@ -1,14 +1,13 @@
-package decoder
+package com.akulashov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.exceptions.TomlCastException
+import com.akuleshov7.ktoml.exceptions.CastException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 @Serializable
@@ -72,7 +71,7 @@ class SimpleArrayDecoderTest {
         val testWithNullArray2: ClassWithMutableList = Toml.decodeFromString("field = null")
         assertEquals(null, testWithNullArray2.field)
 
-        assertFailsWith<TomlCastException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
+        assertFailsWith<CastException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
 
         val testWithOnlyNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null ]")
         assertEquals(listOf(null), testWithOnlyNullInArray.field)

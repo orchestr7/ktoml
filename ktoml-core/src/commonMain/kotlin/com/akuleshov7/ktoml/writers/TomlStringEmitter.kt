@@ -1,14 +1,14 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 
 /**
  * A [TomlEmitter] implementation that writes to a [StringBuilder].
  */
 internal class TomlStringEmitter(
     private val stringBuilder: StringBuilder,
-    ktomlConf: KtomlConf
-) : TomlEmitter(ktomlConf) {
+    config: TomlConfig
+) : TomlEmitter(config) {
     override fun emit(fragment: String) {
         stringBuilder.append(fragment)
     }

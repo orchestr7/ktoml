@@ -21,7 +21,11 @@ So we decided to support this format for the `kotlinx` serialization library.
 As this young and big project [is needed](https://github.com/Kotlin/kotlinx.serialization/issues/1092) by the Kotlin community, we need your help.
 We will be glad if you will test `ktoml` or contribute to this project. 
 In case you don't have much time for this - at least spend 5 seconds to give us a star to attract other contributors!
+
 **Thanks!** :pray:
+
+### Acknowledgement
+Special thanks to those devoted who help us maintain and improve the project: @NightEule5, @Peanuuutz, @petertrr, @Olivki and @edrd-f.
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
@@ -168,10 +172,10 @@ val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(
 
 ```kotlin
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 /* ========= */
-var tomlAST = TomlParser(KtomlConf()).parseStringsToTomlTree(/* list with toml strings */)
-tomlAST = TomlParser(KtomlConf()).parseString(/* the string that you want to parse */)
+var tomlAST = TomlParser(TomlConfig()).parseStringsToTomlTree(/* list with toml strings */)
+tomlAST = TomlParser(TomlConfig()).parseString(/* the string that you want to parse */)
 tomlAST.prettyPrint()
 ```
 </details>

@@ -1,6 +1,8 @@
-package com.akuleshov7.ktoml.file
+package com.akulashov7.ktoml.file
 
 import com.akuleshov7.ktoml.*
+import com.akuleshov7.ktoml.file.TomlFileReader
+import com.akuleshov7.ktoml.file.readAndParseFile
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.TomlTable
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -82,7 +84,7 @@ class TomlFileParserTest {
         assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
         // ==== checking how table discovery works
         val lines = readAndParseFile(file)
-        val parsedResult = TomlParser(KtomlConf()).parseStringsToTomlTree(lines, KtomlConf())
+        val parsedResult = TomlParser(TomlConfig()).parseStringsToTomlTree(lines, TomlConfig())
         assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
     }
 
@@ -194,8 +196,8 @@ class TomlFileParserTest {
         val lines = readAndParseFile(file)
         assertEquals(
             listOf("owner", "database"),
-            TomlParser(KtomlConf())
-                .parseStringsToTomlTree(lines, KtomlConf())
+            TomlParser(TomlConfig())
+                .parseStringsToTomlTree(lines, TomlConfig())
                 .children
                 .filterIsInstance<TomlTable>()
                 .filter { !it.isSynthetic }

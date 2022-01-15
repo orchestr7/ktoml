@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlKey
@@ -12,18 +12,18 @@ import com.akuleshov7.ktoml.tree.TomlTable
 import kotlin.jvm.JvmInline
 
 /**
- * @property ktomlConf - object that stores configuration options for a writer
+ * @property config - object that stores configuration options for a writer
  */
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")  // This is, in fact, the canonical order.
-public value class TomlWriter(private val ktomlConf: KtomlConf) {
+public value class TomlWriter(private val config: TomlConfig) {
     public fun writeToString(
         file: TomlFile,
         stringBuilder: StringBuilder = StringBuilder()
     ): String = "${write(file, stringBuilder)}"
 
     private fun write(file: TomlFile, stringBuilder: StringBuilder): StringBuilder {
-        write(file, TomlStringEmitter(stringBuilder, ktomlConf))
+        write(file, TomlStringEmitter(stringBuilder, config))
 
         return stringBuilder
     }

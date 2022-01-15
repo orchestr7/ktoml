@@ -4,8 +4,8 @@
 
 package com.akuleshov7.ktoml.tree
 
-import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
@@ -32,16 +32,16 @@ internal constructor(
     public constructor(
         content: String,
         lineNo: Int,
-        ktomlConf: KtomlConf = KtomlConf()
-    ) : this(content.verifyAndTrimQuotes(lineNo, ktomlConf), lineNo)
+        config: TomlConfig = TomlConfig()
+    ) : this(content.verifyAndTrimQuotes(lineNo, config), lineNo)
 
     public companion object {
-        private fun String.verifyAndTrimQuotes(lineNo: Int, ktomlConf: KtomlConf): Any =
+        private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlConfig): Any =
                 if (startsWith("'") && endsWith("'")) {
                     val contentString = trimSingleQuotes()
-                    if (ktomlConf.escapedQuotesInLiteralStringsAllowed) contentString.convertSingleQuotes() else contentString
+                    if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
                 } else {
-                    throw TomlParsingException(
+                    throw ParseException(
                         "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
                                 " the single quote in the end of the following string: <$this>", lineNo
                     )
@@ -80,7 +80,7 @@ internal constructor(
                         .checkOtherQuotesAreEscaped(lineNo)
                         .convertSpecialCharacters(lineNo)
                 } else {
-                    throw TomlParsingException(
+                    throw ParseException(
                         "According to the TOML specification string values (even Enums)" +
                                 " should be wrapped (start and end) with quotes (\"\"), but the following value was not: <$this>." +
                                 " Please note that multiline strings are not yet supported.",
@@ -91,7 +91,7 @@ internal constructor(
         private fun String.checkOtherQuotesAreEscaped(lineNo: Int): String {
             this.forEachIndexed { index, ch ->
                 if (ch == '\"' && (index == 0 || this[index - 1] != '\\')) {
-                    throw TomlParsingException(
+                    throw ParseException(
                         "Found invalid quote that is not escaped." +
                                 " Please remove the quote or use escaping" +
                                 " in <$this> at position = [$index].", lineNo
@@ -117,7 +117,7 @@ internal constructor(
                         '\\' -> '\\'
                         '\'' -> '\''
                         '"' -> '"'
-                        else -> throw TomlParsingException(
+                        else -> throw ParseException(
                             "According to TOML documentation unknown" +
                                     " escape symbols are not allowed. Please check: [\\${this[i + 1]}]",
                             lineNo
@@ -200,9 +200,9 @@ internal constructor(
     public constructor(
         rawContent: String,
         lineNo: Int,
-        ktomlConf: KtomlConf = KtomlConf()
+        config: TomlConfig = TomlConfig()
     ) : this(
-        rawContent.parse(lineNo, ktomlConf),
+        rawContent.parse(lineNo, config),
         rawContent,
         lineNo) {
         validateBrackets()
@@ -211,17 +211,17 @@ internal constructor(
     /**
      * small adaptor to make proper testing of parsing
      *
-     * @param ktomlConf
+     * @param config
      * @return converted array to a list
      */
-    public fun parse(ktomlConf: KtomlConf = KtomlConf()): List<Any> = rawContent.parse(lineNo, ktomlConf)
+    public fun parse(config: TomlConfig = TomlConfig()): List<Any> = rawContent.parse(lineNo, config)
 
     /**
      * small validation for quotes: each quote should be closed in a key
      */
     private fun validateBrackets() {
         if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
-            throw TomlParsingException(
+            throw ParseException(
                 "Not able to parse the key: [$rawContent] as it does not have closing bracket",
                 lineNo
             )
@@ -232,10 +232,10 @@ internal constructor(
         /**
          * recursively parse TOML array from the string: [ParsingArray -> Trimming values -> Parsing Nested Arrays]
          */
-        private fun String.parse(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()): List<Any> =
+        private fun String.parse(lineNo: Int, config: TomlConfig = TomlConfig()): List<Any> =
                 this.parseArray()
                     .map { it.trim() }
-                    .map { if (it.startsWith("[")) it.parse(lineNo, ktomlConf) else it.parseValue(lineNo, ktomlConf) }
+                    .map { if (it.startsWith("[")) it.parse(lineNo, config) else it.parseValue(lineNo, config) }
 
         /**
          * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]

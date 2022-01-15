@@ -1,7 +1,6 @@
-package com.akuleshov7.ktoml.test.node.parser
+package com.akulashov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlKey
 import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
@@ -42,18 +41,18 @@ class DottedKeyParserTest {
         assertEquals("c", test.content)
         assertEquals(true, test.isDotted)
 
-        assertFailsWith<TomlParsingException> { TomlKey("SPACE AND SPACE", 0) }
+        assertFailsWith<ParseException> { TomlKey("SPACE AND SPACE", 0) }
     }
 
     @Test
     fun createTable() {
-        var test = TomlKeyValuePrimitive(Pair("google.com","5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
+        var test = TomlKeyValuePrimitive(Pair("google.com","5"), 0).createTomlTableFromDottedKey(TomlFile())
         assertEquals("google", test.fullTableName)
 
-        test = TomlKeyValuePrimitive(Pair("a.b.c.d", "5"), 0, KtomlConf()).createTomlTableFromDottedKey(TomlFile())
+        test = TomlKeyValuePrimitive(Pair("a.b.c.d", "5"), 0).createTomlTableFromDottedKey(TomlFile())
         assertEquals("a.b.c", test.fullTableName)
 
-        val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0, KtomlConf())
+        val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0)
         test = testKeyValue.createTomlTableFromDottedKey(TomlFile())
         assertEquals("c", testKeyValue.key.content)
         assertEquals(1, test.level)

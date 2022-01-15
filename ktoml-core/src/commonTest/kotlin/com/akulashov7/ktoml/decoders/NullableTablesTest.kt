@@ -1,7 +1,7 @@
-package decoder
+package com.akulashov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -32,9 +32,9 @@ class NullableTablesTest {
     @Test
     fun nullableKey() {
         val mapper = Toml(
-            config = KtomlConf(
+            config = TomlConfig(
                 ignoreUnknownNames = true,
-                emptyValuesAllowed = true
+                allowEmptyValues = true
             )
         )
         val toml1 = mapper.decodeFromString<Config1>(

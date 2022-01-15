@@ -1,8 +1,8 @@
 
 package com.akuleshov7.ktoml.file
 
-import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlConfig
 
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.SerializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public open class TomlFileReader(
-    private val config: KtomlConf = KtomlConf(),
+    private val config: TomlConfig = TomlConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : Toml(config, serializersModule) {
     /**
@@ -59,9 +59,9 @@ public open class TomlFileReader(
 
     /**
      * The default instance of [TomlFileReader] with the default configuration.
-     * See [KtomlConf] for the list of the default options
+     * See [TomlConfig] for the list of the default options
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : TomlFileReader(KtomlConf())
+    public companion object Default : TomlFileReader(TomlConfig())
 }

@@ -1,7 +1,6 @@
-package com.akuleshov7.ktoml.test.node.parser
+package com.akulashov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.KtomlConf
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,22 +19,21 @@ class ValueParserTest {
 
     @Test
     fun quotesParsingTest() {
-        assertFailsWith<TomlParsingException> {
+        assertFailsWith<ParseException> {
             TomlKeyValuePrimitive(Pair("\"a", "123"), 0)
         }
 
-        assertFailsWith<TomlParsingException> {
+        assertFailsWith<ParseException> {
             TomlKeyValuePrimitive(Pair("a", "hello world"), 0)
         }
-        assertFailsWith<TomlParsingException> {
+        assertFailsWith<ParseException> {
             TomlKeyValuePrimitive(Pair("a", "\"before \" string\""), 0)
         }
     }
 
-
     @Test
     fun specialSymbolsParsing() {
-        assertFailsWith<TomlParsingException> { TomlKeyValuePrimitive(Pair("a", "\"hello\\world\""), 0) }
+        assertFailsWith<ParseException> { TomlKeyValuePrimitive(Pair("a", "\"hello\\world\""), 0) }
 
         var test = TomlKeyValuePrimitive(Pair("a", "\"hello\\tworld\""), 0)
         assertEquals("hello\tworld", test.value.content)
@@ -69,19 +67,18 @@ class ValueParserTest {
 
         // regression test related to comments with an equals symbol after it
         var pairTest =
-            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
+            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0)
         assertEquals(1L, TomlKeyValuePrimitive(pairTest, 0).value.content)
 
-        pairTest = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0, ktomlConf = KtomlConf())
+        pairTest = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0)
         assertEquals("1 = 2", TomlKeyValuePrimitive(pairTest, 0).value.content)
     }
 
-
     @Test
     fun parsingIssueValue() {
-        assertFailsWith<TomlParsingException> { " = false".splitKeyValue(0, ktomlConf = KtomlConf()) }
-        assertFailsWith<TomlParsingException> { " just false".splitKeyValue(0, ktomlConf = KtomlConf()) }
-        assertFailsWith<TomlParsingException> { TomlKeyValuePrimitive(Pair("a", "\"\\hello tworld\""), 0) }
+        assertFailsWith<ParseException> { " = false".splitKeyValue(0) }
+        assertFailsWith<ParseException> { " just false".splitKeyValue(0) }
+        assertFailsWith<ParseException> { TomlKeyValuePrimitive(Pair("a", "\"\\hello tworld\""), 0) }
     }
 }
 

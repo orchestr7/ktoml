@@ -4,9 +4,9 @@
 
 package com.akuleshov7.ktoml.tree
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
@@ -18,18 +18,18 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
  *
  * @property content - original node content (used for logging and tests only)
  * @property lineNo - the number of a line from TOML that is linked to the current node
- * @property ktomlConf
+ * @property config
  */
 public sealed class TomlNode(
     public open val content: String,
     public open val lineNo: Int,
-    public open val ktomlConf: KtomlConf = KtomlConf()) {
+    public open val config: TomlConfig = TomlConfig()) {
     public open val children: MutableSet<TomlNode> = mutableSetOf()
     public open var parent: TomlNode? = null
 
     // the real toml name of a structure (for table [a] it will be "a", for key b = 1 it will be "b")
-    // used for logging and errors AND for matching the name of the node to the name of the fields in the class
-    // see: [checkMissingRequiredField]
+    // used for logging and errors AND for matching the name of the node to the name of the properties in the class
+    // see: [checkMissingRequiredProperties]
     public abstract val name: String
 
     // this constructor is used by TomlKeyValueList and TomlKeyValuePrimitive and we concatenate keyValuePair to the content
@@ -38,10 +38,10 @@ public sealed class TomlNode(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
-        ktomlConf: KtomlConf = KtomlConf()) : this(
+        config: TomlConfig = TomlConfig()) : this(
         "${key.content}=${value.content}",
         lineNo,
-        ktomlConf
+        config
     )
 
     /**
@@ -102,13 +102,13 @@ public sealed class TomlNode(
      *        \
      *        a.d.e
      * @return table that was found or null in case of not found
-     * @throws TomlParsingException if found several tables with the same name
+     * @throws ParseException if found several tables with the same name
      */
     public fun findTableInAstByName(searchedTableName: String, searchedLevel: Int): TomlTable? {
         val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0)
 
         if (searchedTable.size > 1) {
-            throw TomlParsingException(
+            throw ParseException(
                 "Internal error: Found several Tables with the same name <$searchedTableName> in AST",
                 searchedTable.first().lineNo
             )
@@ -137,16 +137,16 @@ public sealed class TomlNode(
                 prevParentNode = it
             } ?: run {
                 // if we came to the last part of table - just insert our table to the end
-                if (level == tomlTable.tablesList.size - 1) {
+                prevParentNode = if (level == tomlTable.tablesList.size - 1) {
                     prevParentNode.appendChild(tomlTable)
-                    prevParentNode = tomlTable
+                    tomlTable
                 } else {
                     // hack and trick to save the link to the initial node (that was passed as an argument) in the tree
                     // so the node will be added only in the end, and it will be the initial node
                     // (!) we will mark these tables with 'isSynthetic' flag
-                    val newChildTableName = TomlTable("[$tableName]", lineNo, ktomlConf, true)
+                    val newChildTableName = TomlTable("[$tableName]", lineNo, config, true)
                     prevParentNode.appendChild(newChildTableName)
-                    prevParentNode = newChildTableName
+                    newChildTableName
                 }
             }
         }
@@ -209,10 +209,10 @@ public sealed class TomlNode(
 /**
  * A root node for TOML Abstract Syntax Tree
  */
-public class TomlFile(ktomlConf: KtomlConf = KtomlConf()) : TomlNode(
+public class TomlFile(config: TomlConfig = TomlConfig()) : TomlNode(
     "rootNode",
     0,
-    ktomlConf) {
+    config) {
     override val name: String = "rootNode"
 
     override fun getNeighbourNodes(): MutableSet<TomlNode> =
@@ -230,15 +230,15 @@ public class TomlFile(ktomlConf: KtomlConf = KtomlConf()) : TomlNode(
 public class TomlTable(
     content: String,
     lineNo: Int,
-    ktomlConf: KtomlConf = KtomlConf(),
+    config: TomlConfig = TomlConfig(),
     public val isSynthetic: Boolean = false) : TomlNode(
     content,
     lineNo,
-    ktomlConf) {
+    config) {
     // list of tables that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
     public var tablesList: List<String>
 
-    // short table name (only the name without parential prefix, like a - it is used in decoder and encoder)
+    // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
     override val name: String
 
     // this name is used during the injection of the table to the AST
@@ -255,7 +255,7 @@ public class TomlTable(
         val sectionFromContent = content.trim().trimBrackets().trim()
 
         if (sectionFromContent.isBlank()) {
-            throw TomlParsingException("Incorrect blank table name: $content", lineNo)
+            throw ParseException("Incorrect blank table name: $content", lineNo)
         }
 
         fullTableName = sectionFromContent
@@ -283,20 +283,20 @@ public class TomlKeyValueArray(
     override val value: TomlValue,
     override val lineNo: Int,
     override val name: String,
-    ktomlConf: KtomlConf = KtomlConf()
+    config: TomlConfig = TomlConfig()
 ) : TomlNode(
     key,
     value,
     lineNo,
-    ktomlConf), TomlKeyValue {
+    config), TomlKeyValue {
     // adaptor for string pair of key-value
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
-        ktomlConf: KtomlConf = KtomlConf()
+        config: TomlConfig = TomlConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseList(lineNo, ktomlConf),
+        keyValuePair.second.parseList(lineNo, config),
         lineNo,
         TomlKey(keyValuePair.first, lineNo).content
     )
@@ -314,20 +314,20 @@ public class TomlKeyValuePrimitive(
     override val value: TomlValue,
     override val lineNo: Int,
     override val name: String,
-    ktomlConf: KtomlConf = KtomlConf()
+    config: TomlConfig = TomlConfig()
 ) : TomlNode(
     key,
     value,
     lineNo,
-    ktomlConf), TomlKeyValue {
+    config), TomlKeyValue {
     // adaptor for string pair of key-value
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
-        ktomlConf: KtomlConf = KtomlConf()
+        config: TomlConfig = TomlConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseValue(lineNo, ktomlConf),
+        keyValuePair.second.parseValue(lineNo, config),
         lineNo,
         TomlKey(keyValuePair.first, lineNo).content
     )
@@ -339,9 +339,9 @@ public class TomlKeyValuePrimitive(
  *
  * Instances of this stub will be added as children to such parsed tables
  */
-public class TomlStubEmptyNode(lineNo: Int, ktomlConf: KtomlConf = KtomlConf()) : TomlNode(
+public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
     "empty_technical_node",
     lineNo,
-    ktomlConf) {
+    config) {
     override val name: String = "empty_technical_node"
 }

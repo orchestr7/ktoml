@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.file
 
-import com.akuleshov7.ktoml.KtomlConf
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.tree.TomlFile
 
 import okio.use
@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.SerializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public open class TomlFileWriter(
-    private val config: KtomlConf = KtomlConf(),
+    private val config: TomlConfig = TomlConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : Toml(config, serializersModule) {
     public fun <T> encodeToFile(

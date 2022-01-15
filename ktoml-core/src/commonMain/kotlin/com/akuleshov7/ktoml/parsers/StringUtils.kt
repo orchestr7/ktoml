@@ -4,7 +4,7 @@
 
 package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.exceptions.TomlParsingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 
 /**
  * Splitting dot-separated string to tokens:
@@ -76,7 +76,7 @@ internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
-        throw TomlParsingException(
+        throw ParseException(
             "Not able to parse the key: [$fullKey] as it has invalid spaces." +
                     " If you would like to have spaces in the middle of the key - use quotes: \"WORD SPACE\"", lineNo
         )
@@ -88,7 +88,7 @@ private fun String.validateSpaces(lineNo: Int, fullKey: String) {
  */
 private fun String.validateQuotes(lineNo: Int) {
     if (this.count { it == '\"' } % 2 != 0 || this.count { it == '\'' } % 2 != 0) {
-        throw TomlParsingException(
+        throw ParseException(
             "Not able to parse the key: [$this] as it does not have closing quote." +
                     " Please note, that you cannot use even escaped quotes in the bare keys.",
             lineNo
@@ -110,7 +110,7 @@ private fun String.validateSymbols(lineNo: Int) {
                     // FixMe: isLetterOrDigit is not supported in Kotlin 1.4, but 1.5 is not compiling right now
                     !setOf('_', '-', '.', '"', '\'', ' ', '\t').contains(ch) && !ch.isLetterOrDigit()
             ) {
-                throw TomlParsingException(
+                throw ParseException(
                     "Not able to parse the key: [$this] as it contains invalid symbols." +
                             " In case you would like to use special symbols - use quotes as" +
                             " it is required by TOML standard: \"My key ~ with special % symbols\"",

@@ -2,7 +2,7 @@
 
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.DeserializationStrategy
@@ -23,7 +23,7 @@ import kotlinx.serialization.modules.SerializersModule
 @ExperimentalSerializationApi
 public class TomlMainDecoder(
     private val rootNode: TomlNode,
-    private val config: KtomlConf,
+    private val config: TomlConfig,
 ) : TomlAbstractDecoder() {
     private var elementIndex = 0
     override val serializersModule: SerializersModule = EmptySerializersModule
@@ -44,12 +44,7 @@ public class TomlMainDecoder(
         val index = enumDescriptor.getElementIndex(value)
 
         if (index == CompositeDecoder.UNKNOWN_NAME) {
-            val choices = (0 until enumDescriptor.elementsCount)
-                .map { enumDescriptor.getElementName(it) }
-                .sorted()
-                .joinToString(", ")
-
-            throw InvalidEnumValueException(value, choices)
+            throw InvalidEnumValueException(value, enumDescriptor)
         }
 
         return index
@@ -92,27 +87,27 @@ public class TomlMainDecoder(
             return CompositeDecoder.DECODE_DONE
         }
 
-        // FixMe: error here for missing fields that are not required
+        // FixMe: error here for missing properties that are not required
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
-        val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
-        checkNullability(currentNode, fieldWhereValueShouldBeInjected, descriptor)
+        val currentProperty = descriptor.getElementIndex(currentNode.name)
+        checkNullability(currentNode, currentProperty, descriptor)
 
-        // in case we have not found the key from the input in the list of field names in the class,
-        // we need to throw exception or ignore this unknown field and find any known key to continue processing
-        if (fieldWhereValueShouldBeInjected == CompositeDecoder.UNKNOWN_NAME) {
+        // in case we have not found the key from the input in the list of property names in the class,
+        // we need to throw exception or ignore this unknown property and find any known key to continue processing
+        if (currentProperty == CompositeDecoder.UNKNOWN_NAME) {
             // if we have set an option for ignoring unknown names
             // OR in the input we had a technical node for empty tables (see the description to TomlStubEmptyNode)
             // then we need to iterate until we will find something known for us
             if (config.ignoreUnknownNames || currentNode is TomlStubEmptyNode) {
                 return iterateUntilWillFindAnyKnownName(descriptor)
             } else {
-                throw UnknownNameDecodingException(currentNode.name, currentNode.parent?.name)
+                throw UnknownNameException(currentNode.name, currentNode.parent?.name)
             }
         }
 
         // we have found known name and we can continue processing normally
         elementIndex++
-        return fieldWhereValueShouldBeInjected
+        return currentProperty
     }
 
     private fun iterateUntilWillFindAnyKnownName(descriptor: SerialDescriptor): Int {
@@ -121,54 +116,54 @@ public class TomlMainDecoder(
                 return CompositeDecoder.DECODE_DONE
             }
             val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
-            val fieldWhereValueShouldBeInjected = descriptor.getElementIndex(currentNode.name)
+            val currentProperty = descriptor.getElementIndex(currentNode.name)
 
             elementIndex++
-            if (fieldWhereValueShouldBeInjected != CompositeDecoder.UNKNOWN_NAME) {
-                return fieldWhereValueShouldBeInjected
+            if (currentProperty != CompositeDecoder.UNKNOWN_NAME) {
+                return currentProperty
             }
         }
     }
 
     /**
-     * straight-forward solution to check if we do not assign null to non-null fields
+     * straight-forward solution to check if we do not assign null to non-null property
      *
      * @param descriptor - serial descriptor of the current node that we would like to check
      */
     private fun checkNullability(
         currentNode: TomlNode,
-        fieldWhereValueShouldBeInjected: Int,
+        currentProperty: Int,
         descriptor: SerialDescriptor
     ) {
         if (currentNode is TomlKeyValue &&
                 currentNode.value is TomlNull &&
-                !descriptor.getElementDescriptor(fieldWhereValueShouldBeInjected).isNullable
+                !descriptor.getElementDescriptor(currentProperty).isNullable
         ) {
-            throw NonNullableValueException(
-                descriptor.getElementName(fieldWhereValueShouldBeInjected),
+            throw NullValueException(
+                descriptor.getElementName(currentProperty),
                 currentNode.lineNo
             )
         }
     }
 
     /**
-     * actually this method is not needed as serialization lib should do everything for us, but let's
-     * fail-fast in the very beginning if the structure is inconsistent and required fields are missing
+     * Actually this method is not needed as serialization lib should do everything for us, but let's
+     * fail-fast in the very beginning if the structure is inconsistent and required properties are missing
      */
-    private fun checkMissingRequiredField(children: MutableSet<TomlNode>?, descriptor: SerialDescriptor) {
-        val fieldNameProvidedInTheInput = children?.map {
+    private fun checkMissingRequiredProperties(children: MutableSet<TomlNode>?, descriptor: SerialDescriptor) {
+        val propertyNames = children?.map {
             it.name
         } ?: emptyList()
 
-        val missingKeysInInput = descriptor.elementNames.toSet() - fieldNameProvidedInTheInput.toSet()
+        val missingPropertyNames = descriptor.elementNames.toSet() - propertyNames.toSet()
 
-        missingKeysInInput.forEach {
+        missingPropertyNames.forEach {
             val index = descriptor.getElementIndex(it)
 
             if (!descriptor.isElementOptional(index)) {
-                throw MissingRequiredFieldException(
+                throw MissingRequiredPropertyException(
                     "Invalid number of key-value arguments provided in the input for deserialization." +
-                            " Missing the required field " +
+                            " Missing required property " +
                             "<${descriptor.getElementName(index)}> from class <${descriptor.serialName}> in the input"
                 )
             }
@@ -181,7 +176,7 @@ public class TomlMainDecoder(
      */
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
         is TomlFile -> {
-            checkMissingRequiredField(rootNode.children, descriptor)
+            checkMissingRequiredProperties(rootNode.children, descriptor)
             val firstFileChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
                 "Missing child nodes (tables, key-values) for TomlFile." +
                         " Was empty toml provided to the input?"
@@ -205,11 +200,11 @@ public class TomlMainDecoder(
                         "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
                                 " in a table <${nextProcessingNode.fullTableName}>"
                     )
-                    checkMissingRequiredField(firstTableChild.getNeighbourNodes(), descriptor)
+                    checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
                     TomlMainDecoder(firstTableChild, config)
                 }
                 else -> throw InternalDecodingException(
-                    "Incorrect decdong state in the beginStructure()" +
+                    "Incorrect decoding state in the beginStructure()" +
                             " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
                 )
             }
@@ -226,7 +221,7 @@ public class TomlMainDecoder(
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,
-            config: KtomlConf = KtomlConf()
+            config: TomlConfig = TomlConfig()
         ): T {
             val decoder = TomlMainDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)

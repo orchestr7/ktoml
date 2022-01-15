@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.BINARY
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
@@ -11,8 +11,8 @@ import kotlin.jvm.JvmStatic
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
  */
-public abstract class TomlEmitter(ktomlConf: KtomlConf) {
-    private val indentation = ktomlConf.indentation.value
+public abstract class TomlEmitter(config: TomlConfig) {
+    private val indentation = config.indentation.value
 
     /**
      * The current indent depth, set by [indent] and [dedent].
