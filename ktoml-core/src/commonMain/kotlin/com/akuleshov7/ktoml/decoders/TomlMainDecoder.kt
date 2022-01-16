@@ -51,7 +51,8 @@ public class TomlMainDecoder(
     }
 
     // the iteration will go through all elements that will be found in the input
-    private fun isDecodingDone() = elementIndex == rootNode.getNeighbourNodes().size
+    private fun isDecodingDone() =
+            if (rootNode is TomlFile) true else elementIndex == rootNode.getNeighbourNodes().size
 
     /**
      * Getting the node with the value
@@ -177,10 +178,15 @@ public class TomlMainDecoder(
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
         is TomlFile -> {
             checkMissingRequiredProperties(rootNode.children, descriptor)
-            val firstFileChild = rootNode.getFirstChild() ?: throw InternalDecodingException(
-                "Missing child nodes (tables, key-values) for TomlFile." +
-                        " Was empty toml provided to the input?"
-            )
+            val firstFileChild = rootNode.getFirstChild() ?: if (!config.allowEmptyToml) {
+                throw InternalDecodingException(
+                    "Missing child nodes (tables, key-values) for TomlFile." +
+                            " Was empty toml provided to the input?"
+                )
+            } else {
+                rootNode
+            }
+
             TomlMainDecoder(firstFileChild, config)
         }
         else -> {

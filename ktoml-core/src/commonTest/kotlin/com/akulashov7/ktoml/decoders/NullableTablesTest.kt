@@ -82,19 +82,19 @@ class NullableTablesTest {
 class EmptyTomlTest {
     @Test
     fun emptyToml() {
-        assertFailsWith<InternalDecodingException> {
-            Toml().decodeFromString<Config>(
-                """            
+        var res = Toml().decodeFromString<Config>(
+            """            
              
              
                 """.trimIndent()
-            )
-        }
+        )
 
-        assertFailsWith<InternalDecodingException> {
-            Toml().decodeFromString(
-                "".trimIndent()
-            )
-        }
+        assertEquals(Config(), res)
+
+        res = Toml().decodeFromString<Config>(
+            "".trimIndent()
+        )
+
+        assertEquals(Config(), res)
     }
 }
