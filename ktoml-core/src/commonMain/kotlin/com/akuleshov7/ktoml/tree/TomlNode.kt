@@ -23,7 +23,8 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
 public sealed class TomlNode(
     public open val content: String,
     public open val lineNo: Int,
-    public open val config: TomlConfig = TomlConfig()) {
+    public open val config: TomlConfig = TomlConfig()
+) {
     public open val children: MutableSet<TomlNode> = mutableSetOf()
     public open var parent: TomlNode? = null
 

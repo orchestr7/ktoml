@@ -25,7 +25,8 @@ In case you don't have much time for this - at least spend 5 seconds to give us 
 **Thanks!** :pray:
 
 ### Acknowledgement
-Special thanks to those devoted who help us maintain and improve the project: @NightEule5, @Peanuuutz, @petertrr, @Olivki and @edrd-f.
+Special thanks to those awesome developers who give us great suggestions, help us to maintain and improve this project:
+@NightEule5, @Peanuuutz, @petertrr, @Olivki and @edrd-f.
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
@@ -192,7 +193,11 @@ Toml(
         // allow/prohibit empty values like "a = # comment", default true
         emptyValuesAllowed = true,
         // allow/prohibit escaping of single quotes in literal strings, default true
-        escapedQuotesInLiteralStringsAllowed = true
+        escapedQuotesInLiteralStringsAllowed = true,
+        // allow/prohibit processing of empty toml, if false - throws an InternalDecodingException exception, default is true
+        allowEmptyToml = true,
+        // indentation symbols for serialization, default 4 spaces
+        indentation = Indentation.FOUR_SPACES,
     )
 ).decodeFromString<MyClass>(
     tomlString
