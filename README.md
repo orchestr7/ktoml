@@ -15,27 +15,27 @@
 Fully Native and Multiplatform Kotlin serialization library for serialization/deserialization of [toml](https://toml.io/en/) format.
 Uses native [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization), provided by Kotlin. This library contains no Java code and no Java dependencies.
 We believe that TOML is actually the most readable and user-friendly **configuration file** format.
-So we decided to support this format for the `kotlinx` serialization library.  
+So we decided to support this format for the `kotlinx` serialization library.
 
 ## Contribution
 As this young and big project [is needed](https://github.com/Kotlin/kotlinx.serialization/issues/1092) by the Kotlin community, we need your help.
-We will be glad if you will test `ktoml` or contribute to this project. 
+We will be glad if you will test `ktoml` or contribute to this project.
 In case you don't have much time for this - at least spend 5 seconds to give us a star to attract other contributors!
 
 **Thanks!** :pray:
 
-### Acknowledgement
+## Acknowledgement
 Special thanks to those awesome developers who give us great suggestions, help us to maintain and improve this project:
 @NightEule5, @Peanuuutz, @petertrr, @Olivki and @edrd-f.
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
 However, to reduce the scope, ktoml now supports only the following platforms:
- - jvm
- - mingwx64
- - linuxx64
- - macosx64
- - js (only for ktoml-core). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
+- jvm
+- mingwx64
+- linuxx64
+- macosx64
+- js (only for ktoml-core). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
@@ -67,11 +67,11 @@ We are still developing and testing this library, so it has several limitations:
 :x: Multiline Strings \
 :x: Inline Tables \
 :x: Array of Tables \
-:x: Offset Date-Time, Local: Date-Time; Date; Time 
+:x: Offset Date-Time, Local: Date-Time; Date; Time
 
 ## Dependency
 The library is hosted on the [Maven Central](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
-To import `ktoml` library you need to add following dependencies to your code: 
+To import `ktoml` library you need to add following dependencies to your code:
 <details>
 <summary>Maven</summary>
 
@@ -113,15 +113,18 @@ However, we are using [okio](https://github.com/square/okio) to read the file, s
 project if you will import [ktoml-file](https://search.maven.org/artifact/com.akuleshov7/ktoml-file).
 For basic scenarios of decoding strings you can simple use [ktoml-core](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
 
+:heavy_exclamation_mark: don't forget to add the serialization plugin `kotlin("plugin.serialization")` to your project.
+Otherwise, `@Serialization` annotation won't work properly.
+
 **Deserialization:**
 <details>
 <summary>Straight-forward deserialization</summary>
 
 ```kotlin
-// include extensions from 'kotlinx' lib to improve user experience 
+// add extensions from 'kotlinx' lib to your project:
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.serializer
-// including com.akuleshov7:ktoml-core
+// add com.akuleshov7:ktoml-core to your project:
 import com.akuleshov7.ktoml.deserialize
 
 @Serializable
@@ -138,9 +141,9 @@ val resultFromList = Toml.decodeFromString<MyClass>(serializer(), /* list with l
 <details>
 <summary>Partial deserialization</summary>
 
-Partial Deserialization can be useful when you would like to deserialize only **one single** table and you do not want 
+Partial Deserialization can be useful when you would like to deserialize only **one single** table and you do not want
 to reproduce whole object structure in your code.
- 
+
 ```kotlin
 // If you need to deserialize only some part of the toml - provide the full name of the toml table. 
 // The deserializer will work only with this table and it's children.
@@ -159,8 +162,8 @@ val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /
 <summary>Toml File deserialization</summary>
 
 ```kotlin
-// including com.akuleshov7:ktoml-file
-import com.akuleshov7.ktoml.deserialize
+// add com.akuleshov7:ktoml-file to your project
+import com.akuleshov7.ktoml.file
 
 val resultFromString = TomlFileReader.decodeFromFile<MyClass>(serializer(), /* file path to toml file */)
 val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(),  /* file path to toml file */, /* table name */)
@@ -203,6 +206,11 @@ Toml(
     tomlString
 )
 ```
+
+## Exceptions
+Ktoml will produce different exceptions in case of the invalid input. Please note, that some of strict checks can be enabled or disabled (please see
+`Configuration` section of this readme). We intentionally made only two parental sealed exceptions public:
+`TomlDecodingException` and `TomlEncodingException` - you can catch them in your code. All other exceptions inherit one of these two and will not be public.
 
 ## How ktoml works: examples
 
