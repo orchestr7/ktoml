@@ -4,12 +4,9 @@
 
 package com.akuleshov7.ktoml.tree
 
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.splitKeyToTokens
-import com.akuleshov7.ktoml.parsers.trimBrackets
-import com.akuleshov7.ktoml.parsers.trimQuotes
 
 /**
  * Base Node class for AST.
@@ -35,7 +32,7 @@ public sealed class TomlNode(
 
     // this constructor is used by TomlKeyValueList and TomlKeyValuePrimitive and we concatenate keyValuePair to the content
     // only for logging, debug information and unification of the code
-    private constructor(
+    protected constructor(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
@@ -72,17 +69,20 @@ public sealed class TomlNode(
     private fun findTableInAstByName(
         searchedTableName: String,
         searchedLevel: Int,
-        currentLevel: Int
+        currentLevel: Int,
+        type: TableType
     ): List<TomlTable> {
         val result =
-                if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
+               // we need to filter nodes by the type of table that we are inserting to the tree (array/primitive)
+                if (this is TomlTable && this.type == type &&
+                    this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
                     mutableListOf(this)
                 } else {
                     mutableListOf()
                 }
         return result + this.children.flatMap {
             if (currentLevel + 1 <= searchedLevel) {
-                it.findTableInAstByName(searchedTableName, searchedLevel, currentLevel + 1)
+                it.findTableInAstByName(searchedTableName, searchedLevel, currentLevel + 1, type)
             } else {
                 mutableListOf()
             }
@@ -105,8 +105,8 @@ public sealed class TomlNode(
      * @return table that was found or null in case of not found
      * @throws ParseException if found several tables with the same name
      */
-    public fun findTableInAstByName(searchedTableName: String, searchedLevel: Int): TomlTable? {
-        val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0)
+    public fun findTableInAstByName(searchedTableName: String, searchedLevel: Int, type: TableType): TomlTable? {
+        val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0, type)
 
         if (searchedTable.size > 1) {
             throw ParseException(
@@ -117,6 +117,7 @@ public sealed class TomlNode(
         return if (searchedTable.isEmpty()) null else searchedTable[0]
     }
 
+
     /**
      * Method inserts a table (section) to tree. It parses the section name and creates all missing nodes in the tree
      * (even parental). For [a.b.c] it will create 3 nodes: a, b, and c
@@ -124,7 +125,7 @@ public sealed class TomlNode(
      * @param tomlTable - a table (section) that should be inserted into the tree
      * @return inserted table
      */
-    public fun insertTableToTree(tomlTable: TomlTable): TomlNode {
+    public fun <T: TomlTable> insertTableToTree(tomlTable: T, type: TableType): TomlNode {
         // prevParentNode - saved node that is used in a chain
         var prevParentNode: TomlNode = this
         // [a.b.c.d] -> for each section node checking existing node in a tree
@@ -132,12 +133,12 @@ public sealed class TomlNode(
         // 
         // the only trick here is to save the link to the initial tomlTable (append it in the end)
         tomlTable.tablesList.forEachIndexed { level, tableName ->
-            val foundTableName = this.findTableInAstByName(tableName, level + 1)
+            val foundTableName = this.findTableInAstByName(tableName, level + 1, type)
 
             foundTableName?.let {
                 prevParentNode = it
             } ?: run {
-                // if we came to the last part of table - just insert our table to the end
+                // if we came to the last part (to 'd' from a.b.c.d) of the table - just will insert our table to the end
                 prevParentNode = if (level == tomlTable.tablesList.size - 1) {
                     prevParentNode.appendChild(tomlTable)
                     tomlTable
@@ -145,7 +146,7 @@ public sealed class TomlNode(
                     // hack and trick to save the link to the initial node (that was passed as an argument) in the tree
                     // so the node will be added only in the end, and it will be the initial node
                     // (!) we will mark these tables with 'isSynthetic' flag
-                    val newChildTableName = TomlTable("[$tableName]", lineNo, config, true)
+                    val newChildTableName = TomlTablePrimitive("[$tableName]", lineNo, config, true)
                     prevParentNode.appendChild(newChildTableName)
                     newChildTableName
                 }
@@ -172,8 +173,8 @@ public sealed class TomlNode(
      *
      * @return all detected toml tables
      */
-    public fun getAllChildTomlTables(): List<TomlTable> {
-        val result = if (this is TomlTable) mutableListOf(this) else mutableListOf()
+    public fun getAllChildTomlTables(): List<TomlTablePrimitive> {
+        val result = if (this is TomlTablePrimitive) mutableListOf(this) else mutableListOf()
         return result + this.children.flatMap {
             it.getAllChildTomlTables()
         }
@@ -184,7 +185,7 @@ public sealed class TomlNode(
      *
      * @return all real table nodes
      */
-    public fun getRealTomlTables(): List<TomlTable> =
+    public fun getRealTomlTables(): List<TomlTablePrimitive> =
             this.getAllChildTomlTables().filter { !it.isSynthetic }
 
     public companion object {
@@ -207,142 +208,3 @@ public sealed class TomlNode(
     }
 }
 
-/**
- * A root node for TOML Abstract Syntax Tree
- */
-public class TomlFile(config: TomlConfig = TomlConfig()) : TomlNode(
-    "rootNode",
-    0,
-    config) {
-    override val name: String = "rootNode"
-
-    override fun getNeighbourNodes(): MutableSet<TomlNode> =
-            throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
-}
-
-/**
- * tablesList - a list of names of sections (tables) that are included into this particular TomlTable
- * @property isSynthetic - flag to determine that this node was synthetically and there are no such table in the input
- * for example: if the TomlTable is [a.b.c] this list will contain [a], [a.b], [a.b.c]
- */
-// FixMe: as diktat fixer can in some cases break the code (https://github.com/cqfn/diKTat/issues/966),
-// we will suppress this rule
-@Suppress("MULTIPLE_INIT_BLOCKS")
-public class TomlTable(
-    content: String,
-    lineNo: Int,
-    config: TomlConfig = TomlConfig(),
-    public val isSynthetic: Boolean = false) : TomlNode(
-    content,
-    lineNo,
-    config) {
-    // list of tables that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
-    public var tablesList: List<String>
-
-    // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
-    override val name: String
-
-    // this name is used during the injection of the table to the AST
-    public val nameWithQuotes: String
-
-    // full name of the table (like a.b.c.d)
-    public var fullTableName: String
-
-    // number of nodes in current table (starting from 0)
-    internal var level: Int
-
-    init {
-        // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.trim().trimBrackets().trim()
-
-        if (sectionFromContent.isBlank()) {
-            throw ParseException("Incorrect blank table name: $content", lineNo)
-        }
-
-        fullTableName = sectionFromContent
-        level = sectionFromContent.count { it == '.' }
-
-        val sectionsList = sectionFromContent.splitKeyToTokens(lineNo)
-        name = sectionsList.last().trimQuotes()
-        nameWithQuotes = sectionsList.last()
-        tablesList = sectionsList.mapIndexed { index, _ ->
-            (0..index).joinToString(".") { sectionsList[it] }
-        }
-    }
-}
-
-/**
- * Class for parsing and storing Array in AST. It receives a pair of two strings as an input and converts it to a pair
- * of TomlKey and TomlValue (as TomlArray)
- * @property lineNo
- * @property key
- * @property value
- * @property name
- */
-public class TomlKeyValueArray(
-    override var key: TomlKey,
-    override val value: TomlValue,
-    override val lineNo: Int,
-    override val name: String,
-    config: TomlConfig = TomlConfig()
-) : TomlNode(
-    key,
-    value,
-    lineNo,
-    config), TomlKeyValue {
-    // adaptor for string pair of key-value
-    public constructor(
-        keyValuePair: Pair<String, String>,
-        lineNo: Int,
-        config: TomlConfig = TomlConfig()
-    ) : this(
-        TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseList(lineNo, config),
-        lineNo,
-        TomlKey(keyValuePair.first, lineNo).content
-    )
-}
-
-/**
- * class for parsing and storing simple single value types in AST
- * @property lineNo
- * @property key
- * @property value
- * @property name
- */
-public class TomlKeyValuePrimitive(
-    override var key: TomlKey,
-    override val value: TomlValue,
-    override val lineNo: Int,
-    override val name: String,
-    config: TomlConfig = TomlConfig()
-) : TomlNode(
-    key,
-    value,
-    lineNo,
-    config), TomlKeyValue {
-    // adaptor for string pair of key-value
-    public constructor(
-        keyValuePair: Pair<String, String>,
-        lineNo: Int,
-        config: TomlConfig = TomlConfig()
-    ) : this(
-        TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseValue(lineNo, config),
-        lineNo,
-        TomlKey(keyValuePair.first, lineNo).content
-    )
-}
-
-/**
- * this is a hack to cover empty TOML tables that have missing key-values
- * According the spec: "Empty tables are allowed and simply have no key/value pairs within them."
- *
- * Instances of this stub will be added as children to such parsed tables
- */
-public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
-    "empty_technical_node",
-    lineNo,
-    config) {
-    override val name: String = "empty_technical_node"
-}

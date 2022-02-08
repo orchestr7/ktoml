@@ -1,10 +1,8 @@
-package com.akulashov7.ktoml.file
+package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.*
-import com.akuleshov7.ktoml.file.TomlFileReader
-import com.akuleshov7.ktoml.file.readAndParseFile
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.tree.TomlTable
+import com.akuleshov7.ktoml.tree.TomlTablePrimitive
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -199,7 +197,7 @@ class TomlFileParserTest {
             TomlParser(TomlConfig())
                 .parseStringsToTomlTree(lines, TomlConfig())
                 .children
-                .filterIsInstance<TomlTable>()
+                .filterIsInstance<TomlTablePrimitive>()
                 .filter { !it.isSynthetic }
                 .map { it.fullTableName }
         )

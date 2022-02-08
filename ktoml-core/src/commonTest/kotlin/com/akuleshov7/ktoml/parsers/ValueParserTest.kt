@@ -1,4 +1,4 @@
-package com.akulashov7.ktoml.parsers
+package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.*

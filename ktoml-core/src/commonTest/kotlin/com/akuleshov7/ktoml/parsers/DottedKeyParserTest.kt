@@ -1,4 +1,4 @@
-package com.akulashov7.ktoml.parsers
+package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.TomlFile
@@ -55,6 +55,5 @@ class DottedKeyParserTest {
         val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0)
         test = testKeyValue.createTomlTableFromDottedKey(TomlFile())
         assertEquals("c", testKeyValue.key.content)
-        assertEquals(1, test.level)
     }
 }

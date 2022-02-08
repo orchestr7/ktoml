@@ -201,7 +201,7 @@ public class TomlMainDecoder(
             when (nextProcessingNode) {
                 is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
                 is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
-                is TomlTable -> {
+                is TomlTablePrimitive -> {
                     val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                         "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
                                 " in a table <${nextProcessingNode.fullTableName}>"

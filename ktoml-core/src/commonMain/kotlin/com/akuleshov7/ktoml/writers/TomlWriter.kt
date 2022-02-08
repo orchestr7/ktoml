@@ -2,13 +2,7 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
-import com.akuleshov7.ktoml.tree.TomlFile
-import com.akuleshov7.ktoml.tree.TomlKey
-import com.akuleshov7.ktoml.tree.TomlKeyValueArray
-import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.tree.TomlNode
-import com.akuleshov7.ktoml.tree.TomlStubEmptyNode
-import com.akuleshov7.ktoml.tree.TomlTable
+import com.akuleshov7.ktoml.tree.*
 import kotlin.jvm.JvmInline
 
 /**
