@@ -242,7 +242,7 @@ otherNumber = 5.56
 
 can be deserialized to `MyClass`:
 ```kotlin
-    @Serializable
+@Serializable
 data class MyClass(val someBooleanProperty: Boolean, val table1: Table1, val table2: Table2)
 
 @Serializable
