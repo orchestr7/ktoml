@@ -8,6 +8,8 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 
+public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
+
 /**
  * Base Node class for AST.
  * Toml specification includes a list of supported data types:

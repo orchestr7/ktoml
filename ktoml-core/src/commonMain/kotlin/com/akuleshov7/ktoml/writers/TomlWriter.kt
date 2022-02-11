@@ -31,9 +31,12 @@ public value class TomlWriter(private val config: TomlConfig) {
                 "A file node is not allowed as a child of another file node."
             )
         is TomlKeyValueArray -> TODO()
+        is TomlArrayOfTablesElement -> TODO()
+        is TomlArrayOfTables -> TODO()
         is TomlKeyValuePrimitive -> TODO()
         is TomlStubEmptyNode -> TODO()
         is TomlTable -> TODO()
+        is TomlTablePrimitive -> TODO()
     }
 
     private fun TomlEmitter.writeKey(key: TomlKey) {

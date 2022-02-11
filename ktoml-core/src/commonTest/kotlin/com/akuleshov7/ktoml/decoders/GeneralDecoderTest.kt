@@ -393,4 +393,25 @@ class GeneralDecoderTest {
             ), Toml.decodeFromString(test)
         )
     }
+
+
+    @Test
+    // this logic will be changed in https://github.com/akuleshov7/ktoml/issues/30
+    fun tablesRedeclaration() {
+        val test =  """
+            [table1]
+            a = 2
+
+            [table1]
+            a = 1
+            b = 2
+        """.trimIndent()
+
+        assertEquals(
+            SimpleTomlCase(
+                   Table1(1,2)
+                )
+            , Toml.decodeFromString(test)
+        )
+    }
 }

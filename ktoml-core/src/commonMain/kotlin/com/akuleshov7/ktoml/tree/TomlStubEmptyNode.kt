@@ -9,8 +9,8 @@ import com.akuleshov7.ktoml.TomlConfig
  * Instances of this stub will be added as children to such parsed tables
  */
 public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
-    "empty_technical_node",
+    EMPTY_TECHNICAL_NODE,
     lineNo,
     config) {
-    override val name: String = "empty_technical_node"
+    override val name: String = EMPTY_TECHNICAL_NODE
 }

@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml.Default.tomlParser
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.tree.TableType
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlKey
 import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
@@ -12,20 +13,55 @@ import kotlin.test.assertTrue
 
 class ArraysOfTablesTest {
     @Test
-    fun positiveParsingTest() {
+    fun positiveSimpleParsingTest() {
+        val string = """
+            [[fruits]]
+            a = "apple"
+            b = "qwerty"
+
+            [[fruits]]
+            a = "banana"
+            b = "qwerty"
+
+            [[fruits]]
+            a = "plantain"
+            b = "qwerty"
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        val array = parsedToml.findTableInAstByName("fruits", 1, TableType.ARRAY)
+        assertEquals(3, array?.children?.size)
+    }
+
+    @Test
+    fun tomlExampleParsingTest() {
         val string = """
             [[fruits]]
             name = "apple"
-
+            
+            [fruits.physical]
+            color = "red"
+            shape = "round"
+            
+            [[fruits.varieties]] 
+            name = "red delicious"
+            
+            [[fruits.varieties]]
+            name = "granny smith"
+            
             [[fruits]]
             name = "banana"
-
-            [[fruits]]
+            
+            [[fruits.varieties]]
             name = "plantain"
         """.trimIndent()
 
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
+        val array = parsedToml.findTableInAstByName("fruits.varieties", 2, TableType.ARRAY)
+        assertEquals(3, array?.children?.size)
+
     }
 
     @Test
@@ -41,11 +77,8 @@ class ArraysOfTablesTest {
             name = "plantain"
         """.trimIndent()
 
-        // FIXME we SHOULD raise error! Need to have the test for the deserialization
-        // We have dublication of tables and no override for fields
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
-
-        assertTrue { false }
+        assertEquals(parsedToml.children.size, 2)
     }
 }
