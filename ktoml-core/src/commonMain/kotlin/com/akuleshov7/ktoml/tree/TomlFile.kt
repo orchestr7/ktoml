@@ -9,9 +9,10 @@ import com.akuleshov7.ktoml.exceptions.InternalAstException
 public class TomlFile(config: TomlConfig = TomlConfig()) : TomlNode(
     "rootNode",
     0,
-    config) {
+    config
+) {
     override val name: String = "rootNode"
 
     override fun getNeighbourNodes(): MutableSet<TomlNode> =
-        throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
+            throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
 }

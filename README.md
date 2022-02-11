@@ -22,7 +22,7 @@ As this young and big project [is needed](https://github.com/Kotlin/kotlinx.seri
 We will be glad if you will test `ktoml` or contribute to this project.
 In case you don't have much time for this - at least spend 5 seconds to give us a star to attract other contributors!
 
-**Thanks!** :pray:
+**Thanks!** :pray: :partying_face:
 
 ## Acknowledgement
 Special thanks to those awesome developers who give us great suggestions, help us to maintain and improve this project:

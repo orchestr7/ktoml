@@ -13,6 +13,10 @@ allprojects {
     }
     configureDiktat()
     configureDetekt()
+
+    tasks.withType<org.cqfn.diktat.plugin.gradle.DiktatJavaExecTaskBase> {
+        jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+    }
 }
 createDiktatTask()
 createDetektTask()

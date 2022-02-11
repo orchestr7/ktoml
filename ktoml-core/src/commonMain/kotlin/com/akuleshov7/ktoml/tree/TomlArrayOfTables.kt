@@ -1,3 +1,7 @@
+/**
+ * Array of tables https://toml.io/en/v1.0.0#array-of-tables
+ */
+
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
@@ -6,35 +10,30 @@ import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 
+/**
+ * @property isSynthetic
+ */
 // FixMe: this class is mostly identical to the TomlTable - we should unify them together
 public class TomlArrayOfTables(
     content: String,
     lineNo: Int,
     config: TomlConfig = TomlConfig(),
     public val isSynthetic: Boolean = false
-) : TomlTable(content, lineNo, config) {
+) : TomlTable(
+    content,
+    lineNo,
+    config
+) {
     public override val type: TableType = TableType.ARRAY
+
+    // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
+    override val name: String
 
     // list of tables (including sub-tables) that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
     public override lateinit var tablesList: List<String>
 
     // full name of the table (like a.b.c.d)
     public override lateinit var fullTableName: String
-
-    // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
-    override val name: String
-
-    internal val keyValues: MutableList<MutableList<TomlKeyValue>> = mutableListOf()
-
-    internal fun insertKeyValue(keyValue: TomlKeyValue, isNewElementInArray: Boolean) {
-        if (isNewElementInArray) {
-            // creating a new bucket for the array
-            keyValues.add(mutableListOf(keyValue))
-        } else {
-            // adding new keyValue to the last bucket (it should have been created on the previous step)
-           keyValues[keyValues.lastIndex].add(keyValue)
-        }
-    }
 
     init {
         // getting the content inside brackets ([a.b] -> a.b)
@@ -55,15 +54,12 @@ public class TomlArrayOfTables(
 }
 
 /**
- * this is a hack to cover empty TOML tables that have missing key-values
- * According the spec: "Empty tables are allowed and simply have no key/value pairs within them."
- *
- * Instances of this stub will be added as children to such parsed tables
+ * This class is used to store elements of array of tables (bucket for key-value records)
  */
 public class TomlArrayOfTablesElement(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
     EMPTY_TECHNICAL_NODE,
     lineNo,
-    config) {
+    config
+) {
     override val name: String = EMPTY_TECHNICAL_NODE
 }
-

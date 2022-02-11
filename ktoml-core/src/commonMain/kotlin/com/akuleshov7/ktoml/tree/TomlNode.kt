@@ -4,7 +4,6 @@
 
 package com.akuleshov7.ktoml.tree
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 
@@ -38,7 +37,8 @@ public sealed class TomlNode(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
-        config: TomlConfig = TomlConfig()) : this(
+        config: TomlConfig = TomlConfig()
+    ) : this(
         "${key.content}=${value.content}",
         lineNo,
         config
@@ -75,9 +75,9 @@ public sealed class TomlNode(
         type: TableType
     ): List<TomlTable> {
         val result =
-               // we need to filter nodes by the type of table that we are inserting to the tree (array/primitive)
+                // we need to filter nodes by the type of table that we are inserting to the tree (array/primitive)
                 if (this is TomlTable && this.type == type &&
-                    this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
+                        this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
                     mutableListOf(this)
                 } else {
                     mutableListOf()
@@ -104,10 +104,15 @@ public sealed class TomlNode(
      *   a.c a.d
      *        \
      *        a.d.e
+     * @param type
      * @return table that was found or null in case of not found
      * @throws ParseException if found several tables with the same name
      */
-    public fun findTableInAstByName(searchedTableName: String, searchedLevel: Int, type: TableType): TomlTable? {
+    public fun findTableInAstByName(
+        searchedTableName: String,
+        searchedLevel: Int,
+        type: TableType
+    ): TomlTable? {
         val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0, type)
 
         if (searchedTable.size > 1) {
@@ -119,15 +124,15 @@ public sealed class TomlNode(
         return if (searchedTable.isEmpty()) null else searchedTable[0]
     }
 
-
     /**
      * Method inserts a table (section) to tree. It parses the section name and creates all missing nodes in the tree
      * (even parental). For [a.b.c] it will create 3 nodes: a, b, and c
      *
      * @param tomlTable - a table (section) that should be inserted into the tree
+     * @param type
      * @return inserted table
      */
-    public fun <T: TomlTable> insertTableToTree(tomlTable: T, type: TableType): TomlNode {
+    public fun <T : TomlTable> insertTableToTree(tomlTable: T, type: TableType): TomlNode {
         // prevParentNode - saved node that is used in a chain
         var prevParentNode: TomlNode = this
         // [a.b.c.d] -> for each section node checking existing node in a tree
@@ -209,4 +214,3 @@ public sealed class TomlNode(
         }
     }
 }
-

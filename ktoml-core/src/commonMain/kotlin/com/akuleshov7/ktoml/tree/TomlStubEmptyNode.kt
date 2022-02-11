@@ -11,6 +11,7 @@ import com.akuleshov7.ktoml.TomlConfig
 public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
     EMPTY_TECHNICAL_NODE,
     lineNo,
-    config) {
+    config
+) {
     override val name: String = EMPTY_TECHNICAL_NODE
 }

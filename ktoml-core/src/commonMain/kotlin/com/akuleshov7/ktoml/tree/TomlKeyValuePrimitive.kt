@@ -15,7 +15,12 @@ public class TomlKeyValuePrimitive(
     override val lineNo: Int,
     override val name: String,
     config: TomlConfig = TomlConfig()
-) : TomlNode(key, value, lineNo, config), TomlKeyValue {
+) : TomlNode(
+    key,
+    value,
+    lineNo,
+    config
+), TomlKeyValue {
     // adaptor for a string pair of key-value
     public constructor(
         keyValuePair: Pair<String, String>,
@@ -28,4 +33,3 @@ public class TomlKeyValuePrimitive(
         TomlKey(keyValuePair.first, lineNo).content
     )
 }
-

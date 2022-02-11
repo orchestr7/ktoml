@@ -3,8 +3,7 @@ package com.akuleshov7.ktoml.tree
 import com.akuleshov7.ktoml.TomlConfig
 
 /**
- * Class for parsing and storing Array in AST. It receives a pair of two strings as an input and converts it to a pair
- * of TomlKey and TomlValue (as TomlArray)
+ * Class for parsing and storing Array of Tables in AST.
  * @property lineNo
  * @property key
  * @property value
@@ -16,7 +15,12 @@ public class TomlKeyValueArray(
     override val lineNo: Int,
     override val name: String,
     config: TomlConfig = TomlConfig()
-) : TomlNode(key, value, lineNo, config), TomlKeyValue {
+) : TomlNode(
+    key,
+    value,
+    lineNo,
+    config
+), TomlKeyValue {
     // adaptor for a string pair of key-value
     public constructor(
         keyValuePair: Pair<String, String>,

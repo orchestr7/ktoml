@@ -204,7 +204,8 @@ internal constructor(
     ) : this(
         rawContent.parse(lineNo, config),
         rawContent,
-        lineNo) {
+        lineNo
+    ) {
         validateBrackets()
     }
 

@@ -20,17 +20,19 @@ public class TomlTablePrimitive(
     content: String,
     lineNo: Int,
     config: TomlConfig = TomlConfig(),
-    public val isSynthetic: Boolean = false) : TomlTable(
+    public val isSynthetic: Boolean = false
+) : TomlTable(
     content,
     lineNo,
-    config) {
+    config
+) {
     public override val type: TableType = TableType.PRIMITIVE
-
-    // list of tables (including sub-tables) that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
-    public override lateinit var tablesList: List<String>
 
     // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
     override val name: String
+
+    // list of tables (including sub-tables) that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
+    public override lateinit var tablesList: List<String>
 
     // full name of the table (like a.b.c.d)
     public override lateinit var fullTableName: String

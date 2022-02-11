@@ -32,6 +32,7 @@ public value class TomlParser(private val config: TomlConfig) {
      * @return the root node of the resulted toml tree
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
+    @Suppress("TOO_LONG_FUNCTION")
     public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile(config)
         val tomlFileHead = currentParentalNode as TomlFile
@@ -74,7 +75,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         throw InternalAstException("All Toml nodes should always inherit TomlNode class." +
                                 " Check [${keyValue.key}] with $keyValue type")
                     }
-
+                    // inserting the key-value record to the tree
                     if (keyValue.key.isDotted) {
                         // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
                         // because table is the same as dotted key
