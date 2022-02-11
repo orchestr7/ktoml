@@ -7,7 +7,7 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 
 /**
- * Splitting dot-separated string to tokens:
+ * Splitting dot-separated string to the list of tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
  *
  * @param lineNo - the line number in toml
@@ -73,6 +73,14 @@ internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
  * @return string with the result
  */
 internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
+
+/**
+ * If this string starts and end with a pair brackets([[]]) - will return the string with brackets removed
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {

@@ -1,4 +1,4 @@
-package com.akulashov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
@@ -391,6 +391,27 @@ class GeneralDecoderTest {
                     in2 = Inner(a = 1, in1 = InnerInner(a = 1), in2 = InnerInner(a = 1))
                 )
             ), Toml.decodeFromString(test)
+        )
+    }
+
+
+    @Test
+    // this logic will be changed in https://github.com/akuleshov7/ktoml/issues/30
+    fun tablesRedeclaration() {
+        val test =  """
+            [table1]
+            a = 2
+
+            [table1]
+            a = 1
+            b = 2
+        """.trimIndent()
+
+        assertEquals(
+            SimpleTomlCase(
+                   Table1(1,2)
+                )
+            , Toml.decodeFromString(test)
         )
     }
 }

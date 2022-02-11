@@ -2,13 +2,7 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
-import com.akuleshov7.ktoml.tree.TomlFile
-import com.akuleshov7.ktoml.tree.TomlKey
-import com.akuleshov7.ktoml.tree.TomlKeyValueArray
-import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.tree.TomlNode
-import com.akuleshov7.ktoml.tree.TomlStubEmptyNode
-import com.akuleshov7.ktoml.tree.TomlTable
+import com.akuleshov7.ktoml.tree.*
 import kotlin.jvm.JvmInline
 
 /**
@@ -37,9 +31,12 @@ public value class TomlWriter(private val config: TomlConfig) {
                 "A file node is not allowed as a child of another file node."
             )
         is TomlKeyValueArray -> TODO()
+        is TomlArrayOfTablesElement -> TODO()
+        is TomlArrayOfTables -> TODO()
         is TomlKeyValuePrimitive -> TODO()
         is TomlStubEmptyNode -> TODO()
         is TomlTable -> TODO()
+        is TomlTablePrimitive -> TODO()
     }
 
     private fun TomlEmitter.writeKey(key: TomlKey) {

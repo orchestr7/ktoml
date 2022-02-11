@@ -76,7 +76,7 @@ public class TomlMainDecoder(
         is TomlKeyValueArray -> node
         // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
         // branch, we should throw an exception as it is not expected at all and we should catch this in tests
-        is TomlStubEmptyNode, is TomlTable, is TomlFile ->
+        else ->
             throw InternalDecodingException(
                 "This kind of node should not be processed in TomlDecoder.decodeValue(): ${node.content}"
             )
@@ -201,7 +201,7 @@ public class TomlMainDecoder(
             when (nextProcessingNode) {
                 is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
                 is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
-                is TomlTable -> {
+                is TomlTablePrimitive -> {
                     val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                         "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
                                 " in a table <${nextProcessingNode.fullTableName}>"

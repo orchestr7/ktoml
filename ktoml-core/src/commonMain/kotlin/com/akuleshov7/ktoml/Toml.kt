@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
+import com.akuleshov7.ktoml.tree.TableType
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.writers.TomlWriter
 
@@ -89,7 +90,7 @@ public open class Toml(
         tomlTableName: String,
         config: TomlConfig = TomlConfig()
     ): T {
-        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, config, TomlParser::parseString)
+        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, config, TableType.PRIMITIVE, TomlParser::parseString)
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
     }
 
@@ -117,6 +118,7 @@ public open class Toml(
             toml.joinToString("\n"),
             tomlTableName,
             config,
+            TableType.PRIMITIVE,
             TomlParser::parseString,
         )
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
@@ -128,10 +130,11 @@ public open class Toml(
         toml: String,
         tomlTableName: String,
         config: TomlConfig = TomlConfig(),
+        type: TableType,
         parsingFunction: (TomlParser, String) -> TomlFile
     ): TomlFile {
         val parsedToml = parsingFunction(TomlParser(this.config), toml)
-            .findTableInAstByName(tomlTableName, tomlTableName.count { it == '.' } + 1)
+            .findTableInAstByName(tomlTableName, tomlTableName.count { it == '.' } + 1, type)
             ?: throw MissingRequiredPropertyException(
                 "Cannot find table with name <$tomlTableName> in the toml input. " +
                         "Not able to decode this toml part."

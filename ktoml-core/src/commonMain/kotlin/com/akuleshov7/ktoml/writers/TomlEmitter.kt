@@ -146,7 +146,8 @@ public abstract class TomlEmitter(config: TomlConfig) {
     public fun emitValue(
         string: String,
         isLiteral: Boolean = false,
-        isMultiline: Boolean = false): Unit =
+        isMultiline: Boolean = false
+    ): Unit =
             if (isMultiline) {
                 val quotes = if (isLiteral) "'''" else "\"\"\""
 
