@@ -19,7 +19,7 @@ fun Project.configureDiktat() {
         diktatConfigFile = rootProject.file("diktat-analysis.yml")
         inputs {
             include("src/**/*.kt", "*.kts", "src/**/*.kts")
-            exclude("$projectDir/build/**")
+            exclude("$projectDir/build/**", "src/commonTest/**/*.kt")
         }
     }
 }
