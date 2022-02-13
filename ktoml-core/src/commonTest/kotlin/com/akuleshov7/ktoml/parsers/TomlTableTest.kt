@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.tree.TableType
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlTablePrimitive
@@ -7,6 +8,25 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TomlTableTest {
+    @Test
+    // FixME: https://github.com/akuleshov7/ktoml/issues/30
+    fun parsingRegression() {
+        val string = """
+            [fruits]
+            name = "apple"
+
+            [fruits]
+            name = "banana"
+
+            [fruits]
+            name = "plantain"
+        """.trimIndent()
+
+        val parsedToml = Toml.tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        assertEquals(parsedToml.children.size, 2)
+    }
+
     @Test
     fun createTomlTable() {
         val table = TomlTablePrimitive("[a.b.c.d.e]", 0)

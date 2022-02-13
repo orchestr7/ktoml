@@ -136,21 +136,30 @@ public sealed class TomlNode(
         // [a], [a.b], [a.b.c], [a.b.c.d] -> if any of them does not exist we create and insert that in a tree
         // 
         // the only trick here is to save the link to the initial tomlTable (append it in the end)
-        tomlTable.tablesList.forEachIndexed { level, tableName ->
+        tomlTable.tablesList.forEachIndexed { level, subTable ->
             // each time we are trying to find the particular table in the tree
             // that is NOT optimal, because:
             // 1) we begin the search from the root of the tree instead of keeping in mind our last search
             // 2) no need to search the whole tree for the [a.b] if we haven't found [a] already
-            val foundTableName = this.findTableInAstByName(tableName, level + 1)
+            val foundTableInTree = this.findTableInAstByName(subTable, level + 1)
 
-            foundTableName?.let {
+            foundTableInTree?.let {
+                prevParentNode = when {
+                    level == tomlTable.tablesList.lastIndex && prevParentNode is TomlArrayOfTablesElement -> {
+                        prevParentNode.parent?.children?.last()?.appendChild(tomlTable)
+                        tomlTable
+                    }
+                    it is TomlArrayOfTables && tomlTable.tablesList.size != foundTableInTree.tablesList.size -> it.children.last()
+                    else -> it
+                }
                 // if the new table belongs to the ARRAY OF TABLES - we should insert this table to it's last element
                 // but if it's just array of table with the same name (new element) - then
                 // we should insert it to parental TomlArrayOfTables, but not to TomlArrayOfTablesElement
-                prevParentNode = if (it is TomlArrayOfTables && foundTableName.tablesList.size != it.tablesList.size) it.children.last() else it
+            //    FixMe: here should throw an exception in case of table duplication https://github.com/akuleshov7/ktoml/issues/30
+
             } ?: run {
                 // if we came to the last part (to 'd' from a.b.c.d) of the table - just will insert our table to the end
-                prevParentNode = if (level == tomlTable.tablesList.size - 1) {
+                prevParentNode = if (level == tomlTable.tablesList.lastIndex) {
                     prevParentNode.appendChild(tomlTable)
                     tomlTable
                 } else {
@@ -159,9 +168,9 @@ public sealed class TomlNode(
                     // (!) we will mark these tables with 'isSynthetic' flag
                     // also note that we will save the initial type of the table for missing parts
                     val newChildTableName = if(tomlTable is TomlArrayOfTables) {
-                        TomlArrayOfTables("[[$tableName]]", lineNo, config, true)
+                        TomlArrayOfTables("[[$subTable]]", lineNo, config, true)
                     } else {
-                        TomlTablePrimitive("[$tableName]", lineNo, config, true)
+                        TomlTablePrimitive("[$subTable]", lineNo, config, true)
                     }
                     prevParentNode.appendChild(newChildTableName)
                     newChildTableName
@@ -180,7 +189,15 @@ public sealed class TomlNode(
     }
 
     public fun prettyPrint() {
-        prettyPrint(this)
+        val sb = StringBuilder()
+        prettyPrint(this, sb)
+        println(sb.toString())
+    }
+
+    public fun prettyStr(): String {
+        val sb = StringBuilder()
+        prettyPrint(this, sb)
+        return sb.toString()
     }
 
     /**
@@ -214,11 +231,11 @@ public sealed class TomlNode(
          * @param node
          * @param level
          */
-        public fun prettyPrint(node: TomlNode, level: Int = 0) {
+        public fun prettyPrint(node: TomlNode, result: StringBuilder, level: Int = 0) {
             val spaces = " ".repeat(INDENTING_LEVEL * level)
-            println("$spaces - ${node::class.simpleName} (${node.content})")
+            result.append("$spaces - ${node::class.simpleName} (${node.content})\n")
             node.children.forEach { child ->
-                prettyPrint(child, level + 1)
+                prettyPrint(child, result, level + 1)
             }
         }
     }
