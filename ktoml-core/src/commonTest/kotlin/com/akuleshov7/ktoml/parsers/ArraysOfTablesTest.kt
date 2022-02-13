@@ -30,7 +30,7 @@ class ArraysOfTablesTest {
 
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
-        val array = parsedToml.findTableInAstByName("fruits", 1, TableType.ARRAY)
+        val array = parsedToml.findTableInAstByName("fruits", 1)
         assertEquals(3, array?.children?.size)
     }
 
@@ -38,30 +38,136 @@ class ArraysOfTablesTest {
     fun tomlExampleParsingTest() {
         val string = """
             [[fruits]]
-            name = "apple"
+                name = "apple"
             
+            # this is processed incorrectly now
             [fruits.physical]
-            color = "red"
-            shape = "round"
+                color = "red"
+                shape = "round"
+            
+            # this is processed incorrectly now
+            [fruits.physical.inside]
+                color = "red"
+                shape = "round"
+               
+            # this is processed incorrectly now
+            [vegetables]
+                outSideOfArray = true
             
             [[fruits.varieties]] 
-            name = "red delicious"
+                name = "red delicious"
             
             [[fruits.varieties]]
-            name = "granny smith"
+                name = "granny smith"
             
             [[fruits]]
-            name = "banana"
+                name = "banana"
             
             [[fruits.varieties]]
-            name = "plantain"
+                name = "plantain"
         """.trimIndent()
 
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
-        val array = parsedToml.findTableInAstByName("fruits.varieties", 2, TableType.ARRAY)
+        val array = parsedToml.findTableInAstByName("fruits.varieties", 2)
         assertEquals(3, array?.children?.size)
 
+        assertTrue { false }
+
+        """
+        [[fruit]]
+        [fruit.physical]  
+        color = "red"
+        shape = "round"
+        
+        [[fruit]]
+        [fruit.physical]  
+        color = "red"
+        shape = "round"
+        """.trimIndent()
+
+    }
+
+
+    @Test
+    fun parsingNestedArraysOfTablesRegression2() {
+        val string = """
+            [[products]]
+                name = "Hammer"
+                sku = 738594937
+        
+            [[products]]  
+        
+            [[products]]
+                name = "Nail"
+                sku = 284758393
+            
+                color = "gray"
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertTrue { false }
+    }
+
+
+
+    @Test
+    fun parsingNestedArraysOfTablesRegression() {
+        val string = """
+            # bug here
+            [[fruits]]
+                name = "banana"
+            
+            [[fruits.varieties]]
+                name = "granny smith"
+            
+            [[fruits]]
+                name = "banana"
+            
+            [[fruits.varieties]]
+                name = "plantain"
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertTrue { false }
+    }
+
+    @Test
+    fun parsingNestedArraysOfTablesRegression1() {
+        val string = """
+            # bug here
+            [[fruits.varieties]] 
+                name = "red delicious"
+            
+            [[fruits.varieties]]
+                name = "granny smith"
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertTrue { false }
+    }
+
+
+    @Test
+    fun parsingNestedArraysOfTablesTest() {
+        val string = """
+            [[fruits.varieties]] 
+                name = "red delicious"
+            
+            [[fruits.varieties.inside]]
+                name = "granny smith"
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertTrue { false }
     }
 
     @Test

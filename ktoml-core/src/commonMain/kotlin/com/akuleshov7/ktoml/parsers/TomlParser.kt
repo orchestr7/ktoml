@@ -35,6 +35,7 @@ public value class TomlParser(private val config: TomlConfig) {
     @Suppress("TOO_LONG_FUNCTION")
     public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile(config)
+        // link to the head of the tree
         val tomlFileHead = currentParentalNode as TomlFile
         // need to trim empty lines BEFORE the start of processing
         val mutableTomlLines = tomlLines.toMutableList().trimEmptyLines()
@@ -48,7 +49,7 @@ public value class TomlParser(private val config: TomlConfig) {
                     if (line.isArrayOfTables()) {
                         // TomlArrayOfTables contains all information about the ArrayOfTables ([[array of tables]])
                         val tableArray = TomlArrayOfTables(line, lineNo, config)
-                        val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, TableType.ARRAY)
+                        val arrayOfTables = tomlFileHead.insertTableToTree(tableArray)
                         // creating a new empty element that will be used as an element in array and the parent for next key-value records
                         val newArrayElement = TomlArrayOfTablesElement(lineNo, config)
                         // adding this element as a child to the array of tables
@@ -67,7 +68,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         if (currentParentalNode.hasNoChildren()) {
                             currentParentalNode.appendChild(TomlStubEmptyNode(currentParentalNode.lineNo, config))
                         }
-                        currentParentalNode = tomlFileHead.insertTableToTree(tableSection, TableType.PRIMITIVE)
+                        currentParentalNode = tomlFileHead.insertTableToTree(tableSection)
                     }
                 } else {
                     val keyValue = line.parseTomlKeyValue(lineNo, config)
@@ -81,7 +82,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         // because table is the same as dotted key
                         val newTableSection = keyValue.createTomlTableFromDottedKey(currentParentalNode, config)
                         tomlFileHead
-                            .insertTableToTree(newTableSection, TableType.PRIMITIVE)
+                            .insertTableToTree(newTableSection)
                             .appendChild(keyValue)
                     } else {
                         // otherwise it should simply append the keyValue to the parent

@@ -29,10 +29,10 @@ class TomlTableTest {
         val tableC = TomlTablePrimitive("[c]", 0)
         val tableD = TomlTablePrimitive("[d]", 0)
 
-        fileNode.insertTableToTree(tableA, TableType.PRIMITIVE)
-        fileNode.insertTableToTree(tableB, TableType.PRIMITIVE)
-        fileNode.insertTableToTree(tableC, TableType.PRIMITIVE)
-        fileNode.insertTableToTree(tableD, TableType.PRIMITIVE)
+        fileNode.insertTableToTree(tableA)
+        fileNode.insertTableToTree(tableB)
+        fileNode.insertTableToTree(tableC)
+        fileNode.insertTableToTree(tableD)
 
         /**
          *     a       b                a       b     c   d
@@ -41,10 +41,10 @@ class TomlTableTest {
          *        \                        \
          *        a.d.e                   a.d.e
          */
-        assertEquals( "a", fileNode.findTableInAstByName("a", 1, TableType.PRIMITIVE)?.fullTableName,)
-        assertEquals( "b", fileNode.findTableInAstByName("b", 1, TableType.PRIMITIVE)?.fullTableName,)
-        assertEquals( "c", fileNode.findTableInAstByName("c", 1, TableType.PRIMITIVE)?.fullTableName,)
-        assertEquals( "d", fileNode.findTableInAstByName("d", 1, TableType.PRIMITIVE)?.fullTableName,)
+        assertEquals( "a", fileNode.findTableInAstByName("a", 1)?.fullTableName,)
+        assertEquals( "b", fileNode.findTableInAstByName("b", 1)?.fullTableName,)
+        assertEquals( "c", fileNode.findTableInAstByName("c", 1)?.fullTableName,)
+        assertEquals( "d", fileNode.findTableInAstByName("d", 1)?.fullTableName,)
     }
 
     @Test
@@ -55,10 +55,10 @@ class TomlTableTest {
         val tableC = TomlTablePrimitive("[c.a.b]", 0)
         val tableD = TomlTablePrimitive("[d.e.f]", 0)
 
-        fileNode.insertTableToTree(tableA, TableType.PRIMITIVE)
-        fileNode.insertTableToTree(tableB, TableType.PRIMITIVE)
-        fileNode.insertTableToTree(tableC, TableType.PRIMITIVE)
-        fileNode.insertTableToTree(tableD, TableType.PRIMITIVE)
+        fileNode.insertTableToTree(tableA)
+        fileNode.insertTableToTree(tableB)
+        fileNode.insertTableToTree(tableC)
+        fileNode.insertTableToTree(tableD)
 
         /**
          *     a       b                a       b     c       d
@@ -70,15 +70,15 @@ class TomlTableTest {
          *                                       b.a.a.a
          */
 
-        assertEquals( "a.c", fileNode.findTableInAstByName("a.c", 2, TableType.PRIMITIVE)?.fullTableName,)
-        assertEquals( "b.a.a.a", fileNode.findTableInAstByName("b.a.a.a", 4, TableType.PRIMITIVE)?.fullTableName,)
-        assertEquals( "c.a.b", fileNode.findTableInAstByName("c.a.b", 3, TableType.PRIMITIVE)?.fullTableName,)
-        assertEquals( "d.e.f", fileNode.findTableInAstByName("d.e.f", 3, TableType.PRIMITIVE)?.fullTableName,)
+        assertEquals( "a.c", fileNode.findTableInAstByName("a.c", 2)?.fullTableName,)
+        assertEquals( "b.a.a.a", fileNode.findTableInAstByName("b.a.a.a", 4)?.fullTableName,)
+        assertEquals( "c.a.b", fileNode.findTableInAstByName("c.a.b", 3)?.fullTableName,)
+        assertEquals( "d.e.f", fileNode.findTableInAstByName("d.e.f", 3)?.fullTableName,)
 
         // checking that table [b.a.a.a] is a node in a tree that does not have children and it's grandparent is [b]
-        val baaaNode = fileNode.findTableInAstByName("b.a.a.a", 4, TableType.PRIMITIVE)!!
-        val ba = fileNode.findTableInAstByName("b", 1, TableType.PRIMITIVE)!!
-        assertEquals(emptySet(), baaaNode.children)
+        val baaaNode = fileNode.findTableInAstByName("b.a.a.a", 4)!!
+        val ba = fileNode.findTableInAstByName("b", 1)!!
+        assertEquals(emptyList(), baaaNode.children)
         assertEquals(ba, baaaNode.parent?.parent?.parent)
     }
 

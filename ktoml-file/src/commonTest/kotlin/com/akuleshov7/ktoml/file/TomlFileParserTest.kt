@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TomlFileParserTest {
     @Serializable
@@ -201,5 +202,7 @@ class TomlFileParserTest {
                 .filter { !it.isSynthetic }
                 .map { it.fullTableName }
         )
+
+        assertTrue { false }
     }
 }

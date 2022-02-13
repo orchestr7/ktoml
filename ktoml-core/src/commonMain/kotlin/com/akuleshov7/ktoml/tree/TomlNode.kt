@@ -23,7 +23,7 @@ public sealed class TomlNode(
     public open val lineNo: Int,
     public open val config: TomlConfig = TomlConfig()
 ) {
-    public open val children: MutableSet<TomlNode> = mutableSetOf()
+    public open val children: MutableList<TomlNode> = mutableListOf()
     public open var parent: TomlNode? = null
 
     // the real toml name of a structure (for table [a] it will be "a", for key b = 1 it will be "b")
@@ -57,7 +57,7 @@ public sealed class TomlNode(
     /**
      * @return all neighbours (all children of current node's parent)
      */
-    public open fun getNeighbourNodes(): MutableSet<TomlNode> = parent!!.children
+    public open fun getNeighbourNodes(): MutableList<TomlNode> = parent!!.children
 
     /**
      * This method performs tree traversal and returns all table Nodes that have proper name and are on the proper level
@@ -72,19 +72,17 @@ public sealed class TomlNode(
         searchedTableName: String,
         searchedLevel: Int,
         currentLevel: Int,
-        type: TableType
     ): List<TomlTable> {
         val result =
-                // we need to filter nodes by the type of table that we are inserting to the tree (array/primitive)
-                if (this is TomlTable && this.type == type &&
-                        this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
+                if (this is TomlTable && this.fullTableName == searchedTableName && currentLevel == searchedLevel) {
                     mutableListOf(this)
                 } else {
                     mutableListOf()
                 }
         return result + this.children.flatMap {
             if (currentLevel + 1 <= searchedLevel) {
-                it.findTableInAstByName(searchedTableName, searchedLevel, currentLevel + 1, type)
+                val level = if (it is TomlArrayOfTablesElement) currentLevel else currentLevel + 1
+                it.findTableInAstByName(searchedTableName, searchedLevel, level)
             } else {
                 mutableListOf()
             }
@@ -111,17 +109,16 @@ public sealed class TomlNode(
     public fun findTableInAstByName(
         searchedTableName: String,
         searchedLevel: Int,
-        type: TableType
     ): TomlTable? {
-        val searchedTable = findTableInAstByName(searchedTableName, searchedLevel, 0, type)
+        val searchedTables = findTableInAstByName(searchedTableName, searchedLevel, 0)
 
-        if (searchedTable.size > 1) {
+        if (searchedTables.size > 1) {
             throw ParseException(
                 "Internal error: Found several Tables with the same name <$searchedTableName> in AST",
-                searchedTable.first().lineNo
+                searchedTables.first().lineNo
             )
         }
-        return if (searchedTable.isEmpty()) null else searchedTable[0]
+        return if (searchedTables.isEmpty()) null else searchedTables[0]
     }
 
     /**
@@ -132,7 +129,7 @@ public sealed class TomlNode(
      * @param type
      * @return inserted table
      */
-    public fun <T : TomlTable> insertTableToTree(tomlTable: T, type: TableType): TomlNode {
+    public fun insertTableToTree(tomlTable: TomlTable): TomlNode {
         // prevParentNode - saved node that is used in a chain
         var prevParentNode: TomlNode = this
         // [a.b.c.d] -> for each section node checking existing node in a tree
@@ -140,10 +137,17 @@ public sealed class TomlNode(
         // 
         // the only trick here is to save the link to the initial tomlTable (append it in the end)
         tomlTable.tablesList.forEachIndexed { level, tableName ->
-            val foundTableName = this.findTableInAstByName(tableName, level + 1, type)
+            // each time we are trying to find the particular table in the tree
+            // that is NOT optimal, because:
+            // 1) we begin the search from the root of the tree instead of keeping in mind our last search
+            // 2) no need to search the whole tree for the [a.b] if we haven't found [a] already
+            val foundTableName = this.findTableInAstByName(tableName, level + 1)
 
             foundTableName?.let {
-                prevParentNode = it
+                // if the new table belongs to the ARRAY OF TABLES - we should insert this table to it's last element
+                // but if it's just array of table with the same name (new element) - then
+                // we should insert it to parental TomlArrayOfTables, but not to TomlArrayOfTablesElement
+                prevParentNode = if (it is TomlArrayOfTables && foundTableName.tablesList.size != it.tablesList.size) it.children.last() else it
             } ?: run {
                 // if we came to the last part (to 'd' from a.b.c.d) of the table - just will insert our table to the end
                 prevParentNode = if (level == tomlTable.tablesList.size - 1) {
@@ -153,7 +157,12 @@ public sealed class TomlNode(
                     // hack and trick to save the link to the initial node (that was passed as an argument) in the tree
                     // so the node will be added only in the end, and it will be the initial node
                     // (!) we will mark these tables with 'isSynthetic' flag
-                    val newChildTableName = TomlTablePrimitive("[$tableName]", lineNo, config, true)
+                    // also note that we will save the initial type of the table for missing parts
+                    val newChildTableName = if(tomlTable is TomlArrayOfTables) {
+                        TomlArrayOfTables("[[$tableName]]", lineNo, config, true)
+                    } else {
+                        TomlTablePrimitive("[$tableName]", lineNo, config, true)
+                    }
                     prevParentNode.appendChild(newChildTableName)
                     newChildTableName
                 }

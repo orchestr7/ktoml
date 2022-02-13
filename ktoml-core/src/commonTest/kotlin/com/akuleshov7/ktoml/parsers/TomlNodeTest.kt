@@ -12,10 +12,10 @@ class TomlNodeTest {
     fun findTableChildByName() {
         val fileNode = prepareTree()
 
-        assertTrue { fileNode.findTableInAstByName("a.d.e", 3, TableType.PRIMITIVE)?.content == "[a.d.e]" }
-        assertTrue { fileNode.findTableInAstByName("a.d", 2, TableType.PRIMITIVE)?.content == "[a.d]" }
-        assertTrue { fileNode.findTableInAstByName("b", 1, TableType.PRIMITIVE)?.content == "[b]" }
-        assertTrue { fileNode.findTableInAstByName("e", 1, TableType.PRIMITIVE) == null }
+        assertTrue { fileNode.findTableInAstByName("a.d.e", 3)?.content == "[a.d.e]" }
+        assertTrue { fileNode.findTableInAstByName("a.d", 2)?.content == "[a.d]" }
+        assertTrue { fileNode.findTableInAstByName("b", 1)?.content == "[b]" }
+        assertTrue { fileNode.findTableInAstByName("e", 1) == null }
     }
 
     /**
