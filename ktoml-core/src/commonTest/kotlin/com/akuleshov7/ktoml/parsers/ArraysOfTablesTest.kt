@@ -599,6 +599,5 @@ class ArraysOfTablesTest {
                 |
                """.trimMargin(),
             parsedToml.prettyStr())
-
     }
 }
