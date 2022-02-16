@@ -66,7 +66,7 @@ public sealed class TomlNode(
      * @return list of tables that match the provided name
      * @throws InternalAstException
      */
-    public fun findTableInAstByName(tableName: String): List<TomlTable> {
+    public fun findTableInAstByName(tableName: String): TomlTable? {
         // getting all child-tables (and arrays of tables) that have the same name as we are trying to find
         val simpleTable = this.children.filterIsInstance<TomlTable>().filter { it.fullTableName == tableName }
         // there cannot be more than 1 table node with the same name on the same level in the tree
@@ -83,13 +83,8 @@ public sealed class TomlNode(
             .filterIsInstance<TomlTable>()
             .filter { it.fullTableName == tableName }
             .toList()
-        // 
-        return if (simpleTable.isNotEmpty()) {
-            listOf(simpleTable.last())
-        } else {
-            simpleTable +
-                    if (tableFromElements.isNotEmpty()) listOf(tableFromElements.last()) else tableFromElements
-        }
+        // return the table that we found among the list of child tables or in the array of tables
+        return simpleTable.lastOrNull() ?: tableFromElements.lastOrNull()
     }
 
     /**
@@ -107,8 +102,8 @@ public sealed class TomlNode(
             // flag that will be used to check if we need to create a copy of the table in the tree or not
             var constructNewBucket = false
             // if the part of the table was found and it is inside the array - we need to determine if we need to create a copy or not
-            if (foundTable.isNotEmpty() && foundTable.single().parent is TomlArrayOfTablesElement) {
-                val freeBucket = (foundTable.single().parent?.parent as TomlArrayOfTables).children.last()
+            if (foundTable != null && foundTable.parent is TomlArrayOfTablesElement) {
+                val freeBucket = (foundTable.parent?.parent as TomlArrayOfTables).children.last()
                 // need to create a new array of tables in the tree only
                 // if there was an array before:
                 // [[a]]                                                                      [[a]]
@@ -121,8 +116,8 @@ public sealed class TomlNode(
                 }
             }
 
-            previousParent = if (foundTable.isNotEmpty() && !constructNewBucket) {
-                foundTable.single()
+            previousParent = if (foundTable != null && !constructNewBucket) {
+                foundTable
             } else {
                 if (level == tomlTable.tablesList.lastIndex) {
                     previousParent.determineParentAndInsertFragmentOfTable(tomlTable)
