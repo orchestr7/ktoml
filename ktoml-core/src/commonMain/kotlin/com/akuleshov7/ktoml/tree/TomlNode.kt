@@ -189,6 +189,14 @@ public sealed class TomlNode(
     public fun getRealTomlTables(): List<TomlTablePrimitive> =
             this.getAllChildTomlTables().filter { !it.isSynthetic }
 
+    private fun determineParentAndInsertFragmentOfTable(childTable: TomlTable) {
+        if (this.children.filterIsInstance<TomlArrayOfTablesElement>().isNotEmpty()) {
+            this.children.last().appendChild(childTable)
+        } else {
+            this.appendChild(childTable)
+        }
+    }
+
     public companion object {
         // number of spaces that is used to indent levels
         internal const val INDENTING_LEVEL = 4
@@ -211,13 +219,5 @@ public sealed class TomlNode(
                 prettyPrint(child, result, level + 1)
             }
         }
-    }
-}
-
-private fun TomlNode.determineParentAndInsertFragmentOfTable(childTable: TomlTable) {
-    if (this.children.filterIsInstance<TomlArrayOfTablesElement>().isNotEmpty()) {
-        this.children.last().appendChild(childTable)
-    } else {
-        this.appendChild(childTable)
     }
 }
