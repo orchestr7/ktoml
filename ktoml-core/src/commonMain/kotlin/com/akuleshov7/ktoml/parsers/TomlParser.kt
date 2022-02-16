@@ -39,7 +39,7 @@ public value class TomlParser(private val config: TomlConfig) {
         val tomlFileHead = currentParentalNode as TomlFile
         // need to trim empty lines BEFORE the start of processing
         val mutableTomlLines = tomlLines.toMutableList().trimEmptyLines()
-        //
+        // here we always store the bucket of the latest created array of tables
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
         mutableTomlLines.forEachIndexed { index, line ->

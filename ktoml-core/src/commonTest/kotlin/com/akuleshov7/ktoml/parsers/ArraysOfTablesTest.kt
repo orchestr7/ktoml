@@ -1,11 +1,9 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml.Default.tomlParser
-import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class ArraysOfTablesTest {
@@ -182,7 +180,64 @@ class ArraysOfTablesTest {
 
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
+    }
 
+    @Test
+    fun parsingSimpleArrayOfTables3() {
+        val string = """
+            [[a]] 
+            [[b]]
+            [[a.b]]
+            [[a.b]]
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        assertEquals(
+            """ 
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[a]] )
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlArrayOfTables ([[a.b]])
+                |                 - TomlArrayOfTablesElement (technical_node)
+                |                 - TomlArrayOfTablesElement (technical_node)
+                |     - TomlArrayOfTables ([[b]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |
+            """.trimMargin(),
+            parsedToml.prettyStr()
+        )
+
+    }
+
+    @Test
+    fun parsingSimpleArrayOfTables4() {
+        val string = """
+            [[a]] 
+            [[b]]
+            [[a.b]]
+            [[a]]
+            [[a.b]]
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        assertEquals(
+            """ 
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[a]] )
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlArrayOfTables ([[a.b]])
+                |                 - TomlArrayOfTablesElement (technical_node)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlArrayOfTables ([[a.b]])
+                |                 - TomlArrayOfTablesElement (technical_node)
+                |     - TomlArrayOfTables ([[b]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |
+                """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 
     @Test
@@ -525,5 +580,25 @@ class ArraysOfTablesTest {
         color = "red"
         shape = "round"
         """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[fruit]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlTablePrimitive ([fruit.physical]  )
+                |                 - TomlKeyValuePrimitive (color=red)
+                |                 - TomlKeyValuePrimitive (shape=round)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlTablePrimitive ([fruit.physical]  )
+                |                 - TomlKeyValuePrimitive (color=red)
+                |                 - TomlKeyValuePrimitive (shape=round)
+                |
+               """.trimMargin(),
+            parsedToml.prettyStr())
+
     }
 }

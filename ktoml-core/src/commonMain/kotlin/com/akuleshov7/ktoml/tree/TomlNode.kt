@@ -6,7 +6,6 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
-import com.akuleshov7.ktoml.exceptions.ParseException
 
 public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
 
@@ -64,14 +63,18 @@ public sealed class TomlNode(
      * Method that searches for a table (including array) with the same name as in [tableName].
      *
      * @param tableName the string with the name that will be searched in the list of children
+     * @return list of tables that match the provided name
+     * @throws InternalAstException
      */
     public fun findTableInAstByName(tableName: String): List<TomlTable> {
         // getting all child-tables (and arrays of tables) that have the same name as we are trying to find
         val simpleTable = this.children.filterIsInstance<TomlTable>().filter { it.fullTableName == tableName }
         // there cannot be more than 1 table node with the same name on the same level in the tree
-        if (simpleTable.size > 1) throw InternalAstException(
-            "Invalid number of tables on the same level of AST were found. Is the tree corrupted?"
-        )
+        if (simpleTable.size > 1) {
+            throw InternalAstException(
+                "Invalid number of tables on the same level of AST were found. Is the tree corrupted?"
+            )
+        }
         // we need to search this table in special technical nodes (TomlArrayOfTablesElement) that also contain tables
         val tableFromElements = this.children.asSequence()
             .filterIsInstance<TomlArrayOfTablesElement>()
@@ -80,23 +83,39 @@ public sealed class TomlNode(
             .filterIsInstance<TomlTable>()
             .filter { it.fullTableName == tableName }
             .toList()
-        //
-        return if (simpleTable.isNotEmpty()) listOf(simpleTable.last()) else simpleTable +
-                if (tableFromElements.isNotEmpty()) listOf(tableFromElements.last()) else tableFromElements
+        // 
+        return if (simpleTable.isNotEmpty()) {
+            listOf(simpleTable.last())
+        } else {
+            simpleTable +
+                    if (tableFromElements.isNotEmpty()) listOf(tableFromElements.last()) else tableFromElements
+        }
     }
 
+    /**
+     * @param tomlTable table that we would like to insert
+     * @param latestCreatedBucket the bucket of the latest created array of tables
+     * @return link to the inserted table inside the tree
+     */
+    @Suppress("TOO_LONG_FUNCTION")
     public fun insertTableToTree(tomlTable: TomlTable, latestCreatedBucket: TomlArrayOfTablesElement? = null): TomlNode {
+        // important to save and update parental node
         var previousParent = this
+        // going through parts of the table to create new tables in the tree in case some fragments are missing
         tomlTable.tablesList.forEachIndexed { level, subTable ->
             val foundTable = previousParent.findTableInAstByName(subTable)
+            // flag that will be used to check if we need to create a copy of the table in the tree or not
             var constructNewBucket = false
-
+            // if the part of the table was found and it is inside the array - we need to determine if we need to create a copy or not
             if (foundTable.isNotEmpty() && foundTable.single().parent is TomlArrayOfTablesElement) {
                 val freeBucket = (foundTable.single().parent?.parent as TomlArrayOfTables).children.last()
-                if (tomlTable !is TomlArrayOfTables) {
-                    previousParent = freeBucket
-                    constructNewBucket = true
-                } else if(freeBucket == latestCreatedBucket) {
+                // need to create a new array of tables in the tree only
+                // if there was an array before:
+                // [[a]]                                                                      [[a]]
+                // [[a.b]]   in case of the nested array we should not create a copy:      [[a.b]]
+                // [[a]]                                                                       [[a.b]]
+                // [[a.b]]                                                                 [[a.b]]
+                if (tomlTable !is TomlArrayOfTables || freeBucket == latestCreatedBucket) {
                     previousParent = freeBucket
                     constructNewBucket = true
                 }
@@ -106,23 +125,16 @@ public sealed class TomlNode(
                 foundTable.single()
             } else {
                 if (level == tomlTable.tablesList.lastIndex) {
-                    if (previousParent.children.filterIsInstance<TomlArrayOfTablesElement>().isNotEmpty()) {
-                        previousParent.children.last().appendChild(tomlTable)
-                    } else {
-                        previousParent.appendChild(tomlTable)
-                    }
+                    previousParent.determineParentAndInsertFragmentOfTable(tomlTable)
                     tomlTable
                 } else {
+                    // creating a synthetic (technical) fragment of the table
                     val newChildTableName = if (tomlTable is TomlArrayOfTables) {
                         TomlArrayOfTables("[[$subTable]]", lineNo, config, true)
                     } else {
                         TomlTablePrimitive("[$subTable]", lineNo, config, true)
                     }
-                    if (previousParent.children.filterIsInstance<TomlArrayOfTablesElement>().isNotEmpty()) {
-                        previousParent.children.last().appendChild(newChildTableName)
-                    } else {
-                        previousParent.appendChild(newChildTableName)
-                    }
+                    previousParent.determineParentAndInsertFragmentOfTable(newChildTableName)
                     newChildTableName
                 }
             }
@@ -138,12 +150,18 @@ public sealed class TomlNode(
         child.parent = this
     }
 
+    /**
+     * print the structure of parsed AST tree
+     */
     public fun prettyPrint() {
         val sb = StringBuilder()
         prettyPrint(this, sb)
         println(sb.toString())
     }
 
+    /**
+     * @return the string with AST tree visual representation
+     */
     public fun prettyStr(): String {
         val sb = StringBuilder()
         prettyPrint(this, sb)
@@ -180,13 +198,26 @@ public sealed class TomlNode(
          *
          * @param node
          * @param level
+         * @param result
          */
-        public fun prettyPrint(node: TomlNode, result: StringBuilder, level: Int = 0) {
+        public fun prettyPrint(
+            node: TomlNode,
+            result: StringBuilder,
+            level: Int = 0
+        ) {
             val spaces = " ".repeat(INDENTING_LEVEL * level)
             result.append("$spaces - ${node::class.simpleName} (${node.content})\n")
             node.children.forEach { child ->
                 prettyPrint(child, result, level + 1)
             }
         }
+    }
+}
+
+private fun TomlNode.determineParentAndInsertFragmentOfTable(childTable: TomlTable) {
+    if (this.children.filterIsInstance<TomlArrayOfTablesElement>().isNotEmpty()) {
+        this.children.last().appendChild(childTable)
+    } else {
+        this.appendChild(childTable)
     }
 }
