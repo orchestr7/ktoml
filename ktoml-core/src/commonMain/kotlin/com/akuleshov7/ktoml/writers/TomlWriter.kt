@@ -37,6 +37,7 @@ public value class TomlWriter(private val config: TomlConfig) {
         is TomlStubEmptyNode -> TODO()
         is TomlTable -> TODO()
         is TomlTablePrimitive -> TODO()
+        else -> TODO()
     }
 
     private fun TomlEmitter.writeKey(key: TomlKey) {

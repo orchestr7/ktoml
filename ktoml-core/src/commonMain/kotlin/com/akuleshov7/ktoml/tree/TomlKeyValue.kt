@@ -30,7 +30,7 @@ internal interface TomlKeyValue {
         // updating current KeyValue with this key
         this.key = realKeyWithoutDottedPrefix
         // tables should contain fully qualified name, so we need to add parental name
-        val parentalPrefix = if (parentNode is TomlTablePrimitive) "${parentNode.fullTableName}." else ""
+        val parentalPrefix = if (parentNode is TomlTable) "${parentNode.fullTableName}." else ""
         // and creating a new table that will be created from dotted key
         return TomlTablePrimitive(
             "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",

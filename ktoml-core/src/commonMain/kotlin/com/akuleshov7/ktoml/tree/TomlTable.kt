@@ -11,11 +11,13 @@ import com.akuleshov7.ktoml.TomlConfig
  * @property content - raw string name of the table
  * @property lineNo - line number
  * @property config - toml configuration
+ * @property isSynthetic
  */
 public abstract class TomlTable(
     override val content: String,
     override val lineNo: Int,
-    override val config: TomlConfig = TomlConfig()
+    override val config: TomlConfig = TomlConfig(),
+    public val isSynthetic: Boolean = false
 ) : TomlNode(
     content,
     lineNo,

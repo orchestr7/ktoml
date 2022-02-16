@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlKey
@@ -55,5 +56,74 @@ class DottedKeyParserTest {
         val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0)
         test = testKeyValue.createTomlTableFromDottedKey(TomlFile())
         assertEquals("c", testKeyValue.key.content)
+    }
+
+    @Test
+    fun parseDottedKey1() {
+        val string = """
+            ["a.b.c"]
+            f.e.g."a.b.c".d = 10
+        """.trimIndent()
+
+        val parsedToml = Toml.tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlTablePrimitive (["a.b.c"])
+                |         - TomlTablePrimitive (["a.b.c".f])
+                |             - TomlTablePrimitive (["a.b.c".f.e])
+                |                 - TomlTablePrimitive (["a.b.c".f.e.g])
+                |                     - TomlTablePrimitive (["a.b.c".f.e.g."a.b.c"])
+                |                         - TomlKeyValuePrimitive (d=10)
+                |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
+    }
+
+    @Test
+    fun parseDottedKey2() {
+        val string = """
+            a."a.b.c".d = 10
+            ["a.b.c"]
+        """.trimIndent()
+
+        val parsedToml = Toml.tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        assertEquals(
+            """
+                 | - TomlFile (rootNode)
+                 |     - TomlTablePrimitive ([a])
+                 |         - TomlTablePrimitive ([a."a.b.c"])
+                 |             - TomlKeyValuePrimitive (d=10)
+                 |     - TomlTablePrimitive (["a.b.c"])
+                 |         - TomlStubEmptyNode (technical_node)
+                 |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
+    }
+
+    @Test
+    fun parseSimpleDottedKey() {
+        val string = """
+            ["a.b.c"]
+                a."a.b.c".d = 10
+        """.trimIndent()
+
+        val parsedToml = Toml.tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+        assertEquals(
+            """
+                 | - TomlFile (rootNode)
+                 |     - TomlTablePrimitive (["a.b.c"])
+                 |         - TomlTablePrimitive (["a.b.c".a])
+                 |             - TomlTablePrimitive (["a.b.c".a."a.b.c"])
+                 |                 - TomlKeyValuePrimitive (d=10)
+                 |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 }

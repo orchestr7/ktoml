@@ -1,9 +1,7 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
-import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.tree.TableType
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.writers.TomlWriter
 
@@ -90,7 +88,7 @@ public open class Toml(
         tomlTableName: String,
         config: TomlConfig = TomlConfig()
     ): T {
-        val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, config, TableType.PRIMITIVE, TomlParser::parseString)
+        val fakeFileNode = TomlFile()
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
     }
 
@@ -114,40 +112,11 @@ public open class Toml(
         tomlTableName: String,
         config: TomlConfig = TomlConfig()
     ): T {
-        val fakeFileNode = generateFakeTomlStructureForPartialParsing(
-            toml.joinToString("\n"),
-            tomlTableName,
-            config,
-            TableType.PRIMITIVE,
-            TomlParser::parseString,
-        )
+        val fakeFileNode = TomlFile()
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
     }
 
     // ================== other ===============
-    @Suppress("TYPE_ALIAS")
-    private fun generateFakeTomlStructureForPartialParsing(
-        toml: String,
-        tomlTableName: String,
-        config: TomlConfig = TomlConfig(),
-        type: TableType,
-        parsingFunction: (TomlParser, String) -> TomlFile
-    ): TomlFile {
-        val parsedToml = parsingFunction(TomlParser(this.config), toml)
-            .findTableInAstByName(tomlTableName, tomlTableName.count { it == '.' } + 1, type)
-            ?: throw MissingRequiredPropertyException(
-                "Cannot find table with name <$tomlTableName> in the toml input. " +
-                        "Not able to decode this toml part."
-            )
-
-        // adding a fake file node to restore the structure and parse only the part of te toml
-        val fakeFileNode = TomlFile(config)
-        parsedToml.children.forEach {
-            fakeFileNode.appendChild(it)
-        }
-
-        return fakeFileNode
-    }
 
     /**
      * The default instance of [Toml] with the default configuration.

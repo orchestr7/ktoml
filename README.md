@@ -67,6 +67,7 @@ We are still developing and testing this library, so it has several limitations:
 :x: Multiline Strings \
 :x: Inline Tables \
 :x: Array of Tables \
+:x: Inline Array of Tables \
 :x: Offset Date-Time, Local: Date-Time; Date; Time
 
 ## Dependency

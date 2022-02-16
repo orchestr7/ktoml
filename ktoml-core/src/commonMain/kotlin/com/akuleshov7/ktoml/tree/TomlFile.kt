@@ -13,6 +13,6 @@ public class TomlFile(config: TomlConfig = TomlConfig()) : TomlNode(
 ) {
     override val name: String = "rootNode"
 
-    override fun getNeighbourNodes(): MutableSet<TomlNode> =
+    override fun getNeighbourNodes(): MutableList<TomlNode> =
             throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
 }

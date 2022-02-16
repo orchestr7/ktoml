@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TomlFileParserTest {
     @Serializable
@@ -131,7 +132,7 @@ class TomlFileParserTest {
         val list: List<String>
     )
 
-    @ExperimentalSerializationApi
+/*    @ExperimentalSerializationApi
     @Test
     fun regressionInvalidIndex() {
         val file = "src/commonTest/resources/partial_parser_regression.toml"
@@ -165,7 +166,7 @@ class TomlFileParserTest {
             ),
             TomlFileReader.decodeFromFile(serializer(), file)
         )
-    }
+    }*/
 
     @Serializable
     data class Table1(val a: Long, val b: Long)
@@ -176,7 +177,7 @@ class TomlFileParserTest {
     @Serializable
     data class TwoTomlTables(val table1: Table1, val table2: Table2)
 
-    @Test
+/*    @Test
     fun testPartialFileDecoding() {
         val file = "src/commonTest/resources/partial_decoder.toml"
         val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
@@ -186,9 +187,9 @@ class TomlFileParserTest {
                 serializer(), file, "table1"
             )
         )
-    }
+    }*/
 
-    @Test
+/*    @Test
     fun readTopLevelTables() {
         val file = "src/commonTest/resources/simple_example.toml"
         val lines = readAndParseFile(file)
@@ -201,5 +202,7 @@ class TomlFileParserTest {
                 .filter { !it.isSynthetic }
                 .map { it.fullTableName }
         )
-    }
+
+        assertTrue { false }
+    }*/
 }

@@ -151,7 +151,7 @@ public class TomlMainDecoder(
      * Actually this method is not needed as serialization lib should do everything for us, but let's
      * fail-fast in the very beginning if the structure is inconsistent and required properties are missing
      */
-    private fun checkMissingRequiredProperties(children: MutableSet<TomlNode>?, descriptor: SerialDescriptor) {
+    private fun checkMissingRequiredProperties(children: MutableList<TomlNode>?, descriptor: SerialDescriptor) {
         val propertyNames = children?.map {
             it.name
         } ?: emptyList()
