@@ -18,11 +18,12 @@ public class TomlArrayOfTables(
     content: String,
     lineNo: Int,
     config: TomlConfig = TomlConfig(),
-    public val isSynthetic: Boolean = false
+    isSynthetic: Boolean = false
 ) : TomlTable(
     content,
     lineNo,
-    config
+    config,
+    isSynthetic
 ) {
     public override val type: TableType = TableType.ARRAY
 

@@ -27,8 +27,23 @@ class ArraysOfTablesTest {
 
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
-        val array = parsedToml.findTableInAstByName("fruits", 1)
-        assertEquals(3, array?.children?.size)
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[fruits]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (a=apple)
+                |             - TomlKeyValuePrimitive (b=qwerty)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (a=banana)
+                |             - TomlKeyValuePrimitive (b=qwerty)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (a=plantain)
+                |             - TomlKeyValuePrimitive (b=qwerty)
+                |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 
     @Test
@@ -50,14 +65,22 @@ class ArraysOfTablesTest {
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
 
-        val arrayOfTables = parsedToml.children.last()
-        assertTrue { arrayOfTables is TomlArrayOfTables }
-
-        val children = arrayOfTables.children
-        assertEquals(children.size, 3)
-        children.forEach { assertTrue { it is TomlArrayOfTablesElement } }
-
-        assertTrue { children[1].children.isEmpty() }
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[products]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (name=Hammer)
+                |             - TomlKeyValuePrimitive (sku=738594937)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (name=Nail)
+                |             - TomlKeyValuePrimitive (sku=284758393)
+                |             - TomlKeyValuePrimitive (color=gray)
+                |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 
     @Test
@@ -73,14 +96,20 @@ class ArraysOfTablesTest {
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
 
-        val fruitVarieties = parsedToml.children.last().children.last()
-        assertTrue { fruitVarieties is TomlArrayOfTables }
-
-        val firstElement = fruitVarieties.children.last()
-        assertTrue { firstElement is TomlArrayOfTablesElement }
-
-        val lastElement = firstElement.children.last().children.last()
-        assertTrue { lastElement is TomlArrayOfTablesElement }
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[fruits]])
+                |         - TomlArrayOfTables ([[fruits.varieties]] )
+                |             - TomlArrayOfTablesElement (technical_node)
+                |                 - TomlKeyValuePrimitive (name=red delicious)
+                |                 - TomlArrayOfTables ([[fruits.varieties.inside]])
+                |                     - TomlArrayOfTablesElement (technical_node)
+                |                         - TomlKeyValuePrimitive (name=granny smith)
+                |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 
     @Test
@@ -96,14 +125,19 @@ class ArraysOfTablesTest {
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
 
-        val fruitVarieties = parsedToml.children.last().children.last()
-        assertTrue { fruitVarieties is TomlArrayOfTables }
-
-        val firstElement = fruitVarieties.children.last()
-        assertTrue { firstElement is TomlArrayOfTablesElement }
-
-        val lastElement = firstElement.children.last()
-        assertTrue { lastElement is TomlTablePrimitive }
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[fruits]])
+                |         - TomlArrayOfTables ([[fruits.varieties]] )
+                |             - TomlArrayOfTablesElement (technical_node)
+                |                 - TomlKeyValuePrimitive (name=red delicious)
+                |                 - TomlTablePrimitive ([fruits.varieties.inside])
+                |                     - TomlKeyValuePrimitive (name=granny smith)
+                |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 
     @Test
@@ -186,30 +220,40 @@ class ArraysOfTablesTest {
 
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
-        val array = parsedToml.findTableInAstByName("fruits.varieties", 2)
-        assertEquals(3, array?.children?.size)
 
-        assertTrue { false }
-
-        """
-        [[fruit]]
-        [fruit.physical]  
-        color = "red"
-        shape = "round"
-        
-        [[fruit]]
-        [fruit.physical]  
-        color = "red"
-        shape = "round"
-        """.trimIndent()
-
+        assertEquals(
+            """ 
+                    | - TomlFile (rootNode)
+                    |     - TomlArrayOfTables ([[fruits]])
+                    |         - TomlArrayOfTablesElement (technical_node)
+                    |             - TomlKeyValuePrimitive (name=apple)
+                    |             - TomlTablePrimitive ([fruits.physical])
+                    |                 - TomlKeyValuePrimitive (color=red)
+                    |                 - TomlKeyValuePrimitive (shape=round)
+                    |             - TomlTablePrimitive ([fruits.physical])
+                    |                 - TomlTablePrimitive ([fruits.physical.inside])
+                    |                     - TomlKeyValuePrimitive (color=red)
+                    |                     - TomlKeyValuePrimitive (shape=round)
+                    |             - TomlArrayOfTables ([[fruits.varieties]] )
+                    |                 - TomlArrayOfTablesElement (technical_node)
+                    |                     - TomlKeyValuePrimitive (name=red delicious)
+                    |                 - TomlArrayOfTablesElement (technical_node)
+                    |                     - TomlKeyValuePrimitive (name=granny smith)
+                    |         - TomlArrayOfTablesElement (technical_node)
+                    |             - TomlKeyValuePrimitive (name=banana)
+                    |             - TomlArrayOfTables ([[fruits.varieties]])
+                    |                 - TomlArrayOfTablesElement (technical_node)
+                    |                     - TomlKeyValuePrimitive (name=plantain)
+                    |     - TomlTablePrimitive ([vegetables])
+                    |         - TomlKeyValuePrimitive (outSideOfArray=true)
+                    |
+            """.trimMargin(), parsedToml.prettyStr()
+        )
     }
-
 
     @Test
     fun nestedArraysOnly1() {
         val string = """
-            # bug here
             [[a]]
                 name = 1
             
@@ -227,6 +271,7 @@ class ArraysOfTablesTest {
         """.trimIndent()
 
         val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
         assertEquals(
             """
             | - TomlFile (rootNode)
@@ -253,7 +298,6 @@ class ArraysOfTablesTest {
     @Test
     fun nestedArraysOnly2() {
         val string = """
-            # bug here - нужно раскручивать до последнего НЕ синтетика
             [[a]]
                 name = 1
             
@@ -275,7 +319,45 @@ class ArraysOfTablesTest {
         val parsedToml = tomlParser.parseString(string)
         parsedToml.prettyPrint()
 
-        assertTrue { false }
+
+    }
+
+    @Test
+    fun nestedArraysOnly3() {
+        val string = """
+           [[a.b]]
+               [[a.b.c]]
+               [[a.b.c]]
+                  a = 1
+                  [[a.b.c.d.e.f]]
+           [[a.b]]
+               # TABLE HERE, NOT ARRAY:
+               [a.b.c]
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertEquals(
+            """
+                        | - TomlFile (rootNode)
+                        |     - TomlArrayOfTables ([[a]])
+                        |         - TomlArrayOfTables ([[a.b]])
+                        |             - TomlArrayOfTablesElement (technical_node)
+                        |                 - TomlArrayOfTables (    [[a.b.c]])
+                        |                     - TomlArrayOfTablesElement (technical_node)
+                        |                     - TomlArrayOfTablesElement (technical_node)
+                        |                         - TomlKeyValuePrimitive (a=1)
+                        |                         - TomlArrayOfTables ([[a.b.c.d]])
+                        |                             - TomlArrayOfTables ([[a.b.c.d.e]])
+                        |                                 - TomlArrayOfTables (       [[a.b.c.d.e.f]])
+                        |                                     - TomlArrayOfTablesElement (technical_node)
+                        |             - TomlArrayOfTablesElement (technical_node)
+                        |                 - TomlTablePrimitive (    [a.b.c])
+                        |                     - TomlStubEmptyNode (technical_node)
+                        |
+        """.trimMargin(), parsedToml.prettyStr()
+        )
     }
 
     @Test
@@ -322,6 +404,39 @@ class ArraysOfTablesTest {
     }
 
     @Test
+    fun testForStubTables() {
+        val string = """
+            [[a]]
+              [a.b]
+            [[a]]
+              [a.b]
+            [[a]]
+              [a.b]
+        """.trimIndent()
+
+        val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlArrayOfTables ([[a]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlTablePrimitive (  [a.b])
+                |                 - TomlStubEmptyNode (technical_node)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlTablePrimitive (  [a.b])
+                |                 - TomlStubEmptyNode (technical_node)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlTablePrimitive (  [a.b])
+                |                 - TomlStubEmptyNode (technical_node)
+                |
+        """.trimMargin(),
+            parsedToml.prettyStr()
+        )
+    }
+
+    @Test
     fun mixedTablesAndArrayOfTables1() {
         val string = """
             [[a.b]]
@@ -340,8 +455,8 @@ class ArraysOfTablesTest {
                 name = 5
         """.trimIndent()
 
-
         val parsedToml = tomlParser.parseString(string)
+        parsedToml.prettyPrint()
         assertEquals(
             """
                 | - TomlFile (rootNode)
@@ -383,7 +498,6 @@ class ArraysOfTablesTest {
         assertEquals(
             """
                 | - TomlFile (rootNode)
-                |     - TomlStubEmptyNode (technical_node)
                 |     - TomlTablePrimitive ([a])
                 |         - TomlKeyValuePrimitive (name=1)
                 |         - TomlArrayOfTables ([[a.b]])
@@ -396,5 +510,20 @@ class ArraysOfTablesTest {
         """.trimMargin(),
             parsedToml.prettyStr()
         )
+    }
+
+    @Test
+    fun mixedTablesAndArrayOfTables3() {
+        val string = """
+        [[fruit]]
+        [fruit.physical]  
+        color = "red"
+        shape = "round"
+        
+        [[fruit]]
+        [fruit.physical]  
+        color = "red"
+        shape = "round"
+        """.trimIndent()
     }
 }

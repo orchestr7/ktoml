@@ -15,7 +15,8 @@ import com.akuleshov7.ktoml.TomlConfig
 public abstract class TomlTable(
     override val content: String,
     override val lineNo: Int,
-    override val config: TomlConfig = TomlConfig()
+    override val config: TomlConfig = TomlConfig(),
+    public val isSynthetic: Boolean = false
 ) : TomlNode(
     content,
     lineNo,

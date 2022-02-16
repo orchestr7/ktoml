@@ -131,19 +131,19 @@ public open class Toml(
         config: TomlConfig = TomlConfig(),
         parsingFunction: (TomlParser, String) -> TomlFile
     ): TomlFile {
-        val parsedToml = parsingFunction(TomlParser(this.config), toml)
+/*        val parsedToml = parsingFunction(TomlParser(this.config), toml)
             .findTableInAstByName(tomlTableName, tomlTableName.count { it == '.' } + 1)
             ?: throw MissingRequiredPropertyException(
                 "Cannot find table with name <$tomlTableName> in the toml input. " +
                         "Not able to decode this toml part."
-            )
+            )*/
 
         // adding a fake file node to restore the structure and parse only the part of te toml
         val fakeFileNode = TomlFile(config)
-        parsedToml.children.forEach {
+ /*       parsedToml.children.forEach {
             fakeFileNode.appendChild(it)
         }
-
+*/
         return fakeFileNode
     }
 

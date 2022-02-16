@@ -20,6 +20,9 @@ class GeneralDecoderTest {
     }
 
     @Serializable
+    data class OptionalRegression(val test: String = "")
+
+    @Serializable
     data class Regression<T>(val general: T)
 
     @Serializable
@@ -411,6 +414,19 @@ class GeneralDecoderTest {
             SimpleTomlCase(
                    Table1(1,2)
                 )
+            , Toml.decodeFromString(test)
+        )
+    }
+
+    @Test
+    fun optionalEmptyStringRegression() {
+        val test =  """
+        """.trimIndent()
+
+        assertEquals(
+            OptionalRegression(
+                ""
+            )
             , Toml.decodeFromString(test)
         )
     }
