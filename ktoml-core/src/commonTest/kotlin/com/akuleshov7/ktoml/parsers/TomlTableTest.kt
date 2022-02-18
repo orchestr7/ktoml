@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,6 +27,7 @@ class TomlTableTest {
     }
 
     @Test
+    @Ignore
     fun nestedTomlTable() {
         val string = """
             [a]

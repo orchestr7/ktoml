@@ -243,6 +243,7 @@ someNumber = 5
 # but ktoml is allowing it in non-strict mode: 
 [table2]       
 otherNumber = 5.56
+
 ```
 
 can be deserialized to `MyClass`:
@@ -279,6 +280,7 @@ data class GradlePlugin(val id: String, val version: Version)
 
 @Serializable
 data class Version(val ref: String)
+
 ```
 
 with the following code:
@@ -314,6 +316,7 @@ Translation of the example above to json-terminology:
     }
   }
 }
+
 ``` 
 
 :heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](ktoml-core/src/commonTest/kotlin/decoder/ReadMeExampleTest.kt).
