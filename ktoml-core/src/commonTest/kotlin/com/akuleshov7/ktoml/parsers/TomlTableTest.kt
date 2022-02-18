@@ -1,9 +1,8 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.tree.TableType
-import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,6 +25,32 @@ class TomlTableTest {
         parsedToml.prettyPrint()
         assertEquals( 3, parsedToml.children.single().children.size)
     }
+
+    @Test
+    @Ignore
+    fun nestedTomlTable() {
+        val string = """
+            [a]
+                [a.b]
+            
+            [a]
+            c = 3
+            """.trimIndent()
+
+        val parsedToml = Toml.tomlParser.parseString(string)
+        parsedToml.prettyPrint()
+
+        assertEquals("""
+            | - TomlFile (rootNode)
+            |     - TomlTablePrimitive ([a])
+            |         - TomlTablePrimitive (    [a.b])
+            |             - TomlStubEmptyNode (technical_node)
+            |         - TomlKeyValuePrimitive (c=3)
+            |
+        """.trimMargin(), parsedToml.prettyStr())
+
+    }
+
 
     @Test
     fun createTomlTable() {

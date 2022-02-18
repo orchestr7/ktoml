@@ -3,6 +3,10 @@ package com.akuleshov7.ktoml.writers
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.tree.TomlArrayOfTables
+import com.akuleshov7.ktoml.tree.TomlArrayOfTablesElement
+import com.akuleshov7.ktoml.tree.TomlTable
+import com.akuleshov7.ktoml.tree.TomlTablePrimitive
 import kotlin.jvm.JvmInline
 
 /**

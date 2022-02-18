@@ -17,7 +17,8 @@ internal class InternalAstException(message: String) : TomlDecodingException(mes
 
 internal class UnknownNameException(key: String, parent: String?) : TomlDecodingException(
     "Unknown key received: <$key> in scope <$parent>." +
-            " Switch TomlConfig.ignoreUnknownNames to true if you would like to skip unknown keys"
+            " Switch the configuration option: 'TomlConfig.ignoreUnknownNames'" +
+            " to true if you would like to skip unknown keys"
 )
 
 @OptIn(ExperimentalSerializationApi::class)

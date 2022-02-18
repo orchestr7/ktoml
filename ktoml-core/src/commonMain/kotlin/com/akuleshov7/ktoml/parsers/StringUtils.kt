@@ -67,6 +67,14 @@ internal fun String.trimSingleQuotes(): String = trimSymbols(this, "'", "'")
 internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
 
 /**
+ * If this string starts and end with curly braces ({}) - will return the string without them (used in inline tables)
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimCurlyBraces(): String = trimSymbols(this, "{", "}")
+
+/**
  * If this string starts and end with brackets([]) - will return the string with brackets removed
  * Otherwise, returns this string.
  *

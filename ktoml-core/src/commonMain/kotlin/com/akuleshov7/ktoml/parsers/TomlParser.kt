@@ -1,9 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.tree.*
-import com.akuleshov7.ktoml.tree.TomlKeyValue
 import kotlin.jvm.JvmInline
 
 /**
@@ -58,11 +56,10 @@ public value class TomlParser(private val config: TomlConfig) {
                         arrayOfTables.appendChild(newArrayElement)
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
                         // adding fake nodes to a previous table (it has no children because we have found another table right after)
-                        if (currentParentalNode.hasNoChildren() && currentParentalNode !is TomlFile && currentParentalNode !is TomlArrayOfTablesElement) {
-                            currentParentalNode.appendChild(TomlStubEmptyNode(currentParentalNode.lineNo, config))
-                        }
+                        currentParentalNode.insertStub()
                         // and setting this element as a current parent, so new key-records will be added to this bucket
                         currentParentalNode = newArrayElement
+                        // here we set the bucket that will be incredibly useful when we will be inserting the next array of tables
                         latestCreatedBucket = newArrayElement
                     } else {
                         val tableSection = TomlTablePrimitive(line, lineNo, config)
@@ -73,34 +70,39 @@ public value class TomlParser(private val config: TomlConfig) {
                         }
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
                         // adding fake nodes to a previous table (it has no children because we have found another table right after)
-                        if (currentParentalNode.hasNoChildren() && currentParentalNode !is TomlFile && currentParentalNode !is TomlArrayOfTablesElement) {
-                            currentParentalNode.appendChild(TomlStubEmptyNode(currentParentalNode.lineNo, config))
-                        }
+                        currentParentalNode.insertStub()
                         currentParentalNode = tomlFileHead.insertTableToTree(tableSection)
                     }
                 } else {
                     val keyValue = line.parseTomlKeyValue(lineNo, config)
-                    if (keyValue !is TomlNode) {
-                        throw InternalAstException("All Toml nodes should always inherit TomlNode class." +
-                                " Check [${keyValue.key}] with $keyValue type")
-                    }
                     // inserting the key-value record to the tree
-                    if (keyValue.key.isDotted) {
-                        // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
-                        // because table is the same as dotted key
-                        val newTableSection = keyValue.createTomlTableFromDottedKey(currentParentalNode, config)
+                    when {
+                        keyValue is TomlKeyValue && keyValue.key.isDotted ->
+                            // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
+                            // because table is the same as dotted key
+                            tomlFileHead
+                                .insertTableToTree(keyValue.createTomlTableFromDottedKey(currentParentalNode, config))
+                                .appendChild(keyValue)
 
-                        tomlFileHead
-                            .insertTableToTree(newTableSection)
-                            .appendChild(keyValue)
-                    } else {
-                        // otherwise it should simply append the keyValue to the parent
-                        currentParentalNode.appendChild(keyValue)
+                        keyValue is TomlInlineTable ->
+                            // in case of inline tables (a = { b = "c" }) we need to create a new parental table and
+                            // recursively process all inner nested tables (including inline and dotted)
+                            tomlFileHead.insertTableToTree(keyValue.returnTable(tomlFileHead, currentParentalNode))
+
+                        // otherwise, it should simply append the keyValue to the parent
+                        else -> currentParentalNode.appendChild(keyValue)
                     }
                 }
             }
         }
+        tomlFileHead.prettyPrint()
         return tomlFileHead
+    }
+
+    private fun TomlNode.insertStub() {
+        if (this.hasNoChildren() && this !is TomlFile && this !is TomlArrayOfTablesElement) {
+            this.appendChild(TomlStubEmptyNode(this.lineNo, config))
+        }
     }
 
     private fun MutableList<String>.trimEmptyLines(): MutableList<String> {
@@ -117,17 +119,6 @@ public value class TomlParser(private val config: TomlConfig) {
         return this
     }
 
-    /**
-     * factory adaptor to split the logic of parsing simple values from the logic of parsing collections (like Arrays)
-     */
-    private fun String.parseTomlKeyValue(lineNo: Int, config: TomlConfig): TomlKeyValue {
-        val keyValuePair = this.splitKeyValue(lineNo, config)
-        return when {
-            keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, config)
-            else -> TomlKeyValuePrimitive(keyValuePair, lineNo, config)
-        }
-    }
-
     private fun String.isArrayOfTables(): Boolean {
         val trimmed = this.trim()
         return trimmed.startsWith("[[") && trimmed.endsWith("]]")
@@ -141,4 +132,20 @@ public value class TomlParser(private val config: TomlConfig) {
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
+}
+
+/**
+ * factory adaptor to split the logic of parsing simple values from the logic of parsing collections (like Arrays)
+ *
+ * @param lineNo
+ * @param config
+ * @return parsed toml node
+ */
+public fun String.parseTomlKeyValue(lineNo: Int, config: TomlConfig): TomlNode {
+    val keyValuePair = this.splitKeyValue(lineNo, config)
+    return when {
+        keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, config)
+        keyValuePair.second.startsWith("{") -> TomlInlineTable(keyValuePair, lineNo, config)
+        else -> TomlKeyValuePrimitive(keyValuePair, lineNo, config)
+    }
 }
