@@ -63,9 +63,10 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Simple Arrays \
 :white_check_mark: Comments \
 :white_check_mark: Literal Strings \
+:white_check_mark: Inline Tables \
 :x: Arrays: nested; multiline; of Different Types \
 :x: Multiline Strings \
-:x: Inline Tables \
+:x: Nested Inline Tables \
 :x: Array of Tables \
 :x: Inline Array of Tables \
 :x: Offset Date-Time, Local: Date-Time; Date; Time
@@ -220,9 +221,12 @@ This tool natively deserializes toml expressions using native Kotlin compiler pl
 The following example:
 ```toml
 someBooleanProperty = true
+# inline tables in gradle 'libs.versions.toml' notation
+gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 [table1]
 # it can be null or nil, but don't forget to mark it with '?' in the codes
+# keep in mind, that null is prohibited by TOML spec, but it is very important in Kotlin
 property1 = null
 property2 = 6
 # check property3 in Table1 below. As it has the default value, it is not required and can be not provided 
@@ -244,7 +248,13 @@ otherNumber = 5.56
 can be deserialized to `MyClass`:
 ```kotlin
 @Serializable
-data class MyClass(val someBooleanProperty: Boolean, val table1: Table1, val table2: Table2)
+data class MyClass(
+    val someBooleanProperty: Boolean,
+    val table1: Table1,
+    val table2: Table2,
+   @SerialName("gradle-libs-like-property")
+   val kotlinJvm: GradlePlugin
+)
 
 @Serializable
 data class Table1(
@@ -265,11 +275,10 @@ data class Table2(
 )
 
 @Serializable
-data class InlineTable(
-    val name: String,
-    @SerialName("configurationList")
-    val overriddenName: List<String?>
-)
+data class GradlePlugin(val id: String, val version: Version)
+
+@Serializable
+data class Version(val ref: String)
 ```
 
 with the following code:
@@ -278,19 +287,30 @@ Toml.decodeFromString<MyClass>(/* your toml string */)
 ```
 
 Translation of the example above to json-terminology:
+
 ```json
 {
   "someBooleanProperty": true,
   "table1": {
     "property1": 5,
     "property2": 5
-    },
+  },
   "table2": {
-     "someNumber": 5,
-     "akuleshov7.com": {
-         "name": "my name",
-         "configurationList": ["a",  "b",  "c"],
-     "otherNumber": 5.56
+    "someNumber": 5,
+    "akuleshov7.com": {
+      "name": "my name",
+      "configurationList": [
+        "a",
+        "b",
+        "c"
+      ],
+      "otherNumber": 5.56
+    }
+  },
+  "gradle-libs-like-property": {
+    "id": "org.jetbrains.kotlin.jvm",
+    "version": {
+      "ref": "kotlin"
     }
   }
 }

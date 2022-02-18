@@ -15,7 +15,7 @@ data class TomlArrayOfTables(val a: List<Long>)
 
 class ArrayOfTablesDecoderTest {
     @Test
-    fun testRegressions() {
+    fun decodeArrayOfTables() {
 
 
     }

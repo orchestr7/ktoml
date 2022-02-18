@@ -117,6 +117,13 @@ public sealed class TomlNode(
             }
 
             previousParent = if (foundTable != null && !constructNewBucket) {
+                // in case of inline tables we generate a structure that already has key-values inserted to it,
+                // so we need to copy these children to the TOML AST
+                if (level == tomlTable.tablesList.lastIndex) {
+                    tomlTable.children.forEach {
+                        foundTable.appendChild(it)
+                    }
+                }
                 foundTable
             } else {
                 if (level == tomlTable.tablesList.lastIndex) {

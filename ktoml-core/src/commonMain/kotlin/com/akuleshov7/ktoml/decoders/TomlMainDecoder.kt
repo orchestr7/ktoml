@@ -5,6 +5,8 @@ package com.akuleshov7.ktoml.decoders
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.tree.TomlNull
+import com.akuleshov7.ktoml.tree.TomlTablePrimitive
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor

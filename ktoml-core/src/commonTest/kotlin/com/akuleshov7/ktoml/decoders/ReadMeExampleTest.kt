@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.tree.TomlInlineTable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -10,7 +11,13 @@ import kotlinx.serialization.ExperimentalSerializationApi
 
 class ReadMeExampleTest {
     @Serializable
-    data class MyClass(val someBooleanProperty: Boolean, val table1: Table1, val table2: Table2)
+    data class MyClass(
+        val someBooleanProperty: Boolean,
+        val table1: Table1,
+        val table2: Table2,
+        @SerialName("gradle-libs-like-property")
+        val kotlinJvm: GradlePlugin
+    )
 
     @Serializable
     data class Table1(
@@ -26,16 +33,22 @@ class ReadMeExampleTest {
     data class Table2(
         val someNumber: Long,
         @SerialName("akuleshov7.com")
-        val inlineTable: InlineTable,
+        val inlineTable: NestedTable,
         val otherNumber: Double
     )
 
     @Serializable
-    data class InlineTable(
+    data class NestedTable(
         val name: String,
         @SerialName("configurationList")
         val overriddenName: List<String?>
     )
+
+    @Serializable
+    data class GradlePlugin(val id: String, val version: Version)
+
+    @Serializable
+    data class Version(val ref: String)
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
@@ -43,6 +56,8 @@ class ReadMeExampleTest {
         val test =
             """
             |someBooleanProperty = true
+            |# inline tables in gradle 'libs.versions.toml' notation
+            |gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
             |
             |[table1]
             |property1 = null
@@ -58,9 +73,9 @@ class ReadMeExampleTest {
             |# such redeclaration of table2
             |# is prohibited in toml specification;
             |# but ktoml is allowing it in non-strict mode: 
-            |[table2]       
+            |[table2]
             |otherNumber = 5.56
-            |       
+            |    
             """.trimMargin()
 
         val decoded = Toml.decodeFromString<MyClass>(test)
@@ -71,9 +86,10 @@ class ReadMeExampleTest {
                 table1 = Table1(property1 = null, property2 = 6),
                 table2 = Table2(
                     someNumber = 5,
-                    inlineTable = InlineTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c", null)),
+                    inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c", null)),
                     otherNumber = 5.56
-                )
+                ),
+                kotlinJvm = GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
             ),
             decoded
         )
