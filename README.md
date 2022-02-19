@@ -319,4 +319,4 @@ Translation of the example above to json-terminology:
 
 ``` 
 
-:heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](ktoml-core/src/commonTest/kotlin/decoder/ReadMeExampleTest.kt).
+:heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt).
