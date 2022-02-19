@@ -17,6 +17,7 @@ fun Project.configureDiktat() {
     apply<DiktatGradlePlugin>()
     configure<DiktatExtension> {
         diktatConfigFile = rootProject.file("diktat-analysis.yml")
+        githubActions = findProperty("diktat.githubActions")?.toString()?.toBoolean() ?: false
         inputs {
             include("src/**/*.kt", "*.kts", "src/**/*.kts")
             exclude("$projectDir/build/**", "src/commonTest/**/*.kt")
@@ -33,6 +34,7 @@ fun Project.createDiktatTask() {
         apply<DiktatGradlePlugin>()
         configure<DiktatExtension> {
             diktatConfigFile = rootProject.file("diktat-analysis.yml")
+            githubActions = findProperty("diktat.githubActions")?.toString()?.toBoolean() ?: false
             inputs {
                 include(
                     "$rootDir/buildSrc/src/**/*.kt",
