@@ -81,12 +81,12 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.2.9</version>
+  <version>0.2.10</version>
 </dependency>
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-file</artifactId>
-  <version>0.2.9</version>
+  <version>0.2.10</version>
 </dependency>
 ```
 </details>
@@ -95,8 +95,8 @@ To import `ktoml` library you need to add following dependencies to your code:
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.2.9'
-implementation 'com.akuleshov7:ktoml-file:0.2.9'
+implementation 'com.akuleshov7:ktoml-core:0.2.10'
+implementation 'com.akuleshov7:ktoml-file:0.2.10'
 ```
 </details>
 
@@ -104,8 +104,8 @@ implementation 'com.akuleshov7:ktoml-file:0.2.9'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.2.9")
-implementation("com.akuleshov7:ktoml-file:0.2.9")
+implementation("com.akuleshov7:ktoml-core:0.2.10")
+implementation("com.akuleshov7:ktoml-file:0.2.10")
 ```
 </details>
 
@@ -319,4 +319,4 @@ Translation of the example above to json-terminology:
 
 ``` 
 
-:heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](ktoml-core/src/commonTest/kotlin/decoder/ReadMeExampleTest.kt).
+:heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt).
