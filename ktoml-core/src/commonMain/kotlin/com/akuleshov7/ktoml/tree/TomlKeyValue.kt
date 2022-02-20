@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
 
 /**
  * Interface that contains all common methods that are used in KeyValue nodes
@@ -69,7 +70,7 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlConfig = TomlConfig()):
 
     // finding the index of a commented part of the string
     // search starts goes from the closingQuoteIndex to the end of the string
-    val firstHash = (closingQuoteIndex until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
+    val firstHash = this.findBeginningOfTheComment(closingQuoteIndex)
 
     // searching for an equals sign that should be placed main part of the string (not in the comment)
     val firstEqualsSign = this.substring(0, firstHash).indexOfFirst { it == '=' }

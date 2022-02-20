@@ -95,7 +95,6 @@ public value class TomlParser(private val config: TomlConfig) {
                 }
             }
         }
-        tomlFileHead.prettyPrint()
         return tomlFileHead
     }
 
@@ -119,14 +118,11 @@ public value class TomlParser(private val config: TomlConfig) {
         return this
     }
 
-    private fun String.isArrayOfTables(): Boolean {
-        val trimmed = this.trim()
-        return trimmed.startsWith("[[") && trimmed.endsWith("]]")
-    }
+    private fun String.isArrayOfTables(): Boolean = this.trim().startsWith("[[")
 
     private fun String.isTableNode(): Boolean {
         val trimmed = this.trim()
-        return trimmed.startsWith("[") && trimmed.endsWith("]")
+        return trimmed.startsWith("[")
     }
 
     private fun String.isComment() = this.trim().startsWith("#")

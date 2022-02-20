@@ -6,6 +6,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
@@ -39,8 +40,18 @@ public class TomlTablePrimitive(
     public override lateinit var fullTableName: String
 
     init {
+        val lastIndexOfBrace = content.lastIndexOf("]")
+        if (lastIndexOfBrace == -1) {
+            throw ParseException("Invalid Tables provided: $content." +
+                    " It has missing closing bracket: ']'", lineNo)
+        }
+
+        // finding the index of the beginning of the comment (if any)
+        val firstHash = content.findBeginningOfTheComment(lastIndexOfBrace)
+
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.trim().trimBrackets().trim()
+        val sectionFromContent = content.substring(0, firstHash).trim().trimBrackets()
+            .trim()
 
         if (sectionFromContent.isBlank()) {
             throw ParseException("Incorrect blank table name: $content", lineNo)

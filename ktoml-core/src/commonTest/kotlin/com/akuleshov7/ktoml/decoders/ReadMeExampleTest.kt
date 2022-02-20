@@ -55,27 +55,27 @@ class ReadMeExampleTest {
     fun readmeExampleTest() {
         val test =
             """
-            |someBooleanProperty = true
-            |# inline tables in gradle 'libs.versions.toml' notation
-            |gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-            |
-            |[table1]
-            |property1 = null
-            |property2 = 6
-            | 
-            |[table2]
-            |someNumber = 5
-            |   [table2."akuleshov7.com"]
-            |       name = 'this is a "literal" string'
-            |       # empty lists are also supported
-            |       configurationList = ["a",  "b",  "c", null]
-            |
-            |# such redeclaration of table2
-            |# is prohibited in toml specification;
-            |# but ktoml is allowing it in non-strict mode: 
-            |[table2]
-            |otherNumber = 5.56
-            |    
+            someBooleanProperty = true
+            # inline tables in gradle 'libs.versions.toml' notation
+            gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            
+            [table1]
+            property1 = null # null is prohibited by the TOML spec, 
+            property2 = 6
+             
+            [table2]
+            someNumber = 5
+               [table2."akuleshov7.com"]
+                   name = 'this is a "literal" string'
+                   # empty lists are also supported
+                   configurationList = ["a",  "b",  "c", null]
+            
+            # such redeclaration of table2
+            # is prohibited in toml specification;
+            # but ktoml is allowing it in non-strict mode: 
+            [table2]
+            otherNumber = 5.56
+                
             """.trimMargin()
 
         val decoded = Toml.decodeFromString<MyClass>(test)
