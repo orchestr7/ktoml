@@ -73,8 +73,6 @@ public class TomlInlineTable(
 
             }
         }
-
-        tomlTable.prettyPrint()
         return tomlTable
     }
 }

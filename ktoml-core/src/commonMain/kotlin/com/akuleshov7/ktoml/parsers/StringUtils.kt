@@ -6,6 +6,10 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
 
+internal fun String.findBeginningOfTheComment(startSearchFrom: Int) =
+    (startSearchFrom until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
+
+
 /**
  * Splitting dot-separated string to the list of tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
