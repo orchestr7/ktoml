@@ -6,9 +6,14 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
 
+/**
+ * method to find the beginning of the comments in TOML string
+ *
+ * @param startSearchFrom the index after that the search will be done
+ * @return the index of the first hash symbol or the index of the end of the string
+ */
 internal fun String.findBeginningOfTheComment(startSearchFrom: Int) =
-    (startSearchFrom until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
-
+        (startSearchFrom until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
 
 /**
  * Splitting dot-separated string to the list of tokens:

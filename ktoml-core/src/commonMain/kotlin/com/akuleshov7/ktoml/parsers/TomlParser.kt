@@ -118,9 +118,7 @@ public value class TomlParser(private val config: TomlConfig) {
         return this
     }
 
-    private fun String.isArrayOfTables(): Boolean {
-        return this.trim().startsWith("[[")
-    }
+    private fun String.isArrayOfTables(): Boolean = this.trim().startsWith("[[")
 
     private fun String.isTableNode(): Boolean {
         val trimmed = this.trim()

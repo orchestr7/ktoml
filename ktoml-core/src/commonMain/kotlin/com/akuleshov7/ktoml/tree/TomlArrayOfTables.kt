@@ -13,6 +13,7 @@ import com.akuleshov7.ktoml.parsers.trimQuotes
 
 /**
  * Class representing array of tables
+ *
  * @throws ParseException if the content is wrong
  */
 // FixMe: this class is mostly identical to the TomlTable - we should unify them together
@@ -40,14 +41,17 @@ public class TomlArrayOfTables(
 
     init {
         val lastIndexOfBrace = content.lastIndexOf("]]")
-        if (lastIndexOfBrace == -1) throw ParseException("Invalid Array of Tables provided: ${content}." +
-                " It has missing closing brackets: ']]'", lineNo)
+        if (lastIndexOfBrace == -1) {
+            throw ParseException("Invalid Array of Tables provided: $content." +
+                    " It has missing closing brackets: ']]'", lineNo)
+        }
 
         // finding the index of the beginning of the comment (if any)
         val firstHash = content.findBeginningOfTheComment(lastIndexOfBrace)
 
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.substring(0, firstHash).trim().trimDoubleBrackets().trim()
+        val sectionFromContent = content.substring(0, firstHash).trim().trimDoubleBrackets()
+            .trim()
 
         if (sectionFromContent.isBlank()) {
             throw ParseException("Incorrect blank name for array of tables: $content", lineNo)
