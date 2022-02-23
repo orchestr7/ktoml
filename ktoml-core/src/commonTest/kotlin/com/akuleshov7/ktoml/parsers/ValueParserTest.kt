@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
+import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.*
 import kotlin.test.Test
@@ -15,6 +16,14 @@ class ValueParserTest {
         testTomlValue(Pair("a", "true"), NodeType.BOOLEAN)
         testTomlValue(Pair("a", "false"), NodeType.BOOLEAN)
         testTomlValue(Pair("a", "\'false\'"), NodeType.LITERAL_STRING)
+    }
+
+    @Test
+    fun nullParsingTest() {
+        testTomlValue("a" to "null", NodeType.NULL)
+        assertFailsWith<ParseException> {
+            testTomlValue("a" to "null", NodeType.NULL, TomlConfig(allowNullValues = false))
+        }
     }
 
     @Test
@@ -70,7 +79,8 @@ class ValueParserTest {
             "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0)
         assertEquals(1L, TomlKeyValuePrimitive(pairTest, 0).value.content)
 
-        pairTest = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0)
+        pairTest =
+            "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0)
         assertEquals("1 = 2", TomlKeyValuePrimitive(pairTest, 0).value.content)
     }
 
@@ -78,7 +88,12 @@ class ValueParserTest {
     fun parsingIssueValue() {
         assertFailsWith<ParseException> { " = false".splitKeyValue(0) }
         assertFailsWith<ParseException> { " just false".splitKeyValue(0) }
-        assertFailsWith<ParseException> { TomlKeyValuePrimitive(Pair("a", "\"\\hello tworld\""), 0) }
+        assertFailsWith<ParseException> {
+            TomlKeyValuePrimitive(
+                Pair("a", "\"\\hello tworld\""),
+                0
+            )
+        }
     }
 }
 
@@ -97,6 +112,10 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
 }
 
 
-fun testTomlValue(keyValuePair: Pair<String, String>, expectedType: NodeType) {
-    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0).value))
+fun testTomlValue(
+    keyValuePair: Pair<String, String>,
+    expectedType: NodeType,
+    config: TomlConfig = TomlConfig()
+) {
+    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config).value))
 }

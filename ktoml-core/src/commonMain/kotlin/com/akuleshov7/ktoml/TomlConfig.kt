@@ -19,6 +19,7 @@ public class KtomlConf(
 /**
  * @property ignoreUnknownNames - a control to allow/prohibit unknown names during the deserialization
  * @property allowEmptyValues - a control to allow/prohibit empty values: a = # comment
+ * @property allowNullValues - a control to allow/prohibit null values: a = null
  * @property allowEscapedQuotesInLiteralStrings - a control to allow/prohibit escaping of single quotes in literal strings
  * @property indentation - the number of spaces in the indents for the serialization
  * @property allowEmptyToml - controls if empty toml can be processed, if false - will throw an exception
@@ -26,6 +27,7 @@ public class KtomlConf(
 public open class TomlConfig(
     public val ignoreUnknownNames: Boolean = false,
     public val allowEmptyValues: Boolean = true,
+    public val allowNullValues: Boolean = true,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
     public val indentation: Indentation = Indentation.FOUR_SPACES,
     public val allowEmptyToml: Boolean = true,

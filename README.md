@@ -192,13 +192,15 @@ special configuration class that can be passed to the decoder method:
 
 ```kotlin
 Toml(
-    ktomlConf = KtomlConf(
+    config = TomlConfig(
         // allow/prohibit unknown names during the deserialization, default false
         ignoreUnknownNames = false,
         // allow/prohibit empty values like "a = # comment", default true
-        emptyValuesAllowed = true,
+        allowEmptyValues = true,
+        // allow/prohibit null values like "a = null", default true
+        allowNullValues = false,
         // allow/prohibit escaping of single quotes in literal strings, default true
-        escapedQuotesInLiteralStringsAllowed = true,
+        allowEscapedQuotesInLiteralStrings = true,
         // allow/prohibit processing of empty toml, if false - throws an InternalDecodingException exception, default is true
         allowEmptyToml = true,
         // indentation symbols for serialization, default 4 spaces
@@ -227,6 +229,7 @@ gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "ko
 [table1]
 # it can be null or nil, but don't forget to mark it with '?' in the codes
 # keep in mind, that null is prohibited by TOML spec, but it is very important in Kotlin
+# see allowNullValues for a more strict enforcement of the TOML spec
 property1 = null
 property2 = 6
 # check property3 in Table1 below. As it has the default value, it is not required and can be not provided 
