@@ -144,12 +144,13 @@ public value class TomlParser(private val config: TomlConfig) {
                     private var nextState: Int = -1
                     private var nextItem: String? = null
                     private var nextRealItem: String? = null
-                    private val emptyLinesBuffer: MutableList<String> = mutableListOf()
+                    private val emptyLinesBuffer = ArrayDeque<String>()
 
                     private fun calcNext() {
-                        if (emptyLinesBuffer.isNotEmpty()) {
+                        var nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
+                        if (nextEmptyLine != null) {
                             nextState = 1
-                            nextItem = emptyLinesBuffer.removeFirst()
+                            nextItem = nextEmptyLine
                             return
                         }
                         if (nextRealItem != null) {
@@ -164,13 +165,14 @@ public value class TomlParser(private val config: TomlConfig) {
                                 emptyLinesBuffer.add(line)
                             } else {
                                 nextRealItem = line
-                                if (emptyLinesBuffer.isEmpty()) {
+                                nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
+                                if (nextEmptyLine == null) {
                                     nextState = 2
                                     nextItem = nextRealItem
                                     nextRealItem = null
                                 } else {
                                     nextState = 1
-                                    nextItem = emptyLinesBuffer.removeFirst()
+                                    nextItem = nextEmptyLine
                                 }
                                 return
                             }
