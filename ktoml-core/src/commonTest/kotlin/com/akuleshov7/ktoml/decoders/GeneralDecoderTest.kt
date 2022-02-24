@@ -234,8 +234,10 @@ class GeneralDecoderTest {
                 "d = # hi \n" +
                 "e = \n" +
                 "f = NIL\n")
-
         assertEquals(NullableValues(null, null, null, null, null, null), Toml.decodeFromString(test))
+        assertFailsWith<ParseException> {
+            Toml(TomlConfig(allowNullValues = false)).decodeFromString<NullableValues>(test)
+        }
     }
 
     @Test

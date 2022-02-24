@@ -198,7 +198,7 @@ Toml(
         // allow/prohibit empty values like "a = # comment", default true
         allowEmptyValues = true,
         // allow/prohibit null values like "a = null", default true
-        allowNullValues = false,
+        allowNullValues = true,
         // allow/prohibit escaping of single quotes in literal strings, default true
         allowEscapedQuotesInLiteralStrings = true,
         // allow/prohibit processing of empty toml, if false - throws an InternalDecodingException exception, default is true
