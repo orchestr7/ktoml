@@ -1,0 +1,12 @@
+list1 = [1.0, 2.0]
+list2 = [1, 3, 5]
+list3 = ["mystr", "2", "3"]
+
+[general]
+execCmd = "echo hello world"
+tags = ["Tag",           "Other tag"]
+description = "My description"
+suiteName = "// DocsCheck"
+
+[warn]
+list = ["12a", "12f"]

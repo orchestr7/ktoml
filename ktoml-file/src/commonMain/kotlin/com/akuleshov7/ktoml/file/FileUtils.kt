@@ -4,28 +4,19 @@
 
 package com.akuleshov7.ktoml.file
 
-import okio.BufferedSink
-import okio.FileNotFoundException
-import okio.FileSystem
+import okio.*
 import okio.Path.Companion.toPath
-import okio.buffer
 
 /**
- * Simple file reading with okio (returning a list with strings)
+ * Uses okio to get the source from a path
  *
- * @param tomlFile string with a path to a file
- * @return list with strings
  * @throws FileNotFoundException if the toml file is missing
  */
-internal fun readAndParseFile(tomlFile: String): List<String> {
+internal fun getFileSource(filePath: String): Source {
     try {
-        val tomlPath = tomlFile.toPath()
-        return getOsSpecificFileSystem().read(tomlPath) {
-            // FixMe: may be we need to read and at the same time parse (to make it parallel)
-            generateSequence { readUtf8Line() }.toList()
-        }
+        return getOsSpecificFileSystem().source(filePath.toPath())
     } catch (e: FileNotFoundException) {
-        throw FileNotFoundException("Not able to find TOML file on path $tomlFile: ${e.message}")
+        throw FileNotFoundException("Not able to find TOML file on path $filePath: ${e.message}")
     }
 }
 

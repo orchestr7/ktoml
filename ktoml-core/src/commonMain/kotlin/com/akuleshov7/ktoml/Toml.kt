@@ -66,6 +66,22 @@ public open class Toml(
         toml: List<String>,
         config: TomlConfig
     ): T {
+        return decodeFromString(deserializer, toml.asSequence(), config)
+    }
+
+    /**
+     * simple deserializer of a sequence of strings in a toml format
+     *
+     * @param toml sequence with strings in toml format
+     * @param deserializer deserialization strategy
+     * @param config
+     * @return deserialized object of type T
+     */
+    public fun <T> decodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        toml: Sequence<String>,
+        config: TomlConfig = this.config
+    ): T {
         val parsedToml = tomlParser.parseStringsToTomlTree(toml, config)
         return TomlMainDecoder.decode(deserializer, parsedToml, this.config)
     }
@@ -91,6 +107,30 @@ public open class Toml(
         config: TomlConfig = TomlConfig()
     ): T {
         val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, config, TomlParser::parseString)
+        return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
+    }
+
+    /**
+     * partial deserializer of a sequence of lines in a toml format.
+     * Will deserialize only the part presented under the tomlTableName table.
+     * If such table is missing in he input - will throw an exception
+     *
+     * (!) Useful when you would like to deserialize only ONE table
+     * and you do not want to reproduce whole object structure in the code
+     *
+     * @param deserializer deserialization strategy
+     * @param tomlLines sequence of TOML lines
+     * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
+     * @param config
+     * @return deserialized object of type T
+     */
+    public fun <T> partiallyDecodeFromLines(
+        deserializer: DeserializationStrategy<T>,
+        tomlLines: Sequence<String>,
+        tomlTableName: String,
+        config: TomlConfig = TomlConfig()
+    ): T {
+        val fakeFileNode = generateFakeTomlStructureForPartialParsing(tomlLines, tomlTableName, config, TomlParser::parseLines)
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
     }
 
@@ -123,15 +163,44 @@ public open class Toml(
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
     }
 
+    /**
+     * partial deserializer of a sequence of lines in a toml format.
+     * Will deserialize only the part presented under the tomlTableName table.
+     * If such table is missing in he input - will throw an exception
+     *
+     * (!) Useful when you would like to deserialize only ONE table
+     * and you do not want to reproduce whole object structure in the code
+     *
+     * @param deserializer deserialization strategy
+     * @param tomlLines sequence of strings with toml input
+     * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
+     * @param config
+     * @return deserialized object of type T
+     */
+    public fun <T> partiallyDecodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        tomlLines: Sequence<String>,
+        tomlTableName: String,
+        config: TomlConfig = TomlConfig()
+    ): T {
+        val fakeFileNode = generateFakeTomlStructureForPartialParsing(
+            tomlLines,
+            tomlTableName,
+            config,
+            TomlParser::parseLines,
+        )
+        return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
+    }
+
     // ================== other ===============
     @Suppress("TYPE_ALIAS")
-    private fun generateFakeTomlStructureForPartialParsing(
-        toml: String,
+    private fun <I> generateFakeTomlStructureForPartialParsing(
+        tomlInput: I,
         tomlTableName: String,
         config: TomlConfig = TomlConfig(),
-        parsingFunction: (TomlParser, String) -> TomlFile
+        parsingFunction: (TomlParser, I) -> TomlFile
     ): TomlFile {
-        val tomlFile = parsingFunction(TomlParser(this.config), toml)
+        val tomlFile = parsingFunction(TomlParser(this.config), tomlInput)
         val parsedToml = findPrimitiveTableInAstByName(listOf(tomlFile), tomlTableName)
             ?: throw MissingRequiredPropertyException(
                 "Cannot find table with name <$tomlTableName> in the toml input. " +

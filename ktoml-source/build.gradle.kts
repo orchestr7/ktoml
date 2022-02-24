@@ -58,7 +58,6 @@ kotlin {
             dependencies {
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-                implementation(project(":ktoml-source"))
                 implementation(project(":ktoml-core"))
             }
         }

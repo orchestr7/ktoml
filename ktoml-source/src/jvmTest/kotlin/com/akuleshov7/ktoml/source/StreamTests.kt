@@ -1,16 +1,17 @@
-package com.akuleshov7.ktoml.file
+package com.akuleshov7.ktoml.source
 
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.source.useLines
 import com.akuleshov7.ktoml.tree.TomlTablePrimitive
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.serializer
-import kotlin.test.Test
+import okio.source
+import org.junit.jupiter.api.Test
+import java.io.InputStream
 import kotlin.test.assertEquals
 
-class TomlFileParserTest {
+class StreamTests {
     @Serializable
     data class TestClass(
         val title: String,
@@ -37,7 +38,7 @@ class TomlFileParserTest {
     )
 
     @Test
-    fun readParseAndDecodeFile() {
+    fun readParseAndDecodeStream() {
         val expected = TestClass(
             "TOML \"Example\"",
             Owner(
@@ -51,10 +52,7 @@ class TomlFileParserTest {
         )
         assertEquals(
             expected,
-            TomlFileReader().decodeFromFile(
-                serializer(),
-                "src/commonTest/resources/simple_example.toml"
-            )
+            Toml().decodeFromStream(getTestDataStream("simple_example.toml"))
         )
     }
 
@@ -80,14 +78,17 @@ class TomlFileParserTest {
     @Test
     @ExperimentalSerializationApi
     fun testTableDiscovery() {
-        val file = "src/commonTest/resources/complex_toml_tables.toml"
-        // ==== reading from file
-        val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
-        assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
+        // ==== reading from stream
+        val test = MyTableTest(
+            A(Ab(InnerTest("Undefined")), InnerTest("Undefined")),
+            D(InnerTest("Undefined"))
+        )
+        assertEquals(test, Toml().decodeFromStream(getTestDataStream("complex_toml_tables.toml")))
         // ==== checking how table discovery works
-        val parsedResult = getFileSource(file).useLines { lines ->
-            TomlParser(TomlConfig()).parseStringsToTomlTree(lines, TomlConfig())
-        }
+        val parsedResult =
+            getTestDataStream("complex_toml_tables.toml").source().useLines { lines ->
+                TomlParser(TomlConfig()).parseStringsToTomlTree(lines, TomlConfig())
+            }
         assertEquals(
             listOf("a", "a.b.c", "a.d", "d", "d.a"),
             parsedResult.getRealTomlTables().map { it.fullTableName })
@@ -99,16 +100,16 @@ class TomlFileParserTest {
     @ExperimentalSerializationApi
     @Test
     fun regressionCast2Test() {
-        val file = "src/commonTest/resources/class_cast_regression2.toml"
-        val parsedResult = TomlFileReader.decodeFromFile<RegressionTest>(serializer(), file)
+        val parsedResult =
+            Toml().decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
     @ExperimentalSerializationApi
     @Test
     fun regressionPartialTest() {
-        val file = "src/commonTest/resources/class_cast_regression2.toml"
-        val parsedResult = TomlFileReader.decodeFromFile<RegressionTest>(serializer(), file)
+        val parsedResult =
+            Toml().decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
@@ -141,7 +142,6 @@ class TomlFileParserTest {
     @ExperimentalSerializationApi
     @Test
     fun regressionInvalidIndex() {
-        val file = "src/commonTest/resources/partial_parser_regression.toml"
         assertEquals(
             GeneralConfig(
                 execCmd = "echo hello world",
@@ -152,7 +152,10 @@ class TomlFileParserTest {
                 includedTests = null,
                 ignoreSaveComments = null
             ),
-            TomlFileReader.partiallyDecodeFromFile(serializer(), file, "general")
+            Toml().partiallyDecodeFromStream(
+                getTestDataStream("partial_parser_regression.toml"),
+                "general"
+            )
         )
         assertEquals(
             TestRegression(
@@ -170,7 +173,7 @@ class TomlFileParserTest {
                 warn = WarnConfig(list = listOf("12a", "12f")),
                 list3 = listOf("mystr", "2", "3")
             ),
-            TomlFileReader.decodeFromFile(serializer(), file)
+            Toml().decodeFromStream(getTestDataStream("partial_parser_regression.toml"))
         )
     }
 
@@ -185,22 +188,21 @@ class TomlFileParserTest {
 
     @Test
     fun testPartialFileDecoding() {
-        val file = "src/commonTest/resources/partial_decoder.toml"
         val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
         assertEquals(
             test.table1,
-            TomlFileReader.partiallyDecodeFromFile(
-                serializer(), file, "table1"
+            Toml().partiallyDecodeFromStream(
+                getTestDataStream("partial_decoder.toml"),
+                "table1"
             )
         )
     }
 
     @Test
     fun readTopLevelTables() {
-        val file = "src/commonTest/resources/simple_example.toml"
         assertEquals(
             listOf("owner", "database"),
-            getFileSource(file).useLines { lines ->
+            getTestDataStream("simple_example.toml").source().useLines { lines ->
                 TomlParser(TomlConfig())
                     .parseStringsToTomlTree(lines, TomlConfig())
                     .children
@@ -209,5 +211,9 @@ class TomlFileParserTest {
                     .map { it.fullTableName }
             }
         )
+    }
+
+    private fun getTestDataStream(name: String): InputStream {
+        return requireNotNull(StreamTests::class.java.getResourceAsStream(name))
     }
 }

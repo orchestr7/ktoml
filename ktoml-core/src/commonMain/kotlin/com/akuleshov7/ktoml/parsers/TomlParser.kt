@@ -10,6 +10,7 @@ import kotlin.jvm.JvmInline
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")
 public value class TomlParser(private val config: TomlConfig) {
+
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
      *
@@ -18,8 +19,30 @@ public value class TomlParser(private val config: TomlConfig) {
      */
     public fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
-        val tomlString = toml.replace("\r\n", "\n")
-        return parseStringsToTomlTree(tomlString.split("\n"), config)
+        return parseLines(toml.replace("\r\n", "\n").splitToSequence("\n"))
+    }
+
+    /**
+     * Method for parsing of TOML lines
+     *
+     * @param tomlLines toml lines
+     * @return the root TomlFile node of the Tree that we have built after parsing
+     */
+    public fun parseLines(tomlLines: Sequence<String>): TomlFile {
+        // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
+        return parseStringsToTomlTree(tomlLines, config)
+    }
+
+    /**
+     * Parsing the list of strings to the TOML intermediate representation (TOML- abstract syntax tree).
+     *
+     * @param tomlLines list with toml strings (line by line)
+     * @param config
+     * @return the root node of the resulted toml tree
+     * @throws InternalAstException - if toml node does not inherit TomlNode class
+     */
+    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile {
+        return parseStringsToTomlTree(tomlLines.asSequence(), config)
     }
 
     /**
@@ -31,16 +54,19 @@ public value class TomlParser(private val config: TomlConfig) {
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
     @Suppress("TOO_LONG_FUNCTION")
-    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile {
+    public fun parseStringsToTomlTree(tomlLines: Sequence<String>, config: TomlConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile(config)
         // link to the head of the tree
         val tomlFileHead = currentParentalNode as TomlFile
         // need to trim empty lines BEFORE the start of processing
-        val mutableTomlLines = tomlLines.toMutableList().trimEmptyLines()
+        val trimmedTomlLines = tomlLines.trimEmptyLines()
         // here we always store the bucket of the latest created array of tables
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
-        mutableTomlLines.forEachIndexed { index, line ->
+        var index = 0
+        val linesIterator = trimmedTomlLines.iterator()
+        while (linesIterator.hasNext()) {
+            val line = linesIterator.next()
             val lineNo = index + 1
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
             // because we need to calculate and save lineNo
@@ -65,7 +91,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         val tableSection = TomlTablePrimitive(line, lineNo, config)
                         // if the table is the last line in toml, then it has no children, and we need to
                         // add at least fake node as a child
-                        if (index == mutableTomlLines.lastIndex) {
+                        if (!linesIterator.hasNext()) {
                             tableSection.appendChild(TomlStubEmptyNode(lineNo, config))
                         }
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
@@ -94,7 +120,9 @@ public value class TomlParser(private val config: TomlConfig) {
                     }
                 }
             }
+            index++
         }
+
         return tomlFileHead
     }
 
@@ -104,18 +132,74 @@ public value class TomlParser(private val config: TomlConfig) {
         }
     }
 
-    private fun MutableList<String>.trimEmptyLines(): MutableList<String> {
-        if (this.isEmpty()) {
-            return this
-        }
-        // removing all empty lines at the end, to cover empty tables properly
-        while (this.last().isEmptyLine()) {
-            this.removeLast()
-            if (this.isEmpty()) {
-                return this
+    // This code is eavily inspired by the TransformingSequence code in kotlin-lib
+    private fun Sequence<String>.trimEmptyLines(): Sequence<String> {
+        return object : Sequence<String> {
+
+            override fun iterator(): Iterator<String> {
+                return object : Iterator<String> {
+                    private val linesIterator = this@trimEmptyLines.iterator()
+
+                    // -1 for unknown, 0 for done, 1 for empty lines, 2 for continue
+                    private var nextState: Int = -1
+                    private var nextItem: String? = null
+                    private var nextRealItem: String? = null
+                    private val emptyLinesBuffer: MutableList<String> = mutableListOf()
+
+                    private fun calcNext() {
+                        if (emptyLinesBuffer.isNotEmpty()) {
+                            nextState = 1
+                            nextItem = emptyLinesBuffer.removeFirst()
+                            return
+                        }
+                        if (nextRealItem != null) {
+                            nextState = 2
+                            nextItem = nextRealItem
+                            nextRealItem = null
+                            return
+                        }
+                        while (linesIterator.hasNext()) {
+                            val line = linesIterator.next()
+                            if (line.isEmptyLine()) {
+                                emptyLinesBuffer.add(line)
+                            } else {
+                                nextRealItem = line
+                                if (emptyLinesBuffer.isEmpty()) {
+                                    nextState = 2
+                                    nextItem = nextRealItem
+                                    nextRealItem = null
+                                } else {
+                                    nextState = 1
+                                    nextItem = emptyLinesBuffer.removeFirst()
+                                }
+                                return
+                            }
+                        }
+                        nextState = 0
+                    }
+
+                    override fun hasNext(): Boolean {
+                        if (nextState == -1) {
+                            calcNext()
+                        }
+                        return nextState == 1 || nextState == 2
+                    }
+
+                    override fun next(): String {
+                        if (nextState == -1) {
+                            calcNext()
+                        }
+                        if (nextState == 0) {
+                            throw NoSuchElementException()
+                        }
+                        val result = nextItem
+                        nextItem = null
+                        nextState = -1
+                        return result as String
+                    }
+                }
             }
         }
-        return this
     }
 
     private fun String.isArrayOfTables(): Boolean = this.trim().startsWith("[[")
