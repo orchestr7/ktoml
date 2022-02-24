@@ -105,7 +105,11 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlConfig = TomlConfig()):
  */
 public fun String.parseValue(lineNo: Int, config: TomlConfig): TomlValue = when (this) {
     // ===== null values
-    "null", "nil", "NULL", "NIL", "" -> TomlNull(lineNo)
+    "null", "nil", "NULL", "NIL", "" -> if (config.allowNullValues) {
+        TomlNull(lineNo)
+    } else {
+        throw ParseException("Null values are not allowed", lineNo)
+    }
     // ===== boolean vales
     "true", "false" -> TomlBoolean(this, lineNo)
     else -> when (this[0]) {
