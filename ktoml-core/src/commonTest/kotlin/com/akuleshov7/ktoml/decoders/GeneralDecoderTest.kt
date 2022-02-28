@@ -6,7 +6,6 @@ import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.exceptions.UnknownNameException
-import kotlinx.datetime.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -432,37 +431,5 @@ class GeneralDecoderTest {
             )
             , Toml.decodeFromString(test)
         )
-    }
-
-    @Serializable
-    data class TimeTable(
-        val instants: List<Instant>,
-        val localDateTimes: List<LocalDateTime>,
-        val localDate: LocalDate
-    )
-
-    @Test
-    fun testDateParsing() {
-        val toml = """
-            instants = [1979-05-27T07:32:00Z, 1979-05-27T00:32:00-07:00, 1979-05-27T00:32:00.999999-07:00, 1979-05-27 07:32:00Z]
-            localDateTimes = [1979-05-27T07:32:00, 1979-05-27T00:32:00.999999]
-            localDate = 1979-05-27
-        """.trimIndent()
-        val expectedInstants = listOf(
-            LocalDateTime(1979, 5, 27, 7, 32, 0)
-                .toInstant(TimeZone.UTC),
-            LocalDateTime(1979, 5, 27, 0, 32, 0)
-                .toInstant(TimeZone.of("UTC-7")),
-            LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
-                .toInstant(TimeZone.of("UTC-7")),
-            LocalDateTime(1979, 5, 27, 7, 32, 0)
-                .toInstant(TimeZone.UTC),
-        )
-        val expectedLocalDateTimes = listOf(
-            LocalDateTime(1979, 5, 27, 7, 32, 0),
-            LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
-        )
-        val expectedLocalDate = LocalDate(1979, 5, 27)
-        assertEquals(TimeTable(expectedInstants, expectedLocalDateTimes, expectedLocalDate), Toml().decodeFromString(toml))
     }
 }
