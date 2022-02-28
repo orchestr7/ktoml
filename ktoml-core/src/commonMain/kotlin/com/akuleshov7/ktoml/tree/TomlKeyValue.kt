@@ -126,8 +126,13 @@ public fun String.parseValue(lineNo: Int, config: TomlConfig): TomlValue = when 
                     // ===== float values
                     TomlDouble(this, lineNo)
                 } catch (e: NumberFormatException) {
-                    // ===== fallback strategy in case of invalid value
-                    TomlBasicString(this, lineNo)
+                    try {
+                        // ===== date-time values
+                        TomlDateTime(this, lineNo)
+                    } catch (e: IllegalArgumentException) {
+                        // ===== fallback strategy in case of invalid value
+                        TomlBasicString(this, lineNo)
+                    }
                 }
             }
     }
