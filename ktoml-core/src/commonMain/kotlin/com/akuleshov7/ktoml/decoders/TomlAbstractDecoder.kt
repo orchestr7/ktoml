@@ -16,7 +16,6 @@ import kotlinx.serialization.encoding.AbstractDecoder
  */
 @ExperimentalSerializationApi
 public abstract class TomlAbstractDecoder : AbstractDecoder() {
-
     private val instantSerializer = Instant.serializer()
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
@@ -34,21 +33,18 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeDouble(): Double = decodePrimitiveType()
     override fun decodeString(): String = decodePrimitiveType()
 
-    protected fun DeserializationStrategy<*>.isDateTime(): Boolean {
-        return descriptor == instantSerializer.descriptor
-                || descriptor == localDateTimeSerializer.descriptor
-                || descriptor == localDateSerializer.descriptor
-    }
+    protected fun DeserializationStrategy<*>.isDateTime(): Boolean =
+            descriptor == instantSerializer.descriptor ||
+                    descriptor == localDateTimeSerializer.descriptor ||
+                    descriptor == localDateSerializer.descriptor
 
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
-    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
-        return when (deserializer.descriptor) {
-            instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
-            localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
-            localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
-            else -> super.decodeSerializableValue(deserializer)
-        }
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T = when (deserializer.descriptor) {
+        instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
+        localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
+        localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
+        else -> super.decodeSerializableValue(deserializer)
     }
 
     internal abstract fun decodeKeyValue(): TomlKeyValue

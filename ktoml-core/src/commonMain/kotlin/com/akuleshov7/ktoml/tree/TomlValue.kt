@@ -192,22 +192,20 @@ internal constructor(
     public constructor(content: String, lineNo: Int) : this(content.trim().parseToDateTime(), lineNo)
 
     public companion object {
-        private fun String.parseToDateTime(): Any {
-            return try {
-                // Offset date-time
-                toInstant()
+        private fun String.parseToDateTime(): Any = try {
+            // Offset date-time
+            toInstant()
+        } catch (e: IllegalArgumentException) {
+            try {
+                // TOML spec allows a space instead of the T, try replacing the first space by a T
+                replaceFirst(' ', 'T').toInstant()
             } catch (e: IllegalArgumentException) {
                 try {
-                    // TOML spec allows a space instead of the T, try replacing the first space by a T
-                    replaceFirst(' ', 'T').toInstant()
+                    // Local date-time
+                    toLocalDateTime()
                 } catch (e: IllegalArgumentException) {
-                    try {
-                        // Local date-time
-                        toLocalDateTime()
-                    } catch (e: IllegalArgumentException) {
-                        // Local date
-                        toLocalDate()
-                    }
+                    // Local date
+                    toLocalDate()
                 }
             }
         }
