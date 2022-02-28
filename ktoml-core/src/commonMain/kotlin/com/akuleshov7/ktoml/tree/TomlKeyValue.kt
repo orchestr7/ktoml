@@ -4,6 +4,8 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
 
+private typealias ValueCreator = (String, Int) -> TomlValue
+
 /**
  * Interface that contains all common methods that are used in KeyValue nodes
  */
@@ -114,23 +116,27 @@ public fun String.parseValue(lineNo: Int, config: TomlConfig): TomlValue = when 
     "true", "false" -> TomlBoolean(this, lineNo)
     else -> when (this[0]) {
         // ===== literal strings
-        '\'' -> if (this.startsWith("'''")) TomlBasicString(this, lineNo) else TomlLiteralString(this, lineNo, config)
+        '\'' -> if (this.startsWith("'''")) {
+            TomlBasicString(this, lineNo)
+        } else {
+            TomlLiteralString(this, lineNo, config)
+        }
         // ===== basic strings
         '\"' -> TomlBasicString(this, lineNo)
-        else ->
-            try {
-                // ===== integer values
-                TomlLong(this, lineNo)
-            } catch (e: NumberFormatException) {
-                try {
-                    // ===== float values
-                    TomlDouble(this, lineNo)
-                } catch (e: NumberFormatException) {
-                    // ===== fallback strategy in case of invalid value
-                    TomlBasicString(this, lineNo)
-                }
-            }
+        else -> tryParseValue<NumberFormatException>(lineNo, ::TomlLong)  // ==== integer values
+            ?: tryParseValue<NumberFormatException>(lineNo, ::TomlDouble)  // ===== float values
+            ?: tryParseValue<IllegalArgumentException>(lineNo, ::TomlDateTime)  // ===== date-time values
+            ?: TomlBasicString(this, lineNo)  // ===== fallback strategy in case of invalid value
     }
+}
+
+private inline fun <reified E : Throwable> String.tryParseValue(
+    lineNo: Int,
+    transform: ValueCreator
+): TomlValue? = try {
+    transform(this, lineNo)
+} catch (e: Throwable) {
+    if (e is E) null else throw e
 }
 
 /**
