@@ -19,6 +19,17 @@ class ValueParserTest {
     }
 
     @Test
+    fun dateTimeParsingTest() {
+        testTomlValue("a" to "1979-05-27T07:32:00Z", NodeType.DATE_TIME)
+        testTomlValue("a" to "1979-05-27T00:32:00-07:00", NodeType.DATE_TIME)
+        testTomlValue("a" to "1979-05-27T00:32:00.999999-07:00", NodeType.DATE_TIME)
+        testTomlValue("a" to "1979-05-27 07:32:00Z", NodeType.DATE_TIME)
+        testTomlValue("a" to "1979-05-27T07:32:00", NodeType.DATE_TIME)
+        testTomlValue("a" to "1979-05-27T00:32:00.999999", NodeType.DATE_TIME)
+        testTomlValue("a" to "1979-05-27", NodeType.DATE_TIME)
+    }
+
+    @Test
     fun nullParsingTest() {
         testTomlValue("a" to "null", NodeType.NULL)
         assertFailsWith<ParseException> {
@@ -98,7 +109,7 @@ class ValueParserTest {
 }
 
 enum class NodeType {
-    STRING, NULL, INT, FLOAT, BOOLEAN, INCORRECT, LITERAL_STRING
+    STRING, NULL, INT, FLOAT, BOOLEAN, INCORRECT, LITERAL_STRING, DATE_TIME
 }
 
 fun getNodeType(v: TomlValue): NodeType = when (v) {
@@ -108,6 +119,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
     is TomlDouble -> NodeType.FLOAT
     is TomlBoolean -> NodeType.BOOLEAN
     is TomlLiteralString -> NodeType.LITERAL_STRING
+    is TomlDateTime -> NodeType.DATE_TIME
     else -> NodeType.INCORRECT
 }
 

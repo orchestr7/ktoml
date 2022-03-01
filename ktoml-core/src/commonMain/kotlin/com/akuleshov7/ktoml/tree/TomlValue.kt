@@ -9,6 +9,7 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
+import kotlinx.datetime.*
 
 /**
  * Base class for all nodes that represent values
@@ -177,6 +178,38 @@ internal constructor(
     lineNo: Int
 ) : TomlValue(lineNo) {
     public constructor(content: String, lineNo: Int) : this(content.toBoolean(), lineNo)
+}
+
+/**
+ * Toml AST Node for a representation of date-time types (offset date-time, local date-time, local date)
+ * @property content
+ */
+public class TomlDateTime
+internal constructor(
+    override var content: Any,
+    lineNo: Int
+) : TomlValue(lineNo) {
+    public constructor(content: String, lineNo: Int) : this(content.trim().parseToDateTime(), lineNo)
+
+    public companion object {
+        private fun String.parseToDateTime(): Any = try {
+            // Offset date-time
+            toInstant()
+        } catch (e: IllegalArgumentException) {
+            try {
+                // TOML spec allows a space instead of the T, try replacing the first space by a T
+                replaceFirst(' ', 'T').toInstant()
+            } catch (e: IllegalArgumentException) {
+                try {
+                    // Local date-time
+                    toLocalDateTime()
+                } catch (e: IllegalArgumentException) {
+                    // Local date
+                    toLocalDate()
+                }
+            }
+        }
+    }
 }
 
 /**
