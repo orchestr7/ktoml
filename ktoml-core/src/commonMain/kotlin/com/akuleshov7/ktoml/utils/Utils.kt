@@ -8,6 +8,15 @@ import com.akuleshov7.ktoml.tree.TomlNode
 import com.akuleshov7.ktoml.tree.TomlTablePrimitive
 
 /**
+ * Append a code point to a [StringBuilder]
+ *
+ * @param codePoint code point
+ * @return [StringBuilder] with appended code point
+ */
+@Throws(IllegalArgumentException::class)
+internal expect fun StringBuilder.appendCodePointCompat(codePoint: Int): StringBuilder
+
+/**
  * searching (BFS) the table with the [fullTableName]
  *
  * @param children list of nodes
@@ -25,5 +34,3 @@ public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName
 
     return findPrimitiveTableInAstByName(children.map { it.children }.flatten(), fullTableName)
 }
-
-internal expect fun StringBuilder.appendCodePointCompat(codePoint: Int): StringBuilder

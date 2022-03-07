@@ -76,6 +76,12 @@ internal constructor(
     ) : this(content.verifyAndTrimQuotes(lineNo), lineNo)
 
     public companion object {
+        private const val COMPLEX_UNICODE_LENGTH = 8
+        private const val COMPLEX_UNICODE_PREFIX = 'U'
+        private const val HEX_RADIX = 16
+        private const val SIMPLE_UNICODE_LENGTH = 4
+        private const val SIMPLE_UNICODE_PREFIX = 'u'
+
         private fun String.verifyAndTrimQuotes(lineNo: Int): Any =
                 if (startsWith("\"") && endsWith("\"")) {
                     trimQuotes()
@@ -107,59 +113,67 @@ internal constructor(
             val resultString = StringBuilder()
             var i = 0
             while (i < length) {
-                val c = get(i)
+                val currentChar = get(i)
                 var offset = 1
-                if (c == '\\' && i != lastIndex) {
+                if (currentChar == '\\' && i != lastIndex) {
                     // Escaped
                     val next = get(i + 1)
-                    val simpleEscape = when (next) {
-                        't' -> '\t'
-                        'b' -> '\b'
-                        'r' -> '\r'
-                        'n' -> '\n'
-                        '\\' -> '\\'
-                        '\'' -> '\''
-                        '"' -> '"'
-                        'u', 'U' -> null
+                    offset++
+                    when (next) {
+                        't' -> resultString.append('\t')
+                        'b' -> resultString.append('\b')
+                        'r' -> resultString.append('\r')
+                        'n' -> resultString.append('\n')
+                        '\\' -> resultString.append('\\')
+                        '\'' -> resultString.append('\'')
+                        '"' -> resultString.append('"')
+                        SIMPLE_UNICODE_PREFIX, COMPLEX_UNICODE_PREFIX ->
+                            offset += resultString.appendEscapedUnicode(this, next, i + 2, lineNo)
                         else -> throw ParseException(
                             "According to TOML documentation unknown" +
                                     " escape symbols are not allowed. Please check: [\\$next]",
                             lineNo
                         )
                     }
-                    offset++
-                    if (simpleEscape != null) {
-                        resultString.append(simpleEscape)
-                    } else {
-                        // Unicode
-                        val nbUnicodeChars = if (next == 'u') 4 else 8
-                        offset += nbUnicodeChars
-                        if (i + 1 + nbUnicodeChars >= length) {
-                            val invalid = substring(i + 1)
-                            throw ParseException(
-                                "According to TOML documentation unknown" +
-                                        " escape symbols are not allowed. Please check: [\\$invalid]",
-                                lineNo
-                            )
-                        }
-                        val hexCode = substring(i + 2, i + 2 + nbUnicodeChars)
-                        val codePoint = hexCode.toInt(16)
-                        try {
-                            resultString.appendCodePointCompat(codePoint)
-                        } catch (e: IllegalArgumentException) {
-                            throw ParseException(
-                                "According to TOML documentation unknown" +
-                                        " escape symbols are not allowed. Please check: [\\$next$hexCode]",
-                                lineNo
-                            )
-                        }
-                    }
                 } else {
-                    resultString.append(c)
+                    resultString.append(currentChar)
                 }
                 i += offset
             }
             return resultString.toString()
+        }
+
+        private fun StringBuilder.appendEscapedUnicode(
+            fullString: String,
+            marker: Char,
+            codeStartIndex: Int,
+            lineNo: Int
+        ): Int {
+            val nbUnicodeChars = if (marker == SIMPLE_UNICODE_PREFIX) {
+                SIMPLE_UNICODE_LENGTH
+            } else {
+                COMPLEX_UNICODE_LENGTH
+            }
+            if (codeStartIndex + nbUnicodeChars > fullString.length) {
+                val invalid = fullString.substring(codeStartIndex - 1)
+                throw ParseException(
+                    "According to TOML documentation unknown" +
+                            " escape symbols are not allowed. Please check: [\\$invalid]",
+                    lineNo
+                )
+            }
+            val hexCode = fullString.substring(codeStartIndex, codeStartIndex + nbUnicodeChars)
+            val codePoint = hexCode.toInt(HEX_RADIX)
+            try {
+                appendCodePointCompat(codePoint)
+            } catch (e: IllegalArgumentException) {
+                throw ParseException(
+                    "According to TOML documentation unknown" +
+                            " escape symbols are not allowed. Please check: [\\$marker$hexCode]",
+                    lineNo
+                )
+            }
+            return nbUnicodeChars
         }
     }
 }
