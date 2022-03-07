@@ -97,6 +97,9 @@ class ValueParserTest {
         test = TomlKeyValuePrimitive("a" to "\"\uD83D\uDE15 is emoji\"", 0)
         assertEquals("\uD83D\uDE15 is emoji", test.value.content)
 
+        test = TomlKeyValuePrimitive("a" to "\"I'm a string. \\\"You can quote me\\\". Name\\tJos\\u00E9\\nLocation\\tSF.\"", 0)
+        assertEquals("I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.", test.value.content)
+
         // regression test related to comments with an equals symbol after it
         var pairTest =
             "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0)
