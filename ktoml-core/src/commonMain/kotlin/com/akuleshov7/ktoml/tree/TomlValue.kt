@@ -9,6 +9,7 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
+import com.akuleshov7.ktoml.utils.appendCodePointCompat
 import kotlinx.datetime.*
 
 /**
@@ -104,13 +105,14 @@ internal constructor(
 
         private fun String.convertSpecialCharacters(lineNo: Int): String {
             val resultString = StringBuilder()
-            var updatedOnPreviousStep = false
             var i = 0
-            while (i < this.length) {
-                val newCharacter = if (this[i] == '\\' && i != this.length - 1) {
-                    updatedOnPreviousStep = true
-                    when (this[i + 1]) {
-                        // table that is used to convert escaped string literals to proper char symbols
+            while (i < length) {
+                val c = get(i)
+                var offset = 1
+                if (c == '\\' && i != lastIndex) {
+                    // Escaped
+                    val next = get(i + 1)
+                    val simpleEscape = when (next) {
                         't' -> '\t'
                         'b' -> '\b'
                         'r' -> '\r'
@@ -118,24 +120,44 @@ internal constructor(
                         '\\' -> '\\'
                         '\'' -> '\''
                         '"' -> '"'
+                        'u', 'U' -> null
                         else -> throw ParseException(
                             "According to TOML documentation unknown" +
-                                    " escape symbols are not allowed. Please check: [\\${this[i + 1]}]",
+                                    " escape symbols are not allowed. Please check: [\\$next]",
                             lineNo
                         )
                     }
+                    offset++
+                    if (simpleEscape != null) {
+                        resultString.append(simpleEscape)
+                    } else {
+                        // Unicode
+                        val nbUnicodeChars = if (next == 'u') 4 else 8
+                        offset += nbUnicodeChars
+                        if (i + 1 + nbUnicodeChars >= length) {
+                            val invalid = substring(i + 1)
+                            throw ParseException(
+                                "According to TOML documentation unknown" +
+                                        " escape symbols are not allowed. Please check: [\\$invalid]",
+                                lineNo
+                            )
+                        }
+                        val hexCode = substring(i + 2, i + 2 + nbUnicodeChars)
+                        val codePoint = hexCode.toInt(16)
+                        try {
+                            resultString.appendCodePointCompat(codePoint)
+                        } catch (e: IllegalArgumentException) {
+                            throw ParseException(
+                                "According to TOML documentation unknown" +
+                                        " escape symbols are not allowed. Please check: [\\$next$hexCode]",
+                                lineNo
+                            )
+                        }
+                    }
                 } else {
-                    this[i]
+                    resultString.append(c)
                 }
-                // need to skip the next character if we have processed special escaped symbol
-                if (updatedOnPreviousStep) {
-                    updatedOnPreviousStep = false
-                    i += 2
-                } else {
-                    i += 1
-                }
-
-                resultString.append(newCharacter)
+                i += offset
             }
             return resultString.toString()
         }

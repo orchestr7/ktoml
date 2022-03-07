@@ -85,6 +85,18 @@ class ValueParserTest {
         test = TomlKeyValuePrimitive(Pair("a", "\"hello\t\\\\\\\\world\""), 0)
         assertEquals("hello\t\\\\world", test.value.content)
 
+        test = TomlKeyValuePrimitive("a" to "\"Ɣ is greek\"", 0)
+        assertEquals("Ɣ is greek", test.value.content)
+
+        test = TomlKeyValuePrimitive("a" to "\"\\u0194 is greek\"", 0)
+        assertEquals("Ɣ is greek", test.value.content)
+
+        test = TomlKeyValuePrimitive("a" to "\"\\U0001F615 is emoji\"", 0)
+        assertEquals("\uD83D\uDE15 is emoji", test.value.content)
+
+        test = TomlKeyValuePrimitive("a" to "\"\uD83D\uDE15 is emoji\"", 0)
+        assertEquals("\uD83D\uDE15 is emoji", test.value.content)
+
         // regression test related to comments with an equals symbol after it
         var pairTest =
             "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0)
@@ -104,6 +116,18 @@ class ValueParserTest {
                 Pair("a", "\"\\hello tworld\""),
                 0
             )
+        }
+        assertFailsWith<ParseException> {
+            TomlKeyValuePrimitive("a" to "val\\ue", 0)
+        }
+        assertFailsWith<ParseException> {
+            TomlKeyValuePrimitive("a" to "\\x33", 0)
+        }
+        assertFailsWith<ParseException> {
+            TomlKeyValuePrimitive("a" to "\\UFFFFFFFF", 0)
+        }
+        assertFailsWith<ParseException> {
+            TomlKeyValuePrimitive("a" to "\\U00D80000", 0)
         }
     }
 }

@@ -25,3 +25,5 @@ public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName
 
     return findPrimitiveTableInAstByName(children.map { it.children }.flatten(), fullTableName)
 }
+
+internal expect fun StringBuilder.appendCodePointCompat(codePoint: Int): StringBuilder
