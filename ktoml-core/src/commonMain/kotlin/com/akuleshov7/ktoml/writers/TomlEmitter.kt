@@ -1,11 +1,7 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.BINARY
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.HEX
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.OCTAL
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlin.jvm.JvmStatic
 
 /**
@@ -230,7 +226,7 @@ public abstract class TomlEmitter(config: TomlConfig) {
     /**
      * Emits an array/inline table element delimiter.
      */
-    public fun emitElementDelimiter(): Unit = emit(", ")
+    public fun emitElementDelimiter(): Unit = emit(",")
 
     /**
      * Emits a key-value delimiter.
