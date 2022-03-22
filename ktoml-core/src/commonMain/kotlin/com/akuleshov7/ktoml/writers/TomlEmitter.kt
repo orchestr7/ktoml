@@ -2,10 +2,10 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+import kotlin.jvm.JvmStatic
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlin.jvm.JvmStatic
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
@@ -226,6 +226,11 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @param date
      */
     public fun emitValue(date: LocalDate): Unit = emit(date.toString())
+
+    /**
+     * Emits a null value.
+     */
+    public fun emitNullValue(): Unit = emit("null")
 
     /**
      * Emits the array start character.
