@@ -2,6 +2,9 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlin.jvm.JvmStatic
 
 /**
@@ -202,6 +205,27 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @param boolean
      */
     public fun emitValue(boolean: Boolean): Unit = emit(boolean.toString())
+
+    /**
+     * Emits an [Instant] value.
+     *
+     * @param instant
+     */
+    public fun emitValue(instant: Instant): Unit = emit(instant.toString())
+
+    /**
+     * Emits a [LocalDateTime] value.
+     *
+     * @param dateTime
+     */
+    public fun emitValue(dateTime: LocalDateTime): Unit = emit(dateTime.toString())
+
+    /**
+     * Emits a [LocalDate] value.
+     *
+     * @param date
+     */
+    public fun emitValue(date: LocalDate): Unit = emit(date.toString())
 
     /**
      * Emits the array start character.
