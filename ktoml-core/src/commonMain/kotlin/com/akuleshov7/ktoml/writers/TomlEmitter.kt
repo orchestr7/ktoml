@@ -189,10 +189,10 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @param float
      */
     public fun emitValue(float: Double): Unit =
-            emit(when (float) {
-                Double.NaN -> "nan"
-                Double.POSITIVE_INFINITY -> "inf"
-                Double.NEGATIVE_INFINITY -> "-inf"
+            emit(when {
+                float.isNaN() -> "nan"
+                float.isInfinite() ->
+                    if (float > 0) "inf" else "-inf"
                 else -> float.toString()
             })
 
