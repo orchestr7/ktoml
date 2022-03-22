@@ -310,7 +310,7 @@ internal constructor(
         /**
          * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]
          */
-        @Suppress("TOO_MANY_LINES_IN_LAMBDA")
+        @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
         private fun String.parseArray(): MutableList<String> {
             // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
             if (this.trimBrackets().isBlank()) {
@@ -325,20 +325,20 @@ internal constructor(
 
             val trimmed = trimBrackets()
             for (i in trimmed.indices) {
-                when (val c = trimmed[i]) {
+                when (val current = trimmed[i]) {
                     '[' -> {
                         nbBrackets++
-                        bufferBetweenCommas.append(c)
+                        bufferBetweenCommas.append(current)
                     }
                     ']' -> {
                         nbBrackets--
-                        bufferBetweenCommas.append(c)
+                        bufferBetweenCommas.append(current)
                     }
                     '\'' -> {
                         if (!isInBasicString) {
                             isInLiteralString = !isInLiteralString
                         }
-                        bufferBetweenCommas.append(c)
+                        bufferBetweenCommas.append(current)
                     }
                     '"' -> {
                         if (!isInLiteralString) {
@@ -348,17 +348,17 @@ internal constructor(
                                 isInBasicString = false
                             }
                         }
-                        bufferBetweenCommas.append(c)
+                        bufferBetweenCommas.append(current)
                     }
                     // split only if we are on the highest level of brackets (all brackets are closed)
                     // and if we're not in a string
                     ',' -> if (isInBasicString || isInLiteralString || nbBrackets != 0) {
-                        bufferBetweenCommas.append(c)
+                        bufferBetweenCommas.append(current)
                     } else {
                         result.add(bufferBetweenCommas.toString())
                         bufferBetweenCommas = StringBuilder()
                     }
-                    else -> bufferBetweenCommas.append(c)
+                    else -> bufferBetweenCommas.append(current)
                 }
             }
             result.add(bufferBetweenCommas.toString())
