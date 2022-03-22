@@ -14,6 +14,9 @@ import kotlin.test.assertFailsWith
 data class SimpleArray(val a: List<Long>)
 
 @Serializable
+data class SimpleStringArray(val a: List<String>)
+
+@Serializable
 data class NestedArray(val a: List<List<Long>>)
 
 @Serializable
@@ -153,5 +156,17 @@ class SimpleArrayDecoderTest {
         // FixMe: nested array decoding causes issues and is not supported yet
         val test = "a = [[1, 2],      [3,  4]]"
         assertEquals(NestedArray(listOf(listOf(1, 2), listOf(3, 4))), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testCommasInString() {
+        val test = "a = [\"yes, indeed\", \"hmm, hmm\"]"
+        assertEquals(SimpleStringArray(listOf("yes, indeed", "hmm, hmm")), Toml.decodeFromString(test))
+        val testSingleQuote = "a = ['yes, indeed', 'hmm, hmm']"
+        assertEquals(SimpleStringArray(listOf("yes, indeed", "hmm, hmm")), Toml.decodeFromString(testSingleQuote))
+        val testWithInternalQuote = "a = [\"yes, \\\"indeed\\\"\", \"hmm, 'hmm'\"]"
+        assertEquals(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, 'hmm'")), Toml.decodeFromString(testWithInternalQuote))
+        val testSingleWithInternalQuote = "a = ['yes, \"indeed\"', 'hmm, \"hmm\"']"
+        assertEquals(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, \"hmm\"")), Toml.decodeFromString(testSingleWithInternalQuote))
     }
 }
