@@ -6,6 +6,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
 
@@ -198,6 +199,8 @@ public sealed class TomlNode(
             this.appendChild(childTable)
         }
     }
+
+    public abstract fun write(emitter: TomlEmitter, config: TomlConfig = this.config)
 
     public companion object {
         // number of spaces that is used to indent levels
