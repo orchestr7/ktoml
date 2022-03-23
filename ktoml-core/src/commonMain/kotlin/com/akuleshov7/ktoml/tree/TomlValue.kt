@@ -6,10 +6,14 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
 import com.akuleshov7.ktoml.utils.appendCodePointCompat
+import com.akuleshov7.ktoml.utils.controlCharacterRegex
+import com.akuleshov7.ktoml.utils.unescapedBackslashRegex
+import com.akuleshov7.ktoml.writers.TomlEmitter
 import kotlinx.datetime.*
 
 /**
@@ -18,6 +22,20 @@ import kotlinx.datetime.*
  */
 public sealed class TomlValue(public val lineNo: Int) {
     public abstract var content: Any
+
+    /**
+     * Writes this value to the specified [emitter], optionally writing the value
+     * [multiline] (if supported by the value type).
+     *
+     * @param emitter
+     * @param config
+     * @param multiline
+     */
+    public abstract fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig = TomlConfig(),
+        multiline: Boolean = false
+    )
 }
 
 /**
@@ -36,6 +54,26 @@ internal constructor(
         lineNo: Int,
         config: TomlConfig = TomlConfig()
     ) : this(content.verifyAndTrimQuotes(lineNo, config), lineNo)
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        if (multiline) {
+            throw TomlWritingException(
+                "Multiline strings are not yet supported."
+            )
+        }
+
+        val content = content as String
+
+        emitter.emitValue(
+            content.escapeQuotesAndVerify(config),
+            isLiteral = true,
+            multiline
+        )
+    }
 
     public companion object {
         private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlConfig): Any =
@@ -58,6 +96,26 @@ internal constructor(
          * as the last symbol (single quote) will be removed.
          */
         private fun String.convertSingleQuotes(): String = this.replace("\\'", "'")
+
+        private fun String.escapeQuotesAndVerify(config: TomlConfig) =
+                when {
+                    controlCharacterRegex in this ->
+                        throw TomlWritingException(
+                            "Control characters (excluding tab) are not permitted" +
+                                    " in literal strings."
+                        )
+                    '\'' in this ->
+                        if (config.allowEscapedQuotesInLiteralStrings) {
+                            replace("'", "\\'")
+                        } else {
+                            throw TomlWritingException(
+                                "Single quotes are not permitted in literal string" +
+                                        " by default. Set allowEscapedQuotesInLiteral" +
+                                        "Strings to true in the config to ignore this."
+                            )
+                        }
+                    else -> this
+                }
     }
 }
 
@@ -74,6 +132,26 @@ internal constructor(
         content: String,
         lineNo: Int
     ) : this(content.verifyAndTrimQuotes(lineNo), lineNo)
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        if (multiline) {
+            throw TomlWritingException(
+                "Multiline strings are not yet supported."
+            )
+        }
+
+        val content = content as String
+
+        emitter.emitValue(
+            content.escapeSpecialCharacters(),
+            isLiteral = false,
+            multiline
+        )
+    }
 
     public companion object {
         private const val COMPLEX_UNICODE_LENGTH = 8
@@ -175,6 +253,28 @@ internal constructor(
             }
             return nbUnicodeChars
         }
+
+        private fun String.escapeSpecialCharacters(): String {
+            val withCtrlCharsEscaped = replace(controlCharacterRegex) { match ->
+                when (val char = match.value.single()) {
+                    '\b' -> "\\b"
+                    '\n' -> "\\n"
+                    '\u000C' -> "\\f"
+                    '\r' -> "\\r"
+                    else -> {
+                        val code = char.code
+
+                        val hexDigits = code.toString(HEX_RADIX)
+
+                        "\\$SIMPLE_UNICODE_PREFIX${
+                            hexDigits.padStart(SIMPLE_UNICODE_LENGTH, '0')
+                        }"
+                    }
+                }
+            }
+
+            return withCtrlCharsEscaped.replace(unescapedBackslashRegex, "\\\\")
+        }
     }
 }
 
@@ -188,6 +288,12 @@ internal constructor(
     lineNo: Int
 ) : TomlValue(lineNo) {
     public constructor(content: String, lineNo: Int) : this(content.toLong(), lineNo)
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ): Unit = emitter.emitValue(content as Long)
 }
 
 /**
@@ -202,6 +308,12 @@ internal constructor(
     lineNo: Int
 ) : TomlValue(lineNo) {
     public constructor(content: String, lineNo: Int) : this(content.toDouble(), lineNo)
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ): Unit = emitter.emitValue(content as Double)
 }
 
 /**
@@ -214,6 +326,12 @@ internal constructor(
     lineNo: Int
 ) : TomlValue(lineNo) {
     public constructor(content: String, lineNo: Int) : this(content.toBoolean(), lineNo)
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ): Unit = emitter.emitValue(content as Boolean)
 }
 
 /**
@@ -226,6 +344,19 @@ internal constructor(
     lineNo: Int
 ) : TomlValue(lineNo) {
     public constructor(content: String, lineNo: Int) : this(content.trim().parseToDateTime(), lineNo)
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        when (val content = content) {
+            is Instant -> emitter.emitValue(content)
+            is LocalDateTime -> emitter.emitValue(content)
+            is LocalDate -> emitter.emitValue(content)
+            else -> { }
+        }
+    }
 
     public companion object {
         private fun String.parseToDateTime(): Any = try {
@@ -254,6 +385,12 @@ internal constructor(
  */
 public class TomlNull(lineNo: Int) : TomlValue(lineNo) {
     override var content: Any = "null"
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ): Unit = emitter.emitNullValue()
 }
 
 /**
@@ -296,6 +433,52 @@ internal constructor(
                 lineNo
             )
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    public override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        emitter.startArray()
+
+        val content = content as List<TomlValue>
+
+        val last = content.lastIndex
+
+        if (multiline) {
+            emitter.indent()
+
+            content.forEachIndexed { i, value ->
+                emitter.emitNewLine()
+                emitter.emitIndent()
+
+                value.write(emitter, config, multiline = value is TomlArray)
+
+                if (i < last) {
+                    emitter.emitElementDelimiter()
+                }
+            }
+
+            emitter.dedent()
+            emitter.emitNewLine()
+            emitter.emitIndent()
+        } else {
+            content.forEachIndexed { i, value ->
+                emitter.emitWhitespace()
+
+                value.write(emitter, config)
+
+                if (i < last) {
+                    emitter.emitElementDelimiter()
+                }
+            }
+
+            emitter.emitWhitespace()
+        }
+
+        emitter.endArray()
     }
 
     public companion object {
