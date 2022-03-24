@@ -412,7 +412,7 @@ internal constructor(
         rawContent,
         lineNo
     ) {
-        validateBrackets()
+        validateQuotes()
     }
 
     /**
@@ -426,10 +426,10 @@ internal constructor(
     /**
      * small validation for quotes: each quote should be closed in a key
      */
-    private fun validateBrackets() {
+    private fun validateQuotes() {
         if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
             throw ParseException(
-                "Not able to parse the key: [$rawContent] as it does not have closing bracket",
+                "Not able to parse the key: [$rawContent] as it does not have closing quote",
                 lineNo
             )
         }
@@ -493,36 +493,55 @@ internal constructor(
         /**
          * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]
          */
-        @Suppress("TOO_MANY_LINES_IN_LAMBDA")
+        @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
         private fun String.parseArray(): MutableList<String> {
             // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
             if (this.trimBrackets().isBlank()) {
                 return mutableListOf()
             }
 
-            var numberOfOpenBrackets = 0
-            var numberOfClosedBrackets = 0
+            var nbBrackets = 0
+            var isInBasicString = false
+            var isInLiteralString = false
             var bufferBetweenCommas = StringBuilder()
             val result: MutableList<String> = mutableListOf()
 
-            this.trimBrackets().forEach {
-                when (it) {
+            val trimmed = trimBrackets()
+            for (i in trimmed.indices) {
+                when (val current = trimmed[i]) {
                     '[' -> {
-                        numberOfOpenBrackets++
-                        bufferBetweenCommas.append(it)
+                        nbBrackets++
+                        bufferBetweenCommas.append(current)
                     }
                     ']' -> {
-                        numberOfClosedBrackets++
-                        bufferBetweenCommas.append(it)
+                        nbBrackets--
+                        bufferBetweenCommas.append(current)
+                    }
+                    '\'' -> {
+                        if (!isInBasicString) {
+                            isInLiteralString = !isInLiteralString
+                        }
+                        bufferBetweenCommas.append(current)
+                    }
+                    '"' -> {
+                        if (!isInLiteralString) {
+                            if (!isInBasicString) {
+                                isInBasicString = true
+                            } else if (trimmed[i - 1] != '\\') {
+                                isInBasicString = false
+                            }
+                        }
+                        bufferBetweenCommas.append(current)
                     }
                     // split only if we are on the highest level of brackets (all brackets are closed)
-                    ',' -> if (numberOfClosedBrackets == numberOfOpenBrackets) {
+                    // and if we're not in a string
+                    ',' -> if (isInBasicString || isInLiteralString || nbBrackets != 0) {
+                        bufferBetweenCommas.append(current)
+                    } else {
                         result.add(bufferBetweenCommas.toString())
                         bufferBetweenCommas = StringBuilder()
-                    } else {
-                        bufferBetweenCommas.append(it)
                     }
-                    else -> bufferBetweenCommas.append(it)
+                    else -> bufferBetweenCommas.append(current)
                 }
             }
             result.add(bufferBetweenCommas.toString())

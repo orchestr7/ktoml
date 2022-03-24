@@ -7,8 +7,6 @@ package com.akuleshov7.ktoml.utils
 @Suppress("LONG_NUMERICAL_VALUES_SEPARATED")
 private const val MAX_CODE_POINT = 0x10FFFFf
 private const val MIN_SUPPLEMENTARY_CODE_POINT: Int = 0x10000
-private const val MIN_LOW_SURROGATE: Int = '\uDC00'.code
-private const val MIN_HIGH_SURROGATE: Int = '\uD800'.code
 
 @Suppress("MAGIC_NUMBER")
 internal actual fun StringBuilder.appendCodePointCompat(codePoint: Int): StringBuilder = when (codePoint) {
