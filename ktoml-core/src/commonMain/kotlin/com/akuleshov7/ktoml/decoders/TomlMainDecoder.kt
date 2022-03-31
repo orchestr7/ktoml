@@ -12,6 +12,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.elementNames
 import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -26,8 +27,8 @@ import kotlinx.serialization.modules.SerializersModule
 public class TomlMainDecoder(
     private val rootNode: TomlNode,
     private val config: TomlConfig,
+    private var elementIndex: Int = 0
 ) : TomlAbstractDecoder() {
-    private var elementIndex = 0
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeValue(): Any = decodeKeyValue().value.content
@@ -85,12 +86,10 @@ public class TomlMainDecoder(
     }
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
         if (isDecodingDone()) {
             return CompositeDecoder.DECODE_DONE
         }
 
-        // FixMe: error here for missing properties that are not required
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
         val currentProperty = descriptor.getElementIndex(currentNode.name)
         checkNullability(currentNode, currentProperty, descriptor)
@@ -98,6 +97,8 @@ public class TomlMainDecoder(
         // in case we have not found the key from the input in the list of property names in the class,
         // we need to throw exception or ignore this unknown property and find any known key to continue processing
         if (currentProperty == CompositeDecoder.UNKNOWN_NAME) {
+            // ignoreUnknown is a very important flag that controls if we will fail on unknown key in the input or not
+
             // if we have set an option for ignoring unknown names
             // OR in the input we had a technical node for empty tables (see the description to TomlStubEmptyNode)
             // then we need to iterate until we will find something known for us
@@ -174,50 +175,62 @@ public class TomlMainDecoder(
     }
 
     /**
+     * A hack that comes from a compiler plugin to process Inline (value) classes
+     */
+    override fun decodeInline(inlineDescriptor: SerialDescriptor): Decoder =
+            iterateOverStructure(inlineDescriptor, true)
+
+    /**
      * this method does all the iteration logic for processing code structures and collections
      * treat it as an !entry point! and the orchestrator of the decoding
      */
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = when (rootNode) {
-        is TomlFile -> {
-            checkMissingRequiredProperties(rootNode.children, descriptor)
-            val firstFileChild = rootNode.getFirstChild() ?: if (!config.allowEmptyToml) {
-                throw InternalDecodingException(
-                    "Missing child nodes (tables, key-values) for TomlFile." +
-                            " Was empty toml provided to the input?"
-                )
-            } else {
-                rootNode
-            }
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
+            iterateOverStructure(descriptor, false)
 
-            TomlMainDecoder(firstFileChild, config)
-        }
-        else -> {
-            // this is a little bit tricky index calculation, suggest not to change
-            // we are using the previous node to get all neighbour nodes:
-            // | (parentNode)
-            // |--- neighbourNodes: (current rootNode) (next node which we would like to process now)
-            val nextProcessingNode = rootNode
-                .getNeighbourNodes()
-                .elementAt(elementIndex - 1)
-
-            when (nextProcessingNode) {
-                is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
-                is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
-                is TomlTablePrimitive -> {
-                    val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
-                        "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
-                                " in a table <${nextProcessingNode.fullTableName}>"
+    /**
+     * Entry Point into the logic, core logic of the structure traversal and linking the data from TOML AST
+     * to the descriptor and vica-versa. Basically this logic is used to iterate through data structures and do processing.
+     */
+    private fun iterateOverStructure(descriptor: SerialDescriptor, inlineFunc: Boolean): TomlAbstractDecoder =
+            if (rootNode is TomlFile) {
+                checkMissingRequiredProperties(rootNode.children, descriptor)
+                val firstFileChild = rootNode.getFirstChild() ?: if (!config.allowEmptyToml) {
+                    throw InternalDecodingException(
+                        "Missing child nodes (tables, key-values) for TomlFile." +
+                                " Was empty toml provided to the input?"
                     )
-                    checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
-                    TomlMainDecoder(firstTableChild, config)
+                } else {
+                    rootNode
                 }
-                else -> throw InternalDecodingException(
-                    "Incorrect decoding state in the beginStructure()" +
-                            " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
-                )
+                // inline structures has a very specific logic for decoding. Kotlinx.serialization plugin generates specific code:
+                // 'decoder.decodeInline(this.getDescriptor()).decodeLong())'. So we need simply to increment
+                // our element index by 1 (0 is the default value), because value/inline classes are always a wrapper over some SINGLE value.
+                if (inlineFunc) TomlMainDecoder(firstFileChild, config, 1) else TomlMainDecoder(firstFileChild, config, 0)
+            } else {
+                // this is a tricky index calculation, suggest not to change. We are using the previous node to get all neighbour nodes:
+                // | (parentNode)
+                // |--- neighbourNodes: (current rootNode) (next node which we would like to process now)
+                val nextProcessingNode = rootNode
+                    .getNeighbourNodes()
+                    .elementAt(elementIndex - 1)
+
+                when (nextProcessingNode) {
+                    is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
+                    is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
+                    is TomlTablePrimitive -> {
+                        val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
+                            "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
+                                    " in a table <${nextProcessingNode.fullTableName}>"
+                        )
+                        checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
+                        TomlMainDecoder(firstTableChild, config)
+                    }
+                    else -> throw InternalDecodingException(
+                        "Incorrect decoding state in the beginStructure()" +
+                                " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
+                    )
+                }
             }
-        }
-    }
 
     public companion object {
         /**
