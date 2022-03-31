@@ -20,6 +20,10 @@ import okio.buffer
 internal fun readAndParseFile(tomlFile: String): List<String> {
     try {
         val tomlPath = tomlFile.toPath()
+        val extension = tomlPath.name.substringAfterLast('.', "")
+        check(extension == "toml") {
+            "TOML file should end with a .toml extension"
+        }
         return getOsSpecificFileSystem().read(tomlPath) {
             // FixMe: may be we need to read and at the same time parse (to make it parallel)
             generateSequence { readUtf8Line() }.toList()
