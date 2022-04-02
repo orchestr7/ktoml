@@ -104,6 +104,10 @@ internal constructor(
                             "Control characters (excluding tab) are not permitted" +
                                     " in literal strings."
                         )
+                    '\\' in this ->
+                        throw TomlWritingException(
+                            "Escapes are not allowed in literal strings."
+                        )
                     '\'' in this ->
                         if (config.allowEscapedQuotesInLiteralStrings) {
                             replace("'", "\\'")
@@ -273,7 +277,10 @@ internal constructor(
                 }
             }
 
-            return withCtrlCharsEscaped.replace(unescapedBackslashRegex, "\\\\")
+            return withCtrlCharsEscaped.replace(
+                unescapedBackslashRegex,
+                Regex.escapeReplacement("\\\\")
+            )
         }
     }
 }
@@ -443,7 +450,13 @@ internal constructor(
     ) {
         emitter.startArray()
 
-        val content = content as List<TomlValue>
+        val content = (content as List<Any>).map {
+            if (it is List<*>) {
+                TomlArray(it, "", 0)
+            } else {
+                it as TomlValue
+            }
+        }
 
         val last = content.lastIndex
 

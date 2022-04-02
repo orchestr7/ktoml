@@ -91,11 +91,11 @@ public class TomlInlineTable(
         emitter.startInlineTable()
 
         tomlKeyValues.forEachIndexed { i, pair ->
-            emitter.emitWhitespace()
-
             if (i > 0) {
                 emitter.emitElementDelimiter()
             }
+
+            emitter.emitWhitespace()
 
             pair.write(emitter, config)
         }

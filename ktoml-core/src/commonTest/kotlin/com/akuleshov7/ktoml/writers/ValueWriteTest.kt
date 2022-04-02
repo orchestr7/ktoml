@@ -27,13 +27,14 @@ class PrimitiveValueWriteTest {
         testTomlValueFailure(TomlLiteralString("\\\" escapes\\n \\\"" as Any, 0))
 
         // Escaped single quotes
-        val escapedSingleQuotes = TomlLiteralString("\\'escaped quotes\\'" as Any, 0)
 
-        testTomlValueFailure(escapedSingleQuotes)
+        val disallowQuotes = TomlConfig(allowEscapedQuotesInLiteralStrings = false)
 
-        val allowQuotes = TomlConfig(allowEscapedQuotesInLiteralStrings = true)
+        val escapedSingleQuotes = TomlLiteralString("'escaped quotes'" as Any, 0)
 
-        testTomlValue(escapedSingleQuotes, "'\\'escaped quotes\\''", allowQuotes)
+        testTomlValueFailure(escapedSingleQuotes, disallowQuotes)
+
+        testTomlValue(escapedSingleQuotes, "'\\'escaped quotes\\''")
     }
 
     @Test
