@@ -2,10 +2,10 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
-import kotlin.jvm.JvmStatic
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlin.jvm.JvmStatic
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
@@ -128,12 +128,12 @@ public abstract class TomlEmitter(config: TomlConfig) {
     /**
      * Emits the table array header start characters.
      */
-    public fun emitTableArrayHeaderStart(): Unit = emit("[[")
+    public fun startTableArrayHeader(): Unit = emit("[[")
 
     /**
      * Emits the table array header end characters.
      */
-    public fun emitTableArrayHeaderEnd(): Unit = emit("]]")
+    public fun endTableArrayHeader(): Unit = emit("]]")
 
     /**
      * Emit a string value, optionally making it literal and/or multiline.
