@@ -200,7 +200,18 @@ public sealed class TomlNode(
         }
     }
 
-    public abstract fun write(emitter: TomlEmitter, config: TomlConfig = this.config)
+    /**
+     * Writes this node as text to [emitter].
+     *
+     * @param emitter The [TomlEmitter] instance to write to.
+     * @param config The [TomlConfig] instance. Defaults to the node's config.
+     * @param multiline Whether to write the node over multiple lines, if possible.
+     */
+    public abstract fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig = this.config,
+        multiline: Boolean = false
+    )
 
     public companion object {
         // number of spaces that is used to indent levels

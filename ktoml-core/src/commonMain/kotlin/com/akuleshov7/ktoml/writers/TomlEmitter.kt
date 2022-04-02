@@ -2,10 +2,11 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+
+import kotlin.jvm.JvmStatic
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlin.jvm.JvmStatic
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
