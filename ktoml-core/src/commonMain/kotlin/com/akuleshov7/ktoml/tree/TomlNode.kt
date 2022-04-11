@@ -213,6 +213,30 @@ public sealed class TomlNode(
         multiline: Boolean = false
     )
 
+    protected open fun TomlEmitter.writeChildren(
+        children: List<TomlNode>,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        val last = children.lastIndex
+
+        children.forEachIndexed { i, child ->
+            emitIndent()
+            child.write(emitter = this, config, multiline)
+
+            if (i < last) {
+                emitNewLine()
+
+                // Primitive pairs have a single newline after, except when a table
+                // follows.
+                if (child !is TomlKeyValuePrimitive ||
+                    children[i + 1] is TomlTable) {
+                    emitNewLine()
+                }
+            }
+        }
+    }
+
     public companion object {
         // number of spaces that is used to indent levels
         internal const val INDENTING_LEVEL = 4

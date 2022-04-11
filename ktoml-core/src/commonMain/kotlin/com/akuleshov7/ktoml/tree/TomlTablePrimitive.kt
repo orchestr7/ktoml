@@ -10,6 +10,7 @@ import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * tablesList - a list of names of sections (tables) that are included into this particular TomlTable
@@ -63,6 +64,65 @@ public class TomlTablePrimitive(
         name = sectionsList.last().trimQuotes()
         tablesList = sectionsList.mapIndexed { index, _ ->
             (0..index).joinToString(".") { sectionsList[it] }
+        }
+    }
+
+    override fun TomlEmitter.writeHeader(
+        headerKey: TomlKey,
+        config: TomlConfig
+    ) {
+        startTableHeader()
+
+        headerKey.write(emitter = this, config)
+
+        endTableHeader()
+    }
+
+    override fun TomlEmitter.writeChildren(
+        headerKey: TomlKey,
+        children: List<TomlNode>,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        fun TomlNode.isPair() =
+                this is TomlKeyValue ||
+                this is TomlInlineTable
+
+        val last = children.lastIndex
+
+        var prevChild: TomlNode? = null
+
+        children.forEachIndexed { i, child ->
+            // Declare the super table after a nested table, to avoid a pair being
+            // a part of the previous table by mistake.
+            if (child.isPair() && prevChild is TomlTable) {
+                dedent()
+
+                emitIndent()
+                writeHeader(headerKey, config)
+                emitNewLine()
+
+                emitIndent()
+                child.write(emitter = this, config, multiline)
+
+                indent()
+            } else {
+                emitIndent()
+                child.write(emitter = this, config, multiline)
+            }
+
+            if (i < last) {
+                emitNewLine()
+
+                // Primitive pairs have a single newline after, except when a table
+                // follows.
+                if (child !is TomlKeyValuePrimitive ||
+                    children[i + 1] is TomlTable) {
+                    emitNewLine()
+                }
+            }
+
+            prevChild = child
         }
     }
 }

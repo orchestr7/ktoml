@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * this is a hack to cover empty TOML tables that have missing key-values
@@ -14,4 +15,10 @@ public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) :
     config
 ) {
     override val name: String = EMPTY_TECHNICAL_NODE
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) { }
 }
