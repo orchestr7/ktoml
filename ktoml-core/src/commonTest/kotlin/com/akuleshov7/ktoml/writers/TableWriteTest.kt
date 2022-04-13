@@ -66,16 +66,12 @@ class TableWriteTest {
             
             [c.a.b]
                 name = 3
-                
-            [c]
-                name = 5
             
                 [c.a.b.a.b.c]
                     test = 3
             
-            ["a.b.c"]
-            
-            a."a.b.c".d = 10
+            [c]
+                name = 5
         """.trimIndent()
 
         testTable(toml)

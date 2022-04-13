@@ -34,6 +34,7 @@ public abstract class TomlTable(
         multiline: Boolean
     ) {
         // Todo: Option to explicitly define super tables?
+        // Todo: Support dotted key-value pairs (i.e. a.b.c.d = 7)
 
         // Determines whether the table should be explicitly defined. Synthetic
         // tables are implicit except when:
@@ -41,11 +42,11 @@ public abstract class TomlTable(
         //    dotted pairs)
         //  - the table is empty
         fun isExplicit(
-            children: List<TomlNode>
+            firstChild: TomlNode
         ) = if (!isSynthetic) {
             true
         } else {
-            when (children.first()) {
+            when (firstChild) {
                 is TomlStubEmptyNode -> true
                 is TomlKeyValue,
                 is TomlInlineTable -> children.size > 1
@@ -57,10 +58,12 @@ public abstract class TomlTable(
 
         val key = TomlKey(fullTableName, 0)
 
-        if (isExplicit(children) && type == TableType.PRIMITIVE) {
+        val firstChild = children.first()
+
+        if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
             emitter.writeHeader(key, config)
 
-            if (children.isNotEmpty()) {
+            if (firstChild !is TomlStubEmptyNode) {
                 emitter.emitNewLine()
             }
 

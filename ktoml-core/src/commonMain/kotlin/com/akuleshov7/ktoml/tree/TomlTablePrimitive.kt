@@ -84,32 +84,33 @@ public class TomlTablePrimitive(
         config: TomlConfig,
         multiline: Boolean
     ) {
-        fun TomlNode.isPair() =
-                this is TomlKeyValue ||
-                this is TomlInlineTable
+        if (children.first() is TomlStubEmptyNode) return
 
         val last = children.lastIndex
 
         var prevChild: TomlNode? = null
 
         children.forEachIndexed { i, child ->
-            // Declare the super table after a nested table, to avoid a pair being
-            // a part of the previous table by mistake.
-            if (child.isPair() && prevChild is TomlTable) {
-                dedent()
+            if (child is TomlKeyValue || child is TomlInlineTable) {
+                // Declare the super table after a nested table, to avoid a pair being
+                // a part of the previous table by mistake.
+                if (prevChild is TomlTable) {
+                    dedent()
 
-                emitIndent()
-                writeHeader(headerKey, config)
-                emitNewLine()
+                    emitIndent()
+                    writeHeader(headerKey, config)
+                    emitNewLine()
 
-                emitIndent()
-                child.write(emitter = this, config, multiline)
-
-                indent()
-            } else {
-                emitIndent()
-                child.write(emitter = this, config, multiline)
+                    indent()
+                    indent()
+                }
             }
+
+            if (child !is TomlTable || (!child.isSynthetic && child.getFirstChild() !is TomlTable)) {
+                emitIndent()
+            }
+
+            child.write(emitter = this, config, multiline)
 
             if (i < last) {
                 emitNewLine()
