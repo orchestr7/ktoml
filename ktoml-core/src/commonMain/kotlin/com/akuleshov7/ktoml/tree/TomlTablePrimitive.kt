@@ -84,26 +84,27 @@ public class TomlTablePrimitive(
         config: TomlConfig,
         multiline: Boolean
     ) {
-        if (children.first() is TomlStubEmptyNode) return
+        if (children.first() is TomlStubEmptyNode) {
+            return
+        }
 
         val last = children.lastIndex
 
         var prevChild: TomlNode? = null
 
         children.forEachIndexed { i, child ->
-            if (child is TomlKeyValue || child is TomlInlineTable) {
-                // Declare the super table after a nested table, to avoid a pair being
-                // a part of the previous table by mistake.
-                if (prevChild is TomlTable) {
-                    dedent()
+            // Declare the super table after a nested table, to avoid a pair being
+            // a part of the previous table by mistake.
+            if ((child is TomlKeyValue || child is TomlInlineTable) &&
+                    prevChild is TomlTable) {
+                dedent()
 
-                    emitIndent()
-                    writeHeader(headerKey, config)
-                    emitNewLine()
+                emitIndent()
+                writeHeader(headerKey, config)
+                emitNewLine()
 
-                    indent()
-                    indent()
-                }
+                indent()
+                indent()
             }
 
             if (child !is TomlTable || (!child.isSynthetic && child.getFirstChild() !is TomlTable)) {
@@ -118,7 +119,7 @@ public class TomlTablePrimitive(
                 // Primitive pairs have a single newline after, except when a table
                 // follows.
                 if (child !is TomlKeyValuePrimitive ||
-                    children[i + 1] is TomlTable) {
+                        children[i + 1] is TomlTable) {
                     emitNewLine()
                 }
             }

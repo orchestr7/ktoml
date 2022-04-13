@@ -14,6 +14,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property config - toml configuration
  * @property isSynthetic
  */
+@Suppress("COMMENT_WHITE_SPACE")
 public abstract class TomlTable(
     override val content: String,
     override val lineNo: Int,
@@ -35,24 +36,6 @@ public abstract class TomlTable(
     ) {
         // Todo: Option to explicitly define super tables?
         // Todo: Support dotted key-value pairs (i.e. a.b.c.d = 7)
-
-        // Determines whether the table should be explicitly defined. Synthetic
-        // tables are implicit except when:
-        //  - the first child is a pair, and there are other children (to exclude
-        //    dotted pairs)
-        //  - the table is empty
-        fun isExplicit(
-            firstChild: TomlNode
-        ) = if (!isSynthetic) {
-            true
-        } else {
-            when (firstChild) {
-                is TomlStubEmptyNode -> true
-                is TomlKeyValue,
-                is TomlInlineTable -> children.size > 1
-                else -> false
-            }
-        }
 
         val children = children
 
@@ -88,6 +71,26 @@ public abstract class TomlTable(
         headerKey: TomlKey,
         config: TomlConfig
     )
+
+    /**
+     * Determines whether the table should be explicitly defined. Synthetic tables
+     * are implicit except when:
+     *  - the first child is a pair, and there are other children (to exclude
+     *    dotted pairs)
+     *  - the table is empty
+     */
+    private fun isExplicit(
+        firstChild: TomlNode
+    ) = if (!isSynthetic) {
+        true
+    } else {
+        when (firstChild) {
+            is TomlStubEmptyNode -> true
+            is TomlKeyValue,
+            is TomlInlineTable -> children.size > 1
+            else -> false
+        }
+    }
 }
 
 /**
