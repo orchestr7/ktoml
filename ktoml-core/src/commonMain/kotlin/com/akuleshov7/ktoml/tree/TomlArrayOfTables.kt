@@ -10,6 +10,7 @@ import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class representing array of tables
@@ -65,6 +66,56 @@ public class TomlArrayOfTables(
             (0..index).joinToString(".") { sectionsList[it] }
         }
     }
+
+    override fun TomlEmitter.writeHeader(headerKey: TomlKey, config: TomlConfig) {
+        startTableArrayHeader()
+
+        headerKey.write(emitter = this, config)
+
+        endTableArrayHeader()
+    }
+
+    override fun TomlEmitter.writeChildren(
+        headerKey: TomlKey,
+        children: List<TomlNode>,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        val last = children.lastIndex
+
+        children.forEachIndexed { i, child ->
+            if (child is TomlArrayOfTablesElement) {
+                if (parent !is TomlArrayOfTablesElement) {
+                    emitIndent()
+                }
+
+                writeHeader(headerKey, config)
+
+                if (!child.hasNoChildren()) {
+                    emitNewLine()
+                }
+
+                indent()
+
+                child.write(emitter = this, config, multiline)
+
+                dedent()
+
+                if (i < last) {
+                    emitNewLine()
+
+                    // Primitive pairs have a single newline after, except when a
+                    // table follows.
+                    if (child !is TomlKeyValuePrimitive ||
+                            children[i + 1] is TomlTable) {
+                        emitNewLine()
+                    }
+                }
+            } else {
+                child.write(emitter = this, config, multiline)
+            }
+        }
+    }
 }
 
 /**
@@ -76,4 +127,10 @@ public class TomlArrayOfTablesElement(lineNo: Int, config: TomlConfig = TomlConf
     config
 ) {
     override val name: String = EMPTY_TECHNICAL_NODE
+
+    override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ): Unit = emitter.writeChildren(children, config, multiline)
 }
