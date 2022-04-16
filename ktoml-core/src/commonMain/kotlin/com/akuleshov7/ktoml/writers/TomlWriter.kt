@@ -14,8 +14,13 @@ public value class TomlWriter(private val config: TomlConfig) {
         stringBuilder: StringBuilder = StringBuilder()
     ): String = "${write(file, stringBuilder)}"
 
+    public fun write(
+        file: TomlFile,
+        emitter: TomlEmitter
+    ): Unit = file.write(emitter, config)
+
     private fun write(file: TomlFile, stringBuilder: StringBuilder): StringBuilder {
-        file.write(TomlStringEmitter(stringBuilder, config), config)
+        write(file, TomlStringEmitter(stringBuilder, config))
 
         return stringBuilder
     }
