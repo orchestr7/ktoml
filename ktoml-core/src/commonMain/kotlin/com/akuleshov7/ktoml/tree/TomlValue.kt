@@ -300,7 +300,9 @@ internal constructor(
         emitter: TomlEmitter,
         config: TomlConfig,
         multiline: Boolean
-    ): Unit = emitter.emitValue(content as Long)
+    ) {
+        emitter.emitValue(content as Long)
+    }
 }
 
 /**
@@ -320,7 +322,9 @@ internal constructor(
         emitter: TomlEmitter,
         config: TomlConfig,
         multiline: Boolean
-    ): Unit = emitter.emitValue(content as Double)
+    ) {
+        emitter.emitValue(content as Double)
+    }
 }
 
 /**
@@ -338,7 +342,9 @@ internal constructor(
         emitter: TomlEmitter,
         config: TomlConfig,
         multiline: Boolean
-    ): Unit = emitter.emitValue(content as Boolean)
+    ) {
+        emitter.emitValue(content as Boolean)
+    }
 }
 
 /**
@@ -397,7 +403,9 @@ public class TomlNull(lineNo: Int) : TomlValue(lineNo) {
         emitter: TomlEmitter,
         config: TomlConfig,
         multiline: Boolean
-    ): Unit = emitter.emitNullValue()
+    ) {
+        emitter.emitNullValue()
+    }
 }
 
 /**
@@ -465,7 +473,7 @@ internal constructor(
 
             content.forEachIndexed { i, value ->
                 emitter.emitNewLine()
-                emitter.emitIndent()
+                    .emitIndent()
 
                 value.write(emitter, config, multiline = value is TomlArray)
 
@@ -476,7 +484,7 @@ internal constructor(
 
             emitter.dedent()
             emitter.emitNewLine()
-            emitter.emitIndent()
+                .emitIndent()
         } else {
             content.forEachIndexed { i, value ->
                 emitter.emitWhitespace()

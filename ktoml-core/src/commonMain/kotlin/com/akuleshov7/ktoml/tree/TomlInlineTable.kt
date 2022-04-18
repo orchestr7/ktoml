@@ -87,8 +87,7 @@ public class TomlInlineTable(
         key.write(emitter, config)
 
         emitter.emitPairDelimiter()
-
-        emitter.startInlineTable()
+            .startInlineTable()
 
         tomlKeyValues.forEachIndexed { i, pair ->
             if (i > 0) {
@@ -101,6 +100,6 @@ public class TomlInlineTable(
         }
 
         emitter.emitWhitespace()
-        emitter.endInlineTable()
+            .endInlineTable()
     }
 }
