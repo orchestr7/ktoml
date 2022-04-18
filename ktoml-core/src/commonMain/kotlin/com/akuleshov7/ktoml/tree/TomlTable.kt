@@ -37,8 +37,6 @@ public abstract class TomlTable(
         // Todo: Option to explicitly define super tables?
         // Todo: Support dotted key-value pairs (i.e. a.b.c.d = 7)
 
-        val children = children
-
         val key = TomlKey(fullTableName, 0)
 
         val firstChild = children.first()

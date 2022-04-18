@@ -20,5 +20,7 @@ public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) :
         emitter: TomlEmitter,
         config: TomlConfig,
         multiline: Boolean
-    ) { }
+    ) {
+        // Nothing to write in stub nodes.
+    }
 }
