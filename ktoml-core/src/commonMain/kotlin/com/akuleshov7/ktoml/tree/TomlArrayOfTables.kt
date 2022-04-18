@@ -106,8 +106,7 @@ public class TomlArrayOfTables(
 
                     // Primitive pairs have a single newline after, except when a
                     // table follows.
-                    if (child !is TomlKeyValuePrimitive ||
-                            children[i + 1] is TomlTable) {
+                    if (child !is TomlKeyValuePrimitive || children[i + 1] is TomlTable) {
                         emitNewLine()
                     }
                 }
