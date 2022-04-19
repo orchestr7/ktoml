@@ -367,7 +367,11 @@ internal constructor(
             is Instant -> emitter.emitValue(content)
             is LocalDateTime -> emitter.emitValue(content)
             is LocalDate -> emitter.emitValue(content)
-            else -> { }
+            else -> {
+                throw TomlWritingException(
+                    "Unknown date type ${content::class.simpleName}"
+                )
+            }
         }
     }
 
