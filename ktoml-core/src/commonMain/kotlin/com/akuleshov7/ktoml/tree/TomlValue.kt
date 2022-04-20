@@ -9,6 +9,7 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
+import com.akuleshov7.ktoml.utils.appendCodePointCompat
 import kotlinx.datetime.*
 
 /**
@@ -75,6 +76,12 @@ internal constructor(
     ) : this(content.verifyAndTrimQuotes(lineNo), lineNo)
 
     public companion object {
+        private const val COMPLEX_UNICODE_LENGTH = 8
+        private const val COMPLEX_UNICODE_PREFIX = 'U'
+        private const val HEX_RADIX = 16
+        private const val SIMPLE_UNICODE_LENGTH = 4
+        private const val SIMPLE_UNICODE_PREFIX = 'u'
+
         private fun String.verifyAndTrimQuotes(lineNo: Int): Any =
                 if (startsWith("\"") && endsWith("\"")) {
                     trimQuotes()
@@ -104,40 +111,69 @@ internal constructor(
 
         private fun String.convertSpecialCharacters(lineNo: Int): String {
             val resultString = StringBuilder()
-            var updatedOnPreviousStep = false
             var i = 0
-            while (i < this.length) {
-                val newCharacter = if (this[i] == '\\' && i != this.length - 1) {
-                    updatedOnPreviousStep = true
-                    when (this[i + 1]) {
-                        // table that is used to convert escaped string literals to proper char symbols
-                        't' -> '\t'
-                        'b' -> '\b'
-                        'r' -> '\r'
-                        'n' -> '\n'
-                        '\\' -> '\\'
-                        '\'' -> '\''
-                        '"' -> '"'
+            while (i < length) {
+                val currentChar = get(i)
+                var offset = 1
+                if (currentChar == '\\' && i != lastIndex) {
+                    // Escaped
+                    val next = get(i + 1)
+                    offset++
+                    when (next) {
+                        't' -> resultString.append('\t')
+                        'b' -> resultString.append('\b')
+                        'r' -> resultString.append('\r')
+                        'n' -> resultString.append('\n')
+                        '\\' -> resultString.append('\\')
+                        '\'' -> resultString.append('\'')
+                        '"' -> resultString.append('"')
+                        SIMPLE_UNICODE_PREFIX, COMPLEX_UNICODE_PREFIX ->
+                            offset += resultString.appendEscapedUnicode(this, next, i + 2, lineNo)
                         else -> throw ParseException(
                             "According to TOML documentation unknown" +
-                                    " escape symbols are not allowed. Please check: [\\${this[i + 1]}]",
+                                    " escape symbols are not allowed. Please check: [\\$next]",
                             lineNo
                         )
                     }
                 } else {
-                    this[i]
+                    resultString.append(currentChar)
                 }
-                // need to skip the next character if we have processed special escaped symbol
-                if (updatedOnPreviousStep) {
-                    updatedOnPreviousStep = false
-                    i += 2
-                } else {
-                    i += 1
-                }
-
-                resultString.append(newCharacter)
+                i += offset
             }
             return resultString.toString()
+        }
+
+        private fun StringBuilder.appendEscapedUnicode(
+            fullString: String,
+            marker: Char,
+            codeStartIndex: Int,
+            lineNo: Int
+        ): Int {
+            val nbUnicodeChars = if (marker == SIMPLE_UNICODE_PREFIX) {
+                SIMPLE_UNICODE_LENGTH
+            } else {
+                COMPLEX_UNICODE_LENGTH
+            }
+            if (codeStartIndex + nbUnicodeChars > fullString.length) {
+                val invalid = fullString.substring(codeStartIndex - 1)
+                throw ParseException(
+                    "According to TOML documentation unknown" +
+                            " escape symbols are not allowed. Please check: [\\$invalid]",
+                    lineNo
+                )
+            }
+            val hexCode = fullString.substring(codeStartIndex, codeStartIndex + nbUnicodeChars)
+            val codePoint = hexCode.toInt(HEX_RADIX)
+            try {
+                appendCodePointCompat(codePoint)
+            } catch (e: IllegalArgumentException) {
+                throw ParseException(
+                    "According to TOML documentation unknown" +
+                            " escape symbols are not allowed. Please check: [\\$marker$hexCode]",
+                    lineNo
+                )
+            }
+            return nbUnicodeChars
         }
     }
 }
@@ -239,7 +275,7 @@ internal constructor(
         rawContent,
         lineNo
     ) {
-        validateBrackets()
+        validateQuotes()
     }
 
     /**
@@ -253,10 +289,10 @@ internal constructor(
     /**
      * small validation for quotes: each quote should be closed in a key
      */
-    private fun validateBrackets() {
+    private fun validateQuotes() {
         if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
             throw ParseException(
-                "Not able to parse the key: [$rawContent] as it does not have closing bracket",
+                "Not able to parse the key: [$rawContent] as it does not have closing quote",
                 lineNo
             )
         }
@@ -274,36 +310,55 @@ internal constructor(
         /**
          * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]
          */
-        @Suppress("TOO_MANY_LINES_IN_LAMBDA")
+        @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
         private fun String.parseArray(): MutableList<String> {
             // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
             if (this.trimBrackets().isBlank()) {
                 return mutableListOf()
             }
 
-            var numberOfOpenBrackets = 0
-            var numberOfClosedBrackets = 0
+            var nbBrackets = 0
+            var isInBasicString = false
+            var isInLiteralString = false
             var bufferBetweenCommas = StringBuilder()
             val result: MutableList<String> = mutableListOf()
 
-            this.trimBrackets().forEach {
-                when (it) {
+            val trimmed = trimBrackets()
+            for (i in trimmed.indices) {
+                when (val current = trimmed[i]) {
                     '[' -> {
-                        numberOfOpenBrackets++
-                        bufferBetweenCommas.append(it)
+                        nbBrackets++
+                        bufferBetweenCommas.append(current)
                     }
                     ']' -> {
-                        numberOfClosedBrackets++
-                        bufferBetweenCommas.append(it)
+                        nbBrackets--
+                        bufferBetweenCommas.append(current)
+                    }
+                    '\'' -> {
+                        if (!isInBasicString) {
+                            isInLiteralString = !isInLiteralString
+                        }
+                        bufferBetweenCommas.append(current)
+                    }
+                    '"' -> {
+                        if (!isInLiteralString) {
+                            if (!isInBasicString) {
+                                isInBasicString = true
+                            } else if (trimmed[i - 1] != '\\') {
+                                isInBasicString = false
+                            }
+                        }
+                        bufferBetweenCommas.append(current)
                     }
                     // split only if we are on the highest level of brackets (all brackets are closed)
-                    ',' -> if (numberOfClosedBrackets == numberOfOpenBrackets) {
+                    // and if we're not in a string
+                    ',' -> if (isInBasicString || isInLiteralString || nbBrackets != 0) {
+                        bufferBetweenCommas.append(current)
+                    } else {
                         result.add(bufferBetweenCommas.toString())
                         bufferBetweenCommas = StringBuilder()
-                    } else {
-                        bufferBetweenCommas.append(it)
                     }
-                    else -> bufferBetweenCommas.append(it)
+                    else -> bufferBetweenCommas.append(current)
                 }
             }
             result.add(bufferBetweenCommas.toString())
