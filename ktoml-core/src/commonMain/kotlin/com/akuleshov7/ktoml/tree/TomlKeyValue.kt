@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.tree
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 private typealias ValueCreator = (String, Int) -> TomlValue
 
@@ -41,6 +42,18 @@ internal interface TomlKeyValue {
             config,
             true
         )
+    }
+
+    fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        key.write(emitter, config)
+
+        emitter.emitPairDelimiter()
+
+        value.write(emitter, config, multiline)
     }
 }
 

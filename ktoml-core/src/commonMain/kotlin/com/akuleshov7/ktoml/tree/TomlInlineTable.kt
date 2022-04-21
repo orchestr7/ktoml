@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.parseTomlKeyValue
 import com.akuleshov7.ktoml.parsers.trimCurlyBraces
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class for parsing and representing of inline tables: inline = { a = 5, b = 6 , c = 7 }
@@ -74,5 +75,31 @@ public class TomlInlineTable(
             }
         }
         return tomlTable
+    }
+
+    public override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        val key = TomlKey(name, 0)
+
+        key.write(emitter, config)
+
+        emitter.emitPairDelimiter()
+            .startInlineTable()
+
+        tomlKeyValues.forEachIndexed { i, pair ->
+            if (i > 0) {
+                emitter.emitElementDelimiter()
+            }
+
+            emitter.emitWhitespace()
+
+            pair.write(emitter, config)
+        }
+
+        emitter.emitWhitespace()
+            .endInlineTable()
     }
 }

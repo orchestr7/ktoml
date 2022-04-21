@@ -14,12 +14,16 @@ internal class TomlSinkEmitter(
     private val sink: BufferedSink,
     config: TomlConfig
 ) : TomlEmitter(config), Closeable {
-    override fun emit(fragment: String) {
+    override fun emit(fragment: String): TomlEmitter {
         sink.writeUtf8(fragment)
+
+        return this
     }
 
-    override fun emit(fragment: Char) {
+    override fun emit(fragment: Char): TomlEmitter {
         sink.writeUtf8CodePoint(fragment.code)
+
+        return this
     }
 
     override fun close(): Unit = sink.close()
