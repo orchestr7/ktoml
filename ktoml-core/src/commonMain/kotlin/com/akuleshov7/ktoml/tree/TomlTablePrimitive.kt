@@ -21,11 +21,15 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlTablePrimitive(
     content: String,
     lineNo: Int,
+    comments: List<String> = emptyList(),
+    inlineComment: String = "",
     config: TomlConfig = TomlConfig(),
     isSynthetic: Boolean = false
 ) : TomlTable(
     content,
     lineNo,
+    comments,
+    inlineComment,
     config,
     isSynthetic
 ) {

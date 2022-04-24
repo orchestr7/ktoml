@@ -17,11 +17,15 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
  *
  * @property content - original node content (used for logging and tests only)
  * @property lineNo - the number of a line from TOML that is linked to the current node
+ * @property comments Comments prepended to the current node
+ * @property inlineComment A comment appended to the end of the line
  * @property config
  */
 public sealed class TomlNode(
     public open val content: String,
     public open val lineNo: Int,
+    public val comments: List<String>,
+    public val inlineComment: String,
     public open val config: TomlConfig = TomlConfig()
 ) {
     public open val children: MutableList<TomlNode> = mutableListOf()
@@ -38,10 +42,14 @@ public sealed class TomlNode(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
+        comments: List<String>,
+        inlineComment: String,
         config: TomlConfig = TomlConfig()
     ) : this(
         "${key.content}=${value.content}",
         lineNo,
+        comments,
+        inlineComment,
         config
     )
 
@@ -133,9 +141,21 @@ public sealed class TomlNode(
                 } else {
                     // creating a synthetic (technical) fragment of the table
                     val newChildTableName = if (tomlTable is TomlArrayOfTables) {
-                        TomlArrayOfTables("[[$subTable]]", lineNo, config, true)
+                        TomlArrayOfTables(
+                            "[[$subTable]]",
+                            lineNo,
+                            config,
+                            true
+                        )
                     } else {
-                        TomlTablePrimitive("[$subTable]", lineNo, config, true)
+                        TomlTablePrimitive(
+                            "[$subTable]",
+                            lineNo,
+                            tomlTable.comments,
+                            tomlTable.inlineComment,
+                            config,
+                            true
+                        )
                     }
                     previousParent.determineParentAndInsertFragmentOfTable(newChildTableName)
                     newChildTableName

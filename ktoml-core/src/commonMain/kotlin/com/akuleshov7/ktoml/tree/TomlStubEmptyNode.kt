@@ -12,6 +12,8 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlStubEmptyNode(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
     EMPTY_TECHNICAL_NODE,
     lineNo,
+    comments = emptyList(),
+    inlineComment = "",
     config
 ) {
     override val name: String = EMPTY_TECHNICAL_NODE

@@ -26,6 +26,8 @@ public class TomlArrayOfTables(
 ) : TomlTable(
     content,
     lineNo,
+    comments = emptyList(),
+    inlineComment = "",
     config,
     isSynthetic
 ) {
@@ -120,9 +122,16 @@ public class TomlArrayOfTables(
 /**
  * This class is used to store elements of array of tables (bucket for key-value records)
  */
-public class TomlArrayOfTablesElement(lineNo: Int, config: TomlConfig = TomlConfig()) : TomlNode(
+public class TomlArrayOfTablesElement(
+    lineNo: Int,
+    comments: List<String>,
+    inlineComment: String,
+    config: TomlConfig = TomlConfig()
+) : TomlNode(
     EMPTY_TECHNICAL_NODE,
     lineNo,
+    comments,
+    inlineComment,
     config
 ) {
     override val name: String = EMPTY_TECHNICAL_NODE

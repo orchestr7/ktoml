@@ -40,18 +40,34 @@ public value class TomlParser(private val config: TomlConfig) {
         // here we always store the bucket of the latest created array of tables
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
+        val comments: MutableList<String> = mutableListOf()
+
         mutableTomlLines.forEachIndexed { index, line ->
             val lineNo = index + 1
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
             // because we need to calculate and save lineNo
-            if (!line.isComment() && !line.isEmptyLine()) {
+            if (line.isComment()) {
+                if (!config.ignoreComments) {
+                    comments += line.trimCommentLine()
+                }
+            } else if (!line.isEmptyLine()) {
+                // Parse the inline comment if any
+                val inlineComment = if (config.ignoreComments) {
+                    ""
+                } else {
+                    when (val hashIndex = line.indexOf('#')) {
+                        -1 -> ""
+                        else -> line.substring(hashIndex + 1).trim()
+                    }
+                }
+
                 if (line.isTableNode()) {
                     if (line.isArrayOfTables()) {
                         // TomlArrayOfTables contains all information about the ArrayOfTables ([[array of tables]])
                         val tableArray = TomlArrayOfTables(line, lineNo, config)
                         val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, latestCreatedBucket)
                         // creating a new empty element that will be used as an element in array and the parent for next key-value records
-                        val newArrayElement = TomlArrayOfTablesElement(lineNo, config)
+                        val newArrayElement = TomlArrayOfTablesElement(lineNo, comments.toList(), inlineComment, config)
                         // adding this element as a child to the array of tables
                         arrayOfTables.appendChild(newArrayElement)
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
@@ -62,7 +78,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         // here we set the bucket that will be incredibly useful when we will be inserting the next array of tables
                         latestCreatedBucket = newArrayElement
                     } else {
-                        val tableSection = TomlTablePrimitive(line, lineNo, config)
+                        val tableSection = TomlTablePrimitive(line, lineNo, comments.toList(), inlineComment, config)
                         // if the table is the last line in toml, then it has no children, and we need to
                         // add at least fake node as a child
                         if (index == mutableTomlLines.lastIndex) {
@@ -74,7 +90,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         currentParentalNode = tomlFileHead.insertTableToTree(tableSection)
                     }
                 } else {
-                    val keyValue = line.parseTomlKeyValue(lineNo, config)
+                    val keyValue = line.parseTomlKeyValue(lineNo, comments.toList(), inlineComment, config)
                     // inserting the key-value record to the tree
                     when {
                         keyValue is TomlKeyValue && keyValue.key.isDotted ->
@@ -94,6 +110,8 @@ public value class TomlParser(private val config: TomlConfig) {
                     }
                 }
             }
+
+            comments.clear()
         }
         return tomlFileHead
     }
@@ -118,6 +136,9 @@ public value class TomlParser(private val config: TomlConfig) {
         return this
     }
 
+    private fun String.trimCommentLine() =
+            trim().removePrefix("#").trimStart()
+
     private fun String.isArrayOfTables(): Boolean = this.trim().startsWith("[[")
 
     private fun String.isTableNode(): Boolean {
@@ -134,14 +155,21 @@ public value class TomlParser(private val config: TomlConfig) {
  * factory adaptor to split the logic of parsing simple values from the logic of parsing collections (like Arrays)
  *
  * @param lineNo
+ * @param comments
+ * @param inlineComment
  * @param config
  * @return parsed toml node
  */
-public fun String.parseTomlKeyValue(lineNo: Int, config: TomlConfig): TomlNode {
+public fun String.parseTomlKeyValue(
+    lineNo: Int,
+    comments: List<String>,
+    inlineComment: String,
+    config: TomlConfig
+): TomlNode {
     val keyValuePair = this.splitKeyValue(lineNo, config)
     return when {
-        keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, config)
-        keyValuePair.second.startsWith("{") -> TomlInlineTable(keyValuePair, lineNo, config)
-        else -> TomlKeyValuePrimitive(keyValuePair, lineNo, config)
+        keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, comments, inlineComment, config)
+        keyValuePair.second.startsWith("{") -> TomlInlineTable(keyValuePair, lineNo, comments, inlineComment, config)
+        else -> TomlKeyValuePrimitive(keyValuePair, lineNo, comments, inlineComment, config)
     }
 }

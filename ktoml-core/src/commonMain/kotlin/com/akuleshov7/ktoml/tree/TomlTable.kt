@@ -18,11 +18,15 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public abstract class TomlTable(
     override val content: String,
     override val lineNo: Int,
+    comments: List<String>,
+    inlineComment: String,
     override val config: TomlConfig = TomlConfig(),
     public val isSynthetic: Boolean = false
 ) : TomlNode(
     content,
     lineNo,
+    comments,
+    inlineComment,
     config
 ) {
     public abstract var fullTableName: String

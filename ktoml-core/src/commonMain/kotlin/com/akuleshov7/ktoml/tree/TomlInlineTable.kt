@@ -15,10 +15,14 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlInlineTable(
     private val keyValuePair: Pair<String, String>,
     lineNo: Int,
+    comments: List<String> = emptyList(),
+    inlineComment: String = "",
     config: TomlConfig = TomlConfig(),
 ) : TomlNode(
     "${keyValuePair.first} = ${keyValuePair.second}",
     lineNo,
+    comments,
+    inlineComment,
     config
 ) {
     override val name: String = keyValuePair.first
@@ -40,7 +44,7 @@ public class TomlInlineTable(
                 }
             }
             .split(",")
-            .map { it.parseTomlKeyValue(lineNo, config) }
+            .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
 
         return parsedList
     }
@@ -49,6 +53,8 @@ public class TomlInlineTable(
         val tomlTable = TomlTablePrimitive(
             "[${if (currentParentalNode is TomlTable) "${currentParentalNode.fullTableName}." else ""}${keyValuePair.first}]",
             lineNo,
+            comments,
+            inlineComment,
             config
         )
 

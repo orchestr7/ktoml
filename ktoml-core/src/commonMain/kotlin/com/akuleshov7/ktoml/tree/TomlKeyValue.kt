@@ -14,6 +14,8 @@ internal interface TomlKeyValue {
     var key: TomlKey
     val value: TomlValue
     val lineNo: Int
+    val comments: List<String>
+    val inlineComment: String
 
     /**
      * this is a small hack to support dotted keys
@@ -39,6 +41,8 @@ internal interface TomlKeyValue {
         return TomlTablePrimitive(
             "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",
             lineNo,
+            comments,
+            inlineComment,
             config,
             true
         )
