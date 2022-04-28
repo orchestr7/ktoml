@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class for parsing and storing Array of Tables in AST.
@@ -32,4 +33,10 @@ public class TomlKeyValueArray(
         lineNo,
         TomlKey(keyValuePair.first, lineNo).content
     )
+
+    public override fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean
+    ): Unit = super.write(emitter, config, multiline)
 }

@@ -6,6 +6,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
 
@@ -196,6 +197,43 @@ public sealed class TomlNode(
             this.children.last().appendChild(childTable)
         } else {
             this.appendChild(childTable)
+        }
+    }
+
+    /**
+     * Writes this node as text to [emitter].
+     *
+     * @param emitter The [TomlEmitter] instance to write to.
+     * @param config The [TomlConfig] instance. Defaults to the node's config.
+     * @param multiline Whether to write the node over multiple lines, if possible.
+     */
+    public abstract fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig = this.config,
+        multiline: Boolean = false
+    )
+
+    protected open fun TomlEmitter.writeChildren(
+        children: List<TomlNode>,
+        config: TomlConfig,
+        multiline: Boolean
+    ) {
+        val last = children.lastIndex
+
+        children.forEachIndexed { i, child ->
+            emitIndent()
+            child.write(emitter = this, config, multiline)
+
+            if (i < last) {
+                emitNewLine()
+
+                // Primitive pairs have a single newline after, except when a table
+                // follows.
+                if (child !is TomlKeyValuePrimitive ||
+                        children[i + 1] is TomlTable) {
+                    emitNewLine()
+                }
+            }
         }
     }
 
