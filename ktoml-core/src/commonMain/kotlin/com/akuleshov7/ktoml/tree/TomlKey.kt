@@ -1,7 +1,10 @@
 package com.akuleshov7.ktoml.tree
 
+import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class that represents a toml key-value pair.
@@ -37,5 +40,30 @@ public class TomlKey(public val rawContent: String, public val lineNo: Int) {
             }
         }
         return false
+    }
+
+    public fun write(emitter: TomlEmitter, config: TomlConfig) {
+        val keys = keyParts
+
+        if (keys.isEmpty() || keys.any(String::isEmpty)) {
+            throw TomlWritingException(
+                "Empty keys are not allowed: the key at line $lineNo is empty or" +
+                        " has an empty key part."
+            )
+        }
+
+        keys.forEachIndexed { i, value ->
+            if (i > 0) {
+                emitter.emitKeyDot()
+            }
+
+            when {
+                value.startsWith('"') && value.endsWith('"') ->
+                    emitter.emitQuotedKey(value.substring(1 until value.lastIndex))
+                value.startsWith('\'') && value.endsWith('\'') ->
+                    emitter.emitQuotedKey(value.substring(1 until value.lastIndex), isLiteral = true)
+                else -> emitter.emitBareKey(value)
+            }
+        }
     }
 }

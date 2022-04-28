@@ -9,11 +9,15 @@ internal class TomlStringEmitter(
     private val stringBuilder: StringBuilder,
     config: TomlConfig
 ) : TomlEmitter(config) {
-    override fun emit(fragment: String) {
+    override fun emit(fragment: String): TomlEmitter {
         stringBuilder.append(fragment)
+
+        return this
     }
 
-    override fun emit(fragment: Char) {
+    override fun emit(fragment: Char): TomlEmitter {
         stringBuilder.append(fragment)
+
+        return this
     }
 }
