@@ -10,7 +10,6 @@ import kotlin.jvm.JvmInline
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")
 public value class TomlParser(private val config: TomlConfig) {
-
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
      *
@@ -41,9 +40,7 @@ public value class TomlParser(private val config: TomlConfig) {
      * @return the root node of the resulted toml tree
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
-    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile {
-        return parseStringsToTomlTree(tomlLines.asSequence(), config)
-    }
+    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile = parseStringsToTomlTree(tomlLines.asSequence(), config)
 
     /**
      * Parsing the list of strings to the TOML intermediate representation (TOML- abstract syntax tree).
@@ -53,7 +50,7 @@ public value class TomlParser(private val config: TomlConfig) {
      * @return the root node of the resulted toml tree
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
-    @Suppress("TOO_LONG_FUNCTION")
+    @Suppress("TOO_LONG_FUNCTION", "NESTED_BLOCK")
     public fun parseStringsToTomlTree(tomlLines: Sequence<String>, config: TomlConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile(config)
         // link to the head of the tree
@@ -65,6 +62,7 @@ public value class TomlParser(private val config: TomlConfig) {
 
         var index = 0
         val linesIterator = trimmedTomlLines.iterator()
+        // all lines will be streamed sequentially
         while (linesIterator.hasNext()) {
             val line = linesIterator.next()
             val lineNo = index + 1
@@ -132,74 +130,71 @@ public value class TomlParser(private val config: TomlConfig) {
         }
     }
 
-    // This code is eavily inspired by the TransformingSequence code in kotlin-lib
-    private fun Sequence<String>.trimEmptyLines(): Sequence<String> {
-        return object : Sequence<String> {
+    @Suppress("TOO_LONG_FUNCTION")
+    // This code is heavily inspired by the TransformingSequence code in kotlin-lib, simple trimming of empty lines
+    private fun Sequence<String>.trimEmptyLines(): Sequence<String> = object : Sequence<String> {
+        override fun iterator(): Iterator<String> = object : Iterator<String> {
+            private val linesIterator = this@trimEmptyLines.iterator()
 
-            override fun iterator(): Iterator<String> {
-                return object : Iterator<String> {
-                    private val linesIterator = this@trimEmptyLines.iterator()
+            // -1 for unknown, 0 for done, 1 for empty lines, 2 for continue
+            private var nextState: Int = -1
+            private var nextItem: String? = null
+            private var nextRealItem: String? = null
+            private val emptyLinesBuffer: ArrayDeque<String> = ArrayDeque()
 
-                    // -1 for unknown, 0 for done, 1 for empty lines, 2 for continue
-                    private var nextState: Int = -1
-                    private var nextItem: String? = null
-                    private var nextRealItem: String? = null
-                    private val emptyLinesBuffer = ArrayDeque<String>()
-
-                    private fun calcNext() {
-                        var nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
-                        if (nextEmptyLine != null) {
+            private fun calcNext() {
+                var nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
+                nextEmptyLine?.let {
+                    nextState = 1
+                    nextItem = nextEmptyLine
+                    return
+                }
+                nextRealItem?.let {
+                    nextState = 2
+                    nextItem = nextRealItem
+                    nextRealItem = null
+                    return
+                }
+                while (linesIterator.hasNext()) {
+                    val line = linesIterator.next()
+                    if (line.isEmptyLine()) {
+                        emptyLinesBuffer.add(line)
+                    } else {
+                        nextRealItem = line
+                        nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
+                        nextEmptyLine?.let {
                             nextState = 1
                             nextItem = nextEmptyLine
-                            return
                         }
-                        if (nextRealItem != null) {
-                            nextState = 2
-                            nextItem = nextRealItem
-                            nextRealItem = null
-                            return
-                        }
-                        while (linesIterator.hasNext()) {
-                            val line = linesIterator.next()
-                            if (line.isEmptyLine()) {
-                                emptyLinesBuffer.add(line)
-                            } else {
-                                nextRealItem = line
-                                nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
-                                if (nextEmptyLine == null) {
-                                    nextState = 2
-                                    nextItem = nextRealItem
-                                    nextRealItem = null
-                                } else {
-                                    nextState = 1
-                                    nextItem = nextEmptyLine
-                                }
-                                return
+                            ?: run {
+                                nextState = 2
+                                nextItem = nextRealItem
+                                nextRealItem = null
                             }
-                        }
-                        nextState = 0
-                    }
-
-                    override fun hasNext(): Boolean {
-                        if (nextState == -1) {
-                            calcNext()
-                        }
-                        return nextState == 1 || nextState == 2
-                    }
-
-                    override fun next(): String {
-                        if (nextState == -1) {
-                            calcNext()
-                        }
-                        if (nextState == 0) {
-                            throw NoSuchElementException()
-                        }
-                        val result = nextItem
-                        nextItem = null
-                        nextState = -1
-                        return result as String
+                        return
                     }
                 }
+                nextState = 0
+            }
+
+            override fun hasNext(): Boolean {
+                if (nextState == -1) {
+                    calcNext()
+                }
+                return nextState == 1 || nextState == 2
+            }
+
+            override fun next(): String {
+                if (nextState == -1) {
+                    calcNext()
+                }
+                if (nextState == 0) {
+                    throw NoSuchElementException()
+                }
+                val result = nextItem
+                nextItem = null
+                nextState = -1
+                return result as String
             }
         }
     }

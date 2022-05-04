@@ -2,12 +2,13 @@ package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.source.TomlSourceReader
+
+import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
-import kotlin.native.concurrent.ThreadLocal
 
 /**
  * TomlFile class can be used for reading files in TOML format
@@ -19,7 +20,6 @@ public open class TomlFileReader(
     config: TomlConfig = TomlConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : TomlSourceReader(config, serializersModule) {
-
     /**
      * Simple deserializer of a file that contains toml. Reading file with okio native library
      *
@@ -30,9 +30,7 @@ public open class TomlFileReader(
     public fun <T> decodeFromFile(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
-    ): T {
-        return decodeFromSource(deserializer, getFileSource(tomlFilePath))
-    }
+    ): T = decodeFromSource(deserializer, getFileSource(tomlFilePath))
 
     /**
      * Simple deserializer of a file that contains toml. Reading file with okio native library
@@ -42,9 +40,7 @@ public open class TomlFileReader(
      */
     public inline fun <reified T> decodeFromFile(
         tomlFilePath: String,
-    ): T {
-        return decodeFromFile(serializersModule.serializer(), tomlFilePath)
-    }
+    ): T = decodeFromFile(serializersModule.serializer(), tomlFilePath)
 
     /**
      * Partial deserializer of a file that contains toml. Reading file with okio native library.
@@ -63,9 +59,7 @@ public open class TomlFileReader(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
         tomlTableName: String,
-    ): T {
-        return partiallyDecodeFromSource(deserializer, getFileSource(tomlFilePath), tomlTableName)
-    }
+    ): T = partiallyDecodeFromSource(deserializer, getFileSource(tomlFilePath), tomlTableName)
 
     /**
      * Partial deserializer of a file that contains toml. Reading file with okio native library.
@@ -82,9 +76,7 @@ public open class TomlFileReader(
     public inline fun <reified T> partiallyDecodeFromFile(
         tomlFilePath: String,
         tomlTableName: String,
-    ): T {
-        return partiallyDecodeFromFile(serializersModule.serializer(), tomlFilePath, tomlTableName)
-    }
+    ): T = partiallyDecodeFromFile(serializersModule.serializer(), tomlFilePath, tomlTableName)
 
     /**
      * The default instance of [TomlFileReader] with the default configuration.

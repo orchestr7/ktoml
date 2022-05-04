@@ -47,6 +47,9 @@ You can check types that are supported in TOML [here](https://toml.io/en/v1.0.0#
 We will support all Kotlin primitive types in the future with the non-strict configuration of ktoml, but now
 only String, Long, Double and Boolean are supported from the list of Kotlin primitives.
 
+After some brainstorming we finally decided to stream the decoded data. So we use `Sequences` instead of `Collections` in ktoml.
+We think that it should give users a better performance and user-friendly API.
+
 **General** \
 We are still developing and testing this library, so it has several limitations: \
 :white_check_mark: deserialization (with some parsing limitations) \

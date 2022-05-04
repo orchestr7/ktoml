@@ -216,7 +216,7 @@ class TomlFileParserTest {
     fun invalidFile() {
         val file = "src/commonTest/resources/simple_example.wrongext"
         assertFailsWith<IllegalStateException> {
-            readAndParseFile(file)
+            getFileSource(file)
         }
     }
 }

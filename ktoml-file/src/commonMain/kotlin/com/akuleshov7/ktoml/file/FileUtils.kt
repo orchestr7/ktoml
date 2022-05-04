@@ -7,14 +7,14 @@ package com.akuleshov7.ktoml.file
 import okio.BufferedSink
 import okio.FileNotFoundException
 import okio.FileSystem
-import okio.Source
 import okio.Path.Companion.toPath
+import okio.Source
 import okio.buffer
 
 /**
  * Simple file reading with okio (returning a list with strings)
  *
- * @param tomlFile string with a path to a file
+ * @param filePath string with a path to a file
  * @return list with strings
  * @throws FileNotFoundException if the toml file is missing
  */

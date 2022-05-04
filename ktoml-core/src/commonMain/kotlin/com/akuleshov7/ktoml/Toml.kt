@@ -65,9 +65,7 @@ public open class Toml(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
         config: TomlConfig
-    ): T {
-        return decodeFromString(deserializer, toml.asSequence(), config)
-    }
+    ): T = decodeFromString(deserializer, toml.asSequence(), config)
 
     /**
      * simple deserializer of a sequence of strings in a toml format
