@@ -1,5 +1,7 @@
 import com.akuleshov7.buildutils.configurePublishing
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
     kotlin("multiplatform")
@@ -70,4 +72,10 @@ configurePublishing()
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()
+}
+
+tasks.withType<KotlinJsTest> {
+    if (this.name.contains("testTask")) {
+        this.enabled = false
+    }
 }

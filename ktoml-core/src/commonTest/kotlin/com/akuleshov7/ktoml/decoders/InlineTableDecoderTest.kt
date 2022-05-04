@@ -43,7 +43,7 @@ class InlineTableDecoderTest {
             |       
             """.trimMargin()
 
-        val decoded = Toml.decodeFromString<ReadMeExampleTest.MyClass>(test)
+        Toml.decodeFromString<ReadMeExampleTest.MyClass>(test)
     }
 
     @Test
