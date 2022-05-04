@@ -18,25 +18,29 @@ jobs:
         with:
           java-version: 11
           distribution: zulu
-      - uses: burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         with:
           gradle-version: wrapper
-          # additional files to calculate key for dependency cache
-          gradle-dependencies-cache-key: |
-            buildSrc/**/Versions.kt
           arguments: |
-            diktatCheckAll
-          properties: |
-            diktat.githubActions=true
+            diktatCheck
+            -Pdiktat.githubActions=true
+            -Pdetekt.multiplatform.disabled=true
+      # Upload reports only if code style checks were failed
       - name: Copy SARIF reports into a single directory
-        if: ${{ always() }}
-        # `find` cmd is a workaround for https://github.com/analysis-dev/diktat/issues/1213
+        if: ${{ failure() }}
         run: |
           mkdir -p build/diktat-sarif-reports
           i=0
-          find . -regex '.*\(/[^/]*\)\1' | while read -r f; do echo "$f -> diktat-$i.sarif" && cp $f build/diktat-sarif-reports/diktat-$i.sarif || echo Cannot copy && echo Copied && i=$((i+1)); done
+          find . -path "*/build/reports/diktat/*.sarif" | while read -r f; do echo "$f -> diktat-$i.sarif" && cp $f build/diktat-sarif-reports/diktat-$i.sarif || echo Cannot copy && echo Copied && i=$((i+1)); done
       - name: Upload SARIF report to Github
         uses: github/codeql-action/upload-sarif@v1
-        if: ${{ always() }}
+        if: ${{ failure() }}
         with:
           sarif_file: build/diktat-sarif-reports
+      - name: Upload SARIF artifacts
+        uses: actions/upload-artifact@v3
+        if: ${{ failure() }}
+        with:
+          name: sarif-reports
+          path: "**/build/diktat-sarif-reports/"
+          retention-days: 1

@@ -1,12 +1,12 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.BINARY
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.HEX
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.OCTAL
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+
 import kotlin.jvm.JvmStatic
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
@@ -39,32 +39,47 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * Emits [fragment] as a raw [String] to the output.
      *
      * @param fragment The raw text to write to the output.
+     * @return this instance
      */
-    protected abstract fun emit(fragment: String)
+    protected abstract fun emit(fragment: String): TomlEmitter
 
     /**
      * Emits [fragment] as a raw [Char] to the output.
      *
      * @param fragment The raw text to write to the output.
+     * @return this instance
      */
-    protected abstract fun emit(fragment: Char)
+    protected abstract fun emit(fragment: Char): TomlEmitter
 
     /**
      * Emits a newline character.
+     *
+     * @return this instance
      */
-    public fun emitNewLine(): Unit = emit('\n')
+    public fun emitNewLine(): TomlEmitter = emit('\n')
 
     /**
      * Emits indentation up to the current [indentDepth].
+     *
+     * @return this instance
      */
-    public fun emitIndent(): Unit = repeat(indentDepth) { emit(indentation) }
+    public fun emitIndent(): TomlEmitter {
+        repeat(indentDepth) { emit(indentation) }
+
+        return this
+    }
 
     /**
      * Emits [count] whitespace characters.
      *
      * @param count The number of whitespace characters to write.
+     * @return this instance
      */
-    public fun emitWhitespace(count: Int = 1): Unit = repeat(count) { emit(' ') }
+    public fun emitWhitespace(count: Int = 1): TomlEmitter {
+        repeat(count) { emit(' ') }
+
+        return this
+    }
 
     /**
      * Emits a [comment], optionally making it end-of-line.
@@ -72,12 +87,11 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @param comment
      * @param endOfLine Whether the comment is at the end of a line, e.g. after a
      * table header.
+     * @return this instance
      */
-    public fun emitComment(comment: String, endOfLine: Boolean = false) {
-        emit(if (endOfLine) " # " else "# ")
-
-        emit(comment)
-    }
+    public fun emitComment(comment: String, endOfLine: Boolean = false): TomlEmitter =
+            emit(if (endOfLine) " # " else "# ")
+                .emit(comment)
 
     /**
      * Emits a [key]. Its type is inferred by its content, with bare keys being
@@ -85,21 +99,22 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * non-simple keys.
      *
      * @param key
+     * @return this instance
      */
-    public fun emitKey(key: String) {
-        if (key matches bareKeyRegex) {
-            emitBareKey(key)
-        } else {
-            emitQuotedKey(key, isLiteral = key matches literalKeyCandidateRegex)
-        }
-    }
+    public fun emitKey(key: String): TomlEmitter =
+            if (key matches bareKeyRegex) {
+                emitBareKey(key)
+            } else {
+                emitQuotedKey(key, isLiteral = key matches literalKeyCandidateRegex)
+            }
 
     /**
      * Emits a [key] as a bare key.
      *
      * @param key
+     * @return this instance
      */
-    public fun emitBareKey(key: String): Unit = emit(key)
+    public fun emitBareKey(key: String): TomlEmitter = emit(key)
 
     /**
      * Emits a [key] as a quoted key, optionally making it literal (single-quotes).
@@ -107,34 +122,45 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @param key
      * @param isLiteral Whether the key should be emitted as a literal string
      * (single-quotes).
+     * @return `this`
      */
-    public fun emitQuotedKey(key: String, isLiteral: Boolean = false): Unit =
+    public fun emitQuotedKey(key: String, isLiteral: Boolean = false): TomlEmitter =
             emitValue(string = key, isLiteral)
 
     /**
      * Emits a key separator.
+     *
+     * @return this instance
      */
-    public fun emitKeyDot(): Unit = emit('.')
+    public fun emitKeyDot(): TomlEmitter = emit('.')
 
     /**
      * Emits the table header start character.
+     *
+     * @return this instance
      */
-    public fun startTableHeader(): Unit = emit('[')
+    public fun startTableHeader(): TomlEmitter = emit('[')
 
     /**
      * Emits the table header end character.
+     *
+     * @return this instance
      */
-    public fun endTableHeader(): Unit = emit(']')
+    public fun endTableHeader(): TomlEmitter = emit(']')
 
     /**
      * Emits the table array header start characters.
+     *
+     * @return this instance
      */
-    public fun emitTableArrayHeaderStart(): Unit = emit("[[")
+    public fun startTableArrayHeader(): TomlEmitter = emit("[[")
 
     /**
      * Emits the table array header end characters.
+     *
+     * @return this instance
      */
-    public fun emitTableArrayHeaderEnd(): Unit = emit("]]")
+    public fun endTableArrayHeader(): TomlEmitter = emit("]]")
 
     /**
      * Emit a string value, optionally making it literal and/or multiline.
@@ -142,25 +168,26 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @param string
      * @param isLiteral Whether the string is literal (single-quotes).
      * @param isMultiline Whether the string is multiline.
+     * @return this instance
      */
     public fun emitValue(
         string: String,
         isLiteral: Boolean = false,
         isMultiline: Boolean = false
-    ): Unit =
+    ): TomlEmitter =
             if (isMultiline) {
                 val quotes = if (isLiteral) "'''" else "\"\"\""
 
                 emit(quotes)
-                emitNewLine()
-                emit(string)
-                emit(quotes)
+                    .emitNewLine()
+                    .emit(string)
+                    .emit(quotes)
             } else {
                 val quote = if (isLiteral) '\'' else '"'
 
                 emit(quote)
-                emit(string)
-                emit(quote)
+                    .emit(string)
+                    .emit(quote)
             }
 
     /**
@@ -168,22 +195,20 @@ public abstract class TomlEmitter(config: TomlConfig) {
      *
      * @param integer
      * @param representation How the integer will be represented in TOML.
+     * @return this instance
      */
-    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): Unit =
+    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter =
             when (representation) {
                 DECIMAL -> emit(integer.toString())
-                HEX -> {
+                HEX ->
                     emit("0x")
-                    emit(integer.toString(16))
-                }
-                BINARY -> {
+                        .emit(integer.toString(16))
+                BINARY ->
                     emit("0b")
-                    emit(integer.toString(2))
-                }
-                OCTAL -> {
+                        .emit(integer.toString(2))
+                OCTAL ->
                     emit("0o")
-                    emit(integer.toString(8))
-                }
+                        .emit(integer.toString(8))
                 GROUPED -> TODO()
             }
 
@@ -191,12 +216,13 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * Emits a floating-point value.
      *
      * @param float
+     * @return this instance
      */
-    public fun emitValue(float: Double): Unit =
-            emit(when (float) {
-                Double.NaN -> "nan"
-                Double.POSITIVE_INFINITY -> "inf"
-                Double.NEGATIVE_INFINITY -> "-inf"
+    public fun emitValue(float: Double): TomlEmitter =
+            emit(when {
+                float.isNaN() -> "nan"
+                float.isInfinite() ->
+                    if (float > 0) "inf" else "-inf"
                 else -> float.toString()
             })
 
@@ -204,38 +230,82 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * Emits a boolean value.
      *
      * @param boolean
+     * @return this instance
      */
-    public fun emitValue(boolean: Boolean): Unit = emit(boolean.toString())
+    public fun emitValue(boolean: Boolean): TomlEmitter = emit(boolean.toString())
+
+    /**
+     * Emits an [Instant] value.
+     *
+     * @param instant
+     * @return this instance
+     */
+    public fun emitValue(instant: Instant): TomlEmitter = emit(instant.toString())
+
+    /**
+     * Emits a [LocalDateTime] value.
+     *
+     * @param dateTime
+     * @return this instance
+     */
+    public fun emitValue(dateTime: LocalDateTime): TomlEmitter = emit(dateTime.toString())
+
+    /**
+     * Emits a [LocalDate] value.
+     *
+     * @param date
+     * @return this instance
+     */
+    public fun emitValue(date: LocalDate): TomlEmitter = emit(date.toString())
+
+    /**
+     * Emits a null value.
+     *
+     * @return this instance
+     */
+    public fun emitNullValue(): TomlEmitter = emit("null")
 
     /**
      * Emits the array start character.
+     *
+     * @return this instance
      */
-    public fun startArray(): Unit = emit('[')
+    public fun startArray(): TomlEmitter = emit('[')
 
     /**
      * Emits the array end character.
+     *
+     * @return this instance
      */
-    public fun endArray(): Unit = emit(']')
+    public fun endArray(): TomlEmitter = emit(']')
 
     /**
      * Emits the inline table start character.
+     *
+     * @return this instance
      */
-    public fun startInlineTable(): Unit = emit('{')
+    public fun startInlineTable(): TomlEmitter = emit('{')
 
     /**
      * Emits the inline table end character.
+     *
+     * @return this instance
      */
-    public fun endInlineTable(): Unit = emit('}')
+    public fun endInlineTable(): TomlEmitter = emit('}')
 
     /**
      * Emits an array/inline table element delimiter.
+     *
+     * @return this instance
      */
-    public fun emitElementDelimiter(): Unit = emit(", ")
+    public fun emitElementDelimiter(): TomlEmitter = emit(",")
 
     /**
      * Emits a key-value delimiter.
+     *
+     * @return this instance
      */
-    public fun emitPairDelimiter(): Unit = emit(" = ")
+    public fun emitPairDelimiter(): TomlEmitter = emit(" = ")
 
     public companion object {
         @JvmStatic
