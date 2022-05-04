@@ -4,16 +4,26 @@
 
 package com.akuleshov7.ktoml.file
 
-import okio.*
+import okio.BufferedSink
+import okio.FileNotFoundException
+import okio.FileSystem
+import okio.Source
 import okio.Path.Companion.toPath
+import okio.buffer
 
 /**
- * Uses okio to get the source from a path
+ * Simple file reading with okio (returning a list with strings)
  *
+ * @param tomlFile string with a path to a file
+ * @return list with strings
  * @throws FileNotFoundException if the toml file is missing
  */
 internal fun getFileSource(filePath: String): Source {
     try {
+        val extension = filePath.substringAfterLast('.', "")
+        check(extension == "toml") {
+            "TOML file should end with a .toml extension"
+        }
         return getOsSpecificFileSystem().source(filePath.toPath())
     } catch (e: FileNotFoundException) {
         throw FileNotFoundException("Not able to find TOML file on path $filePath: ${e.message}")

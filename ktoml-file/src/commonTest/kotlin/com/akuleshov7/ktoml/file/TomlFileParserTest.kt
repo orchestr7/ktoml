@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class TomlFileParserTest {
     @Serializable
@@ -209,5 +210,13 @@ class TomlFileParserTest {
                     .map { it.fullTableName }
             }
         )
+    }
+
+    @Test
+    fun invalidFile() {
+        val file = "src/commonTest/resources/simple_example.wrongext"
+        assertFailsWith<IllegalStateException> {
+            readAndParseFile(file)
+        }
     }
 }
