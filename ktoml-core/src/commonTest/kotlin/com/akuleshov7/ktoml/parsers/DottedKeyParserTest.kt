@@ -54,7 +54,6 @@ class DottedKeyParserTest {
         assertEquals("a.b.c", test.fullTableName)
 
         val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0)
-        test = testKeyValue.createTomlTableFromDottedKey(TomlFile())
         assertEquals("c", testKeyValue.key.content)
     }
 
