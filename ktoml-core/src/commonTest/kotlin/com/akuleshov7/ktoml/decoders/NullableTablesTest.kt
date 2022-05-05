@@ -89,7 +89,7 @@ class EmptyTomlTest {
 
         assertEquals(Config(), res)
 
-        res = Toml().decodeFromString<Config>(
+        res = Toml().decodeFromString(
             "".trimIndent()
         )
 

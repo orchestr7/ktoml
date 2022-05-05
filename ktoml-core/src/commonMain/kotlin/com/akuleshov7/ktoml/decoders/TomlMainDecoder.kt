@@ -25,7 +25,7 @@ import kotlinx.serialization.modules.SerializersModule
  */
 @ExperimentalSerializationApi
 public class TomlMainDecoder(
-    private val rootNode: TomlNode,
+    private var rootNode: TomlNode,
     private val config: TomlConfig,
     private var elementIndex: Int = 0
 ) : TomlAbstractDecoder() {
@@ -74,15 +74,23 @@ public class TomlMainDecoder(
      * real value for decoding. Other types of nodes are more technical
      *
      */
-    override fun decodeKeyValue(): TomlKeyValue = when (val node = getCurrentNode()) {
-        is TomlKeyValuePrimitive -> node
-        is TomlKeyValueArray -> node
-        // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
-        // branch, we should throw an exception as it is not expected at all and we should catch this in tests
-        else ->
-            throw InternalDecodingException(
-                "This kind of node should not be processed in TomlDecoder.decodeValue(): ${node.content}"
-            )
+    override fun decodeKeyValue(): TomlKeyValue {
+        // this is a very important workaround for people who plan to write their own CUSTOM serializers
+        if (rootNode is TomlFile) {
+            rootNode = getFirstChild(rootNode)
+            elementIndex = 1
+        }
+
+        return when (val node = getCurrentNode()) {
+            is TomlKeyValuePrimitive -> node
+            is TomlKeyValueArray -> node
+            // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
+            // branch, we should throw an exception as it is not expected at all and we should catch this in tests
+            else ->
+                throw InternalDecodingException(
+                    "Node of type [${node::class}] should not be processed in TomlDecoder.decodeValue(): <${node.content}>"
+                )
+        }
     }
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
@@ -194,14 +202,8 @@ public class TomlMainDecoder(
     private fun iterateOverStructure(descriptor: SerialDescriptor, inlineFunc: Boolean): TomlAbstractDecoder =
             if (rootNode is TomlFile) {
                 checkMissingRequiredProperties(rootNode.children, descriptor)
-                val firstFileChild = rootNode.getFirstChild() ?: if (!config.allowEmptyToml) {
-                    throw InternalDecodingException(
-                        "Missing child nodes (tables, key-values) for TomlFile." +
-                                " Was empty toml provided to the input?"
-                    )
-                } else {
-                    rootNode
-                }
+                val firstFileChild = getFirstChild(rootNode)
+
                 // inline structures has a very specific logic for decoding. Kotlinx.serialization plugin generates specific code:
                 // 'decoder.decodeInline(this.getDescriptor()).decodeLong())'. So we need simply to increment
                 // our element index by 1 (0 is the default value), because value/inline classes are always a wrapper over some SINGLE value.
@@ -230,6 +232,16 @@ public class TomlMainDecoder(
                                 " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
                     )
                 }
+            }
+
+    private fun getFirstChild(node: TomlNode) =
+            node.getFirstChild() ?: if (!config.allowEmptyToml) {
+                throw InternalDecodingException(
+                    "Missing child nodes (tables, key-values) for TomlFile." +
+                            " Was empty toml provided to the input?"
+                )
+            } else {
+                node
             }
 
     public companion object {
