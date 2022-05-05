@@ -91,7 +91,9 @@ public class TomlArrayOfTables(
                     emitIndent()
                 }
 
+                writeChildComments(child)
                 writeHeader(headerKey, config)
+                writeChildInlineComment(child)
 
                 if (!child.hasNoChildren()) {
                     emitNewLine()

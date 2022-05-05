@@ -48,6 +48,10 @@ public abstract class TomlTable(
         if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
             emitter.writeHeader(key, config)
 
+            if (inlineComment.isNotEmpty()) {
+                emitter.emitComment(inlineComment, inline = true)
+            }
+
             if (firstChild !is TomlStubEmptyNode) {
                 emitter.emitNewLine()
             }

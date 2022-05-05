@@ -97,6 +97,8 @@ public class TomlTablePrimitive(
         var prevChild: TomlNode? = null
 
         children.forEachIndexed { i, child ->
+            writeChildComments(child)
+
             // Declare the super table after a nested table, to avoid a pair being
             // a part of the previous table by mistake.
             if ((child is TomlKeyValue || child is TomlInlineTable) &&
@@ -116,6 +118,7 @@ public class TomlTablePrimitive(
             }
 
             child.write(emitter = this, config, multiline)
+            writeChildInlineComment(child)
 
             if (i < last) {
                 emitNewLine()

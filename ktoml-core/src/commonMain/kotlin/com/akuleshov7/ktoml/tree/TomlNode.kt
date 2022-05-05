@@ -241,17 +241,13 @@ public sealed class TomlNode(
         val last = children.lastIndex
 
         children.forEachIndexed { i, child ->
-            child.comments.forEach { comment ->
-                emitIndent()
-                    .emitComment(comment)
-                    .emitNewLine()
-            }
+            writeChildComments(child)
 
             emitIndent()
             child.write(emitter = this, config, multiline)
 
-            if (child.inlineComment.isNotEmpty()) {
-                emitComment(child.inlineComment, inline = true)
+            if (child is TomlKeyValue || child is TomlInlineTable) {
+                writeChildInlineComment(child)
             }
 
             if (i < last) {
@@ -264,6 +260,20 @@ public sealed class TomlNode(
                     emitNewLine()
                 }
             }
+        }
+    }
+
+    protected fun TomlEmitter.writeChildComments(child: TomlNode) {
+        child.comments.forEach { comment ->
+            emitIndent()
+                .emitComment(comment)
+                .emitNewLine()
+        }
+    }
+
+    protected fun TomlEmitter.writeChildInlineComment(child: TomlNode) {
+        if (child.inlineComment.isNotEmpty()) {
+            emitComment(child.inlineComment, inline = true)
         }
     }
 

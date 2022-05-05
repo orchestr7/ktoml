@@ -109,9 +109,9 @@ public value class TomlParser(private val config: TomlConfig) {
                         else -> currentParentalNode.appendChild(keyValue)
                     }
                 }
-            }
 
-            comments.clear()
+                comments.clear()
+            }
         }
         return tomlFileHead
     }
