@@ -23,7 +23,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     // Invalid Toml primitive types, we will simply throw an error for them
     override fun decodeByte(): Byte = invalidType("Byte", "Long")
     override fun decodeShort(): Short = invalidType("Short", "Long")
-    override fun decodeInt(): Int = invalidType("Int", "Long")
+    override fun decodeInt(): Int = decodePrimitiveType()
     override fun decodeFloat(): Float = invalidType("Float", "Double")
     override fun decodeChar(): Char = invalidType("Char", "String")
 
