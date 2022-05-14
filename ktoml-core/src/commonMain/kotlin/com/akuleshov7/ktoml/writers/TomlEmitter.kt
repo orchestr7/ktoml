@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 
 import kotlin.jvm.JvmStatic
@@ -11,7 +11,7 @@ import kotlinx.datetime.LocalDateTime
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
  */
-public abstract class TomlEmitter(config: TomlConfig) {
+public abstract class TomlEmitter(config: TomlOutputConfig) {
     private val indentation = config.indentation.value
 
     /**

@@ -2,6 +2,8 @@ package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.TomlFile
 
 import okio.use
@@ -16,22 +18,40 @@ import kotlinx.serialization.modules.SerializersModule
  * @property serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
-public open class TomlFileWriter(
-    private val config: TomlConfig = TomlConfig(),
-    override val serializersModule: SerializersModule = EmptySerializersModule
-) : Toml(config, serializersModule) {
+public open class TomlFileWriter : Toml {
+    public constructor(
+        inputConfig: TomlInputConfig = TomlInputConfig(),
+        outputConfig: TomlOutputConfig = TomlOutputConfig(),
+        serializersModule: SerializersModule = EmptySerializersModule
+    ) : super(
+        inputConfig,
+        outputConfig,
+        serializersModule
+    )
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlOutputConfig instead."
+    )
+    public constructor(
+        config: TomlConfig = TomlConfig(),
+        serializersModule: SerializersModule = EmptySerializersModule
+    ) : super(
+        config,
+        serializersModule
+    )
+
     public fun <T> encodeToFile(
         serializer: SerializationStrategy<T>,
         value: T,
         tomlFilePath: String
     ) {
-        val fileTree = TomlFile(config)
+        val fileTree = TomlFile(inputConfig)
 
         // Todo: Write an encoder implementation.
 
         TomlSinkEmitter(
             openFileForWrite(tomlFilePath),
-            config
+            outputConfig
         ).use {
             tomlWriter.write(fileTree, it)
         }

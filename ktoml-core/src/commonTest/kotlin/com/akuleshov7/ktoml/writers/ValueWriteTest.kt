@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.datetime.Instant
@@ -28,7 +28,7 @@ class PrimitiveValueWriteTest {
 
         // Escaped single quotes
 
-        val disallowQuotes = TomlConfig(allowEscapedQuotesInLiteralStrings = false)
+        val disallowQuotes = TomlOutputConfig(allowEscapedQuotesInLiteralStrings = false)
 
         val escapedSingleQuotes = TomlLiteralString("'escaped quotes'" as Any, 0)
 
@@ -143,7 +143,7 @@ class PrimitiveValueWriteTest {
 fun testTomlValue(
     value: TomlValue,
     expectedString: String,
-    config: TomlConfig = TomlConfig(),
+    config: TomlOutputConfig = TomlOutputConfig(),
     multiline: Boolean = false
 ) {
     assertEquals(
@@ -158,7 +158,7 @@ fun testTomlValue(
 
 fun testTomlValueFailure(
     value: TomlValue,
-    config: TomlConfig = TomlConfig()
+    config: TomlOutputConfig = TomlOutputConfig()
 ) {
     assertFailsWith<TomlWritingException> {
         val emitter = TomlStringEmitter(StringBuilder(), config)

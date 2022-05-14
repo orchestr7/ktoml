@@ -42,7 +42,13 @@ public class TomlKey(public val rawContent: String, public val lineNo: Int) {
         return false
     }
 
-    public fun write(emitter: TomlEmitter, config: TomlConfig) {
+    @Deprecated(
+        message = "TomlConfig is deprecated",
+        replaceWith = ReplaceWith("write(emitter)")
+    )
+    public fun write(emitter: TomlEmitter, config: TomlConfig): Unit = write(emitter)
+
+    public fun write(emitter: TomlEmitter) {
         val keys = keyParts
 
         if (keys.isEmpty() || keys.any(String::isEmpty)) {

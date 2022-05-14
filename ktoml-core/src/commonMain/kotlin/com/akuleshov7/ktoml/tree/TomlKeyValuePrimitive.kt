@@ -1,6 +1,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -15,7 +17,7 @@ public class TomlKeyValuePrimitive(
     override val value: TomlValue,
     override val lineNo: Int,
     override val name: String,
-    config: TomlConfig = TomlConfig()
+    config: TomlInputConfig = TomlInputConfig()
 ) : TomlNode(
     key,
     value,
@@ -26,7 +28,7 @@ public class TomlKeyValuePrimitive(
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
         keyValuePair.second.parseValue(lineNo, config),
@@ -34,9 +36,39 @@ public class TomlKeyValuePrimitive(
         TomlKey(keyValuePair.first, lineNo).content
     )
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        key: TomlKey,
+        value: TomlValue,
+        lineNo: Int,
+        name: String,
+        config: TomlConfig
+    ) : this(
+        key,
+        value,
+        lineNo,
+        name,
+        config.input
+    )
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        keyValuePair: Pair<String, String>,
+        lineNo: Int,
+        config: TomlConfig
+    ) : this(
+        keyValuePair,
+        lineNo,
+        config.input
+    )
+
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
-    ): Unit = super.write(emitter, config, multiline)
+    ): Unit = super<TomlKeyValue>.write(emitter, config, multiline)
 }

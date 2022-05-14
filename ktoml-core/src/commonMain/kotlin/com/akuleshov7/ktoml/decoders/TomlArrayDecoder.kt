@@ -1,11 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.tree.TomlKeyValue
-import com.akuleshov7.ktoml.tree.TomlKeyValueArray
-import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.tree.TomlNull
-import com.akuleshov7.ktoml.tree.TomlValue
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -21,13 +18,21 @@ import kotlinx.serialization.modules.SerializersModule
 @Suppress("UNCHECKED_CAST")
 public class TomlArrayDecoder(
     private val rootNode: TomlKeyValueArray,
-    private val config: TomlConfig,
+    private val config: TomlInputConfig,
 ) : TomlAbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
     override val serializersModule: SerializersModule = EmptySerializersModule
     private lateinit var currentElementDecoder: TomlPrimitiveDecoder
     private lateinit var currentPrimitiveElementOfArray: TomlValue
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        rootNode: TomlKeyValueArray,
+        config: TomlConfig
+    ) : this(rootNode, config.input)
 
     private fun haveStartedReadingElements() = nextElementIndex > 0
 

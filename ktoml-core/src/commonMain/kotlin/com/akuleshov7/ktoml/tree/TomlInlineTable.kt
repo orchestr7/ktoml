@@ -1,6 +1,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.parseTomlKeyValue
 import com.akuleshov7.ktoml.parsers.trimCurlyBraces
@@ -15,7 +17,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlInlineTable(
     private val keyValuePair: Pair<String, String>,
     lineNo: Int,
-    config: TomlConfig = TomlConfig(),
+    config: TomlInputConfig = TomlInputConfig(),
 ) : TomlNode(
     "${keyValuePair.first} = ${keyValuePair.second}",
     lineNo,
@@ -27,6 +29,19 @@ public class TomlInlineTable(
     init {
         tomlKeyValues = keyValuePair.second.parseInlineTableValue()
     }
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        keyValuePair: Pair<String, String>,
+        lineNo: Int,
+        config: TomlConfig
+    ) : this(
+        keyValuePair,
+        lineNo,
+        config.input
+    )
 
     private fun String.parseInlineTableValue(): List<TomlNode> {
         val parsedList = this
@@ -79,12 +94,12 @@ public class TomlInlineTable(
 
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         val key = TomlKey(name, 0)
 
-        key.write(emitter, config)
+        key.write(emitter)
 
         emitter.emitPairDelimiter()
             .startInlineTable()

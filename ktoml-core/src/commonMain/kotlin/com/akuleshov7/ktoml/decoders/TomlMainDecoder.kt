@@ -3,10 +3,9 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.tree.*
-import com.akuleshov7.ktoml.tree.TomlNull
-import com.akuleshov7.ktoml.tree.TomlTablePrimitive
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -26,10 +25,23 @@ import kotlinx.serialization.modules.SerializersModule
 @ExperimentalSerializationApi
 public class TomlMainDecoder(
     private var rootNode: TomlNode,
-    private val config: TomlConfig,
+    private val config: TomlInputConfig,
     private var elementIndex: Int = 0
 ) : TomlAbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        rootNode: TomlNode,
+        config: TomlConfig,
+        elementIndex: Int = 0
+    ) : this(
+        rootNode,
+        config.input,
+        elementIndex
+    )
 
     override fun decodeValue(): Any = decodeKeyValue().value.content
 
@@ -254,7 +266,7 @@ public class TomlMainDecoder(
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,
-            config: TomlConfig = TomlConfig()
+            config: TomlInputConfig = TomlInputConfig()
         ): T {
             val decoder = TomlMainDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)

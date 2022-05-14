@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.TomlInlineTable
 import com.akuleshov7.ktoml.tree.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
@@ -50,8 +51,8 @@ class KeyValueWriteTest {
         testTomlPrimitivePair(dottedKey to "1979-05-27")
 
         // Null
-        testTomlPrimitivePair(bareKey to "null", TomlConfig(allowNullValues = true))
-        testTomlPrimitivePair(dottedKey to "null", TomlConfig(allowNullValues = true))
+        testTomlPrimitivePair(bareKey to "null", TomlInputConfig(allowNullValues = true))
+        testTomlPrimitivePair(dottedKey to "null", TomlInputConfig(allowNullValues = true))
     }
 
     @Test
@@ -93,39 +94,42 @@ class KeyValueWriteTest {
 
 fun testTomlPrimitivePair(
     pair: Pair<String, String>,
-    config: TomlConfig = TomlConfig()
+    inputConfig: TomlInputConfig = TomlInputConfig(),
+    outputConfig: TomlOutputConfig = TomlOutputConfig()
 ) = testTomlPair(
-    TomlKeyValuePrimitive(pair, 0, config),
+    TomlKeyValuePrimitive(pair, 0, inputConfig),
     expectedString = "${pair.first} = ${pair.second}",
-    config,
+    outputConfig,
     multiline = false
 )
 
 fun testTomlArrayPair(
     pair: Pair<String, String>,
     multiline: Boolean,
-    config: TomlConfig = TomlConfig(),
+    inputConfig: TomlInputConfig = TomlInputConfig(),
+    outputConfig: TomlOutputConfig = TomlOutputConfig()
 ) = testTomlPair(
-    TomlKeyValueArray(pair, 0, config),
+    TomlKeyValueArray(pair, 0, inputConfig),
     expectedString = "${pair.first} = ${pair.second}",
-    config,
+    outputConfig,
     multiline
 )
 
 fun testTomlInlineTablePair(
     pair: Pair<String, String>,
-    config: TomlConfig = TomlConfig(),
+    inputConfig: TomlInputConfig = TomlInputConfig(),
+    outputConfig: TomlOutputConfig = TomlOutputConfig()
 ) = testTomlPair(
-    TomlInlineTable(pair, 0, config),
+    TomlInlineTable(pair, 0, inputConfig),
     expectedString = "${pair.first} = ${pair.second}",
-    config,
+    outputConfig,
     multiline = false
 )
 
 fun testTomlPair(
     pair: TomlNode,
     expectedString: String,
-    config: TomlConfig,
+    config: TomlOutputConfig = TomlOutputConfig(),
     multiline: Boolean
 ) {
     assertEquals(

@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.tree.*
 import kotlin.jvm.JvmInline
 
@@ -9,7 +10,12 @@ import kotlin.jvm.JvmInline
  */
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")
-public value class TomlParser(private val config: TomlConfig) {
+public value class TomlParser(private val config: TomlInputConfig) {
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(config: TomlConfig) : this(config.input)
+
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
      *
@@ -31,7 +37,7 @@ public value class TomlParser(private val config: TomlConfig) {
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
     @Suppress("TOO_LONG_FUNCTION")
-    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlConfig): TomlFile {
+    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlInputConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile(config)
         // link to the head of the tree
         val tomlFileHead = currentParentalNode as TomlFile
@@ -137,7 +143,7 @@ public value class TomlParser(private val config: TomlConfig) {
  * @param config
  * @return parsed toml node
  */
-public fun String.parseTomlKeyValue(lineNo: Int, config: TomlConfig): TomlNode {
+public fun String.parseTomlKeyValue(lineNo: Int, config: TomlInputConfig): TomlNode {
     val keyValuePair = this.splitKeyValue(lineNo, config)
     return when {
         keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, config)

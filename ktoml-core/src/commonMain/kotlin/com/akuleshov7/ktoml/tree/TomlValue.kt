@@ -5,6 +5,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.trimBrackets
@@ -23,6 +25,19 @@ import kotlinx.datetime.*
 public sealed class TomlValue(public val lineNo: Int) {
     public abstract var content: Any
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlOutputConfig instead.",
+        replaceWith = ReplaceWith(
+            "write(emitter, config, multiline)",
+            "com.akuleshov7.ktoml.TomlOutputConfig"
+        )
+    )
+    public fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean = false
+    ): Unit = write(emitter, config.output, multiline)
+
     /**
      * Writes this value to the specified [emitter], optionally writing the value
      * [multiline] (if supported by the value type).
@@ -33,7 +48,7 @@ public sealed class TomlValue(public val lineNo: Int) {
      */
     public abstract fun write(
         emitter: TomlEmitter,
-        config: TomlConfig = TomlConfig(),
+        config: TomlOutputConfig = TomlOutputConfig(),
         multiline: Boolean = false
     )
 }
@@ -52,12 +67,25 @@ internal constructor(
     public constructor(
         content: String,
         lineNo: Int,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ) : this(content.verifyAndTrimQuotes(lineNo, config), lineNo)
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        content: String,
+        lineNo: Int,
+        config: TomlConfig
+    ) : this(
+        content,
+        lineNo,
+        config.input
+    )
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         if (multiline) {
@@ -76,7 +104,7 @@ internal constructor(
     }
 
     public companion object {
-        private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlConfig): Any =
+        private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlInputConfig): Any =
                 if (startsWith("'") && endsWith("'")) {
                     val contentString = trimSingleQuotes()
                     if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
@@ -97,7 +125,7 @@ internal constructor(
          */
         private fun String.convertSingleQuotes(): String = this.replace("\\'", "'")
 
-        private fun String.escapeQuotesAndVerify(config: TomlConfig) =
+        private fun String.escapeQuotesAndVerify(config: TomlOutputConfig) =
                 when {
                     controlCharacterRegex in this ->
                         throw TomlWritingException(
@@ -139,7 +167,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         if (multiline) {
@@ -298,7 +326,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         emitter.emitValue(content as Long)
@@ -320,7 +348,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         emitter.emitValue(content as Double)
@@ -340,7 +368,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         emitter.emitValue(content as Boolean)
@@ -360,7 +388,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         when (val content = content) {
@@ -404,7 +432,7 @@ public class TomlNull(lineNo: Int) : TomlValue(lineNo) {
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         emitter.emitNullValue()
@@ -424,7 +452,7 @@ internal constructor(
     public constructor(
         rawContent: String,
         lineNo: Int,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ) : this(
         rawContent.parse(lineNo, config),
         rawContent,
@@ -433,13 +461,35 @@ internal constructor(
         validateQuotes()
     }
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+    )
+    public constructor(
+        rawContent: String,
+        lineNo: Int,
+        config: TomlConfig
+    ) : this(
+        rawContent,
+        lineNo,
+        config.input
+    )
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        replaceWith = ReplaceWith(
+            "parse(config)",
+            "com.akuleshov7.ktoml.TomlInputConfig"
+        )
+    )
+    public fun parse(config: TomlConfig): List<Any> = parse(config.input)
+
     /**
      * small adaptor to make proper testing of parsing
      *
      * @param config
      * @return converted array to a list
      */
-    public fun parse(config: TomlConfig = TomlConfig()): List<Any> = rawContent.parse(lineNo, config)
+    public fun parse(config: TomlInputConfig = TomlInputConfig()): List<Any> = rawContent.parse(lineNo, config)
 
     /**
      * small validation for quotes: each quote should be closed in a key
@@ -456,7 +506,7 @@ internal constructor(
     @Suppress("UNCHECKED_CAST")
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         emitter.startArray()
@@ -509,7 +559,7 @@ internal constructor(
         /**
          * recursively parse TOML array from the string: [ParsingArray -> Trimming values -> Parsing Nested Arrays]
          */
-        private fun String.parse(lineNo: Int, config: TomlConfig = TomlConfig()): List<Any> =
+        private fun String.parse(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): List<Any> =
                 this.parseArray()
                     .map { it.trim() }
                     .map { if (it.startsWith("[")) it.parse(lineNo, config) else it.parseValue(lineNo, config) }

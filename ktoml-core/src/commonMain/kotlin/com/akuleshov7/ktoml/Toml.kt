@@ -21,18 +21,32 @@ import kotlinx.serialization.modules.SerializersModule
  * Toml class - is a general entry point in the core,
  * that is used to serialize/deserialize TOML file or string
  *
- * @property config - configuration for the serialization
+ * @property inputConfig - configuration for deserialization
+ * @property outputConfig - configuration for serialization
  * @property serializersModule - default overridden
  */
 @OptIn(ExperimentalSerializationApi::class)
 public open class Toml(
-    private val config: TomlConfig = TomlConfig(),
+    protected val inputConfig: TomlInputConfig = TomlInputConfig(),
+    protected val outputConfig: TomlOutputConfig = TomlOutputConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
 ) : StringFormat {
     // parser and writer are created once after the creation of the class, to reduce
     // the number of created parsers and writers for each toml
-    public val tomlParser: TomlParser = TomlParser(config)
-    public val tomlWriter: TomlWriter = TomlWriter(config)
+    public val tomlParser: TomlParser = TomlParser(inputConfig)
+    public val tomlWriter: TomlWriter = TomlWriter(outputConfig)
+
+    @Deprecated(
+        message = "config parameter split into inputConfig and outputConfig."
+    )
+    public constructor(
+        config: TomlConfig,
+        serializersModule: SerializersModule = EmptySerializersModule
+    ) : this(
+        config.input,
+        config.output,
+        serializersModule
+    )
 
     // ================== basic overrides ===============
 
@@ -44,7 +58,7 @@ public open class Toml(
      */
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parsedToml = tomlParser.parseString(string)
-        return TomlMainDecoder.decode(deserializer, parsedToml, config)
+        return TomlMainDecoder.decode(deserializer, parsedToml, inputConfig)
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
@@ -64,11 +78,24 @@ public open class Toml(
     public fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
-        config: TomlConfig
+        config: TomlInputConfig
     ): T {
         val parsedToml = tomlParser.parseStringsToTomlTree(toml, config)
-        return TomlMainDecoder.decode(deserializer, parsedToml, this.config)
+        return TomlMainDecoder.decode(deserializer, parsedToml, config)
     }
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        replaceWith = ReplaceWith(
+            "decodeFromString(deserializer, toml, config)",
+            "com.akuleshov7.ktoml.TomlInputConfig"
+        )
+    )
+    public fun <T> decodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        toml: List<String>,
+        config: TomlConfig
+    ): T = decodeFromString(deserializer, toml, config.input)
 
     /**
      * partial deserializer of a string in a toml format (separated by newlines).
@@ -88,11 +115,25 @@ public open class Toml(
         deserializer: DeserializationStrategy<T>,
         toml: String,
         tomlTableName: String,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ): T {
         val fakeFileNode = generateFakeTomlStructureForPartialParsing(toml, tomlTableName, config, TomlParser::parseString)
-        return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
+        return TomlMainDecoder.decode(deserializer, fakeFileNode, config)
     }
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        replaceWith = ReplaceWith(
+            "partiallyDecodeFromString(deserializer, toml, tomlTableName, config)",
+            "com.akuleshov7.ktoml.TomlInputConfig"
+        )
+    )
+    public fun <T> partiallyDecodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        toml: String,
+        tomlTableName: String,
+        config: TomlConfig
+    ): T = partiallyDecodeFromString(deserializer, toml, tomlTableName, config.input)
 
     /**
      * partial deserializer of a string in a toml format (separated by newlines).
@@ -112,7 +153,7 @@ public open class Toml(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
         tomlTableName: String,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ): T {
         val fakeFileNode = generateFakeTomlStructureForPartialParsing(
             toml.joinToString("\n"),
@@ -120,18 +161,32 @@ public open class Toml(
             config,
             TomlParser::parseString,
         )
-        return TomlMainDecoder.decode(deserializer, fakeFileNode, this.config)
+        return TomlMainDecoder.decode(deserializer, fakeFileNode, config)
     }
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        replaceWith = ReplaceWith(
+            "partiallyDecodeFromString(deserializer, toml, tomlTableName, config)",
+            "com.akuleshov7.ktoml.TomlInputConfig"
+        )
+    )
+    public fun <T> partiallyDecodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        toml: List<String>,
+        tomlTableName: String,
+        config: TomlConfig = TomlConfig()
+    ): T = partiallyDecodeFromString(deserializer, toml, tomlTableName, config.input)
 
     // ================== other ===============
     @Suppress("TYPE_ALIAS")
     private fun generateFakeTomlStructureForPartialParsing(
         toml: String,
         tomlTableName: String,
-        config: TomlConfig = TomlConfig(),
+        config: TomlInputConfig = TomlInputConfig(),
         parsingFunction: (TomlParser, String) -> TomlFile
     ): TomlFile {
-        val tomlFile = parsingFunction(TomlParser(this.config), toml)
+        val tomlFile = parsingFunction(TomlParser(config), toml)
         val parsedToml = findPrimitiveTableInAstByName(listOf(tomlFile), tomlTableName)
             ?: throw MissingRequiredPropertyException(
                 "Cannot find table with name <$tomlTableName> in the toml input. " +
@@ -154,5 +209,8 @@ public open class Toml(
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : Toml(TomlConfig())
+    public companion object Default : Toml(
+        inputConfig = TomlInputConfig(),
+        outputConfig = TomlOutputConfig()
+    )
 }

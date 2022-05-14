@@ -5,6 +5,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -22,7 +24,7 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
 public sealed class TomlNode(
     public open val content: String,
     public open val lineNo: Int,
-    public open val config: TomlConfig = TomlConfig()
+    public open val config: TomlInputConfig = TomlInputConfig()
 ) {
     public open val children: MutableList<TomlNode> = mutableListOf()
     public open var parent: TomlNode? = null
@@ -38,7 +40,7 @@ public sealed class TomlNode(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ) : this(
         "${key.content}=${value.content}",
         lineNo,
@@ -200,6 +202,19 @@ public sealed class TomlNode(
         }
     }
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlOutputConfig instead.",
+        replaceWith = ReplaceWith(
+            "write(emitter, config, multiline)",
+            "com.akuleshov7.ktoml.TomlOutputConfig"
+        )
+    )
+    public fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean = false
+    ): Unit = write(emitter, config.output, multiline)
+
     /**
      * Writes this node as text to [emitter].
      *
@@ -209,13 +224,13 @@ public sealed class TomlNode(
      */
     public abstract fun write(
         emitter: TomlEmitter,
-        config: TomlConfig = this.config,
+        config: TomlOutputConfig = TomlOutputConfig(),
         multiline: Boolean = false
     )
 
     protected open fun TomlEmitter.writeChildren(
         children: List<TomlNode>,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         val last = children.lastIndex

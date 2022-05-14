@@ -2,7 +2,7 @@
 
 package com.akuleshov7.ktoml.file
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.writers.TomlEmitter
 import okio.BufferedSink
 import okio.Closeable
@@ -12,7 +12,7 @@ import okio.Closeable
  */
 internal class TomlSinkEmitter(
     private val sink: BufferedSink,
-    config: TomlConfig
+    config: TomlOutputConfig
 ) : TomlEmitter(config), Closeable {
     override fun emit(fragment: String): TomlEmitter {
         sink.writeUtf8(fragment)
