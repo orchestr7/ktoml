@@ -23,8 +23,6 @@ public class KtomlConf(
  * @property allowEscapedQuotesInLiteralStrings - a control to allow/prohibit escaping of single quotes in literal strings
  * @property indentation - the number of spaces in the indents for the serialization
  * @property allowEmptyToml - controls if empty toml can be processed, if false - will throw an exception
- * @property ignoreComments - controls whether comments are ignored on deserialization. If true, comments
- * will be present in the tree.
  */
 public open class TomlConfig(
     public val ignoreUnknownNames: Boolean = false,
@@ -33,7 +31,6 @@ public open class TomlConfig(
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
     public val indentation: Indentation = Indentation.FOUR_SPACES,
     public val allowEmptyToml: Boolean = true,
-    public val ignoreComments: Boolean = true,
 ) {
     /**
      * @property value - string with indents, used for the formatting of serialization

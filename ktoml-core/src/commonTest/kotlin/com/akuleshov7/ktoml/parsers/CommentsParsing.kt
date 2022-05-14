@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -18,8 +17,7 @@ class CommentsParsing {
              [[a.b]] # comment 5 
                 test = 1
         """.trimIndent()
-        val parsedToml = Toml(TomlConfig(ignoreComments = false))
-            .tomlParser.parseString(string)
+        val parsedToml = Toml.tomlParser.parseString(string)
         parsedToml.prettyPrint()
 
         val tableA = parsedToml.findTableInAstByName("a")!!

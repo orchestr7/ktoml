@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
 import kotlin.test.Test
 
 class CommentWriteTest {
@@ -23,6 +22,6 @@ class CommentWriteTest {
             [[e]] # Comment
         """.trimIndent()
 
-        testTable(toml, TomlConfig(ignoreComments = false))
+        testTable(toml)
     }
 }
