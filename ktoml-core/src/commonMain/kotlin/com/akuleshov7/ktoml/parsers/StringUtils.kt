@@ -18,21 +18,23 @@ import com.akuleshov7.ktoml.exceptions.ParseException
  */
 internal fun String.takeBeforeComment(startIndex: Int) =
         when (val hashIndex = indexOf('#', startIndex)) {
-            -1 -> this
+            -1 -> trim()
             else -> take(hashIndex).trim()
         }
 
 /**
  * Trims a comment of any text before it and its hash token.
  *
- * @param startIndex The index to start the comment search from.
  * @return The comment text, i.e.
  * ```kotlin
  * "a = 0 # Comment".trimComment() == "Comment"
  * ```
  */
-internal fun String.trimComment(startIndex: Int = 0) =
-        substring(startIndex).trim().removePrefix("#").trimStart()
+internal fun String.trimComment() =
+        when (val hashIndex = indexOf('#')) {
+            -1 -> ""
+            else -> drop(hashIndex + 1).trim()
+        }
 
 /**
  * Splitting dot-separated string to the list of tokens:
