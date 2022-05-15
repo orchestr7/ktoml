@@ -15,19 +15,24 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
  * Toml specification includes a list of supported data types:
  * String, Integer, Float, Boolean, Datetime, Array, and Table.
  *
+ * @param comments Comments prepended to the current node
+ *
  * @property content - original node content (used for logging and tests only)
  * @property lineNo - the number of a line from TOML that is linked to the current node
- * @property comments Comments prepended to the current node
  * @property inlineComment A comment appended to the end of the line
  * @property config
  */
 public sealed class TomlNode(
     public open val content: String,
     public open val lineNo: Int,
-    public val comments: List<String>,
+    comments: List<String>,
     public val inlineComment: String,
     public open val config: TomlConfig = TomlConfig()
 ) {
+    /**
+     * A list of comments prepended to the node.
+     */
+    public val comments: MutableList<String> = comments.toMutableList()
     public open val children: MutableList<TomlNode> = mutableListOf()
     public open var parent: TomlNode? = null
 

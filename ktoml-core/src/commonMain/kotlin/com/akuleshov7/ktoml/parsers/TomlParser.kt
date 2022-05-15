@@ -58,7 +58,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         val tableArray = TomlArrayOfTables(line, lineNo, config)
                         val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, latestCreatedBucket)
                         // creating a new empty element that will be used as an element in array and the parent for next key-value records
-                        val newArrayElement = TomlArrayOfTablesElement(lineNo, comments.toList(), inlineComment, config)
+                        val newArrayElement = TomlArrayOfTablesElement(lineNo, comments, inlineComment, config)
                         // adding this element as a child to the array of tables
                         arrayOfTables.appendChild(newArrayElement)
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
@@ -69,7 +69,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         // here we set the bucket that will be incredibly useful when we will be inserting the next array of tables
                         latestCreatedBucket = newArrayElement
                     } else {
-                        val tableSection = TomlTablePrimitive(line, lineNo, comments.toList(), inlineComment, config)
+                        val tableSection = TomlTablePrimitive(line, lineNo, comments, inlineComment, config)
                         // if the table is the last line in toml, then it has no children, and we need to
                         // add at least fake node as a child
                         if (index == mutableTomlLines.lastIndex) {
@@ -81,7 +81,7 @@ public value class TomlParser(private val config: TomlConfig) {
                         currentParentalNode = tomlFileHead.insertTableToTree(tableSection)
                     }
                 } else {
-                    val keyValue = line.parseTomlKeyValue(lineNo, comments.toList(), inlineComment, config)
+                    val keyValue = line.parseTomlKeyValue(lineNo, comments, inlineComment, config)
                     // inserting the key-value record to the tree
                     when {
                         keyValue is TomlKeyValue && keyValue.key.isDotted ->
