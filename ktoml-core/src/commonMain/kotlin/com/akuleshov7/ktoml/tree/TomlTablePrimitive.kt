@@ -6,10 +6,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
-import com.akuleshov7.ktoml.parsers.splitKeyToTokens
-import com.akuleshov7.ktoml.parsers.trimBrackets
-import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.parsers.*
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -51,11 +48,8 @@ public class TomlTablePrimitive(
                     " It has missing closing bracket: ']'", lineNo)
         }
 
-        // finding the index of the beginning of the comment (if any)
-        val firstHash = content.findBeginningOfTheComment(lastIndexOfBrace)
-
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.substring(0, firstHash).trim().trimBrackets()
+        val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trim().trimBrackets()
             .trim()
 
         if (sectionFromContent.isBlank()) {

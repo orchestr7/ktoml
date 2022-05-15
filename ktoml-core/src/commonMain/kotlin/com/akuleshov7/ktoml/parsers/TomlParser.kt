@@ -47,13 +47,10 @@ public value class TomlParser(private val config: TomlConfig) {
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
             // because we need to calculate and save lineNo
             if (line.isComment()) {
-                comments += line.trimCommentLine()
+                comments += line.trimComment()
             } else if (!line.isEmptyLine()) {
                 // Parse the inline comment if any
-                val inlineComment = when (val hashIndex = line.indexOf('#')) {
-                    -1 -> ""
-                    else -> line.substring(hashIndex + 1).trim()
-                }
+                val inlineComment = line.trimComment()
 
                 if (line.isTableNode()) {
                     if (line.isArrayOfTables()) {
@@ -129,9 +126,6 @@ public value class TomlParser(private val config: TomlConfig) {
         }
         return this
     }
-
-    private fun String.trimCommentLine() =
-            trim().removePrefix("#").trimStart()
 
     private fun String.isArrayOfTables(): Boolean = this.trim().startsWith("[[")
 

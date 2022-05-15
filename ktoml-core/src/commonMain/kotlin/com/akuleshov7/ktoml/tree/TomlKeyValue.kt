@@ -2,7 +2,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
+import com.akuleshov7.ktoml.parsers.takeBeforeComment
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 private typealias ValueCreator = (String, Int) -> TomlValue
@@ -87,12 +87,12 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlConfig = TomlConfig()):
         this.lastIndexOf("\"\"\"")
     ).filterNot { it == -1 }.maxOrNull() ?: 0
 
-    // finding the index of a commented part of the string
+    // removing the commented part of the string
     // search starts goes from the closingQuoteIndex to the end of the string
-    val firstHash = this.findBeginningOfTheComment(closingQuoteIndex)
+    val pair = takeBeforeComment(closingQuoteIndex)
 
     // searching for an equals sign that should be placed main part of the string (not in the comment)
-    val firstEqualsSign = this.substring(0, firstHash).indexOfFirst { it == '=' }
+    val firstEqualsSign = pair.indexOfFirst { it == '=' }
 
     // equals sign not found in the string
     if (firstEqualsSign == -1) {
@@ -105,8 +105,8 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlConfig = TomlConfig()):
     }
 
     // k = v # comment -> key is `k`, value is `v`
-    val key = this.substring(0, firstEqualsSign).trim()
-    val value = this.substring(firstEqualsSign + 1, firstHash).trim()
+    val key = pair.substring(0, firstEqualsSign).trim()
+    val value = pair.substring(firstEqualsSign + 1).trim()
 
     return Pair(
         key.checkNotEmpty("key", this, config, lineNo),

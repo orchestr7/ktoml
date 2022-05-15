@@ -7,13 +7,32 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 
 /**
- * method to find the beginning of the comments in TOML string
+ * Takes only the text before a comment, searching for a comment after the specified
+ * [startIndex].
  *
- * @param startSearchFrom the index after that the search will be done
- * @return the index of the first hash symbol or the index of the end of the string
+ * @param startIndex The index to start the comment search from.
+ * @return The text before a comment, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".takeBeforeComment() == "a = 0"
+ * ```
  */
-internal fun String.findBeginningOfTheComment(startSearchFrom: Int) =
-        (startSearchFrom until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
+internal fun String.takeBeforeComment(startIndex: Int) =
+        when (val hashIndex = indexOf('#', startIndex)) {
+            -1 -> this
+            else -> take(hashIndex).trim()
+        }
+
+/**
+ * Trims a comment of any text before it and its hash token.
+ *
+ * @param startIndex The index to start the comment search from.
+ * @return The comment text, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".trimComment() == "Comment"
+ * ```
+ */
+internal fun String.trimComment(startIndex: Int = 0) =
+        substring(startIndex).trim().removePrefix("#").trimStart()
 
 /**
  * Splitting dot-separated string to the list of tokens:
