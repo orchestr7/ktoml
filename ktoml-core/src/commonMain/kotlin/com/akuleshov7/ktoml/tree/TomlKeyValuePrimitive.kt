@@ -51,12 +51,16 @@ public class TomlKeyValuePrimitive(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
         name: String,
         config: TomlConfig
     ) : this(
         key,
         value,
         lineNo,
+        comments,
+        inlineComment,
         name,
         config.input
     )
@@ -67,10 +71,14 @@ public class TomlKeyValuePrimitive(
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
         config: TomlConfig
     ) : this(
         keyValuePair,
         lineNo,
+        comments,
+        inlineComment,
         config.input
     )
 

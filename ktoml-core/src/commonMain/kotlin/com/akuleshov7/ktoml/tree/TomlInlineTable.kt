@@ -40,10 +40,14 @@ public class TomlInlineTable(
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
         config: TomlConfig
     ) : this(
         keyValuePair,
         lineNo,
+        comments,
+        inlineComment,
         config.input
     )
 

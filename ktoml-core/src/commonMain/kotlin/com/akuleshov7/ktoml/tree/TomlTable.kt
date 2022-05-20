@@ -41,11 +41,15 @@ public abstract class TomlTable(
     public constructor(
         content: String,
         lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
         config: TomlConfig,
         isSynthetic: Boolean = false
     ) : this(
         content,
         lineNo,
+        comments,
+        inlineComment,
         config.input,
         isSynthetic
     )
