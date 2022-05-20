@@ -10,6 +10,8 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlFile(config: TomlConfig = TomlConfig()) : TomlNode(
     "rootNode",
     0,
+    comments = emptyList(),
+    inlineComment = "",
     config
 ) {
     override val name: String = "rootNode"

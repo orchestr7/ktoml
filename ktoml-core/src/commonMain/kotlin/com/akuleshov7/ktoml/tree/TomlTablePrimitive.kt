@@ -6,10 +6,7 @@ package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
-import com.akuleshov7.ktoml.parsers.splitKeyToTokens
-import com.akuleshov7.ktoml.parsers.trimBrackets
-import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.parsers.*
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -21,11 +18,15 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlTablePrimitive(
     content: String,
     lineNo: Int,
+    comments: List<String> = emptyList(),
+    inlineComment: String = "",
     config: TomlConfig = TomlConfig(),
     isSynthetic: Boolean = false
 ) : TomlTable(
     content,
     lineNo,
+    comments,
+    inlineComment,
     config,
     isSynthetic
 ) {
@@ -47,11 +48,8 @@ public class TomlTablePrimitive(
                     " It has missing closing bracket: ']'", lineNo)
         }
 
-        // finding the index of the beginning of the comment (if any)
-        val firstHash = content.findBeginningOfTheComment(lastIndexOfBrace)
-
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.substring(0, firstHash).trim().trimBrackets()
+        val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trim().trimBrackets()
             .trim()
 
         if (sectionFromContent.isBlank()) {
@@ -93,6 +91,8 @@ public class TomlTablePrimitive(
         var prevChild: TomlNode? = null
 
         children.forEachIndexed { i, child ->
+            writeChildComments(child)
+
             // Declare the super table after a nested table, to avoid a pair being
             // a part of the previous table by mistake.
             if ((child is TomlKeyValue || child is TomlInlineTable) &&
@@ -112,6 +112,7 @@ public class TomlTablePrimitive(
             }
 
             child.write(emitter = this, config, multiline)
+            writeChildInlineComment(child)
 
             if (i < last) {
                 emitNewLine()

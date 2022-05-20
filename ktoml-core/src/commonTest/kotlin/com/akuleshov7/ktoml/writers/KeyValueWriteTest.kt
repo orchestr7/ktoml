@@ -95,7 +95,7 @@ fun testTomlPrimitivePair(
     pair: Pair<String, String>,
     config: TomlConfig = TomlConfig()
 ) = testTomlPair(
-    TomlKeyValuePrimitive(pair, 0, config),
+    TomlKeyValuePrimitive(pair, 0, config = config),
     expectedString = "${pair.first} = ${pair.second}",
     config,
     multiline = false
@@ -106,7 +106,7 @@ fun testTomlArrayPair(
     multiline: Boolean,
     config: TomlConfig = TomlConfig(),
 ) = testTomlPair(
-    TomlKeyValueArray(pair, 0, config),
+    TomlKeyValueArray(pair, 0, config = config),
     expectedString = "${pair.first} = ${pair.second}",
     config,
     multiline
@@ -116,7 +116,7 @@ fun testTomlInlineTablePair(
     pair: Pair<String, String>,
     config: TomlConfig = TomlConfig(),
 ) = testTomlPair(
-    TomlInlineTable(pair, 0, config),
+    TomlInlineTable(pair, 0, config = config),
     expectedString = "${pair.first} = ${pair.second}",
     config,
     multiline = false
