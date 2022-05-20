@@ -20,11 +20,15 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public abstract class TomlTable(
     override val content: String,
     override val lineNo: Int,
+    comments: List<String>,
+    inlineComment: String,
     override val config: TomlInputConfig = TomlInputConfig(),
     public val isSynthetic: Boolean = false
 ) : TomlNode(
     content,
     lineNo,
+    comments,
+    inlineComment,
     config
 ) {
     public abstract var fullTableName: String
@@ -60,6 +64,10 @@ public abstract class TomlTable(
 
         if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
             emitter.writeHeader(key, config)
+
+            if (inlineComment.isNotEmpty()) {
+                emitter.emitComment(inlineComment, inline = true)
+            }
 
             if (firstChild !is TomlStubEmptyNode) {
                 emitter.emitNewLine()

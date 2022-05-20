@@ -85,12 +85,12 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * Emits a [comment], optionally making it end-of-line.
      *
      * @param comment
-     * @param endOfLine Whether the comment is at the end of a line, e.g. after a
+     * @param inline Whether the comment is at the end of a line, e.g. after a
      * table header.
      * @return this instance
      */
-    public fun emitComment(comment: String, endOfLine: Boolean = false): TomlEmitter =
-            emit(if (endOfLine) " # " else "# ")
+    public fun emitComment(comment: String, inline: Boolean = false): TomlEmitter =
+            emit(if (inline) " # " else "# ")
                 .emit(comment)
 
     /**

@@ -17,15 +17,24 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
  * Toml specification includes a list of supported data types:
  * String, Integer, Float, Boolean, Datetime, Array, and Table.
  *
+ * @param comments Comments prepended to the current node
+ *
  * @property content - original node content (used for logging and tests only)
  * @property lineNo - the number of a line from TOML that is linked to the current node
+ * @property inlineComment A comment appended to the end of the line
  * @property config
  */
 public sealed class TomlNode(
     public open val content: String,
     public open val lineNo: Int,
+    comments: List<String>,
+    public val inlineComment: String,
     public open val config: TomlInputConfig = TomlInputConfig()
 ) {
+    /**
+     * A list of comments prepended to the node.
+     */
+    public val comments: MutableList<String> = comments.toMutableList()
     public open val children: MutableList<TomlNode> = mutableListOf()
     public open var parent: TomlNode? = null
 
@@ -40,10 +49,14 @@ public sealed class TomlNode(
         key: TomlKey,
         value: TomlValue,
         lineNo: Int,
+        comments: List<String>,
+        inlineComment: String,
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
         "${key.content}=${value.content}",
         lineNo,
+        comments,
+        inlineComment,
         config
     )
 
@@ -135,9 +148,21 @@ public sealed class TomlNode(
                 } else {
                     // creating a synthetic (technical) fragment of the table
                     val newChildTableName = if (tomlTable is TomlArrayOfTables) {
-                        TomlArrayOfTables("[[$subTable]]", lineNo, config, true)
+                        TomlArrayOfTables(
+                            "[[$subTable]]",
+                            lineNo,
+                            config,
+                            true
+                        )
                     } else {
-                        TomlTablePrimitive("[$subTable]", lineNo, config, true)
+                        TomlTablePrimitive(
+                            "[$subTable]",
+                            lineNo,
+                            tomlTable.comments,
+                            tomlTable.inlineComment,
+                            config,
+                            true
+                        )
                     }
                     previousParent.determineParentAndInsertFragmentOfTable(newChildTableName)
                     newChildTableName
@@ -236,8 +261,14 @@ public sealed class TomlNode(
         val last = children.lastIndex
 
         children.forEachIndexed { i, child ->
+            writeChildComments(child)
+
             emitIndent()
             child.write(emitter = this, config, multiline)
+
+            if (child is TomlKeyValue || child is TomlInlineTable) {
+                writeChildInlineComment(child)
+            }
 
             if (i < last) {
                 emitNewLine()
@@ -249,6 +280,20 @@ public sealed class TomlNode(
                     emitNewLine()
                 }
             }
+        }
+    }
+
+    protected fun TomlEmitter.writeChildComments(child: TomlNode) {
+        child.comments.forEach { comment ->
+            emitIndent()
+                .emitComment(comment)
+                .emitNewLine()
+        }
+    }
+
+    protected fun TomlEmitter.writeChildInlineComment(child: TomlNode) {
+        if (child.inlineComment.isNotEmpty()) {
+            emitComment(child.inlineComment, inline = true)
         }
     }
 

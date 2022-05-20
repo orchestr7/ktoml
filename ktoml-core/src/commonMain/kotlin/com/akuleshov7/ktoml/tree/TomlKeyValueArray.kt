@@ -16,23 +16,31 @@ public class TomlKeyValueArray(
     override var key: TomlKey,
     override val value: TomlValue,
     override val lineNo: Int,
+    comments: List<String>,
+    inlineComment: String,
     override val name: String,
     config: TomlInputConfig = TomlInputConfig()
 ) : TomlNode(
     key,
     value,
     lineNo,
+    comments,
+    inlineComment,
     config
 ), TomlKeyValue {
     // adaptor for a string pair of key-value
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
         keyValuePair.second.parseList(lineNo, config),
         lineNo,
+        comments,
+        inlineComment,
         TomlKey(keyValuePair.first, lineNo).content
     )
 

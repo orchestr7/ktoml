@@ -156,5 +156,5 @@ fun testTomlValue(
     expectedType: NodeType,
     config: TomlInputConfig = TomlInputConfig()
 ) {
-    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config).value))
+    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config = config).value))
 }

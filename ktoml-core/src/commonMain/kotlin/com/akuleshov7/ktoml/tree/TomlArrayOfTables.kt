@@ -8,8 +8,8 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.findBeginningOfTheComment
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
+import com.akuleshov7.ktoml.parsers.takeBeforeComment
 import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -28,6 +28,8 @@ public class TomlArrayOfTables(
 ) : TomlTable(
     content,
     lineNo,
+    comments = emptyList(),
+    inlineComment = "",
     config,
     isSynthetic
 ) {
@@ -49,11 +51,8 @@ public class TomlArrayOfTables(
                     " It has missing closing brackets: ']]'", lineNo)
         }
 
-        // finding the index of the beginning of the comment (if any)
-        val firstHash = content.findBeginningOfTheComment(lastIndexOfBrace)
-
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.substring(0, firstHash).trim().trimDoubleBrackets()
+        val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trimDoubleBrackets()
             .trim()
 
         if (sectionFromContent.isBlank()) {
@@ -106,7 +105,9 @@ public class TomlArrayOfTables(
                     emitIndent()
                 }
 
+                writeChildComments(child)
                 writeHeader(headerKey, config)
+                writeChildInlineComment(child)
 
                 if (!child.hasNoChildren()) {
                     emitNewLine()
@@ -137,9 +138,16 @@ public class TomlArrayOfTables(
 /**
  * This class is used to store elements of array of tables (bucket for key-value records)
  */
-public class TomlArrayOfTablesElement(lineNo: Int, config: TomlInputConfig = TomlInputConfig()) : TomlNode(
+public class TomlArrayOfTablesElement(
+    lineNo: Int,
+    comments: List<String>,
+    inlineComment: String,
+    config: TomlInputConfig = TomlInputConfig()
+) : TomlNode(
     EMPTY_TECHNICAL_NODE,
     lineNo,
+    comments,
+    inlineComment,
     config
 ) {
     override val name: String = EMPTY_TECHNICAL_NODE

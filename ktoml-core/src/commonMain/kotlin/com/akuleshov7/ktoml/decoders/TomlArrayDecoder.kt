@@ -51,6 +51,8 @@ public class TomlArrayDecoder(
                 rootNode.key,
                 currentPrimitiveElementOfArray,
                 rootNode.lineNo,
+                comments = emptyList(),
+                inlineComment = "",
                 rootNode.key.content,
                 config
             )
