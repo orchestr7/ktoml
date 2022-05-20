@@ -69,28 +69,20 @@ public open class TomlConfig(
 }
 
 /**
- * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
- */
-public sealed class TomlCommonConfig(
-    public val allowEscapedQuotesInLiteralStrings: Boolean,
-)
-
-/**
  * A config to change parsing behavior.
  * @property ignoreUnknownNames Whether to allow/prohibit unknown names during the deserialization
  * @property allowEmptyValues Whether to allow/prohibit empty values: a = # comment
  * @property allowNullValues Whether to allow/prohibit null values: a = null
  * @property allowEmptyToml Whether empty toml can be processed, if false - will throw an exception
- *
- * @param allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
+ * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
  */
-public class TomlInputConfig(
+public data class TomlInputConfig(
     public val ignoreUnknownNames: Boolean = false,
     public val allowEmptyValues: Boolean = true,
     public val allowNullValues: Boolean = true,
     public val allowEmptyToml: Boolean = true,
-    allowEscapedQuotesInLiteralStrings: Boolean = true,
-) : TomlCommonConfig(allowEscapedQuotesInLiteralStrings) {
+    public val allowEscapedQuotesInLiteralStrings: Boolean = true
+) {
     public companion object {
         /**
          * Creates a config populated with values compliant with the TOML spec.
@@ -116,14 +108,13 @@ public class TomlInputConfig(
 /**
  * A config to change writing behavior.
  *
- * @param allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
- *
  * @property indentation The number of spaces in the indents for the serialization
+ * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
  */
-public class TomlOutputConfig(
+public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
-    allowEscapedQuotesInLiteralStrings: Boolean = true,
-) : TomlCommonConfig(allowEscapedQuotesInLiteralStrings) {
+    public val allowEscapedQuotesInLiteralStrings: Boolean = true,
+) {
     public companion object {
         /**
          * Creates a config populated with values compliant with the TOML spec.
