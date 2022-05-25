@@ -5,6 +5,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.*
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -20,7 +22,7 @@ public class TomlTablePrimitive(
     lineNo: Int,
     comments: List<String> = emptyList(),
     inlineComment: String = "",
-    config: TomlConfig = TomlConfig(),
+    config: TomlInputConfig = TomlInputConfig(),
     isSynthetic: Boolean = false
 ) : TomlTable(
     content,
@@ -65,13 +67,32 @@ public class TomlTablePrimitive(
         }
     }
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
+    )
+    public constructor(
+        content: String,
+        lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
+        config: TomlConfig,
+        isSynthetic: Boolean = false
+    ) : this(
+        content,
+        lineNo,
+        comments,
+        inlineComment,
+        config.input,
+        isSynthetic
+    )
+
     override fun TomlEmitter.writeHeader(
         headerKey: TomlKey,
-        config: TomlConfig
+        config: TomlOutputConfig
     ) {
         startTableHeader()
 
-        headerKey.write(emitter = this, config)
+        headerKey.write(emitter = this)
 
         endTableHeader()
     }
@@ -79,7 +100,7 @@ public class TomlTablePrimitive(
     override fun TomlEmitter.writeChildren(
         headerKey: TomlKey,
         children: List<TomlNode>,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         if (children.first() is TomlStubEmptyNode) {

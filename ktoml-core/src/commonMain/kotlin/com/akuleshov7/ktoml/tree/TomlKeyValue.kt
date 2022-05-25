@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -28,7 +29,7 @@ internal interface TomlKeyValue {
      * @param config
      * @return the table that is parsed from a dotted key
      */
-    fun createTomlTableFromDottedKey(parentNode: TomlNode, config: TomlConfig = TomlConfig()): TomlTablePrimitive {
+    fun createTomlTableFromDottedKey(parentNode: TomlNode, config: TomlInputConfig = TomlInputConfig()): TomlTablePrimitive {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
         // creating new key with the last dot-separated fragment
@@ -50,10 +51,10 @@ internal interface TomlKeyValue {
 
     fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
-        key.write(emitter, config)
+        key.write(emitter)
 
         emitter.emitPairDelimiter()
 
@@ -69,7 +70,7 @@ internal interface TomlKeyValue {
  * @param config
  * @return an object of type Array that was parsed from string
  */
-public fun String.parseList(lineNo: Int, config: TomlConfig): TomlArray = TomlArray(this, lineNo, config)
+public fun String.parseList(lineNo: Int, config: TomlInputConfig): TomlArray = TomlArray(this, lineNo, config)
 
 /**
  * parse and split a string in a key-value format
@@ -79,7 +80,7 @@ public fun String.parseList(lineNo: Int, config: TomlConfig): TomlArray = TomlAr
  * @return a resulted key-value pair
  * @throws ParseException
  */
-public fun String.splitKeyValue(lineNo: Int, config: TomlConfig = TomlConfig()): Pair<String, String> {
+public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): Pair<String, String> {
     // finding the index of the last quote, if no quotes are found, then use the length of the string
     val closingQuoteIndex = listOf(
         this.lastIndexOf("\""),
@@ -122,7 +123,7 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlConfig = TomlConfig()):
  * @param config
  * @return parsed TomlNode value
  */
-public fun String.parseValue(lineNo: Int, config: TomlConfig): TomlValue = when (this) {
+public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = when (this) {
     // ===== null values
     "null", "nil", "NULL", "NIL", "" -> if (config.allowNullValues) {
         TomlNull(lineNo)
@@ -162,7 +163,7 @@ private inline fun <reified E : Throwable> String.tryParseValue(
 private fun String.checkNotEmpty(
     log: String,
     content: String,
-    config: TomlConfig = TomlConfig(),
+    config: TomlInputConfig = TomlInputConfig(),
     lineNo: Int
 ): String =
         this.also {

@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -80,18 +81,19 @@ class TableWriteTest {
 
 fun testTable(
     expected: String,
-    config: TomlConfig = TomlConfig()
+    inputConfig: TomlInputConfig = TomlInputConfig(),
+    outputConfig: TomlOutputConfig = TomlOutputConfig()
 ) {
-    val file = Toml(config).tomlParser.parseString(expected)
+    val file = Toml(inputConfig, outputConfig).tomlParser.parseString(expected)
 
     file.prettyPrint()
 
     assertEquals(
         expected,
         buildString(expected.length) {
-            val emitter = TomlStringEmitter(this, config)
+            val emitter = TomlStringEmitter(this, outputConfig)
 
-            file.write(emitter, config)
+            file.write(emitter, outputConfig)
         }
     )
 }

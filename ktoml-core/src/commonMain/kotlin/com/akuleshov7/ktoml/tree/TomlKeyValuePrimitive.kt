@@ -1,6 +1,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -17,7 +19,7 @@ public class TomlKeyValuePrimitive(
     comments: List<String>,
     inlineComment: String,
     override val name: String,
-    config: TomlConfig = TomlConfig()
+    config: TomlInputConfig = TomlInputConfig()
 ) : TomlNode(
     key,
     value,
@@ -32,7 +34,7 @@ public class TomlKeyValuePrimitive(
         lineNo: Int,
         comments: List<String> = emptyList(),
         inlineComment: String = "",
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
         keyValuePair.second.parseValue(lineNo, config),
@@ -42,9 +44,47 @@ public class TomlKeyValuePrimitive(
         TomlKey(keyValuePair.first, lineNo).content
     )
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
+    )
+    public constructor(
+        key: TomlKey,
+        value: TomlValue,
+        lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
+        name: String,
+        config: TomlConfig
+    ) : this(
+        key,
+        value,
+        lineNo,
+        comments,
+        inlineComment,
+        name,
+        config.input
+    )
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
+    )
+    public constructor(
+        keyValuePair: Pair<String, String>,
+        lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
+        config: TomlConfig
+    ) : this(
+        keyValuePair,
+        lineNo,
+        comments,
+        inlineComment,
+        config.input
+    )
+
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
-    ): Unit = super.write(emitter, config, multiline)
+    ): Unit = super<TomlKeyValue>.write(emitter, config, multiline)
 }

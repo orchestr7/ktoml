@@ -5,6 +5,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -20,7 +22,7 @@ public abstract class TomlTable(
     override val lineNo: Int,
     comments: List<String>,
     inlineComment: String,
-    override val config: TomlConfig = TomlConfig(),
+    override val config: TomlInputConfig = TomlInputConfig(),
     public val isSynthetic: Boolean = false
 ) : TomlNode(
     content,
@@ -33,9 +35,28 @@ public abstract class TomlTable(
     public abstract var tablesList: List<String>
     public abstract val type: TableType
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
+    )
+    public constructor(
+        content: String,
+        lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
+        config: TomlConfig,
+        isSynthetic: Boolean = false
+    ) : this(
+        content,
+        lineNo,
+        comments,
+        inlineComment,
+        config.input,
+        isSynthetic
+    )
+
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         // Todo: Option to explicitly define super tables?
@@ -69,13 +90,13 @@ public abstract class TomlTable(
     protected abstract fun TomlEmitter.writeChildren(
         headerKey: TomlKey,
         children: List<TomlNode>,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     )
 
     protected abstract fun TomlEmitter.writeHeader(
         headerKey: TomlKey,
-        config: TomlConfig
+        config: TomlOutputConfig
     )
 
     /**

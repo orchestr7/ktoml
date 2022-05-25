@@ -3,6 +3,8 @@ package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
@@ -16,10 +18,28 @@ import kotlinx.serialization.modules.SerializersModule
  * @property serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
-public open class TomlFileReader(
-    private val config: TomlConfig = TomlConfig(),
-    override val serializersModule: SerializersModule = EmptySerializersModule
-) : Toml(config, serializersModule) {
+public open class TomlFileReader : Toml {
+    public constructor(
+        inputConfig: TomlInputConfig = TomlInputConfig(),
+        outputConfig: TomlOutputConfig = TomlOutputConfig(),
+        serializersModule: SerializersModule = EmptySerializersModule
+    ) : super(
+        inputConfig,
+        outputConfig,
+        serializersModule
+    )
+
+    @Deprecated(
+        message = "config parameter split into inputConfig and outputConfig. Will be removed in next releases."
+    )
+    public constructor(
+        config: TomlConfig,
+        serializersModule: SerializersModule = EmptySerializersModule
+    ) : super(
+        config,
+        serializersModule
+    )
+
     /**
      * Simple deserializer of a file that contains toml. Reading file with okio native library
      *
@@ -32,7 +52,7 @@ public open class TomlFileReader(
         tomlFilePath: String,
     ): T {
         val parsedToml = readAndParseFile(tomlFilePath)
-        return decodeFromString(deserializer, parsedToml, config)
+        return decodeFromString(deserializer, parsedToml, inputConfig)
     }
 
     /**
@@ -54,7 +74,7 @@ public open class TomlFileReader(
         tomlTableName: String,
     ): T {
         val parsedToml = readAndParseFile(tomlFilePath)
-        return partiallyDecodeFromString(deserializer, parsedToml, tomlTableName, config)
+        return partiallyDecodeFromString(deserializer, parsedToml, tomlTableName, inputConfig)
     }
 
     /**
@@ -63,5 +83,8 @@ public open class TomlFileReader(
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : TomlFileReader(TomlConfig())
+    public companion object Default : TomlFileReader(
+        inputConfig = TomlInputConfig(),
+        outputConfig = TomlOutputConfig()
+    )
 }

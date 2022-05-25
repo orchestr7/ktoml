@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.*
 import kotlin.test.Test
@@ -33,7 +33,7 @@ class ValueParserTest {
     fun nullParsingTest() {
         testTomlValue("a" to "null", NodeType.NULL)
         assertFailsWith<ParseException> {
-            testTomlValue("a" to "null", NodeType.NULL, TomlConfig(allowNullValues = false))
+            testTomlValue("a" to "null", NodeType.NULL, TomlInputConfig(allowNullValues = false))
         }
     }
 
@@ -154,7 +154,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
 fun testTomlValue(
     keyValuePair: Pair<String, String>,
     expectedType: NodeType,
-    config: TomlConfig = TomlConfig()
+    config: TomlInputConfig = TomlInputConfig()
 ) {
     assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config = config).value))
 }

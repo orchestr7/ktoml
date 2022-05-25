@@ -183,8 +183,8 @@ val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.TomlConfig
 /* ========= */
-var tomlAST = TomlParser(TomlConfig()).parseStringsToTomlTree(/* list with toml strings */)
-tomlAST = TomlParser(TomlConfig()).parseString(/* the string that you want to parse */)
+var tomlAST = TomlParser(TomlInputConfig()).parseStringsToTomlTree(/* list with toml strings */)
+tomlAST = TomlParser(TomlInputConfig()).parseString(/* the string that you want to parse */)
 tomlAST.prettyPrint()
 ```
 </details>
@@ -195,7 +195,7 @@ special configuration class that can be passed to the decoder method:
 
 ```kotlin
 Toml(
-    config = TomlConfig(
+    inputConfig = TomlInputConfig(
         // allow/prohibit unknown names during the deserialization, default false
         ignoreUnknownNames = false,
         // allow/prohibit empty values like "a = # comment", default true
@@ -206,6 +206,8 @@ Toml(
         allowEscapedQuotesInLiteralStrings = true,
         // allow/prohibit processing of empty toml, if false - throws an InternalDecodingException exception, default is true
         allowEmptyToml = true,
+    ),
+    outputConfig = TomlOutputConfig(
         // indentation symbols for serialization, default 4 spaces
         indentation = Indentation.FOUR_SPACES,
     )

@@ -5,6 +5,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
@@ -21,7 +23,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlArrayOfTables(
     content: String,
     lineNo: Int,
-    config: TomlConfig = TomlConfig(),
+    config: TomlInputConfig = TomlInputConfig(),
     isSynthetic: Boolean = false
 ) : TomlTable(
     content,
@@ -66,10 +68,25 @@ public class TomlArrayOfTables(
         }
     }
 
-    override fun TomlEmitter.writeHeader(headerKey: TomlKey, config: TomlConfig) {
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
+    )
+    public constructor(
+        content: String,
+        lineNo: Int,
+        config: TomlConfig,
+        isSynthetic: Boolean = false
+    ) : this(
+        content,
+        lineNo,
+        config.input,
+        isSynthetic
+    )
+
+    override fun TomlEmitter.writeHeader(headerKey: TomlKey, config: TomlOutputConfig) {
         startTableArrayHeader()
 
-        headerKey.write(emitter = this, config)
+        headerKey.write(emitter = this)
 
         endTableArrayHeader()
     }
@@ -77,7 +94,7 @@ public class TomlArrayOfTables(
     override fun TomlEmitter.writeChildren(
         headerKey: TomlKey,
         children: List<TomlNode>,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         val last = children.lastIndex
@@ -125,7 +142,7 @@ public class TomlArrayOfTablesElement(
     lineNo: Int,
     comments: List<String>,
     inlineComment: String,
-    config: TomlConfig = TomlConfig()
+    config: TomlInputConfig = TomlInputConfig()
 ) : TomlNode(
     EMPTY_TECHNICAL_NODE,
     lineNo,
@@ -137,7 +154,7 @@ public class TomlArrayOfTablesElement(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ): Unit = emitter.writeChildren(children, config, multiline)
 }

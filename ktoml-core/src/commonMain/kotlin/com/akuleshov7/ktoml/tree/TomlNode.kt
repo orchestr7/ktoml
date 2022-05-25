@@ -5,6 +5,8 @@
 package com.akuleshov7.ktoml.tree
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -27,7 +29,7 @@ public sealed class TomlNode(
     public open val lineNo: Int,
     comments: List<String>,
     public val inlineComment: String,
-    public open val config: TomlConfig = TomlConfig()
+    public open val config: TomlInputConfig = TomlInputConfig()
 ) {
     /**
      * A list of comments prepended to the node.
@@ -49,7 +51,7 @@ public sealed class TomlNode(
         lineNo: Int,
         comments: List<String>,
         inlineComment: String,
-        config: TomlConfig = TomlConfig()
+        config: TomlInputConfig = TomlInputConfig()
     ) : this(
         "${key.content}=${value.content}",
         lineNo,
@@ -225,6 +227,19 @@ public sealed class TomlNode(
         }
     }
 
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlOutputConfig instead. Will be removed in next releases.",
+        replaceWith = ReplaceWith(
+            "write(emitter, config, multiline)",
+            "com.akuleshov7.ktoml.TomlOutputConfig"
+        )
+    )
+    public fun write(
+        emitter: TomlEmitter,
+        config: TomlConfig,
+        multiline: Boolean = false
+    ): Unit = write(emitter, config.output, multiline)
+
     /**
      * Writes this node as text to [emitter].
      *
@@ -234,13 +249,13 @@ public sealed class TomlNode(
      */
     public abstract fun write(
         emitter: TomlEmitter,
-        config: TomlConfig = this.config,
+        config: TomlOutputConfig = TomlOutputConfig(),
         multiline: Boolean = false
     )
 
     protected open fun TomlEmitter.writeChildren(
         children: List<TomlNode>,
-        config: TomlConfig,
+        config: TomlOutputConfig,
         multiline: Boolean
     ) {
         val last = children.lastIndex
