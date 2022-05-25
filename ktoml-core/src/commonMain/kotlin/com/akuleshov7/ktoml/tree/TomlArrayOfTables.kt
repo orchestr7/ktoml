@@ -69,7 +69,7 @@ public class TomlArrayOfTables(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
     )
     public constructor(
         content: String,

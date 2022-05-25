@@ -25,7 +25,7 @@ public class KtomlConf(
  * @property allowEmptyToml - controls if empty toml can be processed, if false - will throw an exception
  */
 @Deprecated(
-    message = "Class split into TomlInputConfig and TomlOutputConfig."
+    message = "Class split into TomlInputConfig and TomlOutputConfig. Will be removed in next releases."
 )
 public open class TomlConfig(
     public val ignoreUnknownNames: Boolean = false,

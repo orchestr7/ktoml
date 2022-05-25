@@ -26,7 +26,7 @@ public sealed class TomlValue(public val lineNo: Int) {
     public abstract var content: Any
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlOutputConfig instead.",
+        message = "TomlConfig is deprecated; use TomlOutputConfig instead. Will be removed in next releases.",
         replaceWith = ReplaceWith(
             "write(emitter, config, multiline)",
             "com.akuleshov7.ktoml.TomlOutputConfig"
@@ -71,7 +71,7 @@ internal constructor(
     ) : this(content.verifyAndTrimQuotes(lineNo, config), lineNo)
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
     )
     public constructor(
         content: String,
@@ -462,7 +462,7 @@ internal constructor(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
     )
     public constructor(
         rawContent: String,
@@ -475,7 +475,7 @@ internal constructor(
     )
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases.",
         replaceWith = ReplaceWith(
             "parse(config)",
             "com.akuleshov7.ktoml.TomlInputConfig"

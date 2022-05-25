@@ -21,7 +21,7 @@ public class TomlStubEmptyNode(lineNo: Int, config: TomlInputConfig = TomlInputC
     override val name: String = EMPTY_TECHNICAL_NODE
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
     )
     public constructor(lineNo: Int, config: TomlConfig) : this(lineNo, config.input)
 

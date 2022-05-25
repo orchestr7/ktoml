@@ -8,12 +8,10 @@ import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
 
 import kotlin.native.concurrent.ThreadLocal
-
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
-
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -37,7 +35,7 @@ public open class Toml(
     public val tomlWriter: TomlWriter = TomlWriter(outputConfig)
 
     @Deprecated(
-        message = "config parameter split into inputConfig and outputConfig."
+        message = "config parameter split into inputConfig and outputConfig. Will be removed in next releases."
     )
     public constructor(
         config: TomlConfig,
@@ -85,7 +83,7 @@ public open class Toml(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases.",
         replaceWith = ReplaceWith(
             "decodeFromString(deserializer, toml, config)",
             "com.akuleshov7.ktoml.TomlInputConfig"
@@ -122,7 +120,7 @@ public open class Toml(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases.",
         replaceWith = ReplaceWith(
             "partiallyDecodeFromString(deserializer, toml, tomlTableName, config)",
             "com.akuleshov7.ktoml.TomlInputConfig"
@@ -165,7 +163,7 @@ public open class Toml(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead.",
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases.",
         replaceWith = ReplaceWith(
             "partiallyDecodeFromString(deserializer, toml, tomlTableName, config)",
             "com.akuleshov7.ktoml.TomlInputConfig"

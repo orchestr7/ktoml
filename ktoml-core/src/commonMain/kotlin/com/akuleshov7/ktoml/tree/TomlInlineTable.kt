@@ -35,7 +35,7 @@ public class TomlInlineTable(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
     )
     public constructor(
         keyValuePair: Pair<String, String>,

@@ -19,7 +19,7 @@ public class TomlFile(config: TomlInputConfig = TomlInputConfig()) : TomlNode(
     override val name: String = "rootNode"
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead."
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
     )
     public constructor(config: TomlConfig) : this(config.input)
 

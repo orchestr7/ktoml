@@ -228,7 +228,7 @@ public sealed class TomlNode(
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated; use TomlOutputConfig instead.",
+        message = "TomlConfig is deprecated; use TomlOutputConfig instead. Will be removed in next releases.",
         replaceWith = ReplaceWith(
             "write(emitter, config, multiline)",
             "com.akuleshov7.ktoml.TomlOutputConfig"

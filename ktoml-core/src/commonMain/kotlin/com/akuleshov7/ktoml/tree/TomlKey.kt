@@ -43,7 +43,7 @@ public class TomlKey(public val rawContent: String, public val lineNo: Int) {
     }
 
     @Deprecated(
-        message = "TomlConfig is deprecated",
+        message = "TomlConfig is deprecated. Will be removed in next releases.",
         replaceWith = ReplaceWith("write(emitter)")
     )
     public fun write(emitter: TomlEmitter, config: TomlConfig): Unit = write(emitter)
