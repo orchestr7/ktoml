@@ -12,7 +12,6 @@ kotlin {
     explicitApi()
 
     js(IR) {
-        browser()
         nodejs()
     }
 
