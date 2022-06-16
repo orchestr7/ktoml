@@ -21,6 +21,8 @@ kotlin {
     linuxX64()
     macosX64()
 
+    ios()
+
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
@@ -48,6 +50,13 @@ kotlin {
         }
 
         val jvmMain by getting {
+            dependencies {
+                implementation("com.squareup.okio:okio:${Versions.OKIO}")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
+            }
+        }
+
+        val iosMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
