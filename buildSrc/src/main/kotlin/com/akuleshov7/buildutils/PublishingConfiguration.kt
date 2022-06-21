@@ -61,8 +61,6 @@ fun Project.configurePublishing() {
             "js",
             "linuxX64",
             "mingwX64",
-            "iosX64",
-            "iosArm64",
             "kotlinMultiplatform",
             "metadata"
         )

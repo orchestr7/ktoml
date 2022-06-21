@@ -77,7 +77,7 @@ tasks.withType<KotlinJvmTest> {
 }
 
 tasks.withType<KotlinJsTest> {
-    if (this.name.contains("testTask")) {
+    if (this.name.contains("jsBrowserTest")) {
         this.enabled = false
     }
 }
