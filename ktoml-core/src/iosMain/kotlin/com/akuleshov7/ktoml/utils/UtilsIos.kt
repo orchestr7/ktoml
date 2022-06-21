@@ -1,3 +1,7 @@
+/**
+ * Specific implementation for utilities
+ */
+
 package com.akuleshov7.ktoml.utils
 
 @Suppress("MAGIC_NUMBER")

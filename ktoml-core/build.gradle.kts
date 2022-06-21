@@ -28,6 +28,7 @@ kotlin {
     mingwX64()
     linuxX64()
     macosX64()
+    macosArm64()
     ios()
 
     sourceSets {
