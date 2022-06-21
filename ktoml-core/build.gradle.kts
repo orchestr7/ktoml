@@ -28,6 +28,8 @@ kotlin {
     mingwX64()
     linuxX64()
     macosX64()
+    macosArm64()
+    ios()
 
     sourceSets {
         all {
@@ -75,7 +77,7 @@ tasks.withType<KotlinJvmTest> {
 }
 
 tasks.withType<KotlinJsTest> {
-    if (this.name.contains("testTask")) {
+    if (this.name.contains("jsBrowserTest")) {
         this.enabled = false
     }
 }
