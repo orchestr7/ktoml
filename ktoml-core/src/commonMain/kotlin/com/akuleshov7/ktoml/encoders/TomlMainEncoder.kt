@@ -86,4 +86,29 @@ public class TomlMainEncoder(
             elementIndex = enc.elementIndex
         }
     }
+
+    public companion object {
+        /**
+         * Encodes the specified [value] into a [TomlFile].
+         *
+         * @param serializer The user-defined or compiler-generated serializer for
+         * type [T].
+         * @param value The value to serialize.
+         * @param config The input config, used for constructing nodes.
+         * @return The encoded [TomlFile] node.
+         */
+        public fun <T> encode(
+            serializer: SerializationStrategy<T>,
+            value: T,
+            config: TomlInputConfig = TomlInputConfig()
+        ): TomlFile {
+            val root = TomlFile(config)
+
+            val encoder = TomlMainEncoder(root, config = config)
+
+            encoder.encodeSerializableValue(serializer, value)
+
+            return root
+        }
+    }
 }

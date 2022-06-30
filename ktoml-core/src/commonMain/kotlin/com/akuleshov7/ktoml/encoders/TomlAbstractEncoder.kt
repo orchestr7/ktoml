@@ -24,7 +24,7 @@ import kotlinx.serialization.modules.SerializersModule
  * An abstract Encoder for the TOML format.
  * @property elementIndex The current element index. The next element index will be
  * this `+ 1`
- * @property config
+ * @property config The input config, used for constructing nodes.
  */
 @OptIn(ExperimentalSerializationApi::class)
 public abstract class TomlAbstractEncoder(
