@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
+import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.TomlFile
@@ -60,7 +61,9 @@ public open class Toml(
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        TODO("Not yet implemented")
+        val toml = TomlMainEncoder.encode(serializer, value, inputConfig)
+
+        return tomlWriter.writeToString(file = toml)
     }
 
     // ================== custom decoding methods ===============
