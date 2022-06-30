@@ -13,6 +13,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
@@ -33,7 +34,7 @@ public abstract class TomlAbstractEncoder(
     private val isInlineDefault: Boolean = false
 ) : AbstractEncoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule
-    protected abstract val currentKey: String
+    protected abstract var currentKey: String
 
     // Flags
     private var isStringMultiline = false
@@ -172,6 +173,48 @@ public abstract class TomlAbstractEncoder(
             return
         }
 
+        when (val parentKind = descriptor.kind) {
+            StructureKind.MAP -> {
+                // Serialize the key and skip.
+                if (index % 2 == 0) {
+                    when (descriptor.getElementDescriptor(index)) {
+                        String.serializer().descriptor -> currentKey = value as String
+                        else -> {
+                            // A hack to get the key from custom serializers
+                            serializer.serialize(
+                                object : AbstractEncoder() {
+                                    override val serializersModule: SerializersModule = this@TomlAbstractEncoder.serializersModule
+
+                                    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
+                                        encodeString(enumDescriptor.getElementName(index))
+                                    }
+
+                                    override fun encodeString(value: String) {
+                                        currentKey = value
+                                    }
+
+                                    override fun encodeValue(value: Any) {
+                                        throw UnsupportedEncodingFeatureException(
+                                            "Arbitrary map key types are not supported. Must be" +
+                                                    " either a string or enum. Provide a custom" +
+                                                    " serializer for ${value::class.simpleName}" +
+                                                    "to either of the supported key types."
+                                        )
+                                    }
+                                },
+                                value
+                            )
+                        }
+                    }
+
+                    return
+                }
+            }
+            StructureKind.LIST,
+            StructureKind.CLASS -> { }
+            else -> throw InternalEncodingException("Unknown parent kind $parentKind")
+        }
+
         when (val kind = descriptor.getElementDescriptor(index).kind) {
             StructureKind.LIST -> {
                 val enc = TomlArrayEncoder(currentKey, !isInline, elementIndex, config)
@@ -188,7 +231,7 @@ public abstract class TomlAbstractEncoder(
             }
             StructureKind.CLASS,
             StructureKind.MAP -> encodeTableLike(serializer, value)
-            else -> throw InternalEncodingException("Unknown parent kind $kind")
+            else -> encodeSerializableValue(serializer, value)
         }
     }
 
@@ -200,8 +243,20 @@ public abstract class TomlAbstractEncoder(
         val typeAnnotations = descriptor.annotations
 
         val elementAnnotations = when (val kind = descriptor.kind) {
-            StructureKind.CLASS -> descriptor.getElementAnnotations(index)
-            StructureKind.MAP -> descriptor.getElementAnnotations(1)
+            StructureKind.CLASS -> {
+                currentKey = descriptor.getElementName(index)
+
+                descriptor.getElementAnnotations(index)
+            }
+            StructureKind.MAP -> {
+                // Avoid interpreting annotations twice (key and value). We only
+                // want annotations from the value.
+                if (index % 2 == 0) {
+                    return super.encodeElement(descriptor, index)
+                }
+
+                descriptor.getElementAnnotations(1)
+            }
             StructureKind.LIST -> descriptor.getElementAnnotations(0)
             is PolymorphicKind -> throw UnsupportedEncodingFeatureException(
                 "Polymorphic types are not yet supported"

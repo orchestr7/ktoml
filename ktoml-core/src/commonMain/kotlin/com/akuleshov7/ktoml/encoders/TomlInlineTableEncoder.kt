@@ -5,12 +5,14 @@ import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.SerializationStrategy
 
+// Todo: Support "flat keys", i.e. a = { b.c = "..." }
+
 /**
  * Encodes a TOML inline table.
  * @property currentKey The key of the current inline table.
  */
 public class TomlInlineTableEncoder(
-    override val currentKey: String,
+    override var currentKey: String,
     elementIndex: Int,
     config: TomlInputConfig
 ) : TomlAbstractEncoder(

@@ -15,7 +15,7 @@ import kotlinx.serialization.encoding.CompositeEncoder
  * @param elementIndex The element index to start the array from.
  */
 public class TomlArrayEncoder(
-    override val currentKey: String,
+    override var currentKey: String,
     internal val isTableArray: Boolean,
     elementIndex: Int,
     config: TomlInputConfig = TomlInputConfig()
@@ -24,7 +24,6 @@ public class TomlArrayEncoder(
     config,
     isInlineDefault = true
 ) {
-    private lateinit var tables: MutableList<TomlNode>
     private lateinit var values: MutableList<TomlValue>
     internal lateinit var tableArray: TomlArrayOfTables
     internal lateinit var valueArray: TomlArray
@@ -34,6 +33,10 @@ public class TomlArrayEncoder(
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         if (isTableArray) {
             tableArray = TomlArrayOfTables("[[$currentKey]]", elementIndex)
+
+            // A hack to create a table array via the parsing constructor without
+            // creating an element.
+            tableArray.children.removeAll { it is TomlArrayOfTablesElement }
         } else {
             values = mutableListOf()
         }
@@ -42,20 +45,7 @@ public class TomlArrayEncoder(
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        if (isTableArray) {
-            tableArray = TomlArrayOfTables(
-                content = "[[$currentKey]]",
-                lineNo = elementIndex,
-            )
-
-            // A hack to create a table array via the parsing constructor without
-            // creating an element.
-            tableArray.children.removeAll { it is TomlArrayOfTablesElement }
-
-            tables.forEach {
-                tableArray.appendChild(it)
-            }
-        } else {
+        if (!isTableArray) {
             valueArray = TomlArray(
                 values,
                 rawContent = "",
@@ -83,7 +73,7 @@ public class TomlArrayEncoder(
     }
 
     override fun encodeTable(value: TomlTable) {
-        tables += value
+        tableArray.insertTableToTree(value)
     }
 
     override fun <T> encodeTableLike(
@@ -104,7 +94,7 @@ public class TomlArrayEncoder(
 
             serializer.serialize(enc, value)
 
-            tables += element
+            tableArray.appendChild(element)
 
             elementIndex = enc.elementIndex
         }
