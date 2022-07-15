@@ -2,9 +2,10 @@ package com.akuleshov7.ktoml.annotations
 
 import com.akuleshov7.ktoml.writers.IntegerRepresentation
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
+
+import kotlin.annotation.AnnotationTarget.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
-import kotlin.annotation.AnnotationTarget.*
 
 /**
  * Specifies how a TOML integer element is encoded. Has no effect on deserialization.
@@ -35,7 +36,11 @@ import kotlin.annotation.AnnotationTarget.*
  */
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
-@Target(PROPERTY, TYPE_PARAMETER, TYPE)
+@Target(
+    PROPERTY,
+    TYPE_PARAMETER,
+    TYPE
+)
 public annotation class TomlInteger(
     val representation: IntegerRepresentation = DECIMAL
 )

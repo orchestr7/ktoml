@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.annotations
 
+import kotlin.annotation.AnnotationTarget.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
-import kotlin.annotation.AnnotationTarget.*
 
 /**
  * Marks a TOML element and its children as multiline. Can be used on strings and
@@ -57,5 +57,9 @@ import kotlin.annotation.AnnotationTarget.*
  */
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
-@Target(PROPERTY, TYPE_PARAMETER, TYPE)
+@Target(
+    PROPERTY,
+    TYPE_PARAMETER,
+    TYPE
+)
 public annotation class TomlMultiline

@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.annotations
 
+import kotlin.annotation.AnnotationTarget.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
-import kotlin.annotation.AnnotationTarget.*
 
 /**
  * Marks a TOML element as an inline table. Has no effect on deserialization.
