@@ -14,9 +14,9 @@ class EncodingAnnotationTest {
     fun commentedPairTest() {
         @Serializable
         data class File(
-            @TomlComments("Single comment")
+            @TomlComments("Single comment", inline = "")
             val a: Long = 3,
-            @TomlComments("Comment 1", "Comment 2")
+            @TomlComments("Comment 1", "Comment 2", inline = "")
             val b: String = "test",
             @TomlComments(inline = "Inline comment")
             val c: Boolean = true,
@@ -54,7 +54,7 @@ class EncodingAnnotationTest {
 
         @Serializable
         data class File(
-            @TomlComments("Comment 1", "Comment 2")
+            @TomlComments("Comment 1", "Comment 2", inline = "")
             val tableA: TableA = TableA(),
             @TomlComments(inline = "Inline comment")
             val tableB: TableB = TableB()
@@ -205,9 +205,9 @@ class EncodingAnnotationTest {
     fun integerRepresentationTest() {
         @Serializable
         data class File(
-            @TomlInteger
+            @TomlInteger(DECIMAL)
             val decA: Long = 0,
-            val decB: @TomlInteger Long = 1,
+            val decB: @TomlInteger(DECIMAL) Long = 1,
             @TomlInteger(BINARY)
             val binA: Long = 2,
             val binB: @TomlInteger(BINARY) Long = 3,
