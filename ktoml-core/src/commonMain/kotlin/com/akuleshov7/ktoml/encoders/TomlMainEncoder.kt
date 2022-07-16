@@ -15,6 +15,20 @@ public class TomlMainEncoder(
 ) : TomlAbstractEncoder(startElementIndex, config) {
     override lateinit var currentKey: String
 
+    internal constructor(
+        root: TomlNode,
+        startElementIndex: Int,
+        config: TomlInputConfig,
+        prefixKey: String
+    ) : this(
+        root,
+        startElementIndex,
+        config
+    )
+    {
+        this.prefixKey = prefixKey
+    }
+
     override fun encodeValue(
         value: TomlValue,
         comments: List<String>,

@@ -18,23 +18,23 @@ class ArrayOfTablesEncoderTest {
                     listOf(
                         Table("apple"),
                         Table("banana"),
-                        Table("Plantain")
+                        Table("plantain")
                     )
         )
 
         assertEquals(
             """
             [[fruits]]
-            a = "apple"
-            b = "qwerty"
+                a = "apple"
+                b = "qwerty"
 
             [[fruits]]
-            a = "banana"
-            b = "qwerty"
+                a = "banana"
+                b = "qwerty"
 
             [[fruits]]
-            a = "plantain"
-            b = "qwerty"
+                a = "plantain"
+                b = "qwerty"
             """.trimIndent(),
             Toml.encodeToString(SimpleTableArray())
         )

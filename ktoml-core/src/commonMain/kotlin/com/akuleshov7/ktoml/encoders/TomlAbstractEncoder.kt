@@ -31,16 +31,17 @@ import kotlinx.serialization.modules.SerializersModule
 public abstract class TomlAbstractEncoder(
     internal var elementIndex: Int = -1,
     protected val config: TomlInputConfig,
-    private val isInlineDefault: Boolean = false
+    protected var isInlineDefault: Boolean = false
 ) : AbstractEncoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule
+    internal var prefixKey: String? = null
     protected abstract var currentKey: String
 
     // Flags
     private var isStringMultiline = false
     private var isStringLiteral = false
     private var intRepresentation = IntegerRepresentation.DECIMAL
-    private var isInline = isInlineDefault
+    protected var isInline: Boolean = isInlineDefault
     private var comments: List<String> = emptyList()
     private var inlineComment: String = ""
 
@@ -107,24 +108,14 @@ public abstract class TomlAbstractEncoder(
     }
 
     override fun encodeString(value: String) {
-        val literal = if (isStringLiteral) {
-            isStringLiteral = false
-
-            true
-        } else {
-            false
-        }
-
         if (isStringMultiline) {
-            isStringMultiline = false
-
             throw UnsupportedEncodingFeatureException(
                 "multiline strings are not yet supported."
             )
         }
 
         encodeValue(
-            if (literal) {
+            if (isStringLiteral) {
                 TomlLiteralString(value as Any, elementIndex)
             } else {
                 TomlBasicString(value as Any, elementIndex)
@@ -230,7 +221,13 @@ public abstract class TomlAbstractEncoder(
                 elementIndex = enc.elementIndex
             }
             StructureKind.CLASS,
-            StructureKind.MAP -> encodeTableLike(serializer, value)
+            StructureKind.MAP -> {
+                if (!isInline && prefixKey != null) {
+                    currentKey = "$prefixKey.$currentKey"
+                }
+
+                encodeTableLike(serializer, value)
+            }
             else -> encodeSerializableValue(serializer, value)
         }
     }
@@ -240,13 +237,16 @@ public abstract class TomlAbstractEncoder(
 
         // Find annotations
 
-        val typeAnnotations = descriptor.annotations
+        val parentAnnotations = descriptor.annotations
+        val typeAnnotations: List<Annotation>
+        val elementAnnotations: List<Annotation>
 
-        val elementAnnotations = when (val kind = descriptor.kind) {
+        when (val kind = descriptor.kind) {
             StructureKind.CLASS -> {
                 currentKey = descriptor.getElementName(index)
 
-                descriptor.getElementAnnotations(index)
+                typeAnnotations = descriptor.getElementDescriptor(index).annotations
+                elementAnnotations = descriptor.getElementAnnotations(index)
             }
             StructureKind.MAP -> {
                 // Avoid interpreting annotations twice (key and value). We only
@@ -255,19 +255,33 @@ public abstract class TomlAbstractEncoder(
                     return super.encodeElement(descriptor, index)
                 }
 
-                descriptor.getElementAnnotations(1)
+                typeAnnotations = descriptor.getElementDescriptor(1).annotations
+                elementAnnotations = descriptor.getElementAnnotations(1)
             }
-            StructureKind.LIST -> descriptor.getElementAnnotations(0)
+            StructureKind.LIST -> {
+                typeAnnotations = descriptor.getElementDescriptor(0).annotations
+                elementAnnotations = descriptor.getElementAnnotations(0)
+            }
             is PolymorphicKind -> throw UnsupportedEncodingFeatureException(
                 "Polymorphic types are not yet supported"
             )
             else -> throw InternalEncodingException("Unknown parent kind $kind")
         }
 
+        parentAnnotations.setFlags()
         typeAnnotations.setFlags()
         elementAnnotations.setFlags()
 
         return super.encodeElement(descriptor, index)
+    }
+
+    private fun resetFlags() {
+        isStringMultiline = false
+        isStringLiteral = false
+        intRepresentation = IntegerRepresentation.DECIMAL
+        isInline = isInlineDefault
+        comments = emptyList()
+        inlineComment = ""
     }
 
     private fun Iterable<Annotation>.setFlags() {

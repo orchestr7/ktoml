@@ -3,8 +3,11 @@ package com.akuleshov7.ktoml.encoders
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeEncoder
 
 /**
@@ -14,23 +17,43 @@ import kotlinx.serialization.encoding.CompositeEncoder
  *
  * @param elementIndex The element index to start the array from.
  */
+@ExperimentalSerializationApi
 public class TomlArrayEncoder(
     override var currentKey: String,
-    internal val isTableArray: Boolean,
+    internal var isTableArray: Boolean,
     elementIndex: Int,
     config: TomlInputConfig = TomlInputConfig()
 ) : TomlAbstractEncoder(
     elementIndex,
     config,
-    isInlineDefault = true
+    isInlineDefault = !isTableArray
 ) {
     private lateinit var values: MutableList<TomlValue>
     internal lateinit var tableArray: TomlArrayOfTables
     internal lateinit var valueArray: TomlArray
 
+    init {
+        prefixKey = currentKey
+    }
+
     // Structure begin and end
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
+        // Confirm whether we're encoding a table array, since the main encoder
+        // only checks for the inline table annotation.
+        isTableArray = if (isTableArray) {
+            when (descriptor.getElementDescriptor(0).kind) {
+                StructureKind.CLASS, StructureKind.MAP -> isTableArray
+                is PolymorphicKind -> TODO()
+                else -> false
+            }
+        } else {
+            false
+        }
+
+        isInlineDefault = !isTableArray
+        isInline = isInlineDefault
+
         if (isTableArray) {
             tableArray = TomlArrayOfTables("[[$currentKey]]", elementIndex)
 
@@ -90,13 +113,13 @@ public class TomlArrayEncoder(
         } else {
             val element = TomlArrayOfTablesElement(elementIndex, comments, inlineComment, config)
 
-            val enc = TomlMainEncoder(element, elementIndex, config)
+            val enc = TomlMainEncoder(element, elementIndex, config, prefixKey!!)
 
             serializer.serialize(enc, value)
 
-            tableArray.appendChild(element)
-
             elementIndex = enc.elementIndex
+
+            tableArray.appendChild(element)
         }
     }
 }
