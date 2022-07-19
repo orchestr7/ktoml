@@ -4,10 +4,8 @@ import kotlin.annotation.AnnotationTarget.PROPERTY
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
-// FixMe: "ERROR_EXPR 'Stub expression for default value of inline' type=kotlin.String"
-// When specifying only lines, the compiler complains that it cannot create the
-// default value for inline. A workaround for now is specifying it explicitly, like
-// TomlComments("line 1", "line 2", inline = "")
+// FixMe: Default parameters after varargs are broken as of 1.7: KT-53235. There's
+//  no obvious workaround
 
 /**
  * Specifies comments to be applied the TOML element produced by a property during
