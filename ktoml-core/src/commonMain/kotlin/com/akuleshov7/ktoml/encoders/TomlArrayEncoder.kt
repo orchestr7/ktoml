@@ -1,14 +1,173 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.descriptors.PolymorphicKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.CompositeEncoder
+
+@OptIn(ExperimentalSerializationApi::class)
+public class NewTomlArrayEncoder(
+    private val rootNode: TomlNode,
+    elementIndex: Int,
+    config: TomlInputConfig,
+    parentFlags: Flags,
+    parentKey: String
+) : NewTomlAbstractEncoder(
+    elementIndex,
+    config,
+    parentFlags,
+    parentKey
+) {
+    private lateinit var values: MutableList<TomlValue>
+
+    override fun nextElementIndex(): Int {
+        // All key-value array elements are on the same line; only increment for
+        // table arrays.
+        return if (!parentFlags.isInline) {
+            super.nextElementIndex()
+        } else {
+            elementIndex
+        }
+    }
+
+    override fun encodeValue(
+        value: TomlValue,
+        comments: List<String>,
+        inlineComment: String
+    ) {
+        values += value
+    }
+
+    override fun <T> encodeStructure(
+        kind: SerialKind,
+        serializer: SerializationStrategy<T>,
+        value: T
+    ) {
+        val (_, _, _, isInline) = elementFlags
+
+        val encoder = when (kind) {
+            StructureKind.CLASS,
+            StructureKind.MAP,
+            StructureKind.OBJECT,
+            is PolymorphicKind -> {
+                if (isInline) {
+                    throw UnsupportedEncodingFeatureException(
+                        "Inline tables are not yet supported as array elements."
+                    )
+                }
+
+                NewTomlMainEncoder(
+                    rootNode,
+                    elementIndex,
+                    config,
+                    elementFlags.copy(),
+                    parentKey
+                )
+            }
+            StructureKind.LIST -> {
+                if (!isInline) {
+                    throw InternalEncodingException(
+                        "Nested array elements must be inline."
+                    )
+                }
+
+                NewTomlArrayEncoder(
+                    rootNode,
+                    elementIndex,
+                    config,
+                    elementFlags.copy(),
+                    parentKey!!
+                )
+            }
+            else -> {
+                throw InternalEncodingException(
+                    "Unknown SerialKind $kind: expected StructureKind or PolymorphicKind."
+                )
+            }
+        }
+
+        serializer.serialize(encoder, value)
+    }
+
+    override fun beginCollection(
+        descriptor: SerialDescriptor,
+        collectionSize: Int
+    ): CompositeEncoder {
+        parentFlags.isInline =
+                if (parentFlags.isInline) {
+                    true
+                } else when (descriptor.getElementDescriptor(0).kind) {
+                    is PrimitiveKind,
+                    SerialKind.ENUM,
+                    StructureKind.LIST -> true
+                    else -> {
+                        if (parentFlags.isInline) {
+                            throw UnsupportedEncodingFeatureException(
+                                "Inline tables are not yet supported as array elements."
+                            )
+                        }
+
+                        false
+                    }
+                }
+
+        if (parentFlags.isInline) {
+            values = ArrayList(collectionSize)
+        } else {
+            val tableArray = TomlArrayOfTables(
+                "[[${parentKey!!}]]",
+                elementIndex + 1,
+                config
+            )
+
+            // A hack to create a table array via the parsing constructor without
+            // creating an element.
+            tableArray.children.removeAll { it is TomlArrayOfTablesElement }
+
+            rootNode.insertTableToTree(tableArray)
+        }
+
+        return super.beginCollection(descriptor, collectionSize)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun endStructure(descriptor: SerialDescriptor) {
+        if (parentFlags.isInline) {
+            val (_, _, _, _, comments, inlineComment) = parentFlags
+
+            // Create a parent table.
+            val parent = parentKey?.let {
+                val table = TomlTablePrimitive(
+                    "[$it]",
+                    elementIndex,
+                    config = config
+                )
+
+                rootNode.insertTableToTree(table)
+
+                table
+            } ?: rootNode
+
+            val array = TomlKeyValueArray(
+                TomlKey(elementKey, elementIndex),
+                TomlArray(values, "", elementIndex),
+                elementIndex++,
+                comments,
+                inlineComment,
+                elementKey,
+                config
+            )
+
+            parent.appendChild(array)
+        }
+
+        super.endStructure(descriptor)
+    }
+}
 
 /**
  * Encodes a TOML array or table array.
