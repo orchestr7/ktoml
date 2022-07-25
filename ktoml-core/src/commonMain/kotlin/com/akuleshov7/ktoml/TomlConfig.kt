@@ -114,6 +114,8 @@ public data class TomlInputConfig(
 public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
+    public val ignoreNullValues: Boolean = true,
+    public val ignoreDefaultValues: Boolean = false,
 ) {
     public companion object {
         /**
@@ -123,7 +125,8 @@ public data class TomlOutputConfig(
          * @return A TOML spec-compliant output config
          */
         public fun compliant(
-            indentation: TomlIndentation = TomlIndentation.FOUR_SPACES
+            indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
+            ignoreDefaultValues: Boolean = false
         ): TomlOutputConfig =
                 TomlOutputConfig(
                     indentation,
