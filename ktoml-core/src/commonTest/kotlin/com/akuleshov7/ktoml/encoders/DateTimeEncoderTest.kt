@@ -41,7 +41,9 @@ class DateTimeEncoderTest {
                     1979-05-27T00:32:00.999999-07:00,
                     1979-05-27 07:32:00Z
                 ]
+                
                 localDateTimes = [ 1979-05-27T07:32:00, 1979-05-27T00:32:00.999999 ]
+                
                 localDate = 1979-05-27
             """.trimIndent(),
             Toml.encodeToString(DateTimes())

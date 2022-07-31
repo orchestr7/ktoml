@@ -36,23 +36,28 @@ class ArrayEncoderTest {
     @Test
     fun primitiveArrayTest() {
         @Serializable
-        data class Array(
+        data class Arrays(
             val booleans: List<Boolean> = listOf(true, false),
             val longs: List<Long> = listOf(1, 2, 3),
             val doubles: List<Double> = listOf(3.14),
             val basicStrings: List<String> = listOf("a", "b", "c"),
-            val literalStrings: List<@TomlLiteral String> = listOf("\"string\"")
+            @TomlLiteral
+            val literalStrings: List<String> = listOf("\"string\"")
         )
 
         assertEquals(
             """
             booleans = [ true, false ]
+            
             longs = [ 1, 2, 3 ]
+            
             doubles = [ 3.14 ]
+            
             basicStrings = [ "a", "b", "c" ]
+            
             literalStrings = [ '"string"' ]
             """.trimIndent(),
-            Toml.encodeToString(Array())
+            Toml.encodeToString(Arrays())
         )
     }
 
@@ -115,6 +120,23 @@ class ArrayEncoderTest {
                 a = [ 1, 2, 3 ]
             """.trimIndent(),
             Toml.encodeToString(ArrayInTable())
+        )
+    }
+
+    @Test
+    fun arrayInInlineTableTest() {
+        @Serializable
+        @TomlInlineTable
+        data class InlineTable(val b: List<Long> = listOf(1, 2, 3))
+
+        @Serializable
+        data class ArrayInInlineTable(val a: InlineTable = InlineTable())
+
+        assertEquals(
+            """
+            a = { b = [ 1, 2, 3 ] }
+            """.trimIndent(),
+            Toml.encodeToString(ArrayInInlineTable())
         )
     }
 }

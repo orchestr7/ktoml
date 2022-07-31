@@ -221,7 +221,7 @@ class ArrayOfTablesEncoderTest {
                         Table(1, InnerTable(2)),
                         Table(3, InnerTable(4)),
                     ),
-            val c: InnerTable = InnerTable(5)
+            val c: List<InnerTable> = listOf(InnerTable(5))
         )
 
         assertEquals(

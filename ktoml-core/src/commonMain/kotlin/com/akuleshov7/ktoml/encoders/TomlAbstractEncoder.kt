@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.*
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.exceptions.IllegalEncodingTypeException
@@ -8,20 +9,304 @@ import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
 import com.akuleshov7.ktoml.writers.IntegerRepresentation
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.PolymorphicKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+
+@OptIn(ExperimentalSerializationApi::class)
+public abstract class TomlAbstractEncoder protected constructor(
+    protected var elementIndex: Int,
+    protected val attributes: Attributes,
+    protected val inputConfig: TomlInputConfig,
+    protected val outputConfig: TomlOutputConfig
+) : AbstractEncoder() {
+    override val serializersModule: SerializersModule = EmptySerializersModule
+    private var isNextElementKey = false
+    private val instantDescriptor = Instant.serializer().descriptor
+    private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor
+    private val localDateDescriptor = LocalDate.serializer().descriptor
+
+    protected open fun nextElementIndex(): Int = ++elementIndex
+
+    protected fun setElementIndex(from: TomlAbstractEncoder) {
+        elementIndex = from.elementIndex
+    }
+
+    // Values
+
+    private fun encodeAsKey(key: Any, type: String? = null): Boolean {
+        if (!isNextElementKey) {
+            return false
+        }
+
+        isNextElementKey = false
+
+        if (key !is String) {
+            throw UnsupportedEncodingFeatureException(
+                "Arbitrary map key types are not supported. Must be either a string" +
+                        " or enum. Provide a custom serializer for $type to either " +
+                        "of the supported key types."
+            )
+        }
+
+        attributes.key = key
+
+        return true
+    }
+
+    protected open fun appendValue(value: TomlValue) {
+        attributes.reset()
+    }
+
+    /**
+     * Allows [TomlInlineTableEncoder] and [TomlArrayEncoder] to access another
+     * encoder's [appendValue] function.
+     */
+    internal fun appendValueTo(value: TomlValue, parent: TomlAbstractEncoder) {
+        parent.appendValue(value)
+    }
+
+    override fun encodeBoolean(value: Boolean) {
+        if (!encodeAsKey(value, "Boolean")) {
+            appendValue(TomlBoolean(value, elementIndex))
+        }
+    }
+
+    override fun encodeDouble(value: Double) {
+        if (!encodeAsKey(value, "Double")) {
+            appendValue(TomlDouble(value, elementIndex))
+        }
+    }
+
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
+        encodeString(enumDescriptor.getElementName(index))
+    }
+
+    override fun encodeLong(value: Long) {
+        if (attributes.intRepresentation != DECIMAL) {
+            throw UnsupportedEncodingFeatureException(
+                "Non-decimal integer representation is not yet supported."
+            )
+        }
+
+        if (!encodeAsKey(value, "Long")) {
+            appendValue(TomlLong(value, elementIndex))
+        }
+    }
+
+    override fun encodeNull() {
+        appendValue(TomlNull(elementIndex))
+    }
+
+    override fun encodeString(value: String) {
+        if (attributes.isMultiline) {
+            throw UnsupportedEncodingFeatureException(
+                "Multiline strings are not yet supported."
+            )
+        }
+
+        if (!encodeAsKey(value, "String")) {
+            appendValue(
+                if (attributes.isLiteral) {
+                    TomlLiteralString(value as Any, elementIndex)
+                } else {
+                    TomlBasicString(value as Any, elementIndex)
+                }
+            )
+        }
+    }
+
+    override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
+        when (val desc = serializer.descriptor) {
+            instantDescriptor,
+            localDateTimeDescriptor,
+            localDateDescriptor -> {
+                if (!encodeAsKey(value as Any, desc.serialName)) {
+                    appendValue(TomlDateTime(value as Any, elementIndex))
+                }
+            }
+            else -> {
+                when (val kind = desc.kind) {
+                    is StructureKind,
+                    is PolymorphicKind -> {
+                        if (!encodeAsKey(value as Any, desc.serialName)) {
+                            encodeStructure(kind, serializer, value)
+
+                            attributes.reset()
+                        }
+                    }
+                    else -> super.encodeSerializableValue(serializer, value)
+                }
+            }
+        }
+    }
+
+    override fun encodeByte(value: Byte): Nothing = invalidType("Byte", "Long", value)
+    override fun encodeShort(value: Short): Nothing = invalidType("Short", "Long", value)
+    override fun encodeInt(value: Int): Nothing = invalidType("Int", "Long", value)
+    override fun encodeFloat(value: Float): Nothing = invalidType("Float", "Double", value)
+    override fun encodeChar(value: Char): Nothing = invalidType("Char", "String", value)
+
+    // Todo: Do we really want to make these invalid?
+    private fun invalidType(
+        typeName: String,
+        requiredType: String,
+        value: Any
+    ): Nothing {
+        throw IllegalEncodingTypeException(
+            "<$typeName> is not allowed by the TOML specification, use <$requiredType>" +
+                    " instead (key = ${attributes.getFullKey()}; value = $value)",
+            elementIndex
+        )
+    }
+
+    // Structure
+
+    protected abstract fun <T> encodeStructure(
+        kind: SerialKind,
+        serializer: SerializationStrategy<T>,
+        value: T
+    )
+
+    override fun shouldEncodeElementDefault(
+        descriptor: SerialDescriptor,
+        index: Int
+    ): Boolean = !outputConfig.ignoreDefaultValues
+
+    override fun <T : Any> encodeNullableSerializableElement(
+        descriptor: SerialDescriptor,
+        index: Int,
+        serializer: SerializationStrategy<T>,
+        value: T?
+    ) {
+        if (value != null || outputConfig.ignoreNullValues) {
+            super.encodeNullableSerializableElement(descriptor, index, serializer, value)
+        }
+    }
+
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
+        // attributes.parent?.set(descriptor.annotations)
+
+        return this
+    }
+
+    override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
+        if (setElementKey(descriptor, index)) {
+            return true
+        }
+
+        nextElementIndex()
+
+        val typeDescriptor = descriptor.getElementDescriptor(index)
+        val typeAnnotations = typeDescriptor.annotations
+        val elementAnnotations = descriptor.getElementAnnotations(index)
+
+        attributes.set(typeAnnotations)
+        attributes.set(elementAnnotations)
+
+        // Force primitive array elements to be inline.
+        if (!attributes.isInline) {
+            if (typeDescriptor.kind == StructureKind.LIST) {
+                when (typeDescriptor.getElementDescriptor(0).kind) {
+                    is PrimitiveKind,
+                    SerialKind.ENUM,
+                    StructureKind.LIST -> attributes.isInline = true
+                    else -> { }
+                }
+            }
+        }
+
+        return true
+    }
+
+    protected open fun setElementKey(descriptor: SerialDescriptor, index: Int): Boolean {
+        when (val kind = descriptor.kind) {
+            StructureKind.CLASS -> attributes.key = descriptor.getElementName(index)
+            StructureKind.MAP -> {
+                // When the index is even (key) mark the next element as a key and
+                // skip annotations and element index incrementing.
+                if (index % 2 == 0) {
+                    isNextElementKey = true
+
+                    return true
+                }
+            }
+            is PolymorphicKind -> {
+                attributes.key = descriptor.getElementName(index)
+
+                // Ignore annotations on polymorphic types.
+                if (index == 0) {
+                    nextElementIndex()
+                    return true
+                }
+            }
+            else -> throw InternalEncodingException("Unknown parent kind: $kind.")
+        }
+
+        return false
+    }
+
+    public data class Attributes(
+        public val parent: Attributes? = null,
+        public var key: String? = null,
+        public var isMultiline: Boolean = false,
+        public var isLiteral: Boolean = false,
+        public var intRepresentation: IntegerRepresentation = DECIMAL,
+        public var isInline: Boolean = false,
+        public var comments: List<String> = emptyList(),
+        public var inlineComment: String = ""
+    ) {
+        public fun keyOrThrow(): String {
+            return key ?: throw InternalEncodingException("Key not set")
+        }
+
+        public fun child(): Attributes = copy(parent = copy())
+
+        public fun set(annotations: Iterable<Annotation>) {
+            annotations.forEach { annotation ->
+                when (annotation) {
+                    is TomlLiteral -> isLiteral = true
+                    is TomlMultiline -> isMultiline = true
+                    is TomlInteger -> intRepresentation = annotation.representation
+                    is TomlComments -> {
+                        comments = annotation.lines.asList()
+                        inlineComment = annotation.inline
+                    }
+                    is TomlInlineTable -> isInline = true
+                }
+            }
+        }
+
+        public fun reset() {
+            key = null
+
+            val parent = parent ?: Attributes()
+
+            isMultiline = parent.isMultiline
+            isLiteral = parent.isLiteral
+            intRepresentation = parent.intRepresentation
+            isInline = parent.isInline
+            comments = parent.comments
+            inlineComment = parent.inlineComment
+        }
+
+        public fun getFullKey(): String {
+            val elementKey = keyOrThrow()
+
+            return parent?.let {
+                "${it.keyOrThrow()}.$elementKey"
+            } ?: elementKey
+        }
+    }
+}
 
 /**
  * An abstract Encoder for the TOML format.
@@ -36,9 +321,9 @@ import kotlinx.serialization.modules.SerializersModule
 public abstract class NewTomlAbstractEncoder
 protected constructor(
     elementIndex: Int = -1,
+    protected val rootNode: TomlNode,
     protected val config: TomlInputConfig,
-    protected val parentFlags: Flags = Flags(),
-    protected val parentKey: String? = null
+    protected val parentFlags: Flags = Flags()
 ) : AbstractEncoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule
     private var isNextElementKey = false
@@ -47,10 +332,13 @@ protected constructor(
         protected set
     protected lateinit var elementKey: String
 
-    protected fun getFullKey(): String =
-            parentKey?.let {
-                "$parentKey.$elementKey"
-            } ?: elementKey
+    protected fun parentKey(): String? {
+        return if (rootNode is TomlTable) {
+            rootNode.fullTableName
+        } else {
+            null
+        }
+    }
 
     protected open fun nextElementIndex(): Int = ++elementIndex
 
@@ -93,7 +381,7 @@ protected constructor(
             invalidKeyType("Long")
         }
 
-        if (elementFlags.intRepresentation != IntegerRepresentation.DECIMAL) {
+        if (elementFlags.intRepresentation != DECIMAL) {
             throw UnsupportedEncodingFeatureException(
                 "Non-decimal integer representation is not yet supported."
             )
@@ -179,7 +467,7 @@ protected constructor(
     ): Nothing {
         throw IllegalEncodingTypeException(
             "<$typeName> is not allowed by the TOML specification, use <$requiredType>" +
-                    " instead (key = ${getFullKey()}; value = $value)",
+                    " instead (key = ${null}; value = $value)",
             elementIndex
         )
     }
@@ -251,7 +539,7 @@ protected constructor(
     public data class Flags(
         public var isMultiline: Boolean = false,
         public var isLiteral: Boolean = false,
-        public var intRepresentation: IntegerRepresentation = IntegerRepresentation.DECIMAL,
+        public var intRepresentation: IntegerRepresentation = DECIMAL,
         public var isInline: Boolean = false,
         public var comments: List<String> = emptyList(),
         public var inlineComment: String = ""
@@ -285,286 +573,6 @@ protected constructor(
                     }
                     is TomlInlineTable -> isInline = true
                 }
-            }
-        }
-    }
-}
-
-/**
- * An abstract Encoder for the TOML format.
- * @property elementIndex The current element index. The next element index will be
- * this `+ 1`
- * @property config The input config, used for constructing nodes.
- * @property isInlineDefault
- */
-@OptIn(ExperimentalSerializationApi::class)
-public abstract class TomlAbstractEncoder(
-    internal var elementIndex: Int = -1,
-    protected val config: TomlInputConfig,
-    protected var isInlineDefault: Boolean = false
-) : AbstractEncoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule
-    internal var prefixKey: String? = null
-    protected abstract var currentKey: String
-
-    // Flags
-    private var isStringMultiline = false
-    private var isStringLiteral = false
-    private var intRepresentation = IntegerRepresentation.DECIMAL
-    protected var isInline: Boolean = isInlineDefault
-    private var comments: List<String> = emptyList()
-    private var inlineComment: String = ""
-
-    private fun clearComments() {
-        comments = emptyList()
-    }
-
-    private fun clearInlineComment() {
-        inlineComment = ""
-    }
-
-    protected open fun resetInlineFlag() {
-        // Reset isInline to its default, which is false for the main decoder and
-        // true for the array and inline table decoders.
-        isInline = isInlineDefault
-    }
-
-    internal abstract fun encodeValue(
-        value: TomlValue,
-        comments: List<String> = this.comments.also { clearComments() },
-        inlineComment: String = this.inlineComment.also { clearInlineComment() }
-    )
-
-    internal abstract fun encodeTable(value: TomlTable)
-
-    protected abstract fun <T> encodeTableLike(
-        serializer: SerializationStrategy<T>,
-        value: T,
-        isInline: Boolean = this.isInline.also { resetInlineFlag() },
-        comments: List<String> = this.comments.also { clearComments() },
-        inlineComment: String = this.inlineComment.also { clearInlineComment() }
-    )
-
-    protected open fun nextElementIndex() {
-        ++elementIndex
-    }
-
-    // Single values
-
-    override fun encodeByte(value: Byte): Nothing = invalidType("Byte", "Long", value)
-    override fun encodeShort(value: Short): Nothing = invalidType("Short", "Long", value)
-    override fun encodeInt(value: Int): Nothing = invalidType("Int", "Long", value)
-    override fun encodeFloat(value: Float): Nothing = invalidType("Float", "Double", value)
-    override fun encodeChar(value: Char): Nothing = invalidType("Char", "String", value)
-
-    override fun encodeBoolean(value: Boolean) {
-        encodeValue(TomlBoolean(value, elementIndex))
-    }
-
-    override fun encodeLong(value: Long) {
-        if (intRepresentation != IntegerRepresentation.DECIMAL) {
-            intRepresentation = IntegerRepresentation.DECIMAL
-
-            throw UnsupportedEncodingFeatureException(
-                "Non-decimal integer representation is not yet supported."
-            )
-        }
-
-        encodeValue(TomlLong(value, elementIndex))
-    }
-
-    override fun encodeDouble(value: Double) {
-        encodeValue(TomlDouble(value, elementIndex))
-    }
-
-    override fun encodeString(value: String) {
-        if (isStringMultiline) {
-            throw UnsupportedEncodingFeatureException(
-                "multiline strings are not yet supported."
-            )
-        }
-
-        encodeValue(
-            if (isStringLiteral) {
-                TomlLiteralString(value as Any, elementIndex)
-            } else {
-                TomlBasicString(value as Any, elementIndex)
-            }
-        )
-    }
-
-    override fun encodeNull() {
-        encodeValue(TomlNull(elementIndex))
-    }
-
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
-        encodeString(enumDescriptor.getElementName(index))
-    }
-
-    override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
-        when (serializer) {
-            Instant.serializer(),
-            LocalDateTime.serializer(),
-            LocalDate.serializer() -> encodeValue(TomlDateTime(value as Any, elementIndex))
-            else -> super.encodeSerializableValue(serializer, value)
-        }
-    }
-
-    // Todo: Do we really want to make these invalid?
-    private fun invalidType(
-        typeName: String,
-        requiredType: String,
-        value: Any
-    ): Nothing =
-            throw IllegalEncodingTypeException(
-                "<$typeName> is not allowed by the TOML specification," +
-                        " use <$requiredType> instead (key = $currentKey; value = $value)",
-                elementIndex
-            )
-
-    // Structure
-
-    override fun <T> encodeSerializableElement(
-        descriptor: SerialDescriptor,
-        index: Int,
-        serializer: SerializationStrategy<T>,
-        value: T
-    ) {
-        if (!encodeElement(descriptor, index)) {
-            return
-        }
-
-        when (val parentKind = descriptor.kind) {
-            StructureKind.MAP -> {
-                // Serialize the key and skip.
-                if (index % 2 == 0) {
-                    when (descriptor.getElementDescriptor(index)) {
-                        String.serializer().descriptor -> currentKey = value as String
-                        else -> {
-                            // A hack to get the key from custom serializers
-                            serializer.serialize(
-                                object : AbstractEncoder() {
-                                    override val serializersModule: SerializersModule = this@TomlAbstractEncoder.serializersModule
-
-                                    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
-                                        encodeString(enumDescriptor.getElementName(index))
-                                    }
-
-                                    override fun encodeString(value: String) {
-                                        currentKey = value
-                                    }
-
-                                    override fun encodeValue(value: Any) {
-                                        throw UnsupportedEncodingFeatureException(
-                                            "Arbitrary map key types are not supported. Must be" +
-                                                    " either a string or enum. Provide a custom" +
-                                                    " serializer for ${value::class.simpleName}" +
-                                                    "to either of the supported key types."
-                                        )
-                                    }
-                                },
-                                value
-                            )
-                        }
-                    }
-
-                    return
-                }
-            }
-            StructureKind.LIST,
-            StructureKind.CLASS -> { }
-            else -> throw InternalEncodingException("Unknown parent kind $parentKind")
-        }
-
-        when (val kind = descriptor.getElementDescriptor(index).kind) {
-            StructureKind.LIST -> {
-                val enc = TomlArrayEncoder(currentKey, !isInline, elementIndex, config)
-
-                serializer.serialize(enc, value)
-
-                if (enc.isTableArray) {
-                    encodeTable(enc.tableArray)
-                } else {
-                    encodeValue(enc.valueArray)
-                }
-
-                elementIndex = enc.elementIndex
-            }
-            StructureKind.CLASS,
-            StructureKind.MAP -> {
-                if (!isInline && prefixKey != null) {
-                    currentKey = "$prefixKey.$currentKey"
-                }
-
-                encodeTableLike(serializer, value)
-            }
-            else -> encodeSerializableValue(serializer, value)
-        }
-    }
-
-    override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
-        nextElementIndex()
-
-        // Find annotations
-
-        val parentAnnotations = descriptor.annotations
-        val typeAnnotations: List<Annotation>
-        val elementAnnotations: List<Annotation>
-
-        when (val kind = descriptor.kind) {
-            StructureKind.CLASS -> {
-                currentKey = descriptor.getElementName(index)
-
-                typeAnnotations = descriptor.getElementDescriptor(index).annotations
-                elementAnnotations = descriptor.getElementAnnotations(index)
-            }
-            StructureKind.MAP -> {
-                // Avoid interpreting annotations twice (key and value). We only
-                // want annotations from the value.
-                if (index % 2 == 0) {
-                    return super.encodeElement(descriptor, index)
-                }
-
-                typeAnnotations = descriptor.getElementDescriptor(1).annotations
-                elementAnnotations = descriptor.getElementAnnotations(1)
-            }
-            StructureKind.LIST -> {
-                typeAnnotations = descriptor.getElementDescriptor(0).annotations
-                elementAnnotations = descriptor.getElementAnnotations(0)
-            }
-            is PolymorphicKind -> throw UnsupportedEncodingFeatureException(
-                "Polymorphic types are not yet supported"
-            )
-            else -> throw InternalEncodingException("Unknown parent kind $kind")
-        }
-
-        parentAnnotations.setFlags()
-        typeAnnotations.setFlags()
-        elementAnnotations.setFlags()
-
-        return super.encodeElement(descriptor, index)
-    }
-
-    private fun resetFlags() {
-        isStringMultiline = false
-        isStringLiteral = false
-        intRepresentation = IntegerRepresentation.DECIMAL
-        isInline = isInlineDefault
-        comments = emptyList()
-        inlineComment = ""
-    }
-
-    private fun Iterable<Annotation>.setFlags() {
-        forEach { annotation ->
-            when (annotation) {
-                is TomlLiteral -> isStringLiteral = true
-                is TomlMultiline -> isStringMultiline = true
-                is TomlInteger -> intRepresentation = annotation.representation
-                is TomlComments -> {
-                    comments = annotation.lines.asList()
-                    inlineComment = annotation.inline
-                }
-                is TomlInlineTable -> isInline = true
             }
         }
     }

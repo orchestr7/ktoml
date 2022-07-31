@@ -1,93 +1,135 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlInputConfig
-import com.akuleshov7.ktoml.exceptions.InternalEncodingException
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeEncoder
 
 // Todo: Support "flat keys", i.e. a = { b.c = "..." }
 
 /**
- * Encodes a TOML inline table.
- * @property currentKey The key of the current inline table.
+ * @property parentNodes The node list of a nested inline table's parent.
  */
-public class TomlInlineTableEncoder(
-    override var currentKey: String,
+@OptIn(ExperimentalSerializationApi::class)
+public class TomlInlineTableEncoder internal constructor(
+    private val rootNode: TomlNode,
+    private val parent: TomlAbstractEncoder?,
     elementIndex: Int,
-    config: TomlInputConfig
+    attributes: Attributes,
+    inputConfig: TomlInputConfig,
+    outputConfig: TomlOutputConfig
 ) : TomlAbstractEncoder(
     elementIndex,
-    config,
-    isInlineDefault = true
+    attributes,
+    inputConfig,
+    outputConfig
 ) {
-    internal val keyValues: MutableList<TomlNode> = mutableListOf()
+    public constructor(
+        rootNode: TomlNode,
+        elementIndex: Int,
+        attributes: Attributes,
+        inputConfig: TomlInputConfig,
+        outputConfig: TomlOutputConfig
+    ) : this(
+        rootNode,
+        parent = null,
+        elementIndex,
+        attributes,
+        inputConfig,
+        outputConfig
+    )
+    
+    private val pairs = mutableListOf<TomlNode>()
+    
+    // Inline tables are single-line, don't increment.
+    override fun nextElementIndex(): Int = elementIndex
 
-    override fun nextElementIndex() {
-        // All inline table elements are on the same line; don't increment.
-        elementIndex
-    }
+    override fun appendValue(value: TomlValue) {
+        val name = attributes.keyOrThrow()
+        val key = TomlKey(name, elementIndex)
 
-    override fun encodeValue(
-        value: TomlValue,
-        comments: List<String>,
-        inlineComment: String
-    ) {
-        val key = TomlKey(currentKey, elementIndex)
-
-        keyValues += if (value is TomlArray) {
+        pairs += if (value is TomlArray) {
             TomlKeyValueArray(
                 key,
                 value,
                 elementIndex,
-                comments,
-                inlineComment,
-                currentKey,
-                config
+                comments = emptyList(),
+                inlineComment = "",
+                name,
+                inputConfig
             )
         } else {
             TomlKeyValuePrimitive(
                 key,
                 value,
                 elementIndex,
-                comments,
-                inlineComment,
-                currentKey,
-                config
+                comments = emptyList(),
+                inlineComment = "",
+                name,
+                inputConfig
             )
         }
+        
+        super.appendValue(value)
     }
-
-    override fun encodeTable(value: TomlTable): Nothing {
-        throw InternalEncodingException(
-            "Non-inline tables are not allowed inside inline tables."
-        )
-    }
-
-    override fun <T> encodeTableLike(
+    
+    override fun <T> encodeStructure(
+        kind: SerialKind,
         serializer: SerializationStrategy<T>,
-        value: T,
-        isInline: Boolean,
-        comments: List<String>,
-        inlineComment: String
+        value: T
     ) {
-        if (!isInline) {
-            throw InternalEncodingException(
-                "Non-inline tables are not allowed inside inline tables."
+        val encoder = if (kind == StructureKind.LIST) {
+            TomlArrayEncoder(
+                rootNode,
+                parent = this,
+                elementIndex,
+                attributes.child(),
+                inputConfig,
+                outputConfig
+            )
+        } else {
+            TomlInlineTableEncoder(
+                rootNode,
+                parent = this,
+                elementIndex,
+                attributes.child(),
+                inputConfig,
+                outputConfig
             )
         }
 
-        val enc = TomlInlineTableEncoder(currentKey, elementIndex, config)
+        serializer.serialize(encoder, value)
 
-        serializer.serialize(enc, value)
+        setElementIndex(from = encoder)
+    }
 
-        keyValues += TomlInlineTable(
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
+        val (_, _, _, _, _, _, comments, inlineComment) = attributes
+        val name = attributes.keyOrThrow()
+
+        val inlineTable = TomlInlineTable(
             "",
             elementIndex,
-            currentKey,
-            enc.keyValues,
+            name,
+            pairs,
             comments,
             inlineComment,
-            config
+            inputConfig
         )
+
+        when (parent) {
+            is TomlInlineTableEncoder -> parent.pairs += inlineTable
+            is TomlArrayEncoder -> {
+                // Todo: Implement this when inline table arrays are supported.
+            }
+            else -> rootNode.appendChild(inlineTable)
+        }
+
+        return super.beginStructure(descriptor)
     }
 }
