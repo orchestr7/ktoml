@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.annotations.TomlMultiline
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -13,16 +12,11 @@ class DateTimeEncoderTest {
     fun dateTimeTest() {
         @Serializable
         data class DateTimes(
-            @TomlMultiline
             val instants: List<Instant> =
                     listOf(
                         LocalDateTime(1979, 5, 27, 7, 32, 0)
                             .toInstant(TimeZone.UTC),
-                        LocalDateTime(1979, 5, 27, 0, 32, 0)
-                            .toInstant(TimeZone.of("UTC-7")),
                         LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
-                            .toInstant(TimeZone.of("UTC-7")),
-                        LocalDateTime(1979, 5, 27, 7, 32, 0)
                             .toInstant(TimeZone.UTC)
                     ),
             val localDateTimes: List<LocalDateTime> =
@@ -35,14 +29,9 @@ class DateTimeEncoderTest {
 
         assertEquals(
             """
-                instants = [
-                    1979-05-27T07:32:00Z,
-                    1979-05-27T00:32:00-07:00,
-                    1979-05-27T00:32:00.999999-07:00,
-                    1979-05-27 07:32:00Z
-                ]
+                instants = [ 1979-05-27T07:32:00Z, 1979-05-27T00:32:00.999999Z ]
                 
-                localDateTimes = [ 1979-05-27T07:32:00, 1979-05-27T00:32:00.999999 ]
+                localDateTimes = [ 1979-05-27T07:32, 1979-05-27T00:32:00.999999 ]
                 
                 localDate = 1979-05-27
             """.trimIndent(),
