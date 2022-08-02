@@ -9,6 +9,16 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 
+/**
+ * Encodes a TOML file or table.
+ *
+ * @property rootNode The root node to add elements to.
+ *
+ * @param elementIndex The current element index.
+ * @param attributes The current attributes.
+ * @param inputConfig The input config, used for constructing nodes.
+ * @param outputConfig The output config.
+ */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlMainEncoder(
     private val rootNode: TomlNode,
@@ -55,54 +65,40 @@ public class TomlMainEncoder(
         super.appendValue(value)
     }
 
-    override fun <T> encodeStructure(
-        kind: SerialKind,
-        serializer: SerializationStrategy<T>,
-        value: T
-    ) {
-        val encoder = when {
-            kind == StructureKind.LIST -> {
-                TomlArrayEncoder(
-                    rootNode,
-                    elementIndex,
-                    attributes.child(),
-                    inputConfig,
-                    outputConfig
-                )
-            }
-            attributes.isInline -> {
-                TomlInlineTableEncoder(
-                    rootNode,
-                    elementIndex,
-                    attributes.child(),
-                    inputConfig,
-                    outputConfig
-                )
-            }
-            else -> {
-                val table = TomlTablePrimitive(
-                    "[${attributes.getFullKey()}]",
-                    elementIndex,
-                    attributes.comments,
-                    attributes.inlineComment,
-                    inputConfig
-                )
+    override fun encodeStructure(kind: SerialKind): TomlAbstractEncoder = when {
+        kind == StructureKind.LIST -> TomlArrayEncoder(
+            rootNode,
+            elementIndex,
+            attributes.child(),
+            inputConfig,
+            outputConfig
+        )
+        attributes.isInline -> TomlInlineTableEncoder(
+            rootNode,
+            elementIndex,
+            attributes.child(),
+            inputConfig,
+            outputConfig
+        )
+        else -> {
+            val table = TomlTablePrimitive(
+                "[${attributes.getFullKey()}]",
+                elementIndex,
+                attributes.comments,
+                attributes.inlineComment,
+                inputConfig
+            )
 
-                rootNode.insertTableToTree(table)
+            rootNode.insertTableToTree(table)
 
-                TomlMainEncoder(
-                    table,
-                    elementIndex,
-                    attributes.child(),
-                    inputConfig,
-                    outputConfig
-                )
-            }
+            TomlMainEncoder(
+                table,
+                elementIndex,
+                attributes.child(),
+                inputConfig,
+                outputConfig
+            )
         }
-
-        serializer.serialize(encoder, value)
-
-        setElementIndex(from = encoder)
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {

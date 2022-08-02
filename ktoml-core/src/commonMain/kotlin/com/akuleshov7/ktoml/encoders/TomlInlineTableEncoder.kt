@@ -4,7 +4,6 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
@@ -13,7 +12,7 @@ import kotlinx.serialization.encoding.CompositeEncoder
 // Todo: Support "flat keys", i.e. a = { b.c = "..." }
 
 /**
- * @property parentNodes The node list of a nested inline table's parent.
+ * Encodes a TOML inline table.
  */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlInlineTableEncoder internal constructor(
@@ -29,6 +28,15 @@ public class TomlInlineTableEncoder internal constructor(
     inputConfig,
     outputConfig
 ) {
+    private val pairs: MutableList<TomlNode> = mutableListOf()
+
+    /**
+     * @param rootNode The root node to add the inline table to.
+     * @param elementIndex The current element index.
+     * @param attributes The current attributes.
+     * @param inputConfig The input config, used for constructing nodes.
+     * @param outputConfig The output config.
+     */
     public constructor(
         rootNode: TomlNode,
         elementIndex: Int,
@@ -43,8 +51,6 @@ public class TomlInlineTableEncoder internal constructor(
         inputConfig,
         outputConfig
     )
-    
-    private val pairs = mutableListOf<TomlNode>()
     
     // Inline tables are single-line, don't increment.
     override fun nextElementIndex(): Int = elementIndex
@@ -78,34 +84,24 @@ public class TomlInlineTableEncoder internal constructor(
         super.appendValue(value)
     }
     
-    override fun <T> encodeStructure(
-        kind: SerialKind,
-        serializer: SerializationStrategy<T>,
-        value: T
-    ) {
-        val encoder = if (kind == StructureKind.LIST) {
-            TomlArrayEncoder(
-                rootNode,
-                parent = this,
-                elementIndex,
-                attributes.child(),
-                inputConfig,
-                outputConfig
-            )
-        } else {
-            TomlInlineTableEncoder(
-                rootNode,
-                parent = this,
-                elementIndex,
-                attributes.child(),
-                inputConfig,
-                outputConfig
-            )
-        }
-
-        serializer.serialize(encoder, value)
-
-        setElementIndex(from = encoder)
+    override fun encodeStructure(kind: SerialKind): TomlAbstractEncoder = if (kind == StructureKind.LIST) {
+        TomlArrayEncoder(
+            rootNode,
+            parent = this,
+            elementIndex,
+            attributes.child(),
+            inputConfig,
+            outputConfig
+        )
+    } else {
+        TomlInlineTableEncoder(
+            rootNode,
+            parent = this,
+            elementIndex,
+            attributes.child(),
+            inputConfig,
+            outputConfig
+        )
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {

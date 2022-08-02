@@ -110,6 +110,8 @@ public data class TomlInputConfig(
  *
  * @property indentation The number of spaces in the indents for the serialization
  * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
+ * @property ignoreNullValues Whether to ignore null values
+ * @property ignoreDefaultValues Whether to ignore default values
  */
 public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
@@ -122,6 +124,7 @@ public data class TomlOutputConfig(
          * Creates a config populated with values compliant with the TOML spec.
          *
          * @param indentation The number of spaces in the indents for the serialization
+         * @param ignoreDefaultValues Whether to ignore default values
          * @return A TOML spec-compliant output config
          */
         public fun compliant(
