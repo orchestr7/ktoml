@@ -263,7 +263,11 @@ public sealed class TomlNode(
         children.forEachIndexed { i, child ->
             writeChildComments(child)
 
-            emitIndent()
+            // Prevent double indentation on dotted table elements.
+            if (child !is TomlTable || (!child.isSynthetic && child.getFirstChild() !is TomlTable)) {
+                emitIndent()
+            }
+
             child.write(emitter = this, config, multiline)
 
             if (child is TomlKeyValue || child is TomlInlineTable) {
