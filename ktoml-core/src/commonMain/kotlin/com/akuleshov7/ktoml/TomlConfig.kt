@@ -2,6 +2,10 @@
 
 package com.akuleshov7.ktoml
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
+
 @Deprecated(
     message = "Class name changed for convention.",
     replaceWith = ReplaceWith("TomlConfig", "com.akuleshov7.ktoml.TomlConfig")
@@ -112,12 +116,15 @@ public data class TomlInputConfig(
  * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
  * @property ignoreNullValues Whether to ignore null values
  * @property ignoreDefaultValues Whether to ignore default values
+ * @property serializersModule A [SerializersModule] instance.
  */
+@OptIn(ExperimentalSerializationApi::class)
 public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
     public val ignoreNullValues: Boolean = true,
     public val ignoreDefaultValues: Boolean = false,
+    public val serializersModule: SerializersModule = EmptySerializersModule,
 ) {
     public companion object {
         /**
@@ -125,15 +132,20 @@ public data class TomlOutputConfig(
          *
          * @param indentation The number of spaces in the indents for the serialization
          * @param ignoreDefaultValues Whether to ignore default values
+         * @param serializersModule A [SerializersModule] instance.
          * @return A TOML spec-compliant output config
          */
         public fun compliant(
             indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
-            ignoreDefaultValues: Boolean = false
+            ignoreDefaultValues: Boolean = false,
+            serializersModule: SerializersModule = EmptySerializersModule
         ): TomlOutputConfig =
                 TomlOutputConfig(
                     indentation,
-                    allowEscapedQuotesInLiteralStrings = false
+                    allowEscapedQuotesInLiteralStrings = false,
+                    ignoreNullValues = true,
+                    ignoreDefaultValues,
+                    serializersModule
                 )
     }
 }

@@ -17,7 +17,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
@@ -33,9 +32,9 @@ public abstract class TomlAbstractEncoder protected constructor(
     protected var elementIndex: Int,
     protected val attributes: Attributes,
     protected val inputConfig: TomlInputConfig,
-    protected val outputConfig: TomlOutputConfig
+    protected val outputConfig: TomlOutputConfig,
 ) : AbstractEncoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = outputConfig.serializersModule
     private var isNextElementKey = false
     private val instantDescriptor = Instant.serializer().descriptor
     private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor
