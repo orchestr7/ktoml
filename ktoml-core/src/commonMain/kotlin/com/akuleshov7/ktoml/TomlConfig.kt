@@ -3,7 +3,6 @@
 package com.akuleshov7.ktoml
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 @Deprecated(
@@ -123,8 +122,7 @@ public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
     public val ignoreNullValues: Boolean = true,
-    public val ignoreDefaultValues: Boolean = false,
-    public val serializersModule: SerializersModule = EmptySerializersModule,
+    public val ignoreDefaultValues: Boolean = false
 ) {
     public companion object {
         /**
@@ -137,15 +135,13 @@ public data class TomlOutputConfig(
          */
         public fun compliant(
             indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
-            ignoreDefaultValues: Boolean = false,
-            serializersModule: SerializersModule = EmptySerializersModule
+            ignoreDefaultValues: Boolean = false
         ): TomlOutputConfig =
                 TomlOutputConfig(
                     indentation,
                     allowEscapedQuotesInLiteralStrings = false,
                     ignoreNullValues = true,
-                    ignoreDefaultValues,
-                    serializersModule
+                    ignoreDefaultValues
                 )
     }
 }

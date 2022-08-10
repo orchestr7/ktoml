@@ -7,14 +7,13 @@ import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
-
-import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Toml class - is a general entry point in the core,
@@ -61,7 +60,7 @@ public open class Toml(
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        val toml = TomlMainEncoder.encode(serializer, value, inputConfig, outputConfig)
+        val toml = TomlMainEncoder.encode(serializer, value, inputConfig, outputConfig, serializersModule)
 
         return tomlWriter.writeToString(file = toml)
     }

@@ -26,6 +26,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @property attributes The current attributes.
  * @property inputConfig The input config, used for constructing nodes.
  * @property outputConfig The output config.
+ * @property serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public abstract class TomlAbstractEncoder protected constructor(
@@ -33,8 +34,8 @@ public abstract class TomlAbstractEncoder protected constructor(
     protected val attributes: Attributes,
     protected val inputConfig: TomlInputConfig,
     protected val outputConfig: TomlOutputConfig,
+    override val serializersModule: SerializersModule,
 ) : AbstractEncoder() {
-    override val serializersModule: SerializersModule = outputConfig.serializersModule
     private var isNextElementKey = false
     private val instantDescriptor = Instant.serializer().descriptor
     private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor

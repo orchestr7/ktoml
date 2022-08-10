@@ -8,6 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.modules.SerializersModule
 
 // Todo: Support "flat keys", i.e. a = { b.c = "..." }
 
@@ -21,12 +22,14 @@ public class TomlInlineTableEncoder internal constructor(
     elementIndex: Int,
     attributes: Attributes,
     inputConfig: TomlInputConfig,
-    outputConfig: TomlOutputConfig
+    outputConfig: TomlOutputConfig,
+    serializersModule: SerializersModule
 ) : TomlAbstractEncoder(
     elementIndex,
     attributes,
     inputConfig,
-    outputConfig
+    outputConfig,
+    serializersModule
 ) {
     private val pairs: MutableList<TomlNode> = mutableListOf()
 
@@ -42,14 +45,16 @@ public class TomlInlineTableEncoder internal constructor(
         elementIndex: Int,
         attributes: Attributes,
         inputConfig: TomlInputConfig,
-        outputConfig: TomlOutputConfig
+        outputConfig: TomlOutputConfig,
+        serializersModule: SerializersModule
     ) : this(
         rootNode,
         parent = null,
         elementIndex,
         attributes,
         inputConfig,
-        outputConfig
+        outputConfig,
+        serializersModule
     )
     
     // Inline tables are single-line, don't increment.
@@ -91,7 +96,8 @@ public class TomlInlineTableEncoder internal constructor(
             elementIndex,
             attributes.child(),
             inputConfig,
-            outputConfig
+            outputConfig,
+            serializersModule
         )
     } else {
         TomlInlineTableEncoder(
@@ -100,7 +106,8 @@ public class TomlInlineTableEncoder internal constructor(
             elementIndex,
             attributes.child(),
             inputConfig,
-            outputConfig
+            outputConfig,
+            serializersModule
         )
     }
 

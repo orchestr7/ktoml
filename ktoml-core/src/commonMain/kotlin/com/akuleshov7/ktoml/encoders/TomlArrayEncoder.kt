@@ -9,6 +9,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.modules.SerializersModule
 
 /**
  * Encodes a TOML array or table array.
@@ -20,12 +21,14 @@ public class TomlArrayEncoder internal constructor(
     elementIndex: Int,
     attributes: Attributes,
     inputConfig: TomlInputConfig,
-    outputConfig: TomlOutputConfig
+    outputConfig: TomlOutputConfig,
+    serializersModule: SerializersModule
 ) : TomlAbstractEncoder(
     elementIndex,
     attributes,
     inputConfig,
-    outputConfig
+    outputConfig,
+    serializersModule
 ) {
     private lateinit var values: MutableList<TomlValue>
     private lateinit var tables: TomlArrayOfTables
@@ -42,14 +45,16 @@ public class TomlArrayEncoder internal constructor(
         elementIndex: Int,
         attributes: Attributes,
         inputConfig: TomlInputConfig,
-        outputConfig: TomlOutputConfig
+        outputConfig: TomlOutputConfig,
+        serializersModule: SerializersModule
     ) : this(
         rootNode,
         parent = null,
         elementIndex,
         attributes,
         inputConfig,
-        outputConfig
+        outputConfig,
+        serializersModule
     )
 
     override fun nextElementIndex(): Int {
@@ -79,7 +84,8 @@ public class TomlArrayEncoder internal constructor(
                 elementIndex,
                 attributes,
                 inputConfig,
-                outputConfig
+                outputConfig,
+                serializersModule
             )
         } else {
             throw UnsupportedEncodingFeatureException(
@@ -101,7 +107,8 @@ public class TomlArrayEncoder internal constructor(
             nextElementIndex(),
             attributes,
             inputConfig,
-            outputConfig
+            outputConfig,
+            serializersModule
         )
     }
 

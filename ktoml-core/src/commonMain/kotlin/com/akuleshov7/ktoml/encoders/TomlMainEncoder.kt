@@ -8,6 +8,8 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
 
 /**
  * Encodes a TOML file or table.
@@ -25,12 +27,14 @@ public class TomlMainEncoder(
     elementIndex: Int = -1,
     attributes: Attributes = Attributes(),
     inputConfig: TomlInputConfig = TomlInputConfig(),
-    outputConfig: TomlOutputConfig = TomlOutputConfig()
+    outputConfig: TomlOutputConfig = TomlOutputConfig(),
+    serializersModule: SerializersModule = EmptySerializersModule
 ) : TomlAbstractEncoder(
     elementIndex,
     attributes,
     inputConfig,
-    outputConfig
+    outputConfig,
+    serializersModule
 ) {
     override fun appendValue(value: TomlValue) {
         val (_, _, _, _, _, _, comments, inlineComment) = attributes
@@ -71,14 +75,16 @@ public class TomlMainEncoder(
             elementIndex,
             attributes.child(),
             inputConfig,
-            outputConfig
+            outputConfig,
+            serializersModule
         )
         attributes.isInline -> TomlInlineTableEncoder(
             rootNode,
             elementIndex,
             attributes.child(),
             inputConfig,
-            outputConfig
+            outputConfig,
+            serializersModule
         )
         else -> {
             val table = TomlTablePrimitive(
@@ -96,7 +102,8 @@ public class TomlMainEncoder(
                 elementIndex,
                 attributes.child(),
                 inputConfig,
-                outputConfig
+                outputConfig,
+                serializersModule
             )
         }
     }
@@ -122,14 +129,16 @@ public class TomlMainEncoder(
             serializer: SerializationStrategy<T>,
             value: T,
             inputConfig: TomlInputConfig = TomlInputConfig(),
-            outputConfig: TomlOutputConfig = TomlOutputConfig()
+            outputConfig: TomlOutputConfig = TomlOutputConfig(),
+            serializersModule: SerializersModule = EmptySerializersModule
         ): TomlFile {
             val root = TomlFile(inputConfig)
 
             val encoder = TomlMainEncoder(
                 root,
                 inputConfig = inputConfig,
-                outputConfig = outputConfig
+                outputConfig = outputConfig,
+                serializersModule = serializersModule
             )
 
             serializer.serialize(encoder, value)
