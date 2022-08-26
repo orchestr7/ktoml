@@ -1,13 +1,12 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class ReadMeExampleTest {
     @Serializable
@@ -54,26 +53,8 @@ class ReadMeExampleTest {
 
     @Test
     fun readMeExampleTest() {
-        val tomlText = """
-            someBooleanProperty = true
-            gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
-            
-            [table1]
-                property1 = null
-                property2 = 6
-                property3 = 5
-            
-            [table2]
-                someNumber = 5
-                otherNumber = 5.56
-            
-                [table2.akuleshov7.com]
-                    name = 'this is a "literal" string'
-                    configurationList = [ "a", "b", "c", null ]
-        """.trimIndent()
-
-        val tomlTree = Toml.encodeToString(
-            MyClass(
+        assertEncodedEquals(
+            value = MyClass(
                 true,
                 Table1(null, 6),
                 Table2(
@@ -82,9 +63,27 @@ class ReadMeExampleTest {
                     5.56
                 ),
                 GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
+            ),
+            expectedToml = """
+                someBooleanProperty = true
+                gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+                
+                [table1]
+                    property1 = null
+                    property2 = 6
+                    property3 = 5
+                
+                [table2]
+                    someNumber = 5
+                    otherNumber = 5.56
+                
+                    [table2."akuleshov7.com"]
+                        name = 'this is a "literal" string'
+                        configurationList = [ "a", "b", "c", null ]
+            """.trimIndent(),
+            tomlInstance = Toml(
+                outputConfig = TomlOutputConfig(ignoreNullValues = false)
             )
         )
-
-        assertEquals(tomlText, tomlTree)
     }
 }

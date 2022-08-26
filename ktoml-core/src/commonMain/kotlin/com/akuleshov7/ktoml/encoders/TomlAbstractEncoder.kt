@@ -188,7 +188,7 @@ public abstract class TomlAbstractEncoder protected constructor(
         serializer: SerializationStrategy<T>,
         value: T?
     ) {
-        if (value != null || outputConfig.ignoreNullValues) {
+        if (value != null || !outputConfig.ignoreNullValues) {
             super.encodeNullableSerializableElement(descriptor, index, serializer, value)
         }
     }

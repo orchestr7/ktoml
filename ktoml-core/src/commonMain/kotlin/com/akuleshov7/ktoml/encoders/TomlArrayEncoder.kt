@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
@@ -30,7 +31,7 @@ public class TomlArrayEncoder internal constructor(
     outputConfig,
     serializersModule
 ) {
-    private lateinit var values: MutableList<TomlValue>
+    private val values: MutableList<TomlValue> = mutableListOf()
     private lateinit var tables: TomlArrayOfTables
 
     /**
@@ -76,21 +77,36 @@ public class TomlArrayEncoder internal constructor(
     }
 
     override fun encodeStructure(kind: SerialKind): TomlAbstractEncoder = if (attributes.isInline) {
-        if (kind == StructureKind.LIST) {
-            // Nested primitive array
-            TomlArrayEncoder(
-                rootNode,
-                parent = this,
-                elementIndex,
-                attributes,
-                inputConfig,
-                outputConfig,
-                serializersModule
-            )
-        } else {
-            throw UnsupportedEncodingFeatureException(
-                "Inline tables are not yet supported as array elements."
-            )
+        when (kind) {
+            StructureKind.LIST -> {
+                // Nested primitive array
+                TomlArrayEncoder(
+                    rootNode,
+                    parent = this,
+                    elementIndex,
+                    attributes,
+                    inputConfig,
+                    outputConfig,
+                    serializersModule
+                )
+            }
+            is PolymorphicKind -> {
+                // Serialize polymorphic types as a nested array.
+                TomlArrayEncoder(
+                    rootNode,
+                    parent = this,
+                    elementIndex,
+                    attributes,
+                    inputConfig,
+                    outputConfig,
+                    serializersModule
+                )
+            }
+            else -> {
+                throw UnsupportedEncodingFeatureException(
+                    "Inline tables are not yet supported as array elements."
+                )
+            }
         }
     } else {
         val element = TomlArrayOfTablesElement(
@@ -112,10 +128,8 @@ public class TomlArrayEncoder internal constructor(
         )
     }
 
-    override fun beginCollection(descriptor: SerialDescriptor, collectionSize: Int): CompositeEncoder {
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         if (attributes.isInline) {
-            values = ArrayList(collectionSize)
-
             parent?.let {
                 // Create an array nested in the specified parent list.
                 appendValueTo(TomlArray(values, "", elementIndex), parent)

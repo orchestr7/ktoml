@@ -1,41 +1,35 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.Toml
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class DateTimeEncoderTest {
+    @Serializable
+    data class DateTimes(
+        val instant: Instant = default.toInstant(TimeZone.UTC),
+        val instantWithNanos: Instant = defaultWithNanos.toInstant(TimeZone.UTC),
+        val localDateTime: LocalDateTime = default,
+        val localDateTimeWithNanos: LocalDateTime = defaultWithNanos,
+        val localDate: LocalDate = default.date
+    ) {
+        companion object {
+            private val default = LocalDateTime(1979, 5, 27, 7, 32, 0)
+            private val defaultWithNanos = LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
+        }
+    }
+
     @Test
     fun dateTimeTest() {
-        @Serializable
-        data class DateTimes(
-            val instants: List<Instant> =
-                    listOf(
-                        LocalDateTime(1979, 5, 27, 7, 32, 0)
-                            .toInstant(TimeZone.UTC),
-                        LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
-                            .toInstant(TimeZone.UTC)
-                    ),
-            val localDateTimes: List<LocalDateTime> =
-                    listOf(
-                        LocalDateTime(1979, 5, 27, 7, 32, 0),
-                        LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
-                    ),
-            val localDate: LocalDate = LocalDate(1979, 5, 27)
-        )
-
-        assertEquals(
-            """
-                instants = [ 1979-05-27T07:32:00Z, 1979-05-27T00:32:00.999999Z ]
-                
-                localDateTimes = [ 1979-05-27T07:32, 1979-05-27T00:32:00.999999 ]
-                
+        assertEncodedEquals(
+            value = DateTimes(),
+            expectedToml = """
+                instant = 1979-05-27T07:32:00Z
+                instantWithNanos = 1979-05-27T00:32:00.999999Z
+                localDateTime = 1979-05-27T07:32
+                localDateTimeWithNanos = 1979-05-27T00:32:00.999999
                 localDate = 1979-05-27
-            """.trimIndent(),
-            Toml.encodeToString(DateTimes())
+            """.trimIndent()
         )
     }
 }

@@ -1,14 +1,11 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlin.test.Ignore
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class ArrayEncoderTest {
     @Test
@@ -16,9 +13,9 @@ class ArrayEncoderTest {
         @Serializable
         data class EmptyArray(val a: List<String> = emptyList())
 
-        assertEquals(
-            "a = [ ]",
-            Toml.encodeToString(EmptyArray())
+        assertEncodedEquals(
+            value = EmptyArray(),
+            expectedToml = "a = [ ]"
         )
     }
 
@@ -27,9 +24,9 @@ class ArrayEncoderTest {
         @Serializable
         data class SimpleArray(val a: List<Long> = listOf(1, 2, 3))
 
-        assertEquals(
-            "a = [ 1, 2, 3 ]",
-            Toml.encodeToString(SimpleArray())
+        assertEncodedEquals(
+            value = SimpleArray(),
+            expectedToml = "a = [ 1, 2, 3 ]"
         )
     }
 
@@ -45,19 +42,15 @@ class ArrayEncoderTest {
             val literalStrings: List<String> = listOf("\"string\"")
         )
 
-        assertEquals(
-            """
-            booleans = [ true, false ]
-            
-            longs = [ 1, 2, 3 ]
-            
-            doubles = [ 3.14 ]
-            
-            basicStrings = [ "a", "b", "c" ]
-            
-            literalStrings = [ '"string"' ]
-            """.trimIndent(),
-            Toml.encodeToString(Arrays())
+        assertEncodedEquals(
+            value = Arrays(),
+            expectedToml = """
+                booleans = [ true, false ]
+                longs = [ 1, 2, 3 ]
+                doubles = [ 3.14 ]
+                basicStrings = [ "a", "b", "c" ]
+                literalStrings = [ '"string"' ]
+            """.trimIndent()
         )
     }
 
@@ -75,15 +68,15 @@ class ArrayEncoderTest {
                     (0L..2L).map(::InlineTable)
         )
 
-        assertEquals(
-            """
-            inlineTables = [
-                { index = 0 },
-                { index = 1 },
-                { index = 2 }
-            ]
-            """.trimIndent(),
-            Toml.encodeToString(InlineTableArray())
+        assertEncodedEquals(
+            value = InlineTableArray(),
+            expectedToml = """
+                inlineTables = [
+                    { index = 0 },
+                    { index = 1 },
+                    { index = 2 }
+                ]
+            """.trimIndent()
         )
     }
 
@@ -98,11 +91,9 @@ class ArrayEncoderTest {
                     )
         )
 
-        assertEquals(
-            """
-            a = [ [ 1, 2 ], [ 3, 4 ] ]
-            """.trimIndent(),
-            Toml.encodeToString(NestedArray())
+        assertEncodedEquals(
+            value = NestedArray(),
+            expectedToml = "a = [ [ 1, 2 ], [ 3, 4 ] ]"
         )
     }
 
@@ -114,12 +105,12 @@ class ArrayEncoderTest {
         @Serializable
         data class ArrayInTable(val table: Table = Table())
 
-        assertEquals(
-            """
-            [table]
-                a = [ 1, 2, 3 ]
-            """.trimIndent(),
-            Toml.encodeToString(ArrayInTable())
+        assertEncodedEquals(
+            value = ArrayInTable(),
+            expectedToml = """
+                [table]
+                    a = [ 1, 2, 3 ]
+            """.trimIndent()
         )
     }
 
@@ -132,11 +123,9 @@ class ArrayEncoderTest {
         @Serializable
         data class ArrayInInlineTable(val a: InlineTable = InlineTable())
 
-        assertEquals(
-            """
-            a = { b = [ 1, 2, 3 ] }
-            """.trimIndent(),
-            Toml.encodeToString(ArrayInInlineTable())
+        assertEncodedEquals(
+            value = ArrayInInlineTable(),
+            expectedToml = "a = { b = [ 1, 2, 3 ] }"
         )
     }
 }

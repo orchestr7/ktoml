@@ -132,10 +132,6 @@ internal constructor(
                             "Control characters (excluding tab) are not permitted" +
                                     " in literal strings."
                         )
-                    '\\' in this ->
-                        throw TomlWritingException(
-                            "Escapes are not allowed in literal strings."
-                        )
                     '\'' in this ->
                         if (config.allowEscapedQuotesInLiteralStrings) {
                             replace("'", "\\'")

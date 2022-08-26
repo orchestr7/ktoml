@@ -1,10 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.Toml
-import kotlinx.serialization.*
-import kotlinx.serialization.EncodeDefault.Mode.NEVER
+import kotlinx.serialization.Serializable
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class ArrayOfTablesEncoderTest {
     @Test
@@ -22,32 +19,31 @@ class ArrayOfTablesEncoderTest {
                     )
         )
 
-        assertEquals(
-            """
-            [[fruits]]
-                a = "apple"
-                b = "qwerty"
-
-            [[fruits]]
-                a = "banana"
-                b = "qwerty"
-
-            [[fruits]]
-                a = "plantain"
-                b = "qwerty"
-            """.trimIndent(),
-            Toml.encodeToString(SimpleTableArray())
+        assertEncodedEquals(
+            value = SimpleTableArray(),
+            expectedToml = """
+                [[fruits]]
+                    a = "apple"
+                    b = "qwerty"
+            
+                [[fruits]]
+                    a = "banana"
+                    b = "qwerty"
+            
+                [[fruits]]
+                    a = "plantain"
+                    b = "qwerty"
+            """.trimIndent()
         )
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     @Test
     fun simpleTableArrayWithEmptyTest() {
         @Serializable
         data class Table(
-            @EncodeDefault(NEVER) val name: String? = null,
-            @EncodeDefault(NEVER) val sku: Long? = null,
-            @EncodeDefault(NEVER) val color: String? = null
+            val name: String? = null,
+            val sku: Long? = null,
+            val color: String? = null
         )
 
         @Serializable
@@ -60,20 +56,20 @@ class ArrayOfTablesEncoderTest {
                     )
         )
 
-        assertEquals(
-            """
-            [[products]]
-                name = "Hammer"
-                sku = 738594937
-        
-            [[products]]
-        
-            [[products]]
-                name = "Nail"
-                sku = 284758393
-                color = "gray"
-            """.trimIndent(),
-            Toml.encodeToString(SimpleTableArrayWithEmpty())
+        assertEncodedEquals(
+            value = SimpleTableArrayWithEmpty(),
+            expectedToml = """
+                [[products]]
+                    name = "Hammer"
+                    sku = 738594937
+            
+                [[products]]
+                
+                [[products]]
+                    name = "Nail"
+                    sku = 284758393
+                    color = "gray"
+            """.trimIndent()
         )
     }
 
@@ -83,26 +79,30 @@ class ArrayOfTablesEncoderTest {
         data class InnerTable(val name: String = "granny smith")
 
         @Serializable
-        data class Table(
+        data class Table2(
             val name: String = "red delicious",
             val inside: List<InnerTable> = listOf(InnerTable())
         )
 
         @Serializable
-        data class NestedTableArray(
-            @SerialName("fruits.varieties") // Todo: Not consistent with decoder behavior, but needed
-            val fruitVarieties: List<Table> = listOf(Table())
+        data class Table1(
+            val varieties: List<Table2> = listOf(Table2())
         )
 
-        assertEquals(
-            """
-            [[fruits.varieties]]
-                name = "red delicious"
-            
-                [[fruits.varieties.inside]]
-                    name = "granny smith"
-            """.trimIndent(),
-            Toml.encodeToString(NestedTableArray())
+        @Serializable
+        data class NestedTableArray(
+            val fruits: List<Table1> = listOf(Table1())
+        )
+
+        assertEncodedEquals(
+            value = NestedTableArray(),
+            expectedToml = """
+                [[fruits.varieties]]
+                    name = "red delicious"
+                
+                    [[fruits.varieties.inside]]
+                        name = "granny smith"
+            """.trimIndent()
         )
     }
 
@@ -112,26 +112,28 @@ class ArrayOfTablesEncoderTest {
         data class InnerTable(val name: String = "granny smith")
 
         @Serializable
-        data class Table(
+        data class Table2(
             val name: String = "red delicious",
             val inside: InnerTable = InnerTable()
         )
 
         @Serializable
+        data class Table1(val varieties: List<Table2> = listOf(Table2()))
+
+        @Serializable
         data class TableArrayWithNestedTable(
-            @SerialName("fruits.varieties")
-            val fruitVarieties: List<Table> = listOf(Table())
+            val fruits: List<Table1> = listOf(Table1())
         )
 
-        assertEquals(
-            """
-            [[fruits.varieties]]
-                name = "red delicious"
-            
-                [fruits.varieties.inside]
-                    name = "granny smith"
-            """.trimIndent(),
-            Toml.encodeToString(TableArrayWithNestedTable())
+        assertEncodedEquals(
+            value = TableArrayWithNestedTable(),
+            expectedToml = """
+                [[fruits.varieties]]
+                    name = "red delicious"
+                
+                    [fruits.varieties.inside]
+                        name = "granny smith"
+            """.trimIndent()
         )
     }
 
@@ -155,50 +157,55 @@ class ArrayOfTablesEncoderTest {
                     )
         )
 
-        assertEquals(
-            """
-            [[fruit]]
-                [fruit.physical]
-                    color = "red"
-                    shape = "round"
-            
-            [[fruit]]
-                [fruit.physical]
-                    color = "red"
-                    shape = "round"
-            """.trimIndent(),
-            Toml.encodeToString(TableArrayWithNestedTable())
+        assertEncodedEquals(
+            value = TableArrayWithNestedTable(),
+            expectedToml = """
+                [[fruit]]
+                    [fruit.physical]
+                        color = "red"
+                        shape = "round"
+                
+                [[fruit]]
+                    [fruit.physical]
+                        color = "red"
+                        shape = "round"
+            """.trimIndent()
         )
     }
 
     @Test
     fun dottedFlatTableArrayTest() {
         @Serializable
-        data class Table(val name: String)
+        data class Table2(val name: String)
 
         @Serializable
-        data class FlatTableArray(
-            @SerialName("fruits.varieties")
-            val fruitVarieties: List<Table> =
+        data class Table1(
+            val varieties: List<Table2> =
                     listOf(
-                        Table("red delicious"),
-                        Table("granny smith"),
-                        Table("granny smith"),
+                        Table2("red delicious"),
+                        Table2("granny smith"),
+                        Table2("granny smith"),
                     )
         )
 
-        assertEquals(
-            """
-            [[fruits.varieties]]
-                name = "red delicious"
-            
-            [[fruits.varieties]]
-                name = "granny smith"
-            
-            [[fruits.varieties]]
-                name = "granny smith"
-            """.trimIndent(),
-            Toml.encodeToString(FlatTableArray())
+        @Serializable
+        data class FlatTableArray(
+            val fruits: List<Table1> = listOf(Table1())
+
+        )
+
+        assertEncodedEquals(
+            value = FlatTableArray(),
+            expectedToml = """
+                [[fruits.varieties]]
+                    name = "red delicious"
+                
+                [[fruits.varieties]]
+                    name = "granny smith"
+                
+                [[fruits.varieties]]
+                    name = "granny smith"
+            """.trimIndent()
         )
     }
 
@@ -208,40 +215,44 @@ class ArrayOfTablesEncoderTest {
         data class InnerTable(val name: Long)
 
         @Serializable
-        data class Table(
+        data class Table2(
             val name: Long,
             val c: InnerTable
         )
 
         @Serializable
-        data class ComplexTableArrays(
-            @SerialName("a.b")
-            val ab: List<Table> =
+        data class Table1(
+            val b: List<Table2> =
                     listOf(
-                        Table(1, InnerTable(2)),
-                        Table(3, InnerTable(4)),
-                    ),
+                        Table2(1, InnerTable(2)),
+                        Table2(3, InnerTable(4)),
+                    )
+        )
+
+        @Serializable
+        data class ComplexTableArrays(
+            val a: Table1 = Table1(),
             val c: List<InnerTable> = listOf(InnerTable(5))
         )
 
-        assertEquals(
-            """
-            [[a.b]]
-                name = 1
-            
-                [a.b.c]
-                    name = 2
-            
-            [[a.b]]
-                name = 3
-            
-                [a.b.c]
-                    name = 4
-            
-            [[c]]
-                name = 5
-            """.trimIndent(),
-            Toml.encodeToString(ComplexTableArrays())
+        assertEncodedEquals(
+            value = ComplexTableArrays(),
+            expectedToml = """
+                [[a.b]]
+                    name = 1
+                
+                    [a.b.c]
+                        name = 2
+                
+                [[a.b]]
+                    name = 3
+                
+                    [a.b.c]
+                        name = 4
+                
+                [[c]]
+                    name = 5
+            """.trimIndent()
         )
     }
 
@@ -251,10 +262,8 @@ class ArrayOfTablesEncoderTest {
         data class InnerTable(val name: Long)
 
         @Serializable
-        data class Table(
-            val name: Long = 1,
-            @SerialName("b.c")
-            val bc: List<InnerTable> =
+        data class Table2(
+            val c: List<InnerTable> =
                     listOf(
                         InnerTable(2),
                         InnerTable(4)
@@ -262,20 +271,26 @@ class ArrayOfTablesEncoderTest {
         )
 
         @Serializable
-        data class ComplexTable(val a: Table = Table())
+        data class Table1(
+            val name: Long = 1,
+            val b: Table2 = Table2()
+        )
 
-        assertEquals(
-            """
-            [a]
-                name = 1
-            
-                [[a.b.c]]
-                    name = 2
-            
-                [[a.b.c]]
-                    name = 4
-            """.trimIndent(),
-            Toml.encodeToString(ComplexTable())
+        @Serializable
+        data class ComplexTable(val a: Table1 = Table1())
+
+        assertEncodedEquals(
+            value = ComplexTable(),
+            expectedToml = """
+                [a]
+                    name = 1
+                
+                    [[a.b.c]]
+                        name = 2
+                
+                    [[a.b.c]]
+                        name = 4
+            """.trimIndent()
         )
     }
 }
