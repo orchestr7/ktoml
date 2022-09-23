@@ -17,7 +17,7 @@ public class TomlInlineTable internal constructor(
     content: String,
     lineNo: Int,
     override val name: String,
-    private val tomlKeyValues: List<TomlNode>,
+    internal val tomlKeyValues: List<TomlNode>,
     comments: List<String> = emptyList(),
     inlineComment: String = "",
     config: TomlInputConfig = TomlInputConfig()

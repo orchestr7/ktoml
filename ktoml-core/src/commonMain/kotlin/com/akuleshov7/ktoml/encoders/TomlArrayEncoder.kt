@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -9,7 +10,6 @@ import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.SerializersModule
 
 /**
@@ -32,7 +32,8 @@ public class TomlArrayEncoder internal constructor(
     serializersModule
 ) {
     private val values: MutableList<TomlValue> = mutableListOf()
-    private lateinit var tables: TomlArrayOfTables
+    private val tables: MutableList<TomlNode> = mutableListOf()
+    // private lateinit var tables: TomlArrayOfTables
 
     /**
      * @param rootNode The root node to add the array to.
@@ -72,6 +73,15 @@ public class TomlArrayEncoder internal constructor(
 
     override fun appendValue(value: TomlValue) {
         values += value
+
+        // If a primitive array somehow wasn't already marked as such, do so.
+        if (!attributes.parent!!.isInline) {
+            if (tables.isNotEmpty()) {
+                throw InternalEncodingException("Primitive value added to table array")
+            }
+
+            attributes.parent.isInline = true
+        }
 
         super.appendValue(value)
     }
@@ -116,7 +126,7 @@ public class TomlArrayEncoder internal constructor(
             inputConfig
         )
 
-        tables.appendChild(element)
+        tables += element
 
         TomlMainEncoder(
             element,
@@ -128,31 +138,58 @@ public class TomlArrayEncoder internal constructor(
         )
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
+    override fun endStructure(descriptor: SerialDescriptor) {
         if (attributes.isInline) {
-            parent?.let {
-                // Create an array nested in the specified parent list.
-                appendValueTo(TomlArray(values, "", elementIndex), parent)
-            } ?: run {
-                val key = attributes.keyOrThrow()
+            val array = TomlArray(values, "", elementIndex)
+
+            if (parent == null) {
+                val key = attributes.parent!!.keyOrThrow()
+
                 // Create a key-array pair and add it to the parent.
-                val array = TomlKeyValueArray(
-                    TomlKey(key, elementIndex),
-                    TomlArray(values, "", elementIndex),
-                    elementIndex,
-                    attributes.comments,
-                    attributes.inlineComment,
-                    key,
-                    inputConfig
+                rootNode.appendChild(
+                    TomlKeyValueArray(
+                        TomlKey(key, elementIndex),
+                        array,
+                        elementIndex,
+                        attributes.comments,
+                        attributes.inlineComment,
+                        key,
+                        inputConfig
+                    )
                 )
-                rootNode.appendChild(array)
+            } else {
+                appendValueTo(array, parent)
             }
         } else {
-            tables = TomlArrayOfTables("[[${attributes.parent!!.getFullKey()}]]", elementIndex, inputConfig)
+            var isSynthetic = false
 
-            rootNode.insertTableToTree(tables)
+            // If the root table array contains a single nested table array, move it
+            // from its element to the root and mark the root as synthetic.
+            tables.singleOrNull()?.let { element ->
+                if (element is TomlArrayOfTablesElement) {
+                    element.children.singleOrNull()?.let { nested ->
+                        if (nested is TomlArrayOfTables) {
+                            tables.clear()
+
+                            tables += nested
+                            isSynthetic = !outputConfig.explicitTables
+                        }
+                    }
+                }
+            }
+
+            val tableArray = TomlArrayOfTables(
+                "[[${attributes.parent!!.getFullKey()}]]",
+                elementIndex,
+                inputConfig,
+                isSynthetic
+            )
+
+            tables.forEach(tableArray::appendChild)
+
+            rootNode.appendChild(tableArray)
         }
 
-        return super.beginStructure(descriptor)
+        super.endStructure(descriptor)
     }
 }

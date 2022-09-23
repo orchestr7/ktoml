@@ -277,10 +277,9 @@ public sealed class TomlNode(
             if (i < last) {
                 emitNewLine()
 
-                // Primitive pairs have a single newline after, except when a table
-                // follows.
-                if (child !is TomlKeyValuePrimitive ||
-                        children[i + 1] is TomlTable) {
+                // A single newline follows single-line pairs, except when a table
+                // follows. Two newlines follow multi-line pairs.
+                if ((child is TomlKeyValueArray && multiline) || children[i + 1] is TomlTable) {
                     emitNewLine()
                 }
             }

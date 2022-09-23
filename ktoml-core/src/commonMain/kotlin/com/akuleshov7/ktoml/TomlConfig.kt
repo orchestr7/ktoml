@@ -2,7 +2,6 @@
 
 package com.akuleshov7.ktoml
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.SerializersModule
 
 @Deprecated(
@@ -84,7 +83,7 @@ public data class TomlInputConfig(
     public val allowEmptyValues: Boolean = true,
     public val allowNullValues: Boolean = true,
     public val allowEmptyToml: Boolean = true,
-    public val allowEscapedQuotesInLiteralStrings: Boolean = true
+    public val allowEscapedQuotesInLiteralStrings: Boolean = true,
 ) {
     public companion object {
         /**
@@ -115,14 +114,14 @@ public data class TomlInputConfig(
  * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
  * @property ignoreNullValues Whether to ignore null values
  * @property ignoreDefaultValues Whether to ignore default values
- * @property serializersModule A [SerializersModule] instance.
+ * @property explicitTables Whether to explicitly define parent tables
  */
-@OptIn(ExperimentalSerializationApi::class)
 public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
     public val ignoreNullValues: Boolean = true,
-    public val ignoreDefaultValues: Boolean = false
+    public val ignoreDefaultValues: Boolean = false,
+    public val explicitTables: Boolean = false,
 ) {
     public companion object {
         /**
@@ -135,13 +134,15 @@ public data class TomlOutputConfig(
          */
         public fun compliant(
             indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
-            ignoreDefaultValues: Boolean = false
+            ignoreDefaultValues: Boolean = false,
+            explicitTables: Boolean = false,
         ): TomlOutputConfig =
                 TomlOutputConfig(
                     indentation,
                     allowEscapedQuotesInLiteralStrings = false,
                     ignoreNullValues = true,
-                    ignoreDefaultValues
+                    ignoreDefaultValues,
+                    explicitTables
                 )
     }
 }

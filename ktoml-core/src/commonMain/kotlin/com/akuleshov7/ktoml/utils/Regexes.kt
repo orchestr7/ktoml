@@ -24,3 +24,21 @@ internal val controlCharacterRegex: Regex =
  */
 internal val unescapedBackslashRegex: Regex =
         Regex("""\\\\|\\(?![btnfr"]|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})""")
+
+/**
+ * Matches an unescaped double quote character, possibly with escaped backslashes
+ * preceding it. Used to
+ */
+internal val unescapedDoubleQuoteRegex: Regex = Regex("""(?<!\\)(\\\\)*"""")
+
+/**
+ * Matches a bare key, a key with only alphanumeric, underscore, and hyphen
+ * characters.
+ */
+internal val bareKeyRegex = Regex("[A-Za-z0-9_-]+")
+
+/**
+ * Matches a key with at least one unescaped double quote and no single
+ * quotes.
+ */
+internal val literalKeyCandidateRegex = Regex("""[^'"]*((?<!\\)")((?<!\\)"|[^'"])*""")

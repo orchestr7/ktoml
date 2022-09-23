@@ -95,7 +95,7 @@ public class TomlMainEncoder(
                 inputConfig
             )
 
-            rootNode.insertTableToTree(table)
+            rootNode.appendChild(table)
 
             TomlMainEncoder(
                 table,
@@ -109,7 +109,20 @@ public class TomlMainEncoder(
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
+        if (rootNode is TomlTablePrimitive && rootNode.hasNoChildren())
+            rootNode.appendChild(TomlStubEmptyNode(elementIndex))
+
+        // Put table children last to avoid the need for table redeclaration.
         rootNode.children.sortBy { it is TomlTable }
+
+        // Mark primitive tables as synthetic if their only children are nested
+        // tables, to avoid extraneous definition.
+        // Todo: Find a more elegant solution that doesn't make isSynthetic mutable.
+        if (!outputConfig.explicitTables) {
+            if (rootNode is TomlTablePrimitive && rootNode.children.all { it is TomlTable }) {
+                rootNode.isSynthetic = true
+            }
+        }
 
         super.endStructure(descriptor)
     }

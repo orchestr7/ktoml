@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.tree.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -134,5 +135,47 @@ public class TomlInlineTableEncoder internal constructor(
         }
 
         return super.beginStructure(descriptor)
+    }
+
+    override fun endStructure(descriptor: SerialDescriptor) {
+        if (!outputConfig.explicitTables && parent is TomlInlineTableEncoder) {
+            pairs.singleOrNull()?.let { pair ->
+                val parentPair = parent.pairs.removeLast() as TomlInlineTable
+                val name = "${parentPair.name}.${pair.name}"
+
+                parent.pairs += when (pair) {
+                    is TomlKeyValuePrimitive -> TomlKeyValuePrimitive(
+                        TomlKey(name, pair.lineNo),
+                        pair.value,
+                        pair.lineNo,
+                        pair.comments,
+                        pair.inlineComment,
+                        name,
+                        inputConfig
+                    )
+                    is TomlKeyValueArray -> TomlKeyValueArray(
+                        TomlKey(name, pair.lineNo),
+                        pair.value,
+                        pair.lineNo,
+                        pair.comments,
+                        pair.inlineComment,
+                        name,
+                        inputConfig
+                    )
+                    is TomlInlineTable -> TomlInlineTable(
+                        "",
+                        pair.lineNo,
+                        name,
+                        pair.tomlKeyValues,
+                        pair.comments,
+                        pair.inlineComment,
+                        inputConfig
+                    )
+                    else -> throw InternalEncodingException("Not a pair")
+                }
+            }
+        }
+
+        super.endStructure(descriptor)
     }
 }

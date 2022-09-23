@@ -1,9 +1,9 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.utils.bareKeyRegex
+import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
-
-import kotlin.jvm.JvmStatic
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -306,16 +306,4 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun emitPairDelimiter(): TomlEmitter = emit(" = ")
-
-    public companion object {
-        @JvmStatic
-        private val bareKeyRegex = Regex("[A-Za-z0-9_-]+")
-
-        /**
-         * Matches a key with at least one unescaped double quote and no single
-         * quotes.
-         */
-        @JvmStatic
-        private val literalKeyCandidateRegex = Regex("""[^'"]*((?<!\\)")((?<!\\)"|[^'"])*""")
-    }
 }

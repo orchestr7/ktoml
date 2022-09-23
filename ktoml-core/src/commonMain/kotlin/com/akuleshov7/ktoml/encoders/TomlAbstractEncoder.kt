@@ -8,6 +8,8 @@ import com.akuleshov7.ktoml.exceptions.IllegalEncodingTypeException
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.utils.bareKeyRegex
+import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
 import com.akuleshov7.ktoml.writers.IntegerRepresentation
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import kotlinx.datetime.Instant
@@ -61,7 +63,7 @@ public abstract class TomlAbstractEncoder protected constructor(
             )
         }
 
-        attributes.key = key
+        setKey(key)
 
         return true
     }
@@ -120,7 +122,7 @@ public abstract class TomlAbstractEncoder protected constructor(
             )
         }
 
-        if (!encodeAsKey(value, "String")) {
+        if (!encodeAsKey(value)) {
             appendValue(
                 if (attributes.isLiteral) {
                     TomlLiteralString(value as Any, elementIndex)
@@ -217,12 +219,57 @@ public abstract class TomlAbstractEncoder protected constructor(
             }
         }
 
+        // Encode the parent of nested tables (i.e. [a.b]), and nested inline tables
+        // with one element (i.e. version.ref = "version"), as implicit.
+        if (!outputConfig.explicitTables) {
+            when (typeDescriptor.kind) {
+                StructureKind.CLASS,
+                StructureKind.MAP -> {
+                    if (attributes.isInline) {
+                        if (typeDescriptor.elementsCount == 1) {
+                            attributes.isImplicit = true
+                        }
+                    } else {
+                        var isImplicit = true
+
+                        // Loop through all the structure's elements, breaking when
+                        // a non-structure or inline element is encountered.
+                        element@for (elementIndex in 0 until typeDescriptor.elementsCount) {
+                            when (val desc = typeDescriptor.getElementDescriptor(elementIndex)) {
+                                is PolymorphicKind,
+                                is StructureKind -> {
+                                    for (annotation in desc.annotations)
+                                        if (annotation is TomlInlineTable) {
+                                            isImplicit = false
+                                            break@element
+                                        }
+
+                                    for (annotation in typeDescriptor.getElementAnnotations(elementIndex))
+                                        if (annotation is TomlInlineTable) {
+                                            isImplicit = false
+                                            break@element
+                                        }
+                                }
+                                else -> {
+                                    isImplicit = false
+                                    break@element
+                                }
+                            }
+                        }
+
+                        attributes.isImplicit = isImplicit
+                    }
+                }
+                else -> { }
+            }
+        }
+
         return true
     }
 
     protected open fun isNextElementKey(descriptor: SerialDescriptor, index: Int): Boolean {
         when (val kind = descriptor.kind) {
-            StructureKind.CLASS -> attributes.key = descriptor.getElementName(index)
+            StructureKind.CLASS -> setKey(descriptor.getElementName(index))
             StructureKind.MAP -> {
                 // When the index is even (key) mark the next element as a key and
                 // skip annotations and element index incrementing.
@@ -233,7 +280,7 @@ public abstract class TomlAbstractEncoder protected constructor(
                 }
             }
             is PolymorphicKind -> {
-                attributes.key = descriptor.getElementName(index)
+                setKey(descriptor.getElementName(index))
 
                 // Ignore annotations on polymorphic types.
                 if (index == 0) {
@@ -245,6 +292,17 @@ public abstract class TomlAbstractEncoder protected constructor(
         }
 
         return false
+    }
+
+    /**
+     * Set the key attribute to [key], quoting and escaping as necessary.
+     */
+    protected fun setKey(key: String) {
+        attributes.key = when {
+            key matches bareKeyRegex -> key
+            key matches literalKeyCandidateRegex -> "'$key'"
+            else -> "\"$key\""
+        }
     }
 
     /**
@@ -270,11 +328,12 @@ public abstract class TomlAbstractEncoder protected constructor(
         public var intRepresentation: IntegerRepresentation = DECIMAL,
         public var isInline: Boolean = false,
         public var comments: List<String> = emptyList(),
-        public var inlineComment: String = ""
+        public var inlineComment: String = "",
+        public var isImplicit: Boolean = false,
     ) {
         public fun keyOrThrow(): String = key ?: throw InternalEncodingException("Key not set")
 
-        public fun child(): Attributes = copy(parent = copy())
+        public fun child(): Attributes = copy(parent = copy(), isImplicit = false)
 
         public fun set(annotations: Iterable<Annotation>) {
             annotations.forEach { annotation ->
@@ -302,13 +361,14 @@ public abstract class TomlAbstractEncoder protected constructor(
             isInline = parent.isInline
             comments = parent.comments
             inlineComment = parent.inlineComment
+            isImplicit = false
         }
 
         public fun getFullKey(): String {
             val elementKey = keyOrThrow()
 
             return parent?.let {
-                "${it.keyOrThrow()}.$elementKey"
+                "${it.getFullKey()}.$elementKey"
             } ?: elementKey
         }
     }
