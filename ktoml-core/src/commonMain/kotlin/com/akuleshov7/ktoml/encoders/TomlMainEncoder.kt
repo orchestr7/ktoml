@@ -97,20 +97,14 @@ public class TomlMainEncoder(
 
             rootNode.appendChild(table)
 
-            TomlMainEncoder(
-                table,
-                elementIndex,
-                attributes.child(),
-                inputConfig,
-                outputConfig,
-                serializersModule
-            )
+            tableEncoder(table)
         }
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        if (rootNode is TomlTablePrimitive && rootNode.hasNoChildren())
+        if (rootNode is TomlTablePrimitive && rootNode.hasNoChildren()) {
             rootNode.appendChild(TomlStubEmptyNode(elementIndex))
+        }
 
         // Put table children last to avoid the need for table redeclaration.
         rootNode.children.sortBy { it is TomlTable }
@@ -118,10 +112,10 @@ public class TomlMainEncoder(
         // Mark primitive tables as synthetic if their only children are nested
         // tables, to avoid extraneous definition.
         // Todo: Find a more elegant solution that doesn't make isSynthetic mutable.
-        if (!outputConfig.explicitTables) {
-            if (rootNode is TomlTablePrimitive && rootNode.children.all { it is TomlTable }) {
-                rootNode.isSynthetic = true
-            }
+        if (!outputConfig.explicitTables &&
+                rootNode is TomlTablePrimitive &&
+                rootNode.children.all { it is TomlTable }) {
+            rootNode.isSynthetic = true
         }
 
         super.endStructure(descriptor)
@@ -136,6 +130,7 @@ public class TomlMainEncoder(
          * @param value The value to serialize.
          * @param inputConfig The input config, used for constructing nodes.
          * @param outputConfig The output config.
+         * @param serializersModule
          * @return The encoded [TomlFile] node.
          */
         public fun <T> encode(

@@ -91,25 +91,9 @@ public class TomlInlineTableEncoder internal constructor(
     }
     
     override fun encodeStructure(kind: SerialKind): TomlAbstractEncoder = if (kind == StructureKind.LIST) {
-        TomlArrayEncoder(
-            rootNode,
-            parent = this,
-            elementIndex,
-            attributes.child(),
-            inputConfig,
-            outputConfig,
-            serializersModule
-        )
+        arrayEncoder(rootNode)
     } else {
-        TomlInlineTableEncoder(
-            rootNode,
-            parent = this,
-            elementIndex,
-            attributes.child(),
-            inputConfig,
-            outputConfig,
-            serializersModule
-        )
+        inlineTableEncoder(rootNode)
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
@@ -140,42 +124,46 @@ public class TomlInlineTableEncoder internal constructor(
     override fun endStructure(descriptor: SerialDescriptor) {
         if (!outputConfig.explicitTables && parent is TomlInlineTableEncoder) {
             pairs.singleOrNull()?.let { pair ->
-                val parentPair = parent.pairs.removeLast() as TomlInlineTable
-                val name = "${parentPair.name}.${pair.name}"
-
-                parent.pairs += when (pair) {
-                    is TomlKeyValuePrimitive -> TomlKeyValuePrimitive(
-                        TomlKey(name, pair.lineNo),
-                        pair.value,
-                        pair.lineNo,
-                        pair.comments,
-                        pair.inlineComment,
-                        name,
-                        inputConfig
-                    )
-                    is TomlKeyValueArray -> TomlKeyValueArray(
-                        TomlKey(name, pair.lineNo),
-                        pair.value,
-                        pair.lineNo,
-                        pair.comments,
-                        pair.inlineComment,
-                        name,
-                        inputConfig
-                    )
-                    is TomlInlineTable -> TomlInlineTable(
-                        "",
-                        pair.lineNo,
-                        name,
-                        pair.tomlKeyValues,
-                        pair.comments,
-                        pair.inlineComment,
-                        inputConfig
-                    )
-                    else -> throw InternalEncodingException("Not a pair")
-                }
+                parent.collapseLast(pair)
             }
         }
 
         super.endStructure(descriptor)
+    }
+
+    private fun collapseLast(child: TomlNode) {
+        val target = pairs.removeLast()
+        val name = "${target.name}.${child.name}"
+
+        pairs += when (child) {
+            is TomlKeyValuePrimitive -> TomlKeyValuePrimitive(
+                TomlKey(name, child.lineNo),
+                child.value,
+                child.lineNo,
+                child.comments,
+                child.inlineComment,
+                name,
+                inputConfig
+            )
+            is TomlKeyValueArray -> TomlKeyValueArray(
+                TomlKey(name, child.lineNo),
+                child.value,
+                child.lineNo,
+                child.comments,
+                child.inlineComment,
+                name,
+                inputConfig
+            )
+            is TomlInlineTable -> TomlInlineTable(
+                "",
+                child.lineNo,
+                name,
+                child.tomlKeyValues,
+                child.comments,
+                child.inlineComment,
+                inputConfig
+            )
+            else -> throw InternalEncodingException("Not a pair")
+        }
     }
 }

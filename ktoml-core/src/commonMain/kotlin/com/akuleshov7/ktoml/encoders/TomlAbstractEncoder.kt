@@ -219,51 +219,6 @@ public abstract class TomlAbstractEncoder protected constructor(
             }
         }
 
-        // Encode the parent of nested tables (i.e. [a.b]), and nested inline tables
-        // with one element (i.e. version.ref = "version"), as implicit.
-        if (!outputConfig.explicitTables) {
-            when (typeDescriptor.kind) {
-                StructureKind.CLASS,
-                StructureKind.MAP -> {
-                    if (attributes.isInline) {
-                        if (typeDescriptor.elementsCount == 1) {
-                            attributes.isImplicit = true
-                        }
-                    } else {
-                        var isImplicit = true
-
-                        // Loop through all the structure's elements, breaking when
-                        // a non-structure or inline element is encountered.
-                        element@for (elementIndex in 0 until typeDescriptor.elementsCount) {
-                            when (val desc = typeDescriptor.getElementDescriptor(elementIndex)) {
-                                is PolymorphicKind,
-                                is StructureKind -> {
-                                    for (annotation in desc.annotations)
-                                        if (annotation is TomlInlineTable) {
-                                            isImplicit = false
-                                            break@element
-                                        }
-
-                                    for (annotation in typeDescriptor.getElementAnnotations(elementIndex))
-                                        if (annotation is TomlInlineTable) {
-                                            isImplicit = false
-                                            break@element
-                                        }
-                                }
-                                else -> {
-                                    isImplicit = false
-                                    break@element
-                                }
-                            }
-                        }
-
-                        attributes.isImplicit = isImplicit
-                    }
-                }
-                else -> { }
-            }
-        }
-
         return true
     }
 
@@ -296,6 +251,8 @@ public abstract class TomlAbstractEncoder protected constructor(
 
     /**
      * Set the key attribute to [key], quoting and escaping as necessary.
+     *
+     * @param key
      */
     protected fun setKey(key: String) {
         attributes.key = when {
@@ -304,6 +261,60 @@ public abstract class TomlAbstractEncoder protected constructor(
             else -> "\"$key\""
         }
     }
+
+    /**
+     * Creates a new array encoder instance, with this encoder as its parent.
+     *
+     * @param rootNode The new encoder's root node.
+     * @param attributes The new encoder's attributes.
+     * @return The new instance.
+     */
+    protected open fun arrayEncoder(
+        rootNode: TomlNode,
+        attributes: Attributes = this.attributes.child()
+    ): TomlAbstractEncoder =
+            TomlArrayEncoder(
+                rootNode,
+                parent = this,
+                elementIndex,
+                attributes,
+                inputConfig,
+                outputConfig,
+                serializersModule
+            )
+
+    /**
+     * Creates a new inline table encoder instance, with the encoder as its parent.
+     *
+     * @param rootNode The new encoder's root node.
+     * @return The new instance.
+     */
+    protected open fun inlineTableEncoder(rootNode: TomlNode): TomlAbstractEncoder =
+            TomlInlineTableEncoder(
+                rootNode,
+                parent = this,
+                elementIndex,
+                attributes.child(),
+                inputConfig,
+                outputConfig,
+                serializersModule
+            )
+
+    /**
+     * Creates a new table encoder instance.
+     *
+     * @param rootNode The new encoder's root node.
+     * @return The new instance.
+     */
+    protected open fun tableEncoder(rootNode: TomlNode): TomlAbstractEncoder =
+            TomlMainEncoder(
+                rootNode,
+                elementIndex,
+                attributes.child(),
+                inputConfig,
+                outputConfig,
+                serializersModule
+            )
 
     /**
      * @property parent The parent to inherit default values from.
@@ -319,6 +330,8 @@ public abstract class TomlAbstractEncoder protected constructor(
      * @property comments Comment lines to be prepended before the next element.
      * @property inlineComment A comment to be appended to the end of the next
      * element's line.
+     * @property isImplicit Whether the current property is implicitly defined in
+     * its child, i.e. the table `[a]` in `[a.b]`.
      */
     public data class Attributes(
         public val parent: Attributes? = null,

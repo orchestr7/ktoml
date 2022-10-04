@@ -33,7 +33,6 @@ public class TomlArrayEncoder internal constructor(
 ) {
     private val values: MutableList<TomlValue> = mutableListOf()
     private val tables: MutableList<TomlNode> = mutableListOf()
-    // private lateinit var tables: TomlArrayOfTables
 
     /**
      * @param rootNode The root node to add the array to.
@@ -88,35 +87,14 @@ public class TomlArrayEncoder internal constructor(
 
     override fun encodeStructure(kind: SerialKind): TomlAbstractEncoder = if (attributes.isInline) {
         when (kind) {
-            StructureKind.LIST -> {
+            StructureKind.LIST,
+            is PolymorphicKind ->
                 // Nested primitive array
-                TomlArrayEncoder(
-                    rootNode,
-                    parent = this,
-                    elementIndex,
-                    attributes,
-                    inputConfig,
-                    outputConfig,
-                    serializersModule
-                )
-            }
-            is PolymorphicKind -> {
-                // Serialize polymorphic types as a nested array.
-                TomlArrayEncoder(
-                    rootNode,
-                    parent = this,
-                    elementIndex,
-                    attributes,
-                    inputConfig,
-                    outputConfig,
-                    serializersModule
-                )
-            }
-            else -> {
+                arrayEncoder(rootNode, attributes)
+            else ->
                 throw UnsupportedEncodingFeatureException(
                     "Inline tables are not yet supported as array elements."
                 )
-            }
         }
     } else {
         val element = TomlArrayOfTablesElement(
@@ -142,7 +120,9 @@ public class TomlArrayEncoder internal constructor(
         if (attributes.isInline) {
             val array = TomlArray(values, "", elementIndex)
 
-            if (parent == null) {
+            parent?.let {
+                appendValueTo(array, parent)
+            } ?: parent.run {
                 val key = attributes.parent!!.keyOrThrow()
 
                 // Create a key-array pair and add it to the parent.
@@ -157,39 +137,41 @@ public class TomlArrayEncoder internal constructor(
                         inputConfig
                     )
                 )
-            } else {
-                appendValueTo(array, parent)
             }
         } else {
-            var isSynthetic = false
-
             // If the root table array contains a single nested table array, move it
             // from its element to the root and mark the root as synthetic.
-            tables.singleOrNull()?.let { element ->
-                if (element is TomlArrayOfTablesElement) {
-                    element.children.singleOrNull()?.let { nested ->
-                        if (nested is TomlArrayOfTables) {
-                            tables.clear()
-
-                            tables += nested
-                            isSynthetic = !outputConfig.explicitTables
-                        }
-                    }
-                }
-            }
-
-            val tableArray = TomlArrayOfTables(
-                "[[${attributes.parent!!.getFullKey()}]]",
-                elementIndex,
-                inputConfig,
-                isSynthetic
-            )
-
-            tables.forEach(tableArray::appendChild)
-
-            rootNode.appendChild(tableArray)
+            collapseSingleChildRoot()
         }
 
         super.endStructure(descriptor)
+    }
+
+    private fun collapseSingleChildRoot() {
+        var isSynthetic = false
+
+        tables.singleOrNull()?.let { element ->
+            if (element is TomlArrayOfTablesElement) {
+                element.children.singleOrNull()?.let { nested ->
+                    if (nested is TomlArrayOfTables) {
+                        tables.clear()
+
+                        tables += nested
+                        isSynthetic = !outputConfig.explicitTables
+                    }
+                }
+            }
+        }
+
+        val tableArray = TomlArrayOfTables(
+            "[[${attributes.parent!!.getFullKey()}]]",
+            elementIndex,
+            inputConfig,
+            isSynthetic
+        )
+
+        tables.forEach(tableArray::appendChild)
+
+        rootNode.appendChild(tableArray)
     }
 }

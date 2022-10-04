@@ -130,11 +130,10 @@ public class TomlTablePrimitive(
             }
 
             when (child) {
-                is TomlTable -> {
+                is TomlTable ->
                     if (!child.isSynthetic && child.getFirstChild() !is TomlTable) {
                         emitIndent()
                     }
-                }
                 else -> emitIndent()
             }
 

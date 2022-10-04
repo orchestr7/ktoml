@@ -2,8 +2,6 @@
 
 package com.akuleshov7.ktoml
 
-import kotlinx.serialization.modules.SerializersModule
-
 @Deprecated(
     message = "Class name changed for convention.",
     replaceWith = ReplaceWith("TomlConfig", "com.akuleshov7.ktoml.TomlConfig")
@@ -129,7 +127,7 @@ public data class TomlOutputConfig(
          *
          * @param indentation The number of spaces in the indents for the serialization
          * @param ignoreDefaultValues Whether to ignore default values
-         * @param serializersModule A [SerializersModule] instance.
+         * @param explicitTables Whether to explicitly define parent tables
          * @return A TOML spec-compliant output config
          */
         public fun compliant(
