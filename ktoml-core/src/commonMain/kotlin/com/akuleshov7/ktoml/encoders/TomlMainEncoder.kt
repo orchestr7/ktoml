@@ -25,7 +25,7 @@ import kotlinx.serialization.modules.SerializersModule
 public class TomlMainEncoder(
     private val rootNode: TomlNode,
     elementIndex: Int = -1,
-    attributes: Attributes = Attributes(),
+    attributes: TomlEncoderAttributes = TomlEncoderAttributes(),
     inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
     serializersModule: SerializersModule = EmptySerializersModule

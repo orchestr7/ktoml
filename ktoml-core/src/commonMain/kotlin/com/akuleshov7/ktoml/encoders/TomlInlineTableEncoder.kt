@@ -21,7 +21,7 @@ public class TomlInlineTableEncoder internal constructor(
     private val rootNode: TomlNode,
     private val parent: TomlAbstractEncoder?,
     elementIndex: Int,
-    attributes: Attributes,
+    attributes: TomlEncoderAttributes,
     inputConfig: TomlInputConfig,
     outputConfig: TomlOutputConfig,
     serializersModule: SerializersModule
@@ -44,7 +44,7 @@ public class TomlInlineTableEncoder internal constructor(
     public constructor(
         rootNode: TomlNode,
         elementIndex: Int,
-        attributes: Attributes,
+        attributes: TomlEncoderAttributes,
         inputConfig: TomlInputConfig,
         outputConfig: TomlOutputConfig,
         serializersModule: SerializersModule

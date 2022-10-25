@@ -2,15 +2,12 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.annotations.*
-import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.exceptions.IllegalEncodingTypeException
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.*
 import com.akuleshov7.ktoml.utils.bareKeyRegex
 import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
-import com.akuleshov7.ktoml.writers.IntegerRepresentation
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -33,7 +30,7 @@ import kotlinx.serialization.modules.SerializersModule
 @OptIn(ExperimentalSerializationApi::class)
 public abstract class TomlAbstractEncoder protected constructor(
     protected var elementIndex: Int,
-    protected val attributes: Attributes,
+    protected val attributes: TomlEncoderAttributes,
     protected val inputConfig: TomlInputConfig,
     protected val outputConfig: TomlOutputConfig,
     override val serializersModule: SerializersModule,
@@ -271,7 +268,7 @@ public abstract class TomlAbstractEncoder protected constructor(
      */
     protected open fun arrayEncoder(
         rootNode: TomlNode,
-        attributes: Attributes = this.attributes.child()
+        attributes: TomlEncoderAttributes = this.attributes.child()
     ): TomlAbstractEncoder =
             TomlArrayEncoder(
                 rootNode,
@@ -315,74 +312,4 @@ public abstract class TomlAbstractEncoder protected constructor(
                 outputConfig,
                 serializersModule
             )
-
-    /**
-     * @property parent The parent to inherit default values from.
-     * @property key The current element's key.
-     * @property isMultiline Marks subsequent key-string or array pair elements to
-     * be written as multiline.
-     * @property isLiteral Marks subsequent key-string pair elements to be written
-     * as string literals.
-     * @property intRepresentation Changes how subsequent key-integer pair elements
-     * are represented.
-     * @property isInline Marks subsequent table-like elements as inline. Tables
-     * will be written as inline tables.
-     * @property comments Comment lines to be prepended before the next element.
-     * @property inlineComment A comment to be appended to the end of the next
-     * element's line.
-     * @property isImplicit Whether the current property is implicitly defined in
-     * its child, i.e. the table `[a]` in `[a.b]`.
-     */
-    public data class Attributes(
-        public val parent: Attributes? = null,
-        public var key: String? = null,
-        public var isMultiline: Boolean = false,
-        public var isLiteral: Boolean = false,
-        public var intRepresentation: IntegerRepresentation = DECIMAL,
-        public var isInline: Boolean = false,
-        public var comments: List<String> = emptyList(),
-        public var inlineComment: String = "",
-        public var isImplicit: Boolean = false,
-    ) {
-        public fun keyOrThrow(): String = key ?: throw InternalEncodingException("Key not set")
-
-        public fun child(): Attributes = copy(parent = copy(), isImplicit = false)
-
-        public fun set(annotations: Iterable<Annotation>) {
-            annotations.forEach { annotation ->
-                when (annotation) {
-                    is TomlLiteral -> isLiteral = true
-                    is TomlMultiline -> isMultiline = true
-                    is TomlInteger -> intRepresentation = annotation.representation
-                    is TomlComments -> {
-                        comments = annotation.lines.asList()
-                        inlineComment = annotation.inline
-                    }
-                    is TomlInlineTable -> isInline = true
-                }
-            }
-        }
-
-        public fun reset() {
-            key = null
-
-            val parent = parent ?: Attributes()
-
-            isMultiline = parent.isMultiline
-            isLiteral = parent.isLiteral
-            intRepresentation = parent.intRepresentation
-            isInline = parent.isInline
-            comments = parent.comments
-            inlineComment = parent.inlineComment
-            isImplicit = false
-        }
-
-        public fun getFullKey(): String {
-            val elementKey = keyOrThrow()
-
-            return parent?.let {
-                "${it.getFullKey()}.$elementKey"
-            } ?: elementKey
-        }
-    }
 }
