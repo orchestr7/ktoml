@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlIndentation
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
+import com.akuleshov7.ktoml.annotations.TomlLiteral
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -15,6 +16,7 @@ import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.encodeCollection
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class TomlDocsEncoderTest {
@@ -111,6 +113,51 @@ class TomlDocsEncoderTest {
                     explicitTables = true
                 )
             )
+        )
+    }
+
+    @Test
+    @Ignore
+    fun basicStringTest() {
+        @Serializable
+        data class File(
+            val str1: String = "I'm a string.",
+            val str2: String = "You can \"quote\" me.",
+            val str3: String = "Name\tJos\u00E9\nLoc\tSF."
+        )
+
+        assertEncodedEquals(
+            value = File(),
+            expectedToml = """
+                str1 = "I'm a string."
+                str2 = "You can \"quote\" me."
+                str3 = "Name\tJos\u00E9\nLoc\tSF."
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun literalStringTest() {
+        @Serializable
+        data class File(
+            @TomlLiteral
+            val winpath: String = """C:\Users\nodejs\templates""",
+            @TomlLiteral
+            val winpath2: String = """\\ServerX\admin${'$'}\system32\""",
+            @TomlLiteral
+            val quoted: String = """Tom "Dubs" Preston-Werner""",
+            @TomlLiteral
+            val regex: String = """<\i\c*\s*>"""
+        )
+
+        assertEncodedEquals(
+            value = File(),
+            expectedToml = """
+                winpath = 'C:\Users\nodejs\templates'
+                winpath2 = '\\ServerX\admin${'$'}\system32\'
+                quoted = 'Tom "Dubs" Preston-Werner'
+                regex = '<\i\c*\s*>'
+            """.trimIndent()
         )
     }
 }
