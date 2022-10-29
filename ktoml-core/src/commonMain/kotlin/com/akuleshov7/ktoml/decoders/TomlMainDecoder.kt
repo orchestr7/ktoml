@@ -28,7 +28,7 @@ public class TomlMainDecoder(
     private val config: TomlInputConfig,
     private var elementIndex: Int = 0
 ) : TomlAbstractDecoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = EmptySerializersModule()
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
