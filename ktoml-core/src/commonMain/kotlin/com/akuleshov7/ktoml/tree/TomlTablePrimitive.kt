@@ -107,8 +107,6 @@ public class TomlTablePrimitive(
             return
         }
 
-        val last = children.lastIndex
-
         var prevChild: TomlNode? = null
 
         children.forEachIndexed { i, child ->
@@ -116,8 +114,7 @@ public class TomlTablePrimitive(
 
             // Declare the super table after a nested table, to avoid a pair being
             // a part of the previous table by mistake.
-            if ((child is TomlKeyValue || child is TomlInlineTable) &&
-                    prevChild is TomlTable) {
+            if ((child is TomlKeyValue || child is TomlInlineTable) && prevChild is TomlTable) {
                 dedent()
 
                 emitNewLine()
@@ -141,9 +138,8 @@ public class TomlTablePrimitive(
             child.write(emitter = this, config, multiline)
             writeChildInlineComment(child)
 
-            if (i < last) {
+            if (i < children.lastIndex) {
                 emitNewLine()
-
                 // A single newline follows single-line pairs, except when a table
                 // follows. Two newlines follow multi-line pairs.
                 if ((child is TomlKeyValue && multiline) || children[i + 1] is TomlTable) {
