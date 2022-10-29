@@ -22,7 +22,7 @@ public open class TomlFileWriter : Toml {
     public constructor(
         inputConfig: TomlInputConfig = TomlInputConfig(),
         outputConfig: TomlOutputConfig = TomlOutputConfig(),
-        serializersModule: SerializersModule = EmptySerializersModule
+        serializersModule: SerializersModule = EmptySerializersModule(),
     ) : super(
         inputConfig,
         outputConfig,
@@ -34,7 +34,7 @@ public open class TomlFileWriter : Toml {
     )
     public constructor(
         config: TomlConfig = TomlConfig(),
-        serializersModule: SerializersModule = EmptySerializersModule
+        serializersModule: SerializersModule = EmptySerializersModule(),
     ) : super(
         config,
         serializersModule
