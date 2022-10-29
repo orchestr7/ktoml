@@ -22,7 +22,7 @@ public class TomlArrayDecoder(
 ) : TomlAbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = EmptySerializersModule()
     private lateinit var currentElementDecoder: TomlPrimitiveDecoder
     private lateinit var currentPrimitiveElementOfArray: TomlValue
 

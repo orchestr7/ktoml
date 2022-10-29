@@ -14,7 +14,7 @@ import kotlinx.serialization.modules.SerializersModule
 public class TomlPrimitiveDecoder(
     private val rootNode: TomlKeyValuePrimitive,
 ) : TomlAbstractDecoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = EmptySerializersModule()
     override fun decodeValue(): Any = rootNode.value.content
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = 0
     override fun decodeKeyValue(): TomlKeyValue = rootNode

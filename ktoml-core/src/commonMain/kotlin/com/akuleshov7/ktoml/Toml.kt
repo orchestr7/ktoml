@@ -27,7 +27,7 @@ import kotlinx.serialization.modules.SerializersModule
 public open class Toml(
     protected val inputConfig: TomlInputConfig = TomlInputConfig(),
     protected val outputConfig: TomlOutputConfig = TomlOutputConfig(),
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = EmptySerializersModule(),
 ) : StringFormat {
     // parser and writer are created once after the creation of the class, to reduce
     // the number of created parsers and writers for each toml
@@ -39,7 +39,7 @@ public open class Toml(
     )
     public constructor(
         config: TomlConfig,
-        serializersModule: SerializersModule = EmptySerializersModule
+        serializersModule: SerializersModule = EmptySerializersModule(),
     ) : this(
         config.input,
         config.output,
