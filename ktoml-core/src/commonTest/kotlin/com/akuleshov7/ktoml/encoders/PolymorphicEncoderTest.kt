@@ -45,6 +45,7 @@ class PolymorphicEncoderTest {
         @Serializable(ChildC.InPlaceSerializer::class)
         @SerialName("childC")
         class ChildC(val value: Enum = Enum.A) : Parent() {
+            @Serializable
             enum class Enum { A }
 
             object InPlaceSerializer : KSerializer<ChildC> {
