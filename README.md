@@ -40,7 +40,7 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 1.6
+:globe_with_meridians: ktoml supports Kotlin 1.7
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc.
@@ -51,7 +51,7 @@ only String, Long, Double and Boolean are supported from the list of Kotlin prim
 **General** \
 We are still developing and testing this library, so it has several limitations: \
 :white_check_mark: deserialization (with some parsing limitations) \
-:x: serialization (not implemented [yet](https://github.com/akuleshov7/ktoml/issues/11), less important for TOML config-files)
+:white_check_mark: serialization (with tree-related limitations) \
 
 **Parsing** \
 :white_check_mark: Table sections (single and dotted) \
@@ -176,6 +176,12 @@ val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(
 ```
 </details>
 
+**Serialization:**
+<details>
+<summary>Straight-forward serialization</summary>
+TBD
+</details>
+
 **Parser to AST:**
 <details>
 <summary>Simple parser</summary>
@@ -224,7 +230,9 @@ Ktoml will produce different exceptions in case of the invalid input. Please not
 
 ## How ktoml works: examples
 
-This tool natively deserializes toml expressions using native Kotlin compiler plug-in and [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md).
+<details>
+<summary>Deserialization</summary>
+This tool natively deserializes toml expressions using native Kotlin compiler plug-in and [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md). \
 
 The following example:
 ```toml
@@ -325,7 +333,11 @@ Translation of the example above to json-terminology:
     }
   }
 }
-
 ``` 
+</details>
 
-:heavy_exclamation_mark: You can check how this example works in [ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt).
+<details>
+<summary>Serialization</summary>
+</details>
+
+:heavy_exclamation_mark: You can check how these examples works in [ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt).
