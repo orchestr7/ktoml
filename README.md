@@ -340,4 +340,4 @@ Translation of the example above to json-terminology:
 <summary>Serialization</summary>
 </details>
 
-:heavy_exclamation_mark: You can check how these examples works in [ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt).
+:heavy_exclamation_mark: You can check how these examples work in [decoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt) and [encoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/encoders/ReadMeExampleTest.kt).
