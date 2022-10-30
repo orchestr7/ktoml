@@ -2,8 +2,8 @@ package com.akuleshov7.ktoml.annotations
 
 import com.akuleshov7.ktoml.writers.IntegerRepresentation
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
-import kotlin.annotation.AnnotationTarget.PROPERTY
-import kotlin.annotation.AnnotationTarget.TYPE_PARAMETER
+
+import kotlin.annotation.AnnotationTarget.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
@@ -36,7 +36,11 @@ import kotlinx.serialization.SerialInfo
  */
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
-@Target(PROPERTY, TYPE_PARAMETER)
+@Target(
+    PROPERTY,
+    TYPE_PARAMETER,
+    TYPE
+)
 public annotation class TomlInteger(
     val representation: IntegerRepresentation = DECIMAL
 )

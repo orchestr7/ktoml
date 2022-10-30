@@ -23,9 +23,6 @@ class PrimitiveValueWriteTest {
         // Control characters rejection
         testTomlValueFailure(TomlLiteralString("control \u0000\bchars" as Any, 0))
 
-        // Escape rejection
-        testTomlValueFailure(TomlLiteralString("\\\" escapes\\n \\\"" as Any, 0))
-
         // Escaped single quotes
 
         val disallowQuotes = TomlOutputConfig(allowEscapedQuotesInLiteralStrings = false)

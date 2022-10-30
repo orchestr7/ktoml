@@ -263,7 +263,11 @@ public sealed class TomlNode(
         children.forEachIndexed { i, child ->
             writeChildComments(child)
 
-            emitIndent()
+            // Prevent double indentation on dotted table elements.
+            if (child !is TomlTable || (!child.isSynthetic && child.getFirstChild() !is TomlTable)) {
+                emitIndent()
+            }
+
             child.write(emitter = this, config, multiline)
 
             if (child is TomlKeyValue || child is TomlInlineTable) {
@@ -273,10 +277,9 @@ public sealed class TomlNode(
             if (i < last) {
                 emitNewLine()
 
-                // Primitive pairs have a single newline after, except when a table
-                // follows.
-                if (child !is TomlKeyValuePrimitive ||
-                        children[i + 1] is TomlTable) {
+                // A single newline follows single-line pairs, except when a table
+                // follows. Two newlines follow multi-line pairs.
+                if ((child is TomlKeyValueArray && multiline) || children[i + 1] is TomlTable) {
                     emitNewLine()
                 }
             }

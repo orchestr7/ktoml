@@ -23,7 +23,7 @@ public abstract class TomlTable(
     comments: List<String>,
     inlineComment: String,
     override val config: TomlInputConfig = TomlInputConfig(),
-    public val isSynthetic: Boolean = false
+    public var isSynthetic: Boolean = false
 ) : TomlNode(
     content,
     lineNo,

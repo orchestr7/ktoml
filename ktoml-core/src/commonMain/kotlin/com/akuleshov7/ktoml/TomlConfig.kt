@@ -81,7 +81,7 @@ public data class TomlInputConfig(
     public val allowEmptyValues: Boolean = true,
     public val allowNullValues: Boolean = true,
     public val allowEmptyToml: Boolean = true,
-    public val allowEscapedQuotesInLiteralStrings: Boolean = true
+    public val allowEscapedQuotesInLiteralStrings: Boolean = true,
 ) {
     public companion object {
         /**
@@ -110,24 +110,37 @@ public data class TomlInputConfig(
  *
  * @property indentation The number of spaces in the indents for the serialization
  * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
+ * @property ignoreNullValues Whether to ignore null values
+ * @property ignoreDefaultValues Whether to ignore default values
+ * @property explicitTables Whether to explicitly define parent tables
  */
 public data class TomlOutputConfig(
     public val indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
+    public val ignoreNullValues: Boolean = true,
+    public val ignoreDefaultValues: Boolean = false,
+    public val explicitTables: Boolean = false,
 ) {
     public companion object {
         /**
          * Creates a config populated with values compliant with the TOML spec.
          *
          * @param indentation The number of spaces in the indents for the serialization
+         * @param ignoreDefaultValues Whether to ignore default values
+         * @param explicitTables Whether to explicitly define parent tables
          * @return A TOML spec-compliant output config
          */
         public fun compliant(
-            indentation: TomlIndentation = TomlIndentation.FOUR_SPACES
+            indentation: TomlIndentation = TomlIndentation.FOUR_SPACES,
+            ignoreDefaultValues: Boolean = false,
+            explicitTables: Boolean = false,
         ): TomlOutputConfig =
                 TomlOutputConfig(
                     indentation,
-                    allowEscapedQuotesInLiteralStrings = false
+                    allowEscapedQuotesInLiteralStrings = false,
+                    ignoreNullValues = true,
+                    ignoreDefaultValues,
+                    explicitTables
                 )
     }
 }

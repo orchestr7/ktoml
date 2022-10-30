@@ -1,12 +1,12 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
+import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.TomlFile
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
-
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -60,7 +60,9 @@ public open class Toml(
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        TODO("Not yet implemented")
+        val toml = TomlMainEncoder.encode(serializer, value, inputConfig, outputConfig, serializersModule)
+
+        return tomlWriter.writeToString(file = toml)
     }
 
     // ================== custom decoding methods ===============

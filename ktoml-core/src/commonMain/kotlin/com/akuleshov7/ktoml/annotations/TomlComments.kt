@@ -4,6 +4,9 @@ import kotlin.annotation.AnnotationTarget.PROPERTY
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
+// FixMe: Default parameters after varargs are broken as of 1.7: KT-53235. There's
+// no obvious workaround
+
 /**
  * Specifies comments to be applied the TOML element produced by a property during
  * serialization. Has no effect on deserialization.

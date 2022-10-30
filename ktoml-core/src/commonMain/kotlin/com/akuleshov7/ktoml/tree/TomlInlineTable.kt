@@ -10,29 +10,39 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class for parsing and representing of inline tables: inline = { a = 5, b = 6 , c = 7 }
- * @property lineNo line number
- * @property keyValuePair parsed keyValue
- * @property config toml configuration
+ * @property name
+ * @property tomlKeyValues The key-value pairs in the inline table
  */
-public class TomlInlineTable(
-    private val keyValuePair: Pair<String, String>,
+public class TomlInlineTable internal constructor(
+    content: String,
     lineNo: Int,
+    override val name: String,
+    internal val tomlKeyValues: List<TomlNode>,
     comments: List<String> = emptyList(),
     inlineComment: String = "",
-    config: TomlInputConfig = TomlInputConfig(),
+    config: TomlInputConfig = TomlInputConfig()
 ) : TomlNode(
-    "${keyValuePair.first} = ${keyValuePair.second}",
+    content,
     lineNo,
     comments,
     inlineComment,
     config
 ) {
-    override val name: String = keyValuePair.first
-    private val tomlKeyValues: List<TomlNode>
-
-    init {
-        tomlKeyValues = keyValuePair.second.parseInlineTableValue()
-    }
+    public constructor(
+        keyValuePair: Pair<String, String>,
+        lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
+        config: TomlInputConfig = TomlInputConfig()
+    ) : this(
+        "${keyValuePair.first} = ${keyValuePair.second}",
+        lineNo,
+        keyValuePair.first,
+        keyValuePair.second.parseInlineTableValue(lineNo, config),
+        comments,
+        inlineComment,
+        config
+    )
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
@@ -51,26 +61,9 @@ public class TomlInlineTable(
         config.input
     )
 
-    private fun String.parseInlineTableValue(): List<TomlNode> {
-        val parsedList = this
-            .trimCurlyBraces()
-            .trim()
-            .also {
-                if (it.endsWith(",")) {
-                    throw ParseException(
-                        "Trailing commas are not permitted in inline tables: [${keyValuePair.second}] ", lineNo
-                    )
-                }
-            }
-            .split(",")
-            .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
-
-        return parsedList
-    }
-
     public fun returnTable(tomlFileHead: TomlFile, currentParentalNode: TomlNode): TomlTable {
         val tomlTable = TomlTablePrimitive(
-            "[${if (currentParentalNode is TomlTable) "${currentParentalNode.fullTableName}." else ""}${keyValuePair.first}]",
+            "[${if (currentParentalNode is TomlTable) "${currentParentalNode.fullTableName}." else ""}$name]",
             lineNo,
             comments,
             inlineComment,
@@ -126,5 +119,27 @@ public class TomlInlineTable(
 
         emitter.emitWhitespace()
             .endInlineTable()
+    }
+
+    public companion object {
+        private fun String.parseInlineTableValue(
+            lineNo: Int,
+            config: TomlInputConfig
+        ): List<TomlNode> {
+            val parsedList = this
+                .trimCurlyBraces()
+                .trim()
+                .also {
+                    if (it.endsWith(",")) {
+                        throw ParseException(
+                            "Trailing commas are not permitted in inline tables: [$this] ", lineNo
+                        )
+                    }
+                }
+                .split(",")
+                .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
+
+            return parsedList
+        }
     }
 }

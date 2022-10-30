@@ -107,8 +107,6 @@ public class TomlTablePrimitive(
             return
         }
 
-        val last = children.lastIndex
-
         var prevChild: TomlNode? = null
 
         children.forEachIndexed { i, child ->
@@ -116,10 +114,10 @@ public class TomlTablePrimitive(
 
             // Declare the super table after a nested table, to avoid a pair being
             // a part of the previous table by mistake.
-            if ((child is TomlKeyValue || child is TomlInlineTable) &&
-                    prevChild is TomlTable) {
+            if ((child is TomlKeyValue || child is TomlInlineTable) && prevChild is TomlTable) {
                 dedent()
 
+                emitNewLine()
                 emitIndent()
                 writeHeader(headerKey, config)
                 emitNewLine()
@@ -128,19 +126,23 @@ public class TomlTablePrimitive(
                 indent()
             }
 
-            if (child !is TomlTable || (!child.isSynthetic && child.getFirstChild() !is TomlTable)) {
-                emitIndent()
+            when (child) {
+                is TomlTablePrimitive ->
+                    if (!child.isSynthetic && child.getFirstChild() !is TomlTable) {
+                        emitIndent()
+                    }
+                is TomlArrayOfTables -> { }
+                else -> emitIndent()
             }
 
             child.write(emitter = this, config, multiline)
             writeChildInlineComment(child)
 
-            if (i < last) {
+            if (i < children.lastIndex) {
                 emitNewLine()
-
-                // Primitive pairs have a single newline after, except when a table
-                // follows.
-                if (child !is TomlKeyValuePrimitive || children[i + 1] is TomlTable) {
+                // A single newline follows single-line pairs, except when a table
+                // follows. Two newlines follow multi-line pairs.
+                if ((child is TomlKeyValue && multiline) || children[i + 1] is TomlTable) {
                     emitNewLine()
                 }
             }

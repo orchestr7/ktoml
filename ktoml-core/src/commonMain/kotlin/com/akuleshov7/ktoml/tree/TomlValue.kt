@@ -15,6 +15,7 @@ import com.akuleshov7.ktoml.parsers.trimSingleQuotes
 import com.akuleshov7.ktoml.utils.appendCodePointCompat
 import com.akuleshov7.ktoml.utils.controlCharacterRegex
 import com.akuleshov7.ktoml.utils.unescapedBackslashRegex
+import com.akuleshov7.ktoml.utils.unescapedDoubleQuoteRegex
 import com.akuleshov7.ktoml.writers.TomlEmitter
 import kotlinx.datetime.*
 
@@ -131,10 +132,6 @@ internal constructor(
                         throw TomlWritingException(
                             "Control characters (excluding tab) are not permitted" +
                                     " in literal strings."
-                        )
-                    '\\' in this ->
-                        throw TomlWritingException(
-                            "Escapes are not allowed in literal strings."
                         )
                     '\'' in this ->
                         if (config.allowEscapedQuotesInLiteralStrings) {
@@ -305,7 +302,11 @@ internal constructor(
                 }
             }
 
-            return withCtrlCharsEscaped.replace(
+            val withQuotesEscaped = withCtrlCharsEscaped.replace(unescapedDoubleQuoteRegex) { match ->
+                match.value.replace("\"", "\\\"")
+            }
+
+            return withQuotesEscaped.replace(
                 unescapedBackslashRegex,
                 Regex.escapeReplacement("\\\\")
             )
