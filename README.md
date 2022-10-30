@@ -26,7 +26,7 @@ In case you don't have much time for this - at least spend 5 seconds to give us 
 
 ## Acknowledgement
 Special thanks to those awesome developers who give us great suggestions, help us to maintain and improve this project:
-@NightEule5, @bishiboosh, @Peanuuutz, @petertrr, @Olivki and @edrd-f.
+@NightEule5, @bishiboosh, @Peanuuutz, @petertrr, @nulls, @Olivki and @edrd-f.
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
@@ -36,7 +36,7 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 - linuxx64
 - macosx64
 - ios
-- js (only for ktoml-core). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
+- js (obviously only for ktoml-core!). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
@@ -51,7 +51,7 @@ only String, Long, Double and Boolean are supported from the list of Kotlin prim
 **General** \
 We are still developing and testing this library, so it has several limitations: \
 :white_check_mark: deserialization (with some parsing limitations) \
-:white_check_mark: serialization (with tree-related limitations) \
+:white_check_mark: serialization (with tree-related limitations)
 
 **Parsing** \
 :white_check_mark: Table sections (single and dotted) \
@@ -229,20 +229,22 @@ Ktoml will produce different exceptions in case of the invalid input. Please not
 `TomlDecodingException` and `TomlEncodingException` - you can catch them in your code. All other exceptions inherit one of these two and will not be public.
 
 ## How ktoml works: examples
+:heavy_exclamation_mark: You can check how below examples work in [decoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt) and [encoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/encoders/ReadMeExampleTest.kt).
 
 <details>
 <summary>Deserialization</summary>
-This tool natively deserializes toml expressions using native Kotlin compiler plug-in and [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md). \
+This tool natively deserializes toml expressions using native Kotlin compiler plug-in and [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md).
 
 The following example:
-```toml
+
+```
 someBooleanProperty = true
 # inline tables in gradle 'libs.versions.toml' notation
 gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 [table1]
-# it can be null or nil, but don't forget to mark it with '?' in the codes
-# keep in mind, that null is prohibited by TOML spec, but it is very important in Kotlin
+# it can be null or nil, but don't forget to mark it with '?' in the code
+# keep in mind, that null is prohibited by TOML spec, but it is very important in Kotlin, so we supported it
 # see allowNullValues for a more strict enforcement of the TOML spec
 property1 = null
 property2 = 6
@@ -340,4 +342,4 @@ Translation of the example above to json-terminology:
 <summary>Serialization</summary>
 </details>
 
-:heavy_exclamation_mark: You can check how these examples work in [decoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt) and [encoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/encoders/ReadMeExampleTest.kt).
+
