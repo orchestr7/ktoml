@@ -75,6 +75,11 @@ class PrimitiveValueWriteTest {
     }
 
     @Test
+    fun wholeNumberFloatRegressionTest() {
+        testTomlValue(TomlDouble(3.0, 0), "3.0")
+    }
+
+    @Test
     fun booleanWriteTest() {
         testTomlValue(TomlBoolean(true, 0), "true")
         testTomlValue(TomlBoolean(false, 0), "false")

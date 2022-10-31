@@ -223,7 +223,12 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
                 float.isNaN() -> "nan"
                 float.isInfinite() ->
                     if (float > 0) "inf" else "-inf"
-                else -> float.toString()
+                else -> {
+                    // Whole-number floats are formatted as integers on JS.
+                    float.toString().let {
+                        if ('.' in it) it else "$it.0"
+                    }
+                }
             })
 
     /**
