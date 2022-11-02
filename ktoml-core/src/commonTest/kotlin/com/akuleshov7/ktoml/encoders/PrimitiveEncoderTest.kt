@@ -78,4 +78,17 @@ class PrimitiveEncoderTest {
             expectedToml = """literalEscapeString = '\'quotes\''"""
         )
     }
+
+    @Test
+    fun jsWholeDoubleRegression() {
+        @Serializable
+        data class File(
+            val wholeNumberDouble: Double = 3.0
+        )
+
+        assertEncodedEquals(
+            value = File(),
+            expectedToml = "wholeNumberDouble = 3.0"
+        )
+    }
 }
