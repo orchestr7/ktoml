@@ -179,7 +179,29 @@ val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(
 **Serialization:**
 <details>
 <summary>Straight-forward serialization</summary>
-TBD
+
+```kotlin
+// add extensions from 'kotlinx' lib to your project:
+import kotlinx.serialization.encodeFromString
+// add com.akuleshov7:ktoml-core to your project:
+import com.akuleshov7.ktoml.Toml
+
+@Serializable
+data class MyClass(/* your fields */)
+
+val toml = Toml.decodeFromString(MyClass(/* ... */))
+```
+</details>
+
+<details>
+<summary>Toml File serialization</summary>
+
+```kotlin
+// add com.akuleshov7:ktoml-file to your project
+import com.akuleshov7.ktoml.file.TomlFileWriter
+
+TomlFileWriter.encodeToFile<MyClass>(serializer(), /* file path to toml file */)
+```
 </details>
 
 **Parser to AST:**
@@ -235,7 +257,7 @@ Ktoml will produce different exceptions in case of the invalid input. Please not
 <summary>Deserialization</summary>
 The following example:
 
-```
+```toml
 someBooleanProperty = true
 # inline tables in gradle 'libs.versions.toml' notation
 gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -337,6 +359,97 @@ Translation of the example above to json-terminology:
 
 <details>
 <summary>Serialization</summary>
+The following example from above:
+
+```toml
+someBooleanProperty = true
+gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+
+# Comments can be added
+# More comments can also be added
+[table1]
+    property1 = null # At the end of lines too
+    property2 = 6
+
+[table2]
+    someNumber = 5
+
+    # Properties always appear before sub-tables, tables aren't redeclared
+    otherNumber = 5.56
+    [table2."akuleshov7.com"]
+        name = 'this is a "literal" string'
+        configurationList = ["a",  "b",  "c", null]
+```
+
+can be serialized from `MyClass`:
+
+```kotlin
+@Serializable
+data class MyClass(
+    val someBooleanProperty: Boolean,
+    @TomlComments(
+        "Comments can be added",
+        "More comments can also be added"
+    )
+    val table1: Table1,
+    val table2: Table2,
+   @SerialName("gradle-libs-like-property")
+   val kotlinJvm: GradlePlugin
+)
+
+@Serializable
+data class Table1(
+    @TomlComments(inline = "At the end of lines too")
+    // nullable values, represented as "null" in toml. For more strict behavior,
+    // null values can be ignored with the ignoreNullValues config property.
+    val property1: Long?,
+    // please note, that according to the specification of toml integer values should be represented with Long
+    val property2: Long,
+    // Default values can be ignored with the ignoreDefaultValues config property.
+    val property3: Long = 5
+)
+
+@Serializable
+data class Table2(
+    // Integers can be formatted in hex, binary, etc. Currently only decimal is
+    // supported.
+    @TomlInteger(IntegerRepresentation.DECIMAL)
+    val someNumber: Long,
+    @SerialName("akuleshov7.com")
+    @TomlInlineTable // Can be on the property
+    val inlineTable: InlineTable,
+    @TomlComments(
+        "Properties always appear before sub-tables, tables aren't redeclared"
+    )
+    val otherNumber: Double
+)
+
+@Serializable
+data class InlineTable(
+    @TomlLiteral
+    val name: String,
+    @SerialName("configurationList")
+    val overriddenName: List<String?>
+)
+
+@Serializable
+@TomlInlineTable // ...or the class
+data class GradlePlugin(
+    val id: String,
+    // version is "collapsed": single member inline tables become dotted pairs.
+    val version: Version
+)
+
+@Serializable
+@TomlInlineTable
+data class Version(val ref: String)
+```
+
+with the following code:
+
+```kotlin
+Toml.decodeFromString<MyClass>(/* your toml string */)
+```
 </details>
 
 
