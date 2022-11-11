@@ -83,6 +83,21 @@ class SimpleArrayDecoderTest {
         assertEquals(listOf<Long?>(null, 1), testWithNullInArray.field)
     }
 
+    @Test
+    @Ignore
+    fun testMultilineArrays() {
+        val testWithMultilineArray: ClassWithImmutableList = Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+                ]
+                """
+        )
+        assertEquals(listOf<Long?>(null, 1), testWithMultilineArray.field)
+    }
+
 
     @Test
     fun testSimpleArrayDecoder() {

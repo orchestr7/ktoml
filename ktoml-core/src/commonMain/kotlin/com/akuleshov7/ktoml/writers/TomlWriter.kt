@@ -2,7 +2,7 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.tree.TomlFile
+import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import kotlin.jvm.JvmInline
 
 /**

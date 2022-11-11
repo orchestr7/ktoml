@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

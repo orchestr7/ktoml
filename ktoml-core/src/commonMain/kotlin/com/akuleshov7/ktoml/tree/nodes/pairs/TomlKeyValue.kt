@@ -1,9 +1,11 @@
-package com.akuleshov7.ktoml.tree
+package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
+import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 private typealias ValueCreator = (String, Int) -> TomlValue
@@ -132,9 +134,10 @@ public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = 
     }
     // ===== boolean vales
     "true", "false" -> TomlBoolean(this, lineNo)
-    else -> when (this[0]) {
-        // ===== literal strings
+    // ===== strings
+    else -> when (this.first()) {
         '\'' -> if (this.startsWith("'''")) {
+            // TomlMultilineString(this, lineNo)
             TomlBasicString(this, lineNo)
         } else {
             TomlLiteralString(this, lineNo, config)

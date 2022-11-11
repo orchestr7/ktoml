@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.tree.TomlKeyValue
-import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.EmptySerializersModule

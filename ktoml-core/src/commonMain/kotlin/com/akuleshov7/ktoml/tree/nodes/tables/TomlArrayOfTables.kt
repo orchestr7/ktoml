@@ -2,7 +2,7 @@
  * Array of tables https://toml.io/en/v1.0.0#array-of-tables
  */
 
-package com.akuleshov7.ktoml.tree
+package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
@@ -12,6 +12,7 @@ import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
 import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**

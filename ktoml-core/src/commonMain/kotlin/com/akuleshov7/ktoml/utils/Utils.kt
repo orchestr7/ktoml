@@ -4,8 +4,8 @@
 
 package com.akuleshov7.ktoml.utils
 
-import com.akuleshov7.ktoml.tree.TomlNode
-import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlNode
+import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
 
 /**
  * Append a code point to a [StringBuilder]
