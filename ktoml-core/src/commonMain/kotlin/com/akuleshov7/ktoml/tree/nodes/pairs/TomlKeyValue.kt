@@ -137,7 +137,8 @@ public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = 
     // ===== strings
     else -> when (this.first()) {
         '\'' -> if (this.startsWith("'''")) {
-            // TomlMultilineString(this, lineNo)
+            // actually the support for multiline strings will be here, but now just a simple mock
+            // this mock will raise an exception here
             TomlBasicString(this, lineNo)
         } else {
             TomlLiteralString(this, lineNo, config)
