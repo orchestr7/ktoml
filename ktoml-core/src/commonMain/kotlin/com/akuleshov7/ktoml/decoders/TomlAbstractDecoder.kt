@@ -2,7 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.CastException
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
-import com.akuleshov7.ktoml.tree.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime

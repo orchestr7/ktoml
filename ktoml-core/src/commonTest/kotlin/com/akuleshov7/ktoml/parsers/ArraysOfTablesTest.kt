@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml.Default.tomlParser
-import com.akuleshov7.ktoml.tree.TomlArrayOfTablesElement
+import com.akuleshov7.ktoml.tree.nodes.TomlArrayOfTablesElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

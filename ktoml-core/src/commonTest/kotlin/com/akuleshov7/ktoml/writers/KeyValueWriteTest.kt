@@ -2,10 +2,10 @@ package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.tree.TomlInlineTable
-import com.akuleshov7.ktoml.tree.TomlKeyValueArray
-import com.akuleshov7.ktoml.tree.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.tree.TomlNode
+import com.akuleshov7.ktoml.tree.nodes.TomlInlineTable
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

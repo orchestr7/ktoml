@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.tree
+package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig

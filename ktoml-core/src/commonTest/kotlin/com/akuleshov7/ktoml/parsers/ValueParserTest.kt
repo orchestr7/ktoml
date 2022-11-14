@@ -2,7 +2,9 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
+import com.akuleshov7.ktoml.tree.nodes.splitKeyValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

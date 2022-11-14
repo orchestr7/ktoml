@@ -4,7 +4,7 @@ import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.tree.TomlFile
+import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
 import kotlin.native.concurrent.ThreadLocal

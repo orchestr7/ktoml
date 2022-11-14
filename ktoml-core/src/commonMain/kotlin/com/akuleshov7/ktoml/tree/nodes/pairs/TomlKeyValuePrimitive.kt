@@ -1,18 +1,20 @@
-package com.akuleshov7.ktoml.tree
+package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
- * Class for parsing and storing Array of Tables in AST.
+ * class for parsing and storing simple single value types in AST
  * @property lineNo
  * @property key
  * @property value
  * @property name
  */
-public class TomlKeyValueArray(
+public class TomlKeyValuePrimitive(
     override var key: TomlKey,
     override val value: TomlValue,
     override val lineNo: Int,
@@ -37,7 +39,7 @@ public class TomlKeyValueArray(
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseList(lineNo, config),
+        keyValuePair.second.parseValue(lineNo, config),
         lineNo,
         comments,
         inlineComment,

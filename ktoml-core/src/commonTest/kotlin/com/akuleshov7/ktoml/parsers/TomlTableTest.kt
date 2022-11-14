@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals

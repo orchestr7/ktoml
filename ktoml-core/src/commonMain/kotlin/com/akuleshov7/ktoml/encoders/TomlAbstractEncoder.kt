@@ -5,7 +5,8 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.IllegalEncodingTypeException
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
-import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.tree.nodes.TomlNode
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.utils.bareKeyRegex
 import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
