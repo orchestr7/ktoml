@@ -1,6 +1,6 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.Toml.Default.outputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
@@ -30,13 +30,11 @@ public class TomlMainEncoder(
     private val rootNode: TomlNode,
     elementIndex: Int = -1,
     attributes: TomlEncoderAttributes = TomlEncoderAttributes(),
-    inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
-    serializersModule: SerializersModule = EmptySerializersModule
+    serializersModule: SerializersModule = EmptySerializersModule()
 ) : TomlAbstractEncoder(
     elementIndex,
     attributes,
-    inputConfig,
     outputConfig,
     serializersModule
 ) {
@@ -53,9 +51,7 @@ public class TomlMainEncoder(
                     value,
                     elementIndex,
                     comments,
-                    inlineComment,
-                    name,
-                    inputConfig
+                    inlineComment
                 )
             } else {
                 TomlKeyValuePrimitive(
@@ -63,9 +59,7 @@ public class TomlMainEncoder(
                     value,
                     elementIndex,
                     comments,
-                    inlineComment,
-                    name,
-                    inputConfig
+                    inlineComment
                 )
             }
         )
@@ -78,7 +72,6 @@ public class TomlMainEncoder(
             rootNode,
             elementIndex,
             attributes.child(),
-            inputConfig,
             outputConfig,
             serializersModule
         )
@@ -86,17 +79,15 @@ public class TomlMainEncoder(
             rootNode,
             elementIndex,
             attributes.child(),
-            inputConfig,
             outputConfig,
             serializersModule
         )
         else -> {
             val table = TomlTablePrimitive(
-                "[${attributes.getFullKey()}]",
+                TomlKey(attributes.getFullKey(), elementIndex),
                 elementIndex,
                 attributes.comments,
-                attributes.inlineComment,
-                inputConfig
+                attributes.inlineComment
             )
 
             rootNode.appendChild(table)
@@ -132,7 +123,6 @@ public class TomlMainEncoder(
          * @param serializer The user-defined or compiler-generated serializer for
          * type [T].
          * @param value The value to serialize.
-         * @param inputConfig The input config, used for constructing nodes.
          * @param outputConfig The output config.
          * @param serializersModule
          * @return The encoded [TomlFile] node.
@@ -140,15 +130,13 @@ public class TomlMainEncoder(
         public fun <T> encode(
             serializer: SerializationStrategy<T>,
             value: T,
-            inputConfig: TomlInputConfig = TomlInputConfig(),
             outputConfig: TomlOutputConfig = TomlOutputConfig(),
-            serializersModule: SerializersModule = EmptySerializersModule
+            serializersModule: SerializersModule = EmptySerializersModule()
         ): TomlFile {
-            val root = TomlFile(inputConfig)
+            val root = TomlFile()
 
             val encoder = TomlMainEncoder(
                 root,
-                inputConfig = inputConfig,
                 outputConfig = outputConfig,
                 serializersModule = serializersModule
             )

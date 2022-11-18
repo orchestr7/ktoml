@@ -20,6 +20,15 @@ internal interface TomlKeyValue {
     val comments: List<String>
     val inlineComment: String
 
+    @Deprecated(
+        message = "The config parameter was removed. Will be removed in future releases.",
+        replaceWith = ReplaceWith("createTomlTableFromDottedKey(parentNode)")
+    )
+    fun createTomlTableFromDottedKey(
+        parentNode: TomlNode,
+        config: TomlInputConfig = TomlInputConfig()
+    ): TomlTablePrimitive = createTomlTableFromDottedKey(parentNode)
+
     /**
      * this is a small hack to support dotted keys
      * in case we have the following key: a.b.c = "val" we will simply create a new table:
@@ -28,25 +37,23 @@ internal interface TomlKeyValue {
      * and we will let our Table mechanism to do everything for us
      *
      * @param parentNode
-     * @param config
      * @return the table that is parsed from a dotted key
      */
-    fun createTomlTableFromDottedKey(parentNode: TomlNode, config: TomlInputConfig = TomlInputConfig()): TomlTablePrimitive {
+    fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTablePrimitive {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
         // creating new key with the last dot-separated fragment
-        val realKeyWithoutDottedPrefix = TomlKey(key.content, lineNo)
+        val realKeyWithoutDottedPrefix = TomlKey(key.toString(), lineNo)
         // updating current KeyValue with this key
         this.key = realKeyWithoutDottedPrefix
         // tables should contain fully qualified name, so we need to add parental name
-        val parentalPrefix = if (parentNode is TomlTable) "${parentNode.fullTableName}." else ""
+        val parentalPrefix = if (parentNode is TomlTable) parentNode.fullTableKey.keyParts else emptyList()
         // and creating a new table that will be created from dotted key
         return TomlTablePrimitive(
-            "[$parentalPrefix${syntheticTablePrefix.joinToString(".")}]",
+            TomlKey(parentalPrefix + syntheticTablePrefix, lineNo),
             lineNo,
             comments,
             inlineComment,
-            config,
             true
         )
     }

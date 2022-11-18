@@ -28,6 +28,6 @@ class TableFinder {
         """.trimIndent()
 
         val parsedToml = Toml.tomlParser.parseString(string)
-        assertEquals("a.b.d.e.f", findPrimitiveTableInAstByName(listOf(parsedToml), "a.b.d.e.f")?.fullTableName)
+        assertEquals("a.b.d.e.f", findPrimitiveTableInAstByName(listOf(parsedToml), "a.b.d.e.f")?.fullTableKey.toString())
     }
 }

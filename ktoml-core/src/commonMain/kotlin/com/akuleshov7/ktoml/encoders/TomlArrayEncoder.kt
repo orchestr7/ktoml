@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
@@ -11,7 +10,6 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
-
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -28,13 +26,11 @@ public class TomlArrayEncoder internal constructor(
     private val parent: TomlAbstractEncoder?,
     elementIndex: Int,
     attributes: TomlEncoderAttributes,
-    inputConfig: TomlInputConfig,
     outputConfig: TomlOutputConfig,
     serializersModule: SerializersModule
 ) : TomlAbstractEncoder(
     elementIndex,
     attributes,
-    inputConfig,
     outputConfig,
     serializersModule
 ) {
@@ -52,7 +48,6 @@ public class TomlArrayEncoder internal constructor(
         rootNode: TomlNode,
         elementIndex: Int,
         attributes: TomlEncoderAttributes,
-        inputConfig: TomlInputConfig,
         outputConfig: TomlOutputConfig,
         serializersModule: SerializersModule
     ) : this(
@@ -60,7 +55,6 @@ public class TomlArrayEncoder internal constructor(
         parent = null,
         elementIndex,
         attributes,
-        inputConfig,
         outputConfig,
         serializersModule
     )
@@ -107,8 +101,7 @@ public class TomlArrayEncoder internal constructor(
         val element = TomlArrayOfTablesElement(
             elementIndex,
             attributes.comments,
-            attributes.inlineComment,
-            inputConfig
+            attributes.inlineComment
         )
 
         tables += element
@@ -117,7 +110,6 @@ public class TomlArrayEncoder internal constructor(
             element,
             nextElementIndex(),
             attributes,
-            inputConfig,
             outputConfig,
             serializersModule
         )
@@ -125,7 +117,7 @@ public class TomlArrayEncoder internal constructor(
 
     override fun endStructure(descriptor: SerialDescriptor) {
         if (attributes.isInline) {
-            val array = TomlArray(values, "", elementIndex)
+            val array = TomlArray(values, elementIndex)
 
             parent?.let {
                 appendValueTo(array, parent)
@@ -139,9 +131,7 @@ public class TomlArrayEncoder internal constructor(
                         array,
                         elementIndex,
                         attributes.comments,
-                        attributes.inlineComment,
-                        key,
-                        inputConfig
+                        attributes.inlineComment
                     )
                 )
             }
@@ -171,9 +161,8 @@ public class TomlArrayEncoder internal constructor(
         }
 
         val tableArray = TomlArrayOfTables(
-            "[[${attributes.parent!!.getFullKey()}]]",
+            TomlKey(attributes.parent!!.getFullKey(), elementIndex),
             elementIndex,
-            inputConfig,
             isSynthetic
         )
 

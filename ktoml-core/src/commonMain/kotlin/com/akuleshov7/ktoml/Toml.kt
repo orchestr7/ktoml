@@ -60,7 +60,7 @@ public open class Toml(
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        val toml = TomlMainEncoder.encode(serializer, value, inputConfig, outputConfig, serializersModule)
+        val toml = TomlMainEncoder.encode(serializer, value, outputConfig, serializersModule)
 
         return tomlWriter.writeToString(file = toml)
     }
@@ -195,7 +195,7 @@ public open class Toml(
             )
 
         // adding a fake file node to restore the structure and parse only the part of te toml
-        val fakeFileNode = TomlFile(config)
+        val fakeFileNode = TomlFile()
         parsedToml.children.forEach {
             fakeFileNode.appendChild(it)
         }

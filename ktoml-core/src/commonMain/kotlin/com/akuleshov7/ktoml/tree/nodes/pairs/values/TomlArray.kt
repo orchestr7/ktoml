@@ -14,19 +14,17 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  */
 public class TomlArray internal constructor(
     override var content: Any,
-    private val rawContent: String,
     lineNo: Int
 ) : TomlValue(lineNo) {
     public constructor(
         rawContent: String,
         lineNo: Int,
-        config: TomlInputConfig = TomlInputConfig()
+        config: TomlInputConfig
     ) : this(
         rawContent.parse(lineNo, config),
-        rawContent,
         lineNo
     ) {
-        validateQuotes()
+        validateQuotes(rawContent, lineNo)
     }
 
     @Deprecated(
@@ -38,8 +36,7 @@ public class TomlArray internal constructor(
         config: TomlConfig
     ) : this(
         rawContent,
-        lineNo,
-        config.input
+        lineNo
     )
 
     @Deprecated(
@@ -57,19 +54,13 @@ public class TomlArray internal constructor(
      * @param config
      * @return converted array to a list
      */
-    public fun parse(config: TomlInputConfig = TomlInputConfig()): List<Any> = rawContent.parse(lineNo, config)
+    @Deprecated(
+        message = "parse(TomlInputConfig) is deprecated. Will be removed in next releases.",
+        replaceWith = ReplaceWith("content as List<Any>"),
 
-    /**
-     * small validation for quotes: each quote should be closed in a key
-     */
-    private fun validateQuotes() {
-        if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
-            throw ParseException(
-                "Not able to parse the key: [$rawContent] as it does not have closing quote",
-                lineNo
-            )
-        }
-    }
+    )
+    @Suppress("UNCHECKED_CAST")
+    public fun parse(config: TomlInputConfig = TomlInputConfig()): List<Any> = content as List<Any>
 
     @Suppress("UNCHECKED_CAST")
     public override fun write(
@@ -81,7 +72,7 @@ public class TomlArray internal constructor(
 
         val content = (content as List<Any>).map {
             if (it is List<*>) {
-                TomlArray(it, "", 0)
+                TomlArray(it, 0)
             } else {
                 it as TomlValue
             }
@@ -188,6 +179,18 @@ public class TomlArray internal constructor(
             }
             result.add(bufferBetweenCommas.toString())
             return result
+        }
+
+        /**
+         * small validation for quotes: each quote should be closed in a key
+         */
+        private fun validateQuotes(rawContent: String, lineNo: Int) {
+            if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
+                throw ParseException(
+                    "Not able to parse the key: [$rawContent] as it does not have closing quote",
+                    lineNo
+                )
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.IllegalEncodingTypeException
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
@@ -24,7 +23,6 @@ import kotlinx.serialization.modules.SerializersModule
  *
  * @property elementIndex The current element index.
  * @property attributes The current attributes.
- * @property inputConfig The input config, used for constructing nodes.
  * @property outputConfig The output config.
  * @property serializersModule
  */
@@ -32,7 +30,6 @@ import kotlinx.serialization.modules.SerializersModule
 public abstract class TomlAbstractEncoder protected constructor(
     protected var elementIndex: Int,
     protected val attributes: TomlEncoderAttributes,
-    protected val inputConfig: TomlInputConfig,
     protected val outputConfig: TomlOutputConfig,
     override val serializersModule: SerializersModule,
 ) : AbstractEncoder() {
@@ -276,7 +273,6 @@ public abstract class TomlAbstractEncoder protected constructor(
                 parent = this,
                 elementIndex,
                 attributes,
-                inputConfig,
                 outputConfig,
                 serializersModule
             )
@@ -293,7 +289,6 @@ public abstract class TomlAbstractEncoder protected constructor(
                 parent = this,
                 elementIndex,
                 attributes.child(),
-                inputConfig,
                 outputConfig,
                 serializersModule
             )
@@ -309,7 +304,6 @@ public abstract class TomlAbstractEncoder protected constructor(
                 rootNode,
                 elementIndex,
                 attributes.child(),
-                inputConfig,
                 outputConfig,
                 serializersModule
             )

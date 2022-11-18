@@ -116,6 +116,6 @@ class TomlTableTest {
     @Test
     fun createSimpleTomlTable() {
         val table = TomlTablePrimitive("[abcd]", 0)
-        assertEquals(table.fullTableName, "abcd")
+        assertEquals(table.fullTableKey.toString(), "abcd")
     }
 }

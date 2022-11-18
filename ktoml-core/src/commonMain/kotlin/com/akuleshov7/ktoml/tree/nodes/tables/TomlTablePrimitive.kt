@@ -5,9 +5,7 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -17,56 +15,34 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * for example: if the TomlTable is [a.b.c] this list will contain [a], [a.b], [a.b.c]
  * @property isSynthetic - flag to determine that this node was synthetically and there is no such table in the input
  */
-@Suppress("MULTIPLE_INIT_BLOCKS")
 public class TomlTablePrimitive(
-    content: String,
+    fullTableKey: TomlKey,
     lineNo: Int,
-    comments: List<String> = emptyList(),
-    inlineComment: String = "",
-    config: TomlInputConfig = TomlInputConfig(),
+    comments: List<String>,
+    inlineComment: String,
     isSynthetic: Boolean = false
 ) : TomlTable(
-    content,
+    fullTableKey,
     lineNo,
     comments,
     inlineComment,
-    config,
     isSynthetic
 ) {
     public override val type: TableType = TableType.PRIMITIVE
 
-    // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
-    override val name: String
-
-    // list of tables (including sub-tables) that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
-    public override lateinit var tablesList: List<String>
-
-    // full name of the table (like a.b.c.d)
-    public override lateinit var fullTableName: String
-
-    init {
-        val lastIndexOfBrace = content.lastIndexOf("]")
-        if (lastIndexOfBrace == -1) {
-            throw ParseException("Invalid Tables provided: $content." +
-                    " It has missing closing bracket: ']'", lineNo)
-        }
-
-        // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trim().trimBrackets()
-            .trim()
-
-        if (sectionFromContent.isBlank()) {
-            throw ParseException("Incorrect blank table name: $content", lineNo)
-        }
-
-        fullTableName = sectionFromContent
-
-        val sectionsList = sectionFromContent.splitKeyToTokens(lineNo)
-        name = sectionsList.last().trimQuotes()
-        tablesList = sectionsList.mapIndexed { index, _ ->
-            (0..index).joinToString(".") { sectionsList[it] }
-        }
-    }
+    public constructor(
+        content: String,
+        lineNo: Int,
+        comments: List<String> = emptyList(),
+        inlineComment: String = "",
+        isSynthetic: Boolean = false
+    ) : this(
+        parseSection(content, lineNo, isArray = false),
+        lineNo,
+        comments,
+        inlineComment,
+        isSynthetic
+    )
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
@@ -83,23 +59,20 @@ public class TomlTablePrimitive(
         lineNo,
         comments,
         inlineComment,
-        config.input,
         isSynthetic
     )
 
     override fun TomlEmitter.writeHeader(
-        headerKey: TomlKey,
         config: TomlOutputConfig
     ) {
         startTableHeader()
 
-        headerKey.write(emitter = this)
+        fullTableKey.write(emitter = this)
 
         endTableHeader()
     }
 
     override fun TomlEmitter.writeChildren(
-        headerKey: TomlKey,
         children: List<TomlNode>,
         config: TomlOutputConfig,
         multiline: Boolean
@@ -120,7 +93,7 @@ public class TomlTablePrimitive(
 
                 emitNewLine()
                 emitIndent()
-                writeHeader(headerKey, config)
+                writeHeader(config)
                 emitNewLine()
 
                 indent()
@@ -151,4 +124,6 @@ public class TomlTablePrimitive(
             prevChild = child
         }
     }
+
+    override fun toString(): String = "[$fullTableKey]"
 }

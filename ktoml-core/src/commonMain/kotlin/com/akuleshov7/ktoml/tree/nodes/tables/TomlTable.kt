@@ -5,35 +5,50 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlConfig
-import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.takeBeforeComment
+import com.akuleshov7.ktoml.parsers.trimBrackets
+import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
+import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
+import kotlin.jvm.JvmStatic
 
 /**
  * Abstract class to represent all types of tables: primitive/arrays/etc.
- * @property content - raw string name of the table
  * @property lineNo - line number
- * @property config - toml configuration
  * @property isSynthetic
+ * @property fullTableKey
  */
 @Suppress("COMMENT_WHITE_SPACE")
 public abstract class TomlTable(
-    override val content: String,
+    public var fullTableKey: TomlKey,
     override val lineNo: Int,
     comments: List<String>,
     inlineComment: String,
-    override val config: TomlInputConfig = TomlInputConfig(),
     public var isSynthetic: Boolean = false
 ) : TomlNode(
-    content,
     lineNo,
     comments,
-    inlineComment,
-    config
+    inlineComment
 ) {
-    public abstract var fullTableName: String
-    public abstract var tablesList: List<String>
+    @Deprecated(
+        message = "fullTableName was replaced with fullTableKey; will be removed in future releases.",
+        replaceWith = ReplaceWith("fullTableKey.toString()")
+    )
+    @Suppress("NO_CORRESPONDING_PROPERTY", "CUSTOM_GETTERS_SETTERS")
+    public var fullTableName: String
+        get() = fullTableKey.toString()
+        set(value) {
+            fullTableKey = TomlKey(value, lineNo)
+        }
+
+    // list of tables (including sub-tables) that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
+    public var tablesList: List<String> = fullTableKey.keyParts.runningReduce { prev, cur -> "$prev.$cur" }
+
+    // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
+    public override val name: String = fullTableKey.keyParts.last().trimQuotes()
     public abstract val type: TableType
 
     @Deprecated(
@@ -47,11 +62,11 @@ public abstract class TomlTable(
         config: TomlConfig,
         isSynthetic: Boolean = false
     ) : this(
-        content,
+        TomlKey(content.takeBeforeComment(0).trim('[', ']'), lineNo),
+        // Todo: Temporary workaround until this constructor is removed
         lineNo,
         comments,
         inlineComment,
-        config.input,
         isSynthetic
     )
 
@@ -63,12 +78,10 @@ public abstract class TomlTable(
         // Todo: Option to explicitly define super tables?
         // Todo: Support dotted key-value pairs (i.e. a.b.c.d = 7)
 
-        val key = TomlKey(fullTableName, 0)
-
         val firstChild = children.first()
 
         if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
-            emitter.writeHeader(key, config)
+            emitter.writeHeader(config)
 
             if (inlineComment.isNotEmpty()) {
                 emitter.emitComment(inlineComment, inline = true)
@@ -80,23 +93,15 @@ public abstract class TomlTable(
 
             emitter.indent()
 
-            emitter.writeChildren(key, children, config, multiline)
+            emitter.writeChildren(children, config, multiline)
 
             emitter.dedent()
         } else {
-            emitter.writeChildren(key, children, config, multiline)
+            emitter.writeChildren(children, config, multiline)
         }
     }
 
-    protected abstract fun TomlEmitter.writeChildren(
-        headerKey: TomlKey,
-        children: List<TomlNode>,
-        config: TomlOutputConfig,
-        multiline: Boolean
-    )
-
     protected abstract fun TomlEmitter.writeHeader(
-        headerKey: TomlKey,
         config: TomlOutputConfig
     )
 
@@ -117,6 +122,39 @@ public abstract class TomlTable(
             is TomlKeyValue,
             is TomlInlineTable -> children.size > 1
             else -> false
+        }
+    }
+
+    public companion object {
+        @JvmStatic
+        protected fun parseSection(
+            content: String,
+            lineNo: Int,
+            isArray: Boolean
+        ): TomlKey {
+            val close = if (isArray) "]]" else "]"
+
+            val lastIndexOfBrace = content.lastIndexOf(close)
+            if (lastIndexOfBrace == -1) {
+                throw ParseException(
+                    "Invalid Tables provided: $content." +
+                            " It has missing closing bracket${if (isArray) "s" else ""}: '$close'", lineNo
+                )
+            }
+            val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trim().let {
+                if (isArray) {
+                    it.trimDoubleBrackets()
+                } else {
+                    it.trimBrackets()
+                }
+            }
+                .trim()
+
+            if (sectionFromContent.isBlank()) {
+                throw ParseException("Incorrect blank name for ${if (isArray) "array of tables" else "table"}: $content", lineNo)
+            }
+
+            return TomlKey(sectionFromContent, lineNo)
         }
     }
 }

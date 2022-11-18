@@ -12,24 +12,20 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property lineNo
  * @property key
  * @property value
- * @property name
  */
 public class TomlKeyValueArray(
     override var key: TomlKey,
     override val value: TomlValue,
     override val lineNo: Int,
     comments: List<String>,
-    inlineComment: String,
-    override val name: String,
-    config: TomlInputConfig = TomlInputConfig()
+    inlineComment: String
 ) : TomlNode(
-    key,
-    value,
     lineNo,
     comments,
-    inlineComment,
-    config
+    inlineComment
 ), TomlKeyValue {
+    override val name: String = key.content
+
     // adaptor for a string pair of key-value
     public constructor(
         keyValuePair: Pair<String, String>,
@@ -42,8 +38,7 @@ public class TomlKeyValueArray(
         keyValuePair.second.parseList(lineNo, config),
         lineNo,
         comments,
-        inlineComment,
-        TomlKey(keyValuePair.first, lineNo).content
+        inlineComment
     )
 
     @Deprecated(
@@ -62,9 +57,7 @@ public class TomlKeyValueArray(
         value,
         lineNo,
         comments,
-        inlineComment,
-        name,
-        config.input
+        inlineComment
     )
 
     @Deprecated(

@@ -109,11 +109,9 @@ class PrimitiveValueWriteTest {
                     listOf(
                         TomlDouble(3.14, 0)
                     ),
-                    "",
                     0
                 )
             ),
-            "",
             0
         )
 
