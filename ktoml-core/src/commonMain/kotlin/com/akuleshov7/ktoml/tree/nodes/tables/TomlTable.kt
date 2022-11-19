@@ -13,6 +13,7 @@ import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
+import com.akuleshov7.ktoml.writers.TomlStringEmitter
 import kotlin.jvm.JvmStatic
 
 /**
@@ -123,6 +124,13 @@ public abstract class TomlTable(
             is TomlInlineTable -> children.size > 1
             else -> false
         }
+    }
+
+    override fun toString(): String = buildString {
+        val config = TomlOutputConfig()
+        val emitter = TomlStringEmitter(this, config)
+
+        emitter.writeHeader(config)
     }
 
     public companion object {

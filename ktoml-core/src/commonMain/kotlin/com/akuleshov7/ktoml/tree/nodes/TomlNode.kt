@@ -304,7 +304,12 @@ public sealed class TomlNode(
         }
     }
 
-    override fun toString(): String = Toml.tomlWriter.writeNode(this)
+    // Todo: Do we keep whitespace in pairs and change parser tests? Trim it and
+    // maintain compatibility? Add a "formatting" option later?
+    override fun toString(): String =
+            Toml.tomlWriter
+                .writeNode(this)
+                .replace(" = ", "=")
 
     public companion object {
         // number of spaces that is used to indent levels

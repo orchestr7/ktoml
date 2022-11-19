@@ -24,7 +24,7 @@ public class TomlKeyValuePrimitive(
     comments,
     inlineComment
 ), TomlKeyValue {
-    override val name: String = key.toString()
+    override val name: String = key.last()
 
     // adaptor for a string pair of key-value
     public constructor(

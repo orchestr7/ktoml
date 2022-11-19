@@ -13,33 +13,33 @@ class DottedKeyParserTest {
     @Test
     fun positiveParsingTest() {
         var test = TomlKey("\"a.b.c\"", 0)
-        assertEquals("a.b.c", test.content)
+        assertEquals("a.b.c", test.last())
         assertEquals(false, test.isDotted)
 
         test = TomlKey("\"a.b.c\".b.c", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(listOf("\"a.b.c\"", "b", "c"), test.keyParts)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"a\".b.c", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(listOf("\"a\"", "b", "c"), test.keyParts)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"  a  \"", 0)
-        assertEquals("a", test.content)
+        assertEquals("a", test.last())
         assertEquals(false, test.isDotted)
 
         test = TomlKey("a.b.c", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a.\"  b  .c \"", 0)
-        assertEquals("b  .c", test.content)
+        assertEquals("b  .c", test.last())
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a  .  b .  c ", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(true, test.isDotted)
 
         assertFailsWith<ParseException> { TomlKey("SPACE AND SPACE", 0) }
@@ -54,7 +54,7 @@ class DottedKeyParserTest {
         assertEquals("a.b.c", test.fullTableKey.toString())
 
         val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0)
-        assertEquals("c", testKeyValue.key.toString())
+        assertEquals("c", testKeyValue.key.last())
     }
 
     @Test

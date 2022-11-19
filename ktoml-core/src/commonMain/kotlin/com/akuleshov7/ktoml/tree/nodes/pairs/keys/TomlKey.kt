@@ -22,24 +22,21 @@ public class TomlKey internal constructor(
     /**
      * Whether the key has multiple dot-separated parts.
      */
-    internal val isDotted: Boolean = keyParts.isNotEmpty()
+    internal val isDotted: Boolean = keyParts.size > 1
 
     @Deprecated(
-        message = "rawContent is deprecated; use write instead. Will be removed in future releases."
-    )
-    @Suppress("CUSTOM_GETTERS_SETTERS")
-    public val rawContent: String get() = buildString {
-        val emitter = TomlStringEmitter(this, TomlOutputConfig())
-
-        write(emitter)
-    }
-
-    @Deprecated(
-        message = "content was replaced with toString. Will be removed in future releases.",
+        message = "rawContent is deprecated; use toString for a lazily formatted version. Will be removed in future releases.",
         replaceWith = ReplaceWith("toString()")
     )
     @Suppress("CUSTOM_GETTERS_SETTERS")
-    public val content: String get() = toString()
+    public val rawContent: String get() = toString()
+
+    @Deprecated(
+        message = "content was replaced with last. Will be removed in future releases.",
+        replaceWith = ReplaceWith("last()")
+    )
+    @Suppress("CUSTOM_GETTERS_SETTERS")
+    public val content: String get() = last()
 
     /**
      * @param rawContent
@@ -52,6 +49,12 @@ public class TomlKey internal constructor(
         rawContent.splitKeyToTokens(lineNo),
         lineNo
     )
+
+    /**
+     * Gets the last key part, with all whitespace and quotes trimmed, i.e. `c` in
+     * `a.b.' c '`
+     */
+    public fun last(): String = keyParts.last().trimQuotes().trim()
 
     @Deprecated(
         message = "TomlConfig is deprecated. Will be removed in next releases.",
@@ -84,5 +87,29 @@ public class TomlKey internal constructor(
         }
     }
 
-    override fun toString(): String = keyParts.last().trimQuotes().trim()
+    override fun toString(): String = buildString {
+        val emitter = TomlStringEmitter(this, TomlOutputConfig())
+
+        write(emitter)
+    }
+
+    // Since raw content was replaced and instances are being compared directly,
+    // keys with the same underlying parts must be equal. Including lineNo creates
+    // duplicate tables on insertion.
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+        if (other !is TomlKey) {
+            return false
+        }
+
+        if (keyParts != other.keyParts) {
+            return false
+        }
+
+        return true
+    }
+
+    override fun hashCode(): Int = keyParts.hashCode()
 }

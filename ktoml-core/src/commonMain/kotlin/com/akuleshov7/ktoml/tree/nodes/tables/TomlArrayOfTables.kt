@@ -101,8 +101,6 @@ public class TomlArrayOfTables(
             }
         }
     }
-
-    override fun toString(): String = "[[$fullTableKey]]"
 }
 
 /**

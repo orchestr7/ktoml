@@ -24,7 +24,7 @@ public class TomlKeyValueArray(
     comments,
     inlineComment
 ), TomlKeyValue {
-    override val name: String = key.content
+    override val name: String = key.last()
 
     // adaptor for a string pair of key-value
     public constructor(

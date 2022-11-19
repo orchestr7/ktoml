@@ -43,7 +43,7 @@ internal interface TomlKeyValue {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
         // creating new key with the last dot-separated fragment
-        val realKeyWithoutDottedPrefix = TomlKey(key.toString(), lineNo)
+        val realKeyWithoutDottedPrefix = TomlKey(key.last(), lineNo)
         // updating current KeyValue with this key
         this.key = realKeyWithoutDottedPrefix
         // tables should contain fully qualified name, so we need to add parental name

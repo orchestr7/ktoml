@@ -124,6 +124,4 @@ public class TomlTablePrimitive(
             prevChild = child
         }
     }
-
-    override fun toString(): String = "[$fullTableKey]"
 }

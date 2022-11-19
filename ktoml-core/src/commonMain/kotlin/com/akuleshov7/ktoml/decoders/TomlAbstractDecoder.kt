@@ -54,7 +54,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         throw IllegalTypeException(
             "<$typeName> type is not allowed by toml specification," +
                     " use <$requiredType> instead" +
-                    " (key = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
+                    " (key = ${keyValue.key.last()}; value = ${keyValue.value.content})", keyValue.lineNo
         )
     }
 
@@ -64,7 +64,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             return keyValue.value.content as T
         } catch (e: ClassCastException) {
             throw CastException(
-                "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
+                "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
                         " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo
             )
