@@ -18,6 +18,7 @@ class PrimitiveEncoderTest {
             val enabled: Boolean = true,
             val pi: Double = 3.14,
             val count: Long = 3,
+            val port: Int = 8080,
             val greeting: String = "hello",
             val enumGreeting: Greeting = Greeting.Hello,
             @TomlLiteral
@@ -30,6 +31,7 @@ class PrimitiveEncoderTest {
                 enabled = true
                 pi = 3.14
                 count = 3
+                port = 8080
                 greeting = "hello"
                 enumGreeting = "hello"
                 path = 'C:\some\path\'

@@ -2,6 +2,8 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.CastException
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
+import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.exceptions.TomlDecodingException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -21,11 +23,37 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val localDateSerializer = LocalDate.serializer()
 
     // Invalid Toml primitive types, we will simply throw an error for them
-    override fun decodeByte(): Byte = invalidType("Byte", "Long")
-    override fun decodeShort(): Short = invalidType("Short", "Long")
-    override fun decodeInt(): Int = invalidType("Int", "Long")
-    override fun decodeFloat(): Float = invalidType("Float", "Double")
-    override fun decodeChar(): Char = invalidType("Char", "String")
+    override fun decodeByte(): Byte   {
+        val result = decodeLong()
+        if (result !in (Byte.MIN_VALUE.toLong()..Byte.MAX_VALUE.toLong()))
+            throw ParseException("$result is not a Byte", 0)
+        return result.toByte()
+    }
+
+    override fun decodeShort(): Short  {
+        val result = decodeLong()
+        if (result !in (Short.MIN_VALUE.toLong()..Short.MAX_VALUE.toLong()))
+            throw ParseException("$result is not a Short", 0)
+        return result.toShort()
+    }
+    override fun decodeInt(): Int    {
+        val result = decodeLong()
+        if (result !in (Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()))
+            throw ParseException("not an Int", 0)
+        return result.toInt()
+    }
+    override fun decodeFloat(): Float   {
+        val result = decodeDouble()
+        if (result !in (Float.MIN_VALUE.toDouble()..Float.MAX_VALUE.toDouble()))
+            throw ParseException("$result is not a Float", 0)
+        return result.toFloat()
+    }
+    override fun decodeChar(): Char  {
+        val result = decodeLong()
+        if (result !in (Char.MIN_VALUE.toLong()..Char.MAX_VALUE.toLong()))
+            throw ParseException("$result is not a Char", 0)
+        return result.toChar()
+    }
 
     // Valid Toml types that should be properly decoded
     override fun decodeBoolean(): Boolean = decodePrimitiveType()
@@ -58,10 +86,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         )
     }
 
-    private inline fun <reified T> decodePrimitiveType(): T {
+    private inline fun <reified T> decodePrimitiveType(
+        convertValue: (Any) -> T =  { it as T }
+    ): T {
         val keyValue = decodeKeyValue()
         try {
-            return keyValue.value.content as T
+            return convertValue(keyValue.value.content)
         } catch (e: ClassCastException) {
             throw CastException(
                 "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +

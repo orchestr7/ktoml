@@ -154,24 +154,11 @@ public abstract class TomlAbstractEncoder protected constructor(
         }
     }
 
-    override fun encodeByte(value: Byte): Nothing = invalidType("Byte", "Long", value)
-    override fun encodeShort(value: Short): Nothing = invalidType("Short", "Long", value)
-    override fun encodeInt(value: Int): Nothing = invalidType("Int", "Long", value)
-    override fun encodeFloat(value: Float): Nothing = invalidType("Float", "Double", value)
-    override fun encodeChar(value: Char): Nothing = invalidType("Char", "String", value)
-
-    // Todo: Do we really want to make these invalid?
-    private fun invalidType(
-        typeName: String,
-        requiredType: String,
-        value: Any
-    ): Nothing {
-        throw IllegalEncodingTypeException(
-            "<$typeName> is not allowed by the TOML specification, use <$requiredType>" +
-                    " instead (key = ${attributes.getFullKey()}; value = $value)",
-            elementIndex
-        )
-    }
+    override fun encodeByte(value: Byte): Unit = encodeLong(value.toLong())
+    override fun encodeShort(value: Short): Unit = encodeLong(value.toLong())
+    override fun encodeInt(value: Int): Unit = encodeLong(value.toLong())
+    override fun encodeFloat(value: Float): Unit = encodeDouble(value.toDouble())
+    override fun encodeChar(value: Char): Unit = encodeString(value.toString())
 
     // Structure
 
