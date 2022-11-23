@@ -15,13 +15,12 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  */
 public class TomlBasicString internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
+    override var content: Any
+) : TomlValue() {
     public constructor(
         content: String,
         lineNo: Int
-    ) : this(content.verifyAndTrimQuotes(lineNo), lineNo)
+    ) : this(content.verifyAndTrimQuotes(lineNo))
 
     override fun write(
         emitter: TomlEmitter,

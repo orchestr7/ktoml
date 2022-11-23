@@ -8,10 +8,9 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  */
 public class TomlBoolean internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
-    public constructor(content: String, lineNo: Int) : this(content.toBoolean(), lineNo)
+    override var content: Any
+) : TomlValue() {
+    public constructor(content: String, lineNo: Int) : this(content.toBoolean())
 
     override fun write(
         emitter: TomlEmitter,

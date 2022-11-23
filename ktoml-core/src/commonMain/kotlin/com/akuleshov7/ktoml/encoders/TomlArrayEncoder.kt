@@ -117,7 +117,7 @@ public class TomlArrayEncoder internal constructor(
 
     override fun endStructure(descriptor: SerialDescriptor) {
         if (attributes.isInline) {
-            val array = TomlArray(values, elementIndex)
+            val array = TomlArray(values)
 
             parent?.let {
                 appendValueTo(array, parent)

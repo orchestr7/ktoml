@@ -50,7 +50,7 @@ internal interface TomlKeyValue {
         val parentalPrefix = if (parentNode is TomlTable) parentNode.fullTableKey.keyParts else emptyList()
         // and creating a new table that will be created from dotted key
         return TomlTablePrimitive(
-            TomlKey(parentalPrefix + syntheticTablePrefix, lineNo),
+            TomlKey(parentalPrefix + syntheticTablePrefix),
             lineNo,
             comments,
             inlineComment,

@@ -13,17 +13,13 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  */
 public class TomlArray internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
+    override var content: Any
+) : TomlValue() {
     public constructor(
         rawContent: String,
         lineNo: Int,
         config: TomlInputConfig
-    ) : this(
-        rawContent.parse(lineNo, config),
-        lineNo
-    ) {
+    ) : this(rawContent.parse(lineNo, config)) {
         validateQuotes(rawContent, lineNo)
     }
 
@@ -34,10 +30,7 @@ public class TomlArray internal constructor(
         rawContent: String,
         lineNo: Int,
         config: TomlConfig
-    ) : this(
-        rawContent,
-        lineNo
-    )
+    ) : this(rawContent)
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases.",
@@ -72,7 +65,7 @@ public class TomlArray internal constructor(
 
         val content = (content as List<Any>).map {
             if (it is List<*>) {
-                TomlArray(it, 0)
+                TomlArray(it)
             } else {
                 it as TomlValue
             }

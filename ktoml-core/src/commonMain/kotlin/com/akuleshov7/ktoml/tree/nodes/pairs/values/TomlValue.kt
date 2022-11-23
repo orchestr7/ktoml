@@ -10,9 +10,10 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Base class for all nodes that represent values
- * @property lineNo - line number of original file
  */
-public sealed class TomlValue(public val lineNo: Int) {
+public sealed class TomlValue {
+    @Deprecated(message = "lineNo is deprecated. Will be removed in next releases.")
+    public val lineNo: Int = 0
     public abstract var content: Any
 
     @Deprecated(

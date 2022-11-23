@@ -66,8 +66,7 @@ public class TomlInlineTable internal constructor(
                     currentParentalNode.fullTableKey.keyParts + name
                 } else {
                     listOf(name)
-                },
-                lineNo
+                }
             ),
             lineNo,
             comments,

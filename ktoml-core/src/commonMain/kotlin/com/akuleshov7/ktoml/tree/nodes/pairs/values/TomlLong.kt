@@ -8,10 +8,9 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  */
 public class TomlLong internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
-    public constructor(content: String, lineNo: Int) : this(content.toLong(), lineNo)
+    override var content: Any
+) : TomlValue() {
+    public constructor(content: String, lineNo: Int) : this(content.toLong())
 
     override fun write(
         emitter: TomlEmitter,

@@ -80,13 +80,13 @@ public abstract class TomlAbstractEncoder protected constructor(
 
     override fun encodeBoolean(value: Boolean) {
         if (!encodeAsKey(value, "Boolean")) {
-            appendValue(TomlBoolean(value, elementIndex))
+            appendValue(TomlBoolean(value))
         }
     }
 
     override fun encodeDouble(value: Double) {
         if (!encodeAsKey(value, "Double")) {
-            appendValue(TomlDouble(value, elementIndex))
+            appendValue(TomlDouble(value))
         }
     }
 
@@ -102,12 +102,12 @@ public abstract class TomlAbstractEncoder protected constructor(
         }
 
         if (!encodeAsKey(value, "Long")) {
-            appendValue(TomlLong(value, elementIndex))
+            appendValue(TomlLong(value))
         }
     }
 
     override fun encodeNull() {
-        appendValue(TomlNull(elementIndex))
+        appendValue(TomlNull())
     }
 
     override fun encodeString(value: String) {
@@ -120,9 +120,9 @@ public abstract class TomlAbstractEncoder protected constructor(
         if (!encodeAsKey(value)) {
             appendValue(
                 if (attributes.isLiteral) {
-                    TomlLiteralString(value as Any, elementIndex)
+                    TomlLiteralString(value)
                 } else {
-                    TomlBasicString(value as Any, elementIndex)
+                    TomlBasicString(value)
                 }
             )
         }
@@ -133,7 +133,7 @@ public abstract class TomlAbstractEncoder protected constructor(
             instantDescriptor,
             localDateTimeDescriptor,
             localDateDescriptor -> if (!encodeAsKey(value as Any, desc.serialName)) {
-                appendValue(TomlDateTime(value as Any, elementIndex))
+                appendValue(TomlDateTime(value))
             }
             else -> when (val kind = desc.kind) {
                 is StructureKind,

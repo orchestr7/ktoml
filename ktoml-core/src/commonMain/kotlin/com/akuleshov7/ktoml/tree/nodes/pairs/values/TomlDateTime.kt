@@ -11,10 +11,9 @@ import kotlinx.datetime.*
  */
 public class TomlDateTime
 internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
-    public constructor(content: String, lineNo: Int) : this(content.trim().parseToDateTime(), lineNo)
+    override var content: Any
+) : TomlValue() {
+    public constructor(content: String, lineNo: Int) : this(content.trim().parseToDateTime())
 
     override fun write(
         emitter: TomlEmitter,

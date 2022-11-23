@@ -16,14 +16,13 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  */
 public class TomlLiteralString internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
+    override var content: Any
+) : TomlValue() {
     public constructor(
         content: String,
         lineNo: Int,
         config: TomlInputConfig = TomlInputConfig()
-    ) : this(content.verifyAndTrimQuotes(lineNo, config), lineNo)
+    ) : this(content.verifyAndTrimQuotes(lineNo, config))
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."

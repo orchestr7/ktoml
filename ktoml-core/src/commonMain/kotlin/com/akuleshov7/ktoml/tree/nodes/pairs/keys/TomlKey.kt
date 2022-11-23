@@ -13,11 +13,9 @@ import com.akuleshov7.ktoml.writers.TomlStringEmitter
  * Key has TomlKey type, Value has TomlValue type
  *
  * @property keyParts The parts of the key, separated by dots.
- * @property lineNo
  */
 public class TomlKey internal constructor(
-    internal val keyParts: List<String>,
-    public val lineNo: Int
+    internal val keyParts: List<String>
 ) {
     /**
      * Whether the key has multiple dot-separated parts.
@@ -45,10 +43,7 @@ public class TomlKey internal constructor(
     public constructor(
         rawContent: String,
         lineNo: Int
-    ) : this(
-        rawContent.splitKeyToTokens(lineNo),
-        lineNo
-    )
+    ) : this(rawContent.splitKeyToTokens(lineNo))
 
     /**
      * Gets the last key part, with all whitespace and quotes trimmed, i.e. `c` in
@@ -67,8 +62,7 @@ public class TomlKey internal constructor(
 
         if (keys.isEmpty() || keys.any(String::isEmpty)) {
             throw TomlWritingException(
-                "Empty keys are not allowed: the key at line $lineNo is empty or" +
-                        " has an empty key part."
+                "Empty keys are not allowed: key is empty or has an empty key part."
             )
         }
 
@@ -93,9 +87,6 @@ public class TomlKey internal constructor(
         write(emitter)
     }
 
-    // Since raw content was replaced and instances are being compared directly,
-    // keys with the same underlying parts must be equal. Including lineNo creates
-    // duplicate tables on insertion.
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
