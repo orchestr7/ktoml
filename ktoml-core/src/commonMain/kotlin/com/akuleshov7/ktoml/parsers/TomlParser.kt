@@ -48,6 +48,9 @@ public value class TomlParser(private val config: TomlInputConfig) {
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
         val comments: MutableList<String> = mutableListOf()
+        // variable to build multiline value as a single-line
+        // then we can handle it as usually
+        var multilineValueBuilt = StringBuilder()
 
         mutableTomlLines.forEachIndexed { index, line ->
             val lineNo = index + 1
@@ -59,10 +62,24 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 // Parse the inline comment if any
                 val inlineComment = line.trimComment(config.allowEscapedQuotesInLiteralStrings)
 
-                if (line.isTableNode()) {
-                    if (line.isArrayOfTables()) {
+                // append all multiline values to StringBuilder as one line
+                if (multilineValueBuilt.isNotEmpty() || line.isStartOfMultilineValue()) {
+                    multilineValueBuilt.append(line.takeBeforeComment(0).trim())
+                    comments += inlineComment
+                    if (!line.isEndOfMultilineValue()) {
+                        return@forEachIndexed
+                    }
+                }
+                val tomlLine = if (multilineValueBuilt.isNotBlank()) {
+                    val tempLine = multilineValueBuilt.toString()
+                    multilineValueBuilt = StringBuilder()
+                    tempLine
+                } else line
+
+                if (tomlLine.isTableNode()) {
+                    if (tomlLine.isArrayOfTables()) {
                         // TomlArrayOfTables contains all information about the ArrayOfTables ([[array of tables]])
-                        val tableArray = TomlArrayOfTables(line, lineNo, config)
+                        val tableArray = TomlArrayOfTables(tomlLine, lineNo, config)
                         val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, latestCreatedBucket)
                         // creating a new empty element that will be used as an element in array and the parent for next key-value records
                         val newArrayElement = TomlArrayOfTablesElement(lineNo, comments, inlineComment, config)
@@ -76,7 +93,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                         // here we set the bucket that will be incredibly useful when we will be inserting the next array of tables
                         latestCreatedBucket = newArrayElement
                     } else {
-                        val tableSection = TomlTablePrimitive(line, lineNo, comments, inlineComment, config)
+                        val tableSection = TomlTablePrimitive(tomlLine, lineNo, comments, inlineComment, config)
                         // if the table is the last line in toml, then it has no children, and we need to
                         // add at least fake node as a child
                         if (index == mutableTomlLines.lastIndex) {
@@ -88,7 +105,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                         currentParentalNode = tomlFileHead.insertTableToTree(tableSection)
                     }
                 } else {
-                    val keyValue = line.parseTomlKeyValue(lineNo, comments, inlineComment, config)
+                    val keyValue = tomlLine.parseTomlKeyValue(lineNo, comments, inlineComment, config)
                     // inserting the key-value record to the tree
                     when {
                         keyValue is TomlKeyValue && keyValue.key.isDotted ->
@@ -112,6 +129,28 @@ public value class TomlParser(private val config: TomlInputConfig) {
             }
         }
         return tomlFileHead
+    }
+
+    /**
+     * @return true if string is a first line of multiline value declaration
+     */
+    private fun String.isStartOfMultilineValue(): Boolean {
+        val line = this.takeBeforeComment(0)
+        val firstEqualsSign = line.indexOfFirst { it == '=' }
+        if (firstEqualsSign == -1) {
+            return false
+        }
+        val value = line.substring(firstEqualsSign + 1).trim()
+
+        return value.startsWith("[")
+            && value.endsWith("]").not()
+    }
+
+    /**
+     * @return true if string is a last line of multiline value declaration
+     */
+    private fun String.isEndOfMultilineValue(): Boolean {
+        return this.takeBeforeComment(0).trim().endsWith("]")
     }
 
     private fun TomlNode.insertStub() {

@@ -84,9 +84,90 @@ class SimpleArrayDecoderTest {
     }
 
     @Test
-    @Ignore
-    fun testMultilineArrays() {
-        val testWithMultilineArray: ClassWithImmutableList = Toml.decodeFromString(
+    fun testMultilineStringArrays() {
+        val expectedResult = SimpleStringArray(listOf("hey", "hi"))
+        var test =
+            """
+                a = [
+                    "hey",
+                    "hi"
+                ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey",
+                    "hi"]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                            "hey",
+                    "hi"            ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey",
+                    "hi"]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey", "hi"
+                ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey", "hi", "hello"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey", "hi", "hello")), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey", "hi"
+                ,"hello"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey", "hi", "hello")), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf()), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                    "hey=hey",
+                    "hi=]"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey=hey", "hi=]")), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                    "hey=hey",
+                    "hi=]"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey=hey", "hi=]")), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testMultilineLongArrays() {
+        var testWithMultilineArray: ClassWithImmutableList = Toml.decodeFromString(
             """
                 field = [
                     1,
@@ -95,9 +176,44 @@ class SimpleArrayDecoderTest {
                 ]
                 """
         )
-        assertEquals(listOf<Long?>(null, 1), testWithMultilineArray.field)
+        assertEquals(listOf<Long?>(1, 2, 3), testWithMultilineArray.field)
+
+        testWithMultilineArray = Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    null,
+                    3
+                ]
+                """
+        )
+        assertEquals(listOf<Long?>(1, null, 3), testWithMultilineArray.field)
     }
 
+    @Test
+    fun testMultilineArraysWithComments() {
+        val expectedResult = SimpleStringArray(listOf("hey", "hi"))
+        var test =
+            """
+                a = [
+                    "hey",
+                    "hi" #123
+                ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                #123
+                #123
+                a = [#123
+                    "hey",#123
+                    "hi" # 123
+                ]#123
+                #123
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+    }
 
     @Test
     fun testSimpleArrayDecoder() {
