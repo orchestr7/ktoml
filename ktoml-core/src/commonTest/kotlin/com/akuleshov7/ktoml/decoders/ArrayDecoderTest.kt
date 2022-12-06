@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.CastException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,6 +10,7 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 @Serializable
 data class SimpleArray(val a: List<Long>)
@@ -213,6 +215,108 @@ class SimpleArrayDecoderTest {
                 #123
             """
         assertEquals(expectedResult, Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testIncorrectMultilineArray() {
+        var exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 5"))
+
+        exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 5"))
+
+        exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = 123
+                b = "abc"
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = 123
+                ]
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                [
+                a = 123
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = [
+                    1, 2
+                ]
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                [foo]
+                a = 123
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = ']'
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
     }
 
     @Test

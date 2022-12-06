@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.*
 import com.akuleshov7.ktoml.tree.nodes.*
 import kotlin.jvm.JvmInline
@@ -43,7 +44,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
         // link to the head of the tree
         val tomlFileHead = currentParentalNode as TomlFile
         // need to trim empty lines BEFORE the start of processing
-        val mutableTomlLines = tomlLines.toMutableList().trimEmptyLines()
+        val mutableTomlLines = tomlLines.toMutableList().trimEmptyTrailingLines()
         // here we always store the bucket of the latest created array of tables
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
@@ -64,8 +65,13 @@ public value class TomlParser(private val config: TomlInputConfig) {
 
                 // append all multiline values to StringBuilder as one line
                 if (multilineValueBuilt.isNotEmpty() || line.isStartOfMultilineValue()) {
+                    // validation only for following lines
+                    if (multilineValueBuilt.isNotEmpty()) {
+                        line.validateIsFollowingPartOfMultilineValue(index, mutableTomlLines)
+                    }
                     multilineValueBuilt.append(line.takeBeforeComment(0).trim())
                     comments += inlineComment
+
                     if (!line.isEndOfMultilineValue()) {
                         return@forEachIndexed
                     }
@@ -74,7 +80,9 @@ public value class TomlParser(private val config: TomlInputConfig) {
                     val tempLine = multilineValueBuilt.toString()
                     multilineValueBuilt = StringBuilder()
                     tempLine
-                } else line
+                } else {
+                    line
+                }
 
                 if (tomlLine.isTableNode()) {
                     if (tomlLine.isArrayOfTables()) {
@@ -142,15 +150,34 @@ public value class TomlParser(private val config: TomlInputConfig) {
         }
         val value = line.substring(firstEqualsSign + 1).trim()
 
-        return value.startsWith("[")
-            && value.endsWith("]").not()
+        return value.startsWith("[") &&
+                value.endsWith("]").not()
     }
 
     /**
      * @return true if string is a last line of multiline value declaration
      */
-    private fun String.isEndOfMultilineValue(): Boolean {
-        return this.takeBeforeComment(0).trim().endsWith("]")
+    private fun String.isEndOfMultilineValue(): Boolean = this.takeBeforeComment(0).trim().endsWith("]")
+
+    private fun String.validateIsFollowingPartOfMultilineValue(index: Int, mutableTomlLines: List<String>) {
+        if (!this.isEndOfMultilineValue() && index == mutableTomlLines.lastIndex ||
+                this.isValueDeclaration() ||
+                this.isTableNode()
+        ) {
+            throw ParseException("Expected ']' in the end of array", index + 1)
+        }
+    }
+
+    private fun String.isValueDeclaration(): Boolean {
+        val line = this.takeBeforeComment(0).trim()
+        val firstEqualsSign = line.indexOfFirst { it == '=' }
+        if (firstEqualsSign == -1) {
+            return false
+        }
+
+        // '=' might be into string value
+        val isStringValueLine = line.startsWith("\"") || line.startsWith("\'")
+        return !isStringValueLine
     }
 
     private fun TomlNode.insertStub() {
@@ -159,7 +186,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
         }
     }
 
-    private fun MutableList<String>.trimEmptyLines(): MutableList<String> {
+    private fun MutableList<String>.trimEmptyTrailingLines(): MutableList<String> {
         if (this.isEmpty()) {
             return this
         }
