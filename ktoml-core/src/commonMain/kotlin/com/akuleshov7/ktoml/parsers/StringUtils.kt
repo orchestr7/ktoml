@@ -7,36 +7,6 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 
 /**
- * Takes only the text before a comment, searching for a comment after the specified
- * [startIndex].
- *
- * @param startIndex The index to start the comment search from.
- * @return The text before a comment, i.e.
- * ```kotlin
- * "a = 0 # Comment".takeBeforeComment() == "a = 0"
- * ```
- */
-internal fun String.takeBeforeComment(startIndex: Int) =
-        when (val hashIndex = indexOf('#', startIndex)) {
-            -1 -> trim()
-            else -> take(hashIndex).trim()
-        }
-
-/**
- * Trims a comment of any text before it and its hash token.
- *
- * @return The comment text, i.e.
- * ```kotlin
- * "a = 0 # Comment".trimComment() == "Comment"
- * ```
- */
-internal fun String.trimComment() =
-        when (val hashIndex = indexOf('#')) {
-            -1 -> ""
-            else -> drop(hashIndex + 1).trim()
-        }
-
-/**
  * Splitting dot-separated string to the list of tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
  *
@@ -120,6 +90,42 @@ internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
  */
 internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
 
+/**
+ * Takes only the text before a comment
+ *
+ * @return The text before a comment, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".takeBeforeComment() == "a = 0"
+ * ```
+ */
+internal fun String.takeBeforeComment(): String {
+    val commentStartIndex = getCommentStartIndex()
+
+    return if (commentStartIndex == -1) {
+        this.trim()
+    } else {
+        this.substring(0, commentStartIndex).trim()
+    }
+}
+
+/**
+ * Trims a comment of any text before it and its hash token.
+ *
+ * @return The comment text, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".trimComment() == "Comment"
+ * ```
+ */
+internal fun String.trimComment(): String {
+    val commentStartIndex = getCommentStartIndex()
+
+    return if (commentStartIndex == -1) {
+        ""
+    } else {
+        drop(commentStartIndex + 1).trim()
+    }
+}
+
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
         throw ParseException(
@@ -165,6 +171,33 @@ private fun String.validateSymbols(lineNo: Int) {
             }
         }
     }
+}
+
+private fun String.getCommentStartIndex(): Int {
+    // temporary replace \" and \' to hide non-significant quotes
+    // we cannot remove them because we need to know the original index
+    val chars = this
+        .replace("\\\"", "__")
+        .replace("\\\'", "__")
+        .toCharArray()
+    var currentQuoteChar: Char? = null
+
+    chars.forEachIndexed { idx, symbol ->
+        // take hash index if it's not enclosed in quotation marks
+        if (currentQuoteChar == null && symbol == '#') {
+            return idx
+        }
+
+        if (symbol == '\"' || symbol == '\'') {
+            if (currentQuoteChar == null) {
+                currentQuoteChar = symbol
+            } else if (currentQuoteChar == symbol) {
+                currentQuoteChar = null
+            }
+        }
+    }
+
+    return -1
 }
 
 private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||

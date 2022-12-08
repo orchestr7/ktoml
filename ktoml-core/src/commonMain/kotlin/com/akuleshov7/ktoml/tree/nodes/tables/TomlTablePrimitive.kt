@@ -50,9 +50,10 @@ public class TomlTablePrimitive(
             throw ParseException("Invalid Tables provided: $content." +
                     " It has missing closing bracket: ']'", lineNo)
         }
-
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trim().trimBrackets()
+        val sectionFromContent = content
+            .takeBeforeComment()
+            .trimBrackets()
             .trim()
 
         if (sectionFromContent.isBlank()) {
