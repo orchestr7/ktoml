@@ -184,7 +184,7 @@ private fun String.getCommentStartIndex(): Int {
 
     chars.forEachIndexed { idx, symbol ->
         // take hash index if it's not enclosed in quotation marks
-        if (currentQuoteChar == null && symbol == '#') {
+        if (symbol == '#' && currentQuoteChar == null) {
             return idx
         }
 
