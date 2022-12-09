@@ -32,7 +32,7 @@ class StringUtilsTest {
     }
 
     @Test
-    fun symbolsAfterComment() {
+    fun testForTrimComment() {
         var comment = "a = \"here#hash\" # my comment".trimComment(false)
         assertEquals("my comment", comment)
 
