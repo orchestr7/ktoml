@@ -53,7 +53,7 @@ public class TomlArrayOfTables(
         }
         // getting the content inside brackets ([a.b] -> a.b)
         val sectionFromContent = content
-            .takeBeforeComment()
+            .takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
             .trimDoubleBrackets()
             .trim()
 

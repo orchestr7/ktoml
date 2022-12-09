@@ -83,7 +83,7 @@ public fun String.parseList(lineNo: Int, config: TomlInputConfig): TomlArray = T
  * @throws ParseException
  */
 public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): Pair<String, String> {
-    val pair = takeBeforeComment()
+    val pair = takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
 
     // searching for an equals sign that should be placed main part of the string (not in the comment)
     val firstEqualsSign = pair.indexOfFirst { it == '=' }

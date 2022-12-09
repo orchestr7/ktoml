@@ -93,13 +93,14 @@ internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
 /**
  * Takes only the text before a comment
  *
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
  * @return The text before a comment, i.e.
  * ```kotlin
  * "a = 0 # Comment".takeBeforeComment() == "a = 0"
  * ```
  */
-internal fun String.takeBeforeComment(): String {
-    val commentStartIndex = getCommentStartIndex()
+internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
+    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
 
     return if (commentStartIndex == -1) {
         this.trim()
@@ -111,13 +112,14 @@ internal fun String.takeBeforeComment(): String {
 /**
  * Trims a comment of any text before it and its hash token.
  *
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
  * @return The comment text, i.e.
  * ```kotlin
  * "a = 0 # Comment".trimComment() == "Comment"
  * ```
  */
-internal fun String.trimComment(): String {
-    val commentStartIndex = getCommentStartIndex()
+internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
+    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
 
     return if (commentStartIndex == -1) {
         ""
@@ -173,13 +175,21 @@ private fun String.validateSymbols(lineNo: Int) {
     }
 }
 
-private fun String.getCommentStartIndex(): Int {
-    // temporary replace \" and \' to hide non-significant quotes
-    // we cannot remove them because we need to know the original index
-    val chars = this
-        .replace("\\\"", "__")
-        .replace("\\\'", "__")
-        .toCharArray()
+private fun String.getCommentStartIndex(allowEscapedQuotesInLiteralStrings: Boolean): Int {
+    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
+        // escaping is disabled when the config option is true AND we have a literal string
+        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
+        firstQuoteLetter == '\''
+    } else {
+        false
+    }
+
+    val chars = if (!isEscapingDisabled) {
+        this.replace("\\\"", "__")
+            .replace("\\\'", "__")
+    } else {
+        this
+    }.toCharArray()
     var currentQuoteChar: Char? = null
 
     chars.forEachIndexed { idx, symbol ->
