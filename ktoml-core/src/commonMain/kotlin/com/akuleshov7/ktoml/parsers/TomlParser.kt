@@ -64,12 +64,13 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 val inlineComment = line.trimComment(config.allowEscapedQuotesInLiteralStrings)
 
                 // append all multiline values to StringBuilder as one line
-                if (multilineValueBuilt.isNotEmpty() || line.isStartOfMultilineValue()) {
+                if (multilineValueBuilt.isNotEmpty() || line.isStartOfMultilineValue()
+                ) {
                     // validation only for following lines
                     if (multilineValueBuilt.isNotEmpty()) {
                         line.validateIsFollowingPartOfMultilineValue(index, mutableTomlLines)
                     }
-                    multilineValueBuilt.append(line.takeBeforeComment(0).trim())
+                    multilineValueBuilt.append(line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings).trim())
                     comments += inlineComment
 
                     if (!line.isEndOfMultilineValue()) {
@@ -143,7 +144,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
      * @return true if string is a first line of multiline value declaration
      */
     private fun String.isStartOfMultilineValue(): Boolean {
-        val line = this.takeBeforeComment(0)
+        val line = this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
         val firstEqualsSign = line.indexOfFirst { it == '=' }
         if (firstEqualsSign == -1) {
             return false
@@ -157,7 +158,10 @@ public value class TomlParser(private val config: TomlInputConfig) {
     /**
      * @return true if string is a last line of multiline value declaration
      */
-    private fun String.isEndOfMultilineValue(): Boolean = this.takeBeforeComment(0).trim().endsWith("]")
+    private fun String.isEndOfMultilineValue(): Boolean =
+            this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
+                .trim()
+                .endsWith("]")
 
     private fun String.validateIsFollowingPartOfMultilineValue(index: Int, mutableTomlLines: List<String>) {
         if (!this.isEndOfMultilineValue() && index == mutableTomlLines.lastIndex ||
@@ -169,7 +173,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
     }
 
     private fun String.isValueDeclaration(): Boolean {
-        val line = this.takeBeforeComment(0).trim()
+        val line = this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings).trim()
         val firstEqualsSign = line.indexOfFirst { it == '=' }
         if (firstEqualsSign == -1) {
             return false

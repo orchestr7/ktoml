@@ -215,6 +215,16 @@ class SimpleArrayDecoderTest {
                 #123
             """
         assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [#123
+                    "hey#abc",
+                    "hi#def" # 123
+                ]#123
+                #123
+            """
+        assertEquals(SimpleStringArray(listOf("hey#abc", "hi#def")), Toml.decodeFromString(test))
     }
 
     @Test
