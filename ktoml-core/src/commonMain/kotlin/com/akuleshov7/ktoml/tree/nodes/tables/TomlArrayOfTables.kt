@@ -51,9 +51,10 @@ public class TomlArrayOfTables(
             throw ParseException("Invalid Array of Tables provided: $content." +
                     " It has missing closing brackets: ']]'", lineNo)
         }
-
         // getting the content inside brackets ([a.b] -> a.b)
-        val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trimDoubleBrackets()
+        val sectionFromContent = content
+            .takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
+            .trimDoubleBrackets()
             .trim()
 
         if (sectionFromContent.isBlank()) {
