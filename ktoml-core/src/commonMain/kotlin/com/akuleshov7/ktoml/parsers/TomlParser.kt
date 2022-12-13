@@ -52,7 +52,6 @@ public value class TomlParser(private val config: TomlInputConfig) {
         // variable to build multiline value as a single-line
         // then we can handle it as usually
         var multilineValueBuilt = StringBuilder()
-
         mutableTomlLines.forEachIndexed { index, line ->
             val lineNo = index + 1
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
