@@ -6,7 +6,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 import kotlinx.datetime.*
 
 /**
- * Toml AST Node for a representation of date-time types (offset date-time, local date-time, local date)
+ * Toml AST Node for a representation of date-time types (offset date-time, local date-time, local date, local time)
  * @property content
  */
 public class TomlDateTime
@@ -25,6 +25,7 @@ internal constructor(
             is Instant -> emitter.emitValue(content)
             is LocalDateTime -> emitter.emitValue(content)
             is LocalDate -> emitter.emitValue(content)
+            is LocalTime -> emitter.emitValue(content)
             else ->
                 throw TomlWritingException(
                     "Unknown date type ${content::class.simpleName}"
@@ -35,18 +36,19 @@ internal constructor(
     public companion object {
         private fun String.parseToDateTime(): Any = try {
             // Offset date-time
-            toInstant()
+            // TOML spec allows a space instead of the T, try replacing the first space by a T
+            replaceFirst(' ', 'T').toInstant()
         } catch (e: IllegalArgumentException) {
             try {
-                // TOML spec allows a space instead of the T, try replacing the first space by a T
-                replaceFirst(' ', 'T').toInstant()
+                // Local date-time
+                toLocalDateTime()
             } catch (e: IllegalArgumentException) {
                 try {
-                    // Local date-time
-                    toLocalDateTime()
-                } catch (e: IllegalArgumentException) {
                     // Local date
                     toLocalDate()
+                } catch (e: IllegalArgumentException) {
+                    // Local time
+                    toLocalTime()
                 }
             }
         }

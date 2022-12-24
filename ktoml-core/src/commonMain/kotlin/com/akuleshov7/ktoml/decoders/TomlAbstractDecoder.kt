@@ -8,6 +8,7 @@ import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encoding.AbstractDecoder
@@ -21,6 +22,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val instantSerializer = Instant.serializer()
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
+    private val localTimeSerializer = LocalTime.serializer()
 
     // Invalid Toml primitive types, but we anyway support them with some limitations
     override fun decodeByte(): Byte = decodePrimitiveType()
@@ -38,7 +40,8 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     protected fun DeserializationStrategy<*>.isDateTime(): Boolean =
             descriptor == instantSerializer.descriptor ||
                     descriptor == localDateTimeSerializer.descriptor ||
-                    descriptor == localDateSerializer.descriptor
+                    descriptor == localDateSerializer.descriptor ||
+                    descriptor == localTimeSerializer.descriptor
 
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
@@ -46,6 +49,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
         localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
         localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
+        localTimeSerializer.descriptor -> decodePrimitiveType<LocalTime>() as T
         else -> super.decodeSerializableValue(deserializer)
     }
 
