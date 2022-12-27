@@ -83,6 +83,14 @@ internal fun String.trimCurlyBraces(): String = trimSymbols(this, "{", "}")
 internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
 
 /**
+ * If this string ends with comma(,) - will return the string with trailing comma removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.removeTrailingComma(): String = this.removeSuffix(",")
+
+/**
  * If this string starts and end with a pair brackets([[]]) - will return the string with brackets removed
  * Otherwise, returns this string.
  *

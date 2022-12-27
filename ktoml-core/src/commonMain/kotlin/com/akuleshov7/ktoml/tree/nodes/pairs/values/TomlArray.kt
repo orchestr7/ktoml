@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.removeTrailingComma
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.tree.nodes.parseValue
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -137,8 +138,9 @@ public class TomlArray internal constructor(
          */
         @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
         private fun String.parseArray(): MutableList<String> {
+            val trimmed = trimBrackets().removeTrailingComma()
             // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
-            if (this.trimBrackets().isBlank()) {
+            if (trimmed.isBlank()) {
                 return mutableListOf()
             }
 
@@ -148,7 +150,6 @@ public class TomlArray internal constructor(
             var bufferBetweenCommas = StringBuilder()
             val result: MutableList<String> = mutableListOf()
 
-            val trimmed = trimBrackets()
             for (i in trimmed.indices) {
                 when (val current = trimmed[i]) {
                     '[' -> {
