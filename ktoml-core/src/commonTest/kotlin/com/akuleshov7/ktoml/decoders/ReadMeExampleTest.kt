@@ -22,10 +22,11 @@ class ReadMeExampleTest {
     data class Table1(
         // nullable values, from toml you can pass null/nil/empty value to this kind of a field
         val property1: Long?,
-        // please note, that according to the specification of toml integer values should be represented with Long
-        val property2: Long,
-        // no need to pass this value as it has the default value and is NOT REQUIRED
-        val property3: Long = 5
+        // please note, that according to the specification of toml integer values should be represented with Long,
+        // but we allow to use Int/Short/etc. Just be careful with overflow
+        val property2: Int,
+        // no need to pass this value in the input as it has the default value and so it is NOT REQUIRED
+        val property3: Short = 5
     )
 
     @Serializable
