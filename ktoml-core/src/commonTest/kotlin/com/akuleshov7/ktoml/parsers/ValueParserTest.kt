@@ -113,6 +113,12 @@ class ValueParserTest {
     }
 
     @Test
+    fun symbolsAfterComment() {
+        val keyValue = "test_key = \"test_value\"  # \" some comment".splitKeyValue(0)
+        assertEquals("test_value", TomlKeyValuePrimitive(keyValue, 0).value.content)
+    }
+
+    @Test
     fun parsingIssueValue() {
         assertFailsWith<ParseException> { " = false".splitKeyValue(0) }
         assertFailsWith<ParseException> { " just false".splitKeyValue(0) }

@@ -83,16 +83,7 @@ public fun String.parseList(lineNo: Int, config: TomlInputConfig): TomlArray = T
  * @throws ParseException
  */
 public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): Pair<String, String> {
-    // finding the index of the last quote, if no quotes are found, then use the length of the string
-    val closingQuoteIndex = listOf(
-        this.lastIndexOf("\""),
-        this.lastIndexOf("\'"),
-        this.lastIndexOf("\"\"\"")
-    ).filterNot { it == -1 }.maxOrNull() ?: 0
-
-    // removing the commented part of the string
-    // search starts goes from the closingQuoteIndex to the end of the string
-    val pair = takeBeforeComment(closingQuoteIndex)
+    val pair = takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
 
     // searching for an equals sign that should be placed main part of the string (not in the comment)
     val firstEqualsSign = pair.indexOfFirst { it == '=' }

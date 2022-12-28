@@ -26,7 +26,7 @@ In case you don't have much time for this - at least spend 5 seconds to give us 
 
 ## Acknowledgement
 Special thanks to those awesome developers who give us great suggestions, help us to maintain and improve this project:
-@NightEule5, @bishiboosh, @Peanuuutz, @petertrr, @nulls, @Olivki and @edrd-f.
+@NightEule5, @bishiboosh, @Peanuuutz, @petertrr, @nulls, @Olivki, @edrd-f and @BOOMeranGG.
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
