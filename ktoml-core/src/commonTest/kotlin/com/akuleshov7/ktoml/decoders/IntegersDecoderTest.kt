@@ -18,9 +18,6 @@ class IntegersDecoderTest {
         val l: Long,
     )
 
-    @Serializable
-    data class Bool(val a: Boolean)
-
     @Test
     fun positiveScenario() {
         var test = """
@@ -32,6 +29,10 @@ class IntegersDecoderTest {
 
         var decoded = Toml.decodeFromString<Integers>(test)
         println(decoded)
+        assertEquals(
+            Integers(5, 5, 5, 5),
+            decoded
+        )
 
         test = """
                 s = 32767
@@ -42,6 +43,10 @@ class IntegersDecoderTest {
 
         decoded = Toml.decodeFromString(test)
         println(decoded)
+        assertEquals(
+            Integers(32767, -128, 5, 5),
+            decoded
+        )
     }
 
     @Test
