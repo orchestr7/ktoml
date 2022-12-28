@@ -1,23 +1,25 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class PrimitivesDecoderTest {
 
+class PrimitivesDecoderTest {
     @Test
     fun decodeByte() {
-        fun test(expected: Byte, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Byte, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Byte)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
+            val data = Toml.decodeFromString<Data>(toml)
 
             assertEquals(expected, data.value)
         }
@@ -37,8 +39,8 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Byte)
 
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
+            assertFailsWith<IllegalTypeException>(input) {
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
@@ -48,15 +50,16 @@ class PrimitivesDecoderTest {
 
     @Test
     fun decodeChar() {
-        fun test(expected: Char, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Char, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Char)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
-
-            assertEquals(expected, data.value)
+            assertFailsWith<IllegalTypeException> {
+                val data = Toml.decodeFromString<Data>(toml)
+                assertEquals(expected, data.value)
+            }
         }
 
         test((0).toChar(), "0")
@@ -67,31 +70,14 @@ class PrimitivesDecoderTest {
     }
 
     @Test
-    fun decodeCharFailure() {
-        fun testFails(input: String) {
-            val toml = /*language=TOML*/ """value = $input"""
-
-            @Serializable
-            data class Data(val value: Byte)
-
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
-            }
-        }
-
-        testFails("${Char.MAX_VALUE.digitToInt() + 1}")
-        testFails("${Char.MIN_VALUE.digitToInt() - 1}")
-    }
-
-    @Test
     fun decodeShort() {
-        fun test(expected: Short, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Short, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Short)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
+            val data = Toml.decodeFromString<Data>(toml)
 
             assertEquals(expected, data.value)
         }
@@ -111,8 +97,8 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Short)
 
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
+            assertFailsWith<IllegalTypeException>(input) {
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
@@ -122,13 +108,13 @@ class PrimitivesDecoderTest {
 
     @Test
     fun decodeInt() {
-        fun test(expected: Int, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Int, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Int)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
+            val data = Toml.decodeFromString<Data>(toml)
 
             assertEquals(expected, data.value)
         }
@@ -150,8 +136,8 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Int)
 
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
+            assertFailsWith<IllegalTypeException>(input) {
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
@@ -161,13 +147,13 @@ class PrimitivesDecoderTest {
 
     @Test
     fun decodeLong() {
-        fun test(expected: Long, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Long, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Long)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
+            val data = Toml.decodeFromString<Data>(toml)
 
             assertEquals(expected, data.value)
         }
@@ -189,8 +175,8 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Long)
 
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
+            assertFailsWith<IllegalTypeException>(input) {
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
@@ -200,15 +186,16 @@ class PrimitivesDecoderTest {
 
     @Test
     fun decodeFloat() {
-        fun test(expected: Float, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Float, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Float)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
-
-            assertEquals(expected, data.value)
+            assertFailsWith<IllegalTypeException> {
+                val data = Toml.decodeFromString<Data>(toml)
+                assertEquals(expected, data.value)
+            }
         }
 
         test(0f, "0")
@@ -226,8 +213,8 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Float)
 
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
+            assertFailsWith<IllegalTypeException>(input) {
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
@@ -237,22 +224,22 @@ class PrimitivesDecoderTest {
 
     @Test
     fun decodeDouble() {
-        fun test(expected: Double, actual: String) {
-            val toml = /*language=TOML*/ """value = $actual"""
+        fun test(expected: Double, input: String) {
+            val toml = /*language=TOML*/ """value = $input"""
 
             @Serializable
             data class Data(val value: Double)
 
-            val data = Toml.decodeFromString(Data.serializer(), toml)
+            val data = Toml.decodeFromString<Data>(toml)
 
             assertEquals(expected, data.value)
         }
 
-        test(0.0, "0")
-        test(1.0, "1")
-        test(-1.0, "-1")
-        test(-128.0, "-128")
-        test(127.0, "127")
+        test(0.0, "0.0")
+        test(1.0, "1.0")
+        test(-1.0, "-1.0")
+        test(-128.0, "-128.0")
+        test(127.0, "127.0")
     }
 
     @Test
@@ -263,12 +250,13 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Double)
 
-            assertFailsWith<ParseException>(input) {
-                Toml.decodeFromString(Data.serializer(), toml)
+            assertFailsWith<IllegalTypeException>(input) {
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
         testFails("-129")
         testFails("128")
+        testFails("0")
     }
 }
