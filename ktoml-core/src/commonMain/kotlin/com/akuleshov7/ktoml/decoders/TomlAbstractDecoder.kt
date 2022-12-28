@@ -76,7 +76,8 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     }
 
     /**
-     * After a lot of discussions, we have finally decided to allow to use Integer types and not only Long.
+     * After a lot of discussions (https://github.com/akuleshov7/ktoml/pull/153#discussion_r1003114861 and
+     * https://github.com/akuleshov7/ktoml/issues/163), we have finally decided to allow to use Integer types and not only Long.
      * This method does simple validation of integer values to avoid overflow. For example, you really want to use byte,
      * we will check here, that your byte value does not exceed 127 and so on.
      */
