@@ -26,7 +26,7 @@ In case you don't have much time for this - at least spend 5 seconds to give us 
 
 ## Acknowledgement
 Special thanks to those awesome developers who give us great suggestions, help us to maintain and improve this project:
-@NightEule5, @bishiboosh, @Peanuuutz, @petertrr, @nulls, @Olivki, @edrd-f and @BOOMeranGG.
+@NightEule5, @bishiboosh, @Peanuuutz, @petertrr, @nulls, @Olivki, @edrd-f, @BOOMeranGG, @aSemy
 
 ## Supported platforms
 All the code is written in Kotlin **common** module. This means that it can be built for each and every Kotlin native platform.
@@ -68,7 +68,8 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Offset Date-Time (to `Instant` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Local Date-Time (to `LocalDateTime` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Local Date (to `LocalDate` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
-:x: Arrays: nested; multiline; of Different Types \
+:white_check_mark: Arrays (including multiline arrays) \
+:x: Arrays: nested; of Different Types \
 :x: Multiline Strings \
 :x: Nested Inline Tables \
 :x: Array of Tables \

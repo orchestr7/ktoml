@@ -26,8 +26,8 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeByte(): Byte = decodePrimitiveType()
     override fun decodeShort(): Short = decodePrimitiveType()
     override fun decodeInt(): Int = decodePrimitiveType()
-    override fun decodeFloat(): Float = decodePrimitiveType()
-    override fun decodeChar(): Char = decodePrimitiveType()
+    override fun decodeFloat(): Float = invalidType("Float", "Double")
+    override fun decodeChar(): Char = invalidType("Char", "String")
 
     // Valid Toml types that should be properly decoded
     override fun decodeBoolean(): Boolean = decodePrimitiveType()
@@ -86,6 +86,11 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         Short::class -> validateAndConvertInt(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
         Int::class -> validateAndConvertInt(content, lineNo, INT) { num: Long -> num.toInt() as T }
         Long::class -> validateAndConvertInt(content, lineNo, LONG) { num: Long -> num as T }
+        Double::class, Float::class -> throw IllegalTypeException(
+            "Expected floating-point number, but received integer literal: <$content>. " +
+                    "Deserialized floating-point number should have a dot: <$content.0>",
+            lineNo
+        )
         else -> invalidType(T::class.toString(), "Signed Type")
     }
 
