@@ -16,6 +16,9 @@ import kotlin.test.assertTrue
 data class SimpleArray(val a: List<Long>)
 
 @Serializable
+data class SimpleArrayWithNullableValues(val a: List<Long?>)
+
+@Serializable
 data class SimpleStringArray(val a: List<String>)
 
 @Serializable
@@ -333,6 +336,21 @@ class SimpleArrayDecoderTest {
     fun testSimpleArrayDecoder() {
         val test = "a = [1, 2,      3]"
         assertEquals(SimpleArray(listOf(1, 2, 3)), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testArrayWithTrailingComma() {
+        var test = "a = [1, 2, 3,]"
+        assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
+
+        test = """
+            a = [
+                1,
+                2,
+                3,
+            ]
+            """.trimIndent()
+        assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
     }
 
     @Test
