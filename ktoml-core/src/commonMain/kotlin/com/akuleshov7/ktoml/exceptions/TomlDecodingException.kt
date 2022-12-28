@@ -32,8 +32,6 @@ internal class NullValueException(propertyName: String, lineNo: Int) : TomlDecod
             " Please check the input (line: <$lineNo>) or make the property nullable"
 )
 
-internal class CastException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
-
 internal class IllegalTypeException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
 
 internal class MissingRequiredPropertyException(message: String) : TomlDecodingException(message)

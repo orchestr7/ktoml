@@ -1,7 +1,10 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
+import com.akuleshov7.ktoml.utils.IntegerLimitsEnum
+import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -19,46 +22,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
 
-    override fun decodeByte(): Byte = decodePrimitiveIntegerType { it.toByte() }
-
-    override fun decodeShort(): Short = decodePrimitiveIntegerType { it.toShort() }
-
-    override fun decodeInt(): Int = decodePrimitiveIntegerType { it.toInt() }
-
-    override fun decodeFloat(): Float {
-        val keyValue = decodeKeyValue()
-
-        val doubleValue = keyValue.castOrThrow<Double>()
-
-        val floatValue = doubleValue.toFloat()
-
-        if (floatValue.isInfinite()) {
-            // maybe make this exception configurable? That's what KxS JSON does
-            throw ParseException(
-                "unexpected number - expected ${Float::class}, but actual value '$doubleValue' was not valid",
-                keyValue.lineNo
-            )
-        } else {
-            return floatValue
-        }
-    }
-
-    override fun decodeChar(): Char {
-        val keyValue = decodeKeyValue()
-
-        val stringValue = keyValue.castOrThrow<Char>()
-
-//        if (stringValue.length != 1) {
-//            throw ParseException(
-//                "Expected single Char, but actual value was a String size:${stringValue.length}",
-//                keyValue.lineNo
-//            )
-//        } else {
-//            return stringValue.first()
-//        }
-
-        return stringValue
-    }
+    // Invalid Toml primitive types, but we anyway support them with some limitations
+    override fun decodeByte(): Byte = decodePrimitiveType()
+    override fun decodeShort(): Short = decodePrimitiveType()
+    override fun decodeInt(): Int = decodePrimitiveType()
+    override fun decodeFloat(): Float = decodePrimitiveType()
+    override fun decodeChar(): Char = decodePrimitiveType()
 
     // Valid Toml types that should be properly decoded
     override fun decodeBoolean(): Boolean = decodePrimitiveType()
@@ -67,55 +36,78 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeString(): String = decodePrimitiveType()
 
     protected fun DeserializationStrategy<*>.isDateTime(): Boolean =
-        descriptor == instantSerializer.descriptor ||
-                descriptor == localDateTimeSerializer.descriptor ||
-                descriptor == localDateSerializer.descriptor
+            descriptor == instantSerializer.descriptor ||
+                    descriptor == localDateTimeSerializer.descriptor ||
+                    descriptor == localDateSerializer.descriptor
 
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
-    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
-        when (deserializer.descriptor) {
-            instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
-            localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
-            localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
-            else -> super.decodeSerializableValue(deserializer)
-        }
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T = when (deserializer.descriptor) {
+        instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
+        localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
+        localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
+        else -> super.decodeSerializableValue(deserializer)
+    }
 
     internal abstract fun decodeKeyValue(): TomlKeyValue
 
-    private inline fun <reified T> decodePrimitiveType(): T = decodeKeyValue().castOrThrow()
-
-    /** convert from a big ol' [Long] to a little tiny integer type, throwing an exception if this is not possible */
-    private inline fun <reified T> decodePrimitiveIntegerType(
-        converter: (Long) -> T
-    ): T where T : Number, T : Comparable<T> {
+    /**
+     * This is just an adapter from `kotlinx.serialization` to match the content with a type from a Toml Tree,
+     * that we have parsed to a type that is described in user's code. For example:
+     * >>> input: a = "5"
+     * >>> stored in Toml Tree: TomlString("5")
+     * >>> expected by user: data class A(val a: Int)
+     * >>> TomlString cannot be cast to Int, user made a mistake -> IllegalTypeException
+     */
+    private inline fun <reified T> decodePrimitiveType(): T {
         val keyValue = decodeKeyValue()
-
-        val longValue = keyValue.castOrThrow<Long>()
-
-        val convertedValue = converter(longValue)
-
-        println("converted $longValue to $convertedValue")
-
-        if (longValue != convertedValue.toLong()) {
-            throw ParseException(
-                "unexpected number - expected ${T::class}, but actual value '$longValue' was out-of-bounds",
+        try {
+            return when (val value = keyValue.value) {
+                is TomlLong -> decodeInteger(value.content as Long, keyValue.lineNo)
+                else -> keyValue.value.content as T
+            }
+        } catch (e: ClassCastException) {
+            throw IllegalTypeException(
+                "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
+                        " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo
             )
-        } else {
-            return convertedValue
         }
     }
 
-    private inline fun <reified T> TomlKeyValue.castOrThrow(): T {
-        return try {
-            value.content as T
-        } catch (e: ClassCastException) {
-            throw ParseException(
-                "Cannot decode the key [${key.content}] with the value [${value.content}]" +
-                        " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
-                lineNo,
-            )
-        }
+    /**
+     * After a lot of discussions (https://github.com/akuleshov7/ktoml/pull/153#discussion_r1003114861 and
+     * https://github.com/akuleshov7/ktoml/issues/163), we have finally decided to allow to use Integer types and not only Long.
+     * This method does simple validation of integer values to avoid overflow. For example, you really want to use byte,
+     * we will check here, that your byte value does not exceed 127 and so on.
+     */
+    private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T = when (T::class) {
+        Byte::class -> validateAndConvertInt(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
+        Short::class -> validateAndConvertInt(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
+        Int::class -> validateAndConvertInt(content, lineNo, INT) { num: Long -> num.toInt() as T }
+        Long::class -> validateAndConvertInt(content, lineNo, LONG) { num: Long -> num as T }
+        else -> invalidType(T::class.toString(), "Signed Type")
+    }
+
+    private inline fun <reified T> validateAndConvertInt(
+        content: Long,
+        lineNo: Int,
+        limits: IntegerLimitsEnum,
+        conversion: (Long) -> T,
+    ): T = if (content in limits.min..limits.max) {
+        conversion(content)
+    } else {
+        throw IllegalTypeException("The integer literal, that you have provided is <$content>, " +
+                "but the type for deserialization is <${T::class}>. You will get an overflow, " +
+                "so we advise you to check the data or use other type for deserialization (Long, for example)", lineNo)
+    }
+
+    private fun invalidType(typeName: String, requiredType: String): Nothing {
+        val keyValue = decodeKeyValue()
+        throw IllegalTypeException(
+            "<$typeName> type is not allowed by toml specification," +
+                    " use <$requiredType> instead" +
+                    " (key = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
+        )
     }
 }
