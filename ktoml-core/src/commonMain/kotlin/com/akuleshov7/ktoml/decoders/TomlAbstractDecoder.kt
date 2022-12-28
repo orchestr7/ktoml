@@ -1,8 +1,10 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.CastException
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
+import com.akuleshov7.ktoml.utils.IntegerLimitsEnum
+import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -20,12 +22,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
 
-    // Invalid Toml primitive types, we will simply throw an error for them
-    override fun decodeByte(): Byte = invalidType("Byte", "Long")
-    override fun decodeShort(): Short = invalidType("Short", "Long")
-    override fun decodeInt(): Int = invalidType("Int", "Long")
-    override fun decodeFloat(): Float = invalidType("Float", "Double")
-    override fun decodeChar(): Char = invalidType("Char", "String")
+    // Invalid Toml primitive types, but we anyway support them with some limitations
+    override fun decodeByte(): Byte = decodePrimitiveType()
+    override fun decodeShort(): Short = decodePrimitiveType()
+    override fun decodeInt(): Int = decodePrimitiveType()
+    override fun decodeFloat(): Float = decodePrimitiveType()
+    override fun decodeChar(): Char = decodePrimitiveType()
 
     // Valid Toml types that should be properly decoded
     override fun decodeBoolean(): Boolean = decodePrimitiveType()
@@ -49,6 +51,57 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
 
     internal abstract fun decodeKeyValue(): TomlKeyValue
 
+    /**
+     * This is just an adapter from `kotlinx.serialization` to match the content with a type from a Toml Tree,
+     * that we have parsed to a type that is described in user's code. For example:
+     * >>> input: a = "5"
+     * >>> stored in Toml Tree: TomlString("5")
+     * >>> expected by user: data class A(val a: Int)
+     * >>> TomlString cannot be cast to Int, user made a mistake -> IllegalTypeException
+     */
+    private inline fun <reified T> decodePrimitiveType(): T {
+        val keyValue = decodeKeyValue()
+        try {
+            return when (val value = keyValue.value) {
+                is TomlLong -> decodeInteger(value.content as Long, keyValue.lineNo)
+                else -> keyValue.value.content as T
+            }
+        } catch (e: ClassCastException) {
+            throw IllegalTypeException(
+                "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
+                        " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
+                keyValue.lineNo
+            )
+        }
+    }
+
+    /**
+     * After a lot of discussions (https://github.com/akuleshov7/ktoml/pull/153#discussion_r1003114861 and
+     * https://github.com/akuleshov7/ktoml/issues/163), we have finally decided to allow to use Integer types and not only Long.
+     * This method does simple validation of integer values to avoid overflow. For example, you really want to use byte,
+     * we will check here, that your byte value does not exceed 127 and so on.
+     */
+    private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T = when (T::class) {
+        Byte::class -> validateAndConvertInt(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
+        Short::class -> validateAndConvertInt(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
+        Int::class -> validateAndConvertInt(content, lineNo, INT) { num: Long -> num.toInt() as T }
+        Long::class -> validateAndConvertInt(content, lineNo, LONG) { num: Long -> num as T }
+        else -> invalidType(T::class.toString(), "Signed Type")
+    }
+
+    private inline fun <reified T> validateAndConvertInt(
+        content: Long,
+        lineNo: Int,
+        limits: IntegerLimitsEnum,
+        conversion: (Long) -> T,
+    ): T = if (content in limits.min..limits.max) {
+        conversion(content)
+    } else {
+        throw IllegalTypeException("The integer literal, that you have provided is <$content>, " +
+                "but the type for deserialization is <${T::class}>. You will get an overflow, " +
+                "so we advise you to check the data or use other type for deserialization (Long, for example)", lineNo)
+    }
+
     private fun invalidType(typeName: String, requiredType: String): Nothing {
         val keyValue = decodeKeyValue()
         throw IllegalTypeException(
@@ -56,18 +109,5 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                     " use <$requiredType> instead" +
                     " (key = ${keyValue.key.content}; value = ${keyValue.value.content})", keyValue.lineNo
         )
-    }
-
-    private inline fun <reified T> decodePrimitiveType(): T {
-        val keyValue = decodeKeyValue()
-        try {
-            return keyValue.value.content as T
-        } catch (e: ClassCastException) {
-            throw CastException(
-                "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
-                        " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
-                keyValue.lineNo
-            )
-        }
     }
 }
