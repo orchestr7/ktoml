@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.CastException
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
@@ -57,7 +56,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
      * >>> input: a = "5"
      * >>> stored in Toml Tree: TomlString("5")
      * >>> expected by user: data class A(val a: Int)
-     * >>> TomlString cannot be cast to Int, user made a mistake -> CastException
+     * >>> TomlString cannot be cast to Int, user made a mistake -> IllegalTypeException
      */
     private inline fun <reified T> decodePrimitiveType(): T {
         val keyValue = decodeKeyValue()
@@ -67,7 +66,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 else -> keyValue.value.content as T
             }
         } catch (e: ClassCastException) {
-            throw CastException(
+            throw IllegalTypeException(
                 "Cannot decode the key [${keyValue.key.content}] with the value [${keyValue.value.content}]" +
                         " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo

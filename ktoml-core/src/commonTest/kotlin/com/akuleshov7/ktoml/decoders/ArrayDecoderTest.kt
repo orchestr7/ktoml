@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.exceptions.CastException
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
@@ -76,7 +76,7 @@ class SimpleArrayDecoderTest {
         val testWithNullArray2: ClassWithMutableList = Toml.decodeFromString("field = null")
         assertEquals(null, testWithNullArray2.field)
 
-        assertFailsWith<CastException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
+        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
 
         val testWithOnlyNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null ]")
         assertEquals(listOf(null), testWithOnlyNullInArray.field)
