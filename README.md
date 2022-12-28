@@ -68,13 +68,13 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Offset Date-Time (to `Instant` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Local Date-Time (to `LocalDateTime` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Local Date (to `LocalDate` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
+:white_check_mark: Local Time (to `LocalTime` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Arrays (including multiline arrays) \
 :x: Arrays: nested; of Different Types \
 :x: Multiline Strings \
 :x: Nested Inline Tables \
 :x: Array of Tables \
-:x: Inline Array of Tables \
-:x: Local Time
+:x: Inline Array of Tables
 
 ## Dependency
 The library is hosted on the [Maven Central](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
