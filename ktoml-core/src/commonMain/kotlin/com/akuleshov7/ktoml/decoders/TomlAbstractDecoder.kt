@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum
+import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -79,14 +80,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
      * This method does simple validation of integer values to avoid overflow. For example, you really want to use byte,
      * we will check here, that your byte value does not exceed 127 and so on.
      */
-    private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T {
-        return when (T::class) {
-            Byte::class -> validateAndConvertInt(content, lineNo, IntegerLimitsEnum.BYTE) { c: Long -> c.toByte() as T }
-            Short::class -> validateAndConvertInt(content, lineNo, IntegerLimitsEnum.SHORT) { c: Long -> c.toShort() as T  }
-            Int::class -> validateAndConvertInt(content, lineNo, IntegerLimitsEnum.INT) { c: Long -> c.toInt() as T  }
-            Long::class -> validateAndConvertInt(content, lineNo, IntegerLimitsEnum.LONG) { c: Long -> c as T  }
-            else -> invalidType(T::class.toString(), "Signed Type")
-        }
+    private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T = when (T::class) {
+        Byte::class -> validateAndConvertInt(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
+        Short::class -> validateAndConvertInt(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
+        Int::class -> validateAndConvertInt(content, lineNo, INT) { num: Long -> num.toInt() as T }
+        Long::class -> validateAndConvertInt(content, lineNo, LONG) { num: Long -> num as T }
+        else -> invalidType(T::class.toString(), "Signed Type")
     }
 
     private inline fun <reified T> validateAndConvertInt(
@@ -94,14 +93,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         lineNo: Int,
         limits: IntegerLimitsEnum,
         conversion: (Long) -> T,
-    ): T {
-        return if (content in limits.min..limits.max) {
-            conversion(content)
-        } else {
-            throw IllegalTypeException("The integer literal that you have provided is <$content>, but the type that you" +
-                    "expect deserialization to be made to is <${T::class}>. You will get an overflow: check the data or " +
-                    "use proper type for deserialization", lineNo)
-        }
+    ): T = if (content in limits.min..limits.max) {
+        conversion(content)
+    } else {
+        throw IllegalTypeException("The integer literal, that you have provided is <$content>, " +
+                "but the type for deserialization is <${T::class}>. You will get an overflow, " +
+                "so we advise you to check the data or use other type for deserialization (Long, for example)", lineNo)
     }
 
     private fun invalidType(typeName: String, requiredType: String): Nothing {
