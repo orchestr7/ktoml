@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.exceptions.CastException
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,9 +10,13 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 @Serializable
 data class SimpleArray(val a: List<Long>)
+
+@Serializable
+data class SimpleArrayWithNullableValues(val a: List<Long?>)
 
 @Serializable
 data class SimpleStringArray(val a: List<String>)
@@ -74,7 +79,7 @@ class SimpleArrayDecoderTest {
         val testWithNullArray2: ClassWithMutableList = Toml.decodeFromString("field = null")
         assertEquals(null, testWithNullArray2.field)
 
-        assertFailsWith<CastException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
+        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
 
         val testWithOnlyNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null ]")
         assertEquals(listOf(null), testWithOnlyNullInArray.field)
@@ -84,9 +89,90 @@ class SimpleArrayDecoderTest {
     }
 
     @Test
-    @Ignore
-    fun testMultilineArrays() {
-        val testWithMultilineArray: ClassWithImmutableList = Toml.decodeFromString(
+    fun testMultilineStringArrays() {
+        val expectedResult = SimpleStringArray(listOf("hey", "hi"))
+        var test =
+            """
+                a = [
+                    "hey",
+                    "hi"
+                ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey",
+                    "hi"]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                            "hey",
+                    "hi"            ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey",
+                    "hi"]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey", "hi"
+                ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey", "hi", "hello"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey", "hi", "hello")), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = ["hey", "hi"
+                ,"hello"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey", "hi", "hello")), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf()), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                    "hey=hey",
+                    "hi=]"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey=hey", "hi=]")), Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [
+                    "hey=hey",
+                    "hi=]"
+                ]
+            """
+        assertEquals(SimpleStringArray(listOf("hey=hey", "hi=]")), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testMultilineLongArrays() {
+        var testWithMultilineArray: ClassWithImmutableList = Toml.decodeFromString(
             """
                 field = [
                     1,
@@ -95,14 +181,176 @@ class SimpleArrayDecoderTest {
                 ]
                 """
         )
-        assertEquals(listOf<Long?>(null, 1), testWithMultilineArray.field)
+        assertEquals(listOf<Long?>(1, 2, 3), testWithMultilineArray.field)
+
+        testWithMultilineArray = Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    null,
+                    3
+                ]
+                """
+        )
+        assertEquals(listOf<Long?>(1, null, 3), testWithMultilineArray.field)
     }
 
+    @Test
+    fun testMultilineArraysWithComments() {
+        val expectedResult = SimpleStringArray(listOf("hey", "hi"))
+        var test =
+            """
+                a = [
+                    "hey",
+                    "hi" #123
+                ]
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                #123
+                #123
+                a = [#123
+                    "hey",#123
+                    "hi" # 123
+                ]#123
+                #123
+            """
+        assertEquals(expectedResult, Toml.decodeFromString(test))
+
+        test =
+            """
+                a = [#123
+                    "hey#abc",
+                    "hi#def" # 123
+                ]#123
+                #123
+            """
+        assertEquals(SimpleStringArray(listOf("hey#abc", "hi#def")), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testIncorrectMultilineArray() {
+        var exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 5"))
+
+        exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 5"))
+
+        exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = 123
+                b = "abc"
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = 123
+                ]
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                [
+                a = 123
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = [
+                    1, 2
+                ]
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                [foo]
+                a = 123
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+
+        assertFailsWith<ParseException> { Toml.decodeFromString(
+            """
+                field = [
+                    1,
+                    2,
+                    3
+
+                a = ']'
+                """
+        ) }
+        assertTrue(exception.message!!.contains("Line 7"))
+    }
 
     @Test
     fun testSimpleArrayDecoder() {
         val test = "a = [1, 2,      3]"
         assertEquals(SimpleArray(listOf(1, 2, 3)), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testArrayWithTrailingComma() {
+        var test = "a = [1, 2, 3,]"
+        assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
+
+        test = """
+            a = [
+                1,
+                2,
+                3,
+            ]
+            """.trimIndent()
+        assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
     }
 
     @Test

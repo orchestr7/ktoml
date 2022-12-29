@@ -7,36 +7,6 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 
 /**
- * Takes only the text before a comment, searching for a comment after the specified
- * [startIndex].
- *
- * @param startIndex The index to start the comment search from.
- * @return The text before a comment, i.e.
- * ```kotlin
- * "a = 0 # Comment".takeBeforeComment() == "a = 0"
- * ```
- */
-internal fun String.takeBeforeComment(startIndex: Int) =
-        when (val hashIndex = indexOf('#', startIndex)) {
-            -1 -> trim()
-            else -> take(hashIndex).trim()
-        }
-
-/**
- * Trims a comment of any text before it and its hash token.
- *
- * @return The comment text, i.e.
- * ```kotlin
- * "a = 0 # Comment".trimComment() == "Comment"
- * ```
- */
-internal fun String.trimComment() =
-        when (val hashIndex = indexOf('#')) {
-            -1 -> ""
-            else -> drop(hashIndex + 1).trim()
-        }
-
-/**
  * Splitting dot-separated string to the list of tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
  *
@@ -113,12 +83,58 @@ internal fun String.trimCurlyBraces(): String = trimSymbols(this, "{", "}")
 internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
 
 /**
+ * If this string ends with comma(,) - will return the string with trailing comma removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.removeTrailingComma(): String = this.removeSuffix(",")
+
+/**
  * If this string starts and end with a pair brackets([[]]) - will return the string with brackets removed
  * Otherwise, returns this string.
  *
  * @return string with the result
  */
 internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
+
+/**
+ * Takes only the text before a comment
+ *
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
+ * @return The text before a comment, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".takeBeforeComment() == "a = 0"
+ * ```
+ */
+internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
+    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
+
+    return if (commentStartIndex == -1) {
+        this.trim()
+    } else {
+        this.substring(0, commentStartIndex).trim()
+    }
+}
+
+/**
+ * Trims a comment of any text before it and its hash token.
+ *
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
+ * @return The comment text, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".trimComment() == "Comment"
+ * ```
+ */
+internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
+    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
+
+    return if (commentStartIndex == -1) {
+        ""
+    } else {
+        drop(commentStartIndex + 1).trim()
+    }
+}
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
@@ -165,6 +181,41 @@ private fun String.validateSymbols(lineNo: Int) {
             }
         }
     }
+}
+
+private fun String.getCommentStartIndex(allowEscapedQuotesInLiteralStrings: Boolean): Int {
+    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
+        // escaping is disabled when the config option is true AND we have a literal string
+        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
+        firstQuoteLetter == '\''
+    } else {
+        false
+    }
+
+    val chars = if (!isEscapingDisabled) {
+        this.replace("\\\"", "__")
+            .replace("\\\'", "__")
+    } else {
+        this
+    }.toCharArray()
+    var currentQuoteChar: Char? = null
+
+    chars.forEachIndexed { idx, symbol ->
+        // take hash index if it's not enclosed in quotation marks
+        if (symbol == '#' && currentQuoteChar == null) {
+            return idx
+        }
+
+        if (symbol == '\"' || symbol == '\'') {
+            if (currentQuoteChar == null) {
+                currentQuoteChar = symbol
+            } else if (currentQuoteChar == symbol) {
+                currentQuoteChar = null
+            }
+        }
+    }
+
+    return -1
 }
 
 private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||

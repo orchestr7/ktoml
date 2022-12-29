@@ -125,10 +125,12 @@ class GeneralDecoderTest {
 
     @Test
     fun testForSimpleNestedTable() {
-        val test = ("c = 5 \n" +
-                "[table1] \n" +
-                " b = 6  \n" +
-                " a = 5  \n ")
+        val test = """
+            c = 5 
+            [table1] 
+            b = 6  
+            a = 5  
+        """.trimIndent()
         assertEquals(NestedSimpleTable(5, Table1(5, 6)), Toml.decodeFromString(test))
     }
 
@@ -374,19 +376,20 @@ class GeneralDecoderTest {
 
     @Test
     fun severalTablesOnTheSameLevel() {
-        val test = """|[table]
-           |[table.in1]
-           |    a = 1
-           |    [table.in1.in1]
-           |        a = 1
-           |    [table.in1.in2]
-           |        a = 1
-           |[table.in2]
-           |    a = 1
-           |    [table.in2.in1]
-           |        a = 1
-           |    [table.in2.in2]
-           |        a = 1
+        val test = """
+            |[table]
+            |[table.in1]
+            |    a = 1
+            |    [table.in1.in1]
+            |        a = 1
+            |    [table.in1.in2]
+            |        a = 1
+            |[table.in2]
+            |    a = 1
+            |    [table.in2.in1]
+            |        a = 1
+            |    [table.in2.in2]
+            |        a = 1
         """.trimMargin()
 
         assertEquals(
