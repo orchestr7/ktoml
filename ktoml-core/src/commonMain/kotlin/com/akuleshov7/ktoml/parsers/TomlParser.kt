@@ -38,7 +38,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
      * @return the root node of the resulted toml tree
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
-    @Suppress("TOO_LONG_FUNCTION")
+    @Suppress("TOO_LONG_FUNCTION", "NESTED_BLOCK")
     public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlInputConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile()
         // link to the head of the tree
@@ -49,11 +49,11 @@ public value class TomlParser(private val config: TomlInputConfig) {
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
         val comments: MutableList<String> = mutableListOf()
-        // variable to build multiline value as a single-line
-        // then we can handle it as usually
-        var multilineValueBuilt = StringBuilder()
-        mutableTomlLines.forEachIndexed { index, line ->
+        var index = 0
+        while (index < mutableTomlLines.size) {
+            val line = mutableTomlLines[index]
             val lineNo = index + 1
+
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
             // because we need to calculate and save lineNo
             if (line.isComment()) {
@@ -62,24 +62,18 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 // Parse the inline comment if any
                 val inlineComment = line.trimComment(config.allowEscapedQuotesInLiteralStrings)
 
-                // append all multiline values to StringBuilder as one line
-                if (multilineValueBuilt.isNotEmpty() || line.isStartOfMultilineValue()
-                ) {
-                    // validation only for following lines
-                    if (multilineValueBuilt.isNotEmpty()) {
-                        line.validateIsFollowingPartOfMultilineValue(index, mutableTomlLines)
-                    }
-                    multilineValueBuilt.append(line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings).trim())
-                    comments += inlineComment
-
-                    if (!line.isEndOfMultilineValue()) {
-                        return@forEachIndexed
-                    }
-                }
-                val tomlLine = if (multilineValueBuilt.isNotBlank()) {
-                    val tempLine = multilineValueBuilt.toString()
-                    multilineValueBuilt = StringBuilder()
-                    tempLine
+                val multilineType = line.getMultilineType()
+                val tomlLine = if (multilineType != MultilineType.NOT_A_MULTILINE) {
+                    val collectedMultiline = StringBuilder()
+                    val indexAtTheEndOfMultiline = collectMultiline(
+                        mutableTomlLines,
+                        collectedMultiline,
+                        index,
+                        multilineType,
+                        comments
+                    )
+                    index = indexAtTheEndOfMultiline
+                    collectedMultiline.toString()
                 } else {
                     line
                 }
@@ -135,52 +129,91 @@ public value class TomlParser(private val config: TomlInputConfig) {
 
                 comments.clear()
             }
+            index++
         }
         return tomlFileHead
     }
 
     /**
-     * @return true if string is a first line of multiline value declaration
+     * @param collectTo append all multi-lines to this argument
+     * @return index at the end of multiline
      */
-    private fun String.isStartOfMultilineValue(): Boolean {
+    private fun collectMultiline(
+        mutableTomlLines: List<String>,
+        collectTo: StringBuilder,
+        startIndex: Int,
+        multilineType: MultilineType,
+        comments: MutableList<String>
+    ): Int {
+        var index = startIndex
+        var lineNo = index + 1
+        var line: String
+
+        while (index < mutableTomlLines.size) {
+            line = mutableTomlLines[index]
+            if (multilineType == MultilineType.ARRAY) {
+                collectTo.append(line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings))
+                comments += line.trimComment(config.allowEscapedQuotesInLiteralStrings)
+            } else {
+                // we can't have comments inside a multi-line basic/literal string
+                collectTo.append(line)
+            }
+
+            val isFirstLine = index == startIndex
+            if (!isFirstLine && line.isEndOfMultilineValue(multilineType, lineNo)) {
+                break
+            }
+            // append new line to collect string as is
+            collectTo.append("\n")
+            index++
+            lineNo++
+        }
+
+        if (index >= mutableTomlLines.size) {
+            throw ParseException(
+                "Expected (${multilineType.closingSymbols}) in the end of ${multilineType.name}",
+                startIndex + 1
+            )
+        }
+        return index
+    }
+
+    private fun String.getMultilineType(): MultilineType {
         val line = this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
         val firstEqualsSign = line.indexOfFirst { it == '=' }
         if (firstEqualsSign == -1) {
-            return false
+            return MultilineType.NOT_A_MULTILINE
         }
         val value = line.substring(firstEqualsSign + 1).trim()
 
-        return value.startsWith("[") &&
-                value.endsWith("]").not()
+        if (value.startsWith("[") && !value.endsWith("]")) {
+            return MultilineType.ARRAY
+        }
+
+        // If we have more than 1 combination of (""") - it means
+        // that multi-line is closed
+        if (value.startsWith("\"\"\"") && value.getCountOfOccurrencesOfSubstring("\"\"\"") == 1) {
+            return MultilineType.BASIC_STRING
+        }
+        if (value.startsWith("'''") && value.getCountOfOccurrencesOfSubstring("\'\'\'") == 1) {
+            return MultilineType.LITERAL_STRING
+        }
+
+        // Otherwise, the string isn't a multi-line declaration
+        return MultilineType.NOT_A_MULTILINE
     }
 
     /**
      * @return true if string is a last line of multiline value declaration
      */
-    private fun String.isEndOfMultilineValue(): Boolean =
-            this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
-                .trim()
-                .endsWith("]")
-
-    private fun String.validateIsFollowingPartOfMultilineValue(index: Int, mutableTomlLines: List<String>) {
-        if (!this.isEndOfMultilineValue() && index == mutableTomlLines.lastIndex ||
-                this.isValueDeclaration() ||
-                this.isTableNode()
-        ) {
-            throw ParseException("Expected ']' in the end of array", index + 1)
-        }
-    }
-
-    private fun String.isValueDeclaration(): Boolean {
-        val line = this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings).trim()
-        val firstEqualsSign = line.indexOfFirst { it == '=' }
-        if (firstEqualsSign == -1) {
-            return false
+    private fun String.isEndOfMultilineValue(multilineType: MultilineType, lineNo: Int): Boolean {
+        if (multilineType == MultilineType.NOT_A_MULTILINE) {
+            throw ParseException("Internal parse exception", lineNo)
         }
 
-        // '=' might be into string value
-        val isStringValueLine = line.startsWith("\"") || line.startsWith("\'")
-        return !isStringValueLine
+        return this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
+            .trim()
+            .endsWith(multilineType.closingSymbols)
     }
 
     private fun TomlNode.insertStub() {
@@ -213,6 +246,17 @@ public value class TomlParser(private val config: TomlInputConfig) {
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
+
+    /**
+     * @property closingSymbols - symbols indicating that the string is closed
+     */
+    private enum class MultilineType(val closingSymbols: String) {
+        ARRAY("]"),
+        BASIC_STRING("\"\"\""),
+        LITERAL_STRING("'''"),
+        NOT_A_MULTILINE(""),
+        ;
+    }
 }
 
 /**
