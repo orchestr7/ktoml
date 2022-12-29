@@ -63,7 +63,7 @@ public abstract class TomlTable(
         config: TomlConfig,
         isSynthetic: Boolean = false
     ) : this(
-        TomlKey(content.takeBeforeComment(0).trim('[', ']'), lineNo),
+        TomlKey(content.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings).trim('[', ']'), lineNo),
         // Todo: Temporary workaround until this constructor is removed
         lineNo,
         comments,
@@ -149,7 +149,7 @@ public abstract class TomlTable(
                             " It has missing closing bracket${if (isArray) "s" else ""}: '$close'", lineNo
                 )
             }
-            val sectionFromContent = content.takeBeforeComment(lastIndexOfBrace).trim().let {
+            val sectionFromContent = content.takeBeforeComment(false).trim().let {
                 if (isArray) {
                     it.trimDoubleBrackets()
                 } else {
