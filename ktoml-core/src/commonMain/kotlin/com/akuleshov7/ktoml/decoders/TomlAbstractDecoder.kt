@@ -39,19 +39,19 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeString(): String = decodePrimitiveType()
 
     protected fun DeserializationStrategy<*>.isDateTime(): Boolean =
-        descriptor == instantSerializer.descriptor ||
-                descriptor == localDateTimeSerializer.descriptor ||
-                descriptor == localDateSerializer.descriptor
+            descriptor == instantSerializer.descriptor ||
+                    descriptor == localDateTimeSerializer.descriptor ||
+                    descriptor == localDateSerializer.descriptor
 
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
-        when (deserializer.descriptor) {
-            instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
-            localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
-            localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
-            else -> super.decodeSerializableValue(deserializer)
-        }
+            when (deserializer.descriptor) {
+                instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
+                localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
+                localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
+                else -> super.decodeSerializableValue(deserializer)
+            }
 
     internal abstract fun decodeKeyValue(): TomlKeyValue
 
@@ -113,18 +113,18 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
      * we will check here, that your byte value does not exceed 127 and so on.
      */
     private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T =
-        when (T::class) {
-            Byte::class -> validateAndConvertInteger(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
-            Short::class -> validateAndConvertInteger(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
-            Int::class -> validateAndConvertInteger(content, lineNo, INT) { num: Long -> num.toInt() as T }
-            Long::class -> validateAndConvertInteger(content, lineNo, LONG) { num: Long -> num as T }
-            Double::class, Float::class -> throw IllegalTypeException(
-                "Expected floating-point number, but received integer literal: <$content>. " +
-                        "Deserialized floating-point number should have a dot: <$content.0>",
-                lineNo
-            )
-            else -> invalidType(T::class.toString(), "Signed Type")
-        }
+            when (T::class) {
+                Byte::class -> validateAndConvertInteger(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
+                Short::class -> validateAndConvertInteger(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
+                Int::class -> validateAndConvertInteger(content, lineNo, INT) { num: Long -> num.toInt() as T }
+                Long::class -> validateAndConvertInteger(content, lineNo, LONG) { num: Long -> num as T }
+                Double::class, Float::class -> throw IllegalTypeException(
+                    "Expected floating-point number, but received integer literal: <$content>. " +
+                            "Deserialized floating-point number should have a dot: <$content.0>",
+                    lineNo
+                )
+                else -> invalidType(T::class.toString(), "Signed Type")
+            }
 
     /**
      * ktoml parser treats all integer literals as Long and all floating-point literals as Double,
