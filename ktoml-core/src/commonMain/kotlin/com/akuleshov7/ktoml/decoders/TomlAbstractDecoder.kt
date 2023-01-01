@@ -2,7 +2,10 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlDouble
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
+import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum
+import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum.*
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
 import kotlinx.datetime.Instant
@@ -26,7 +29,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeByte(): Byte = decodePrimitiveType()
     override fun decodeShort(): Short = decodePrimitiveType()
     override fun decodeInt(): Int = decodePrimitiveType()
-    override fun decodeFloat(): Float = invalidType("Float", "Double")
+    override fun decodeFloat(): Float = decodePrimitiveType()
     override fun decodeChar(): Char = invalidType("Char", "String")
 
     // Valid Toml types that should be properly decoded
@@ -42,12 +45,13 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
 
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
-    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T = when (deserializer.descriptor) {
-        instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
-        localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
-        localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
-        else -> super.decodeSerializableValue(deserializer)
-    }
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
+            when (deserializer.descriptor) {
+                instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
+                localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
+                localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
+                else -> super.decodeSerializableValue(deserializer)
+            }
 
     internal abstract fun decodeKeyValue(): TomlKeyValue
 
@@ -64,6 +68,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         try {
             return when (val value = keyValue.value) {
                 is TomlLong -> decodeInteger(value.content as Long, keyValue.lineNo)
+                is TomlDouble -> decodeFloatingPoint(value.content as Double, keyValue.lineNo)
                 else -> keyValue.value.content as T
             }
         } catch (e: ClassCastException) {
@@ -75,26 +80,57 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         }
     }
 
+    private inline fun <reified T> decodeFloatingPoint(content: Double, lineNo: Int): T = when (T::class) {
+        Float::class -> validateAndConvertFloatingPoint(content, lineNo, FLOAT) { num: Double -> num.toFloat() as T }
+        Double::class -> validateAndConvertFloatingPoint(content, lineNo, DOUBLE) { num: Double -> num as T }
+        else -> invalidType(T::class.toString(), "Signed Type")
+    }
+
+    /**
+     * ktoml parser treats all integer literals as Long and all floating-point literals as Double,
+     * so here we should be checking that there is no overflow with smaller types like Byte, Short and Int.
+     */
+    private inline fun <reified T> validateAndConvertFloatingPoint(
+        content: Double,
+        lineNo: Int,
+        limits: FloatingPointLimitsEnum,
+        conversion: (Double) -> T,
+    ): T = if (content in limits.min..limits.max) {
+        conversion(content)
+    } else {
+        throw IllegalTypeException(
+            "The floating point literal, that you have provided is <$content>, " +
+                    "but the type for deserialization is <${T::class}>. You will get an overflow, " +
+                    "so we advise you to check the data or use other type for deserialization (Long, for example)",
+            lineNo
+        )
+    }
+
     /**
      * After a lot of discussions (https://github.com/akuleshov7/ktoml/pull/153#discussion_r1003114861 and
      * https://github.com/akuleshov7/ktoml/issues/163), we have finally decided to allow to use Integer types and not only Long.
      * This method does simple validation of integer values to avoid overflow. For example, you really want to use byte,
      * we will check here, that your byte value does not exceed 127 and so on.
      */
-    private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T = when (T::class) {
-        Byte::class -> validateAndConvertInt(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
-        Short::class -> validateAndConvertInt(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
-        Int::class -> validateAndConvertInt(content, lineNo, INT) { num: Long -> num.toInt() as T }
-        Long::class -> validateAndConvertInt(content, lineNo, LONG) { num: Long -> num as T }
-        Double::class, Float::class -> throw IllegalTypeException(
-            "Expected floating-point number, but received integer literal: <$content>. " +
-                    "Deserialized floating-point number should have a dot: <$content.0>",
-            lineNo
-        )
-        else -> invalidType(T::class.toString(), "Signed Type")
-    }
+    private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T =
+            when (T::class) {
+                Byte::class -> validateAndConvertInteger(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
+                Short::class -> validateAndConvertInteger(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
+                Int::class -> validateAndConvertInteger(content, lineNo, INT) { num: Long -> num.toInt() as T }
+                Long::class -> validateAndConvertInteger(content, lineNo, LONG) { num: Long -> num as T }
+                Double::class, Float::class -> throw IllegalTypeException(
+                    "Expected floating-point number, but received integer literal: <$content>. " +
+                            "Deserialized floating-point number should have a dot: <$content.0>",
+                    lineNo
+                )
+                else -> invalidType(T::class.toString(), "Signed Type")
+            }
 
-    private inline fun <reified T> validateAndConvertInt(
+    /**
+     * ktoml parser treats all integer literals as Long and all floating-point literals as Double,
+     * so here we should be checking that there is no overflow with smaller types like Byte, Short and Int.
+     */
+    private inline fun <reified T> validateAndConvertInteger(
         content: Long,
         lineNo: Int,
         limits: IntegerLimitsEnum,
@@ -102,9 +138,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     ): T = if (content in limits.min..limits.max) {
         conversion(content)
     } else {
-        throw IllegalTypeException("The integer literal, that you have provided is <$content>, " +
-                "but the type for deserialization is <${T::class}>. You will get an overflow, " +
-                "so we advise you to check the data or use other type for deserialization (Long, for example)", lineNo)
+        throw IllegalTypeException(
+            "The integer literal, that you have provided is <$content>, " +
+                    "but the type for deserialization is <${T::class}>. You will get an overflow, " +
+                    "so we advise you to check the data or use other type for deserialization (Long, for example)",
+            lineNo
+        )
     }
 
     private fun invalidType(typeName: String, requiredType: String): Nothing {
