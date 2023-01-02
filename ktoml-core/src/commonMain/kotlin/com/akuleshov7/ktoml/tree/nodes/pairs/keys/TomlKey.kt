@@ -87,19 +87,11 @@ public class TomlKey internal constructor(
         write(emitter)
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other !is TomlKey) {
-            return false
-        }
-
-        if (keyParts != other.keyParts) {
-            return false
-        }
-
-        return true
+    override fun equals(other: Any?): Boolean = when {
+        this === other -> true
+        other !is TomlKey -> false
+        keyParts != other.keyParts -> false
+        else -> true
     }
 
     override fun hashCode(): Int = keyParts.hashCode()
