@@ -57,8 +57,6 @@ public class TomlArrayDecoder(
                 rootNode.lineNo,
                 comments = emptyList(),
                 inlineComment = "",
-                rootNode.key.content,
-                config
             )
         )
         return nextElementIndex++

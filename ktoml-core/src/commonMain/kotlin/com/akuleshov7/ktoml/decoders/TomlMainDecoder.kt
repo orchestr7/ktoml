@@ -237,14 +237,14 @@ public class TomlMainDecoder(
                     is TomlTablePrimitive -> {
                         val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                             "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
-                                    " in a table <${nextProcessingNode.fullTableName}>"
+                                    " in a table <${nextProcessingNode.fullTableKey}>"
                         )
                         checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
                         TomlMainDecoder(firstTableChild, config)
                     }
                     else -> throw InternalDecodingException(
                         "Incorrect decoding state in the beginStructure()" +
-                                " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
+                                " with $nextProcessingNode ($nextProcessingNode)[${nextProcessingNode.name}]"
                     )
                 }
             }

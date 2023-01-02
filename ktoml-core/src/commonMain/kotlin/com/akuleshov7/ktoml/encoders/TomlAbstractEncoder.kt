@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
@@ -24,7 +23,6 @@ import kotlinx.serialization.modules.SerializersModule
  *
  * @property elementIndex The current element index.
  * @property attributes The current attributes.
- * @property inputConfig The input config, used for constructing nodes.
  * @property outputConfig The output config.
  * @property serializersModule
  */
@@ -32,7 +30,6 @@ import kotlinx.serialization.modules.SerializersModule
 public abstract class TomlAbstractEncoder protected constructor(
     protected var elementIndex: Int,
     protected val attributes: TomlEncoderAttributes,
-    protected val inputConfig: TomlInputConfig,
     protected val outputConfig: TomlOutputConfig,
     override val serializersModule: SerializersModule,
 ) : AbstractEncoder() {
@@ -84,13 +81,13 @@ public abstract class TomlAbstractEncoder protected constructor(
 
     override fun encodeBoolean(value: Boolean) {
         if (!encodeAsKey(value, "Boolean")) {
-            appendValue(TomlBoolean(value, elementIndex))
+            appendValue(TomlBoolean(value))
         }
     }
 
     override fun encodeDouble(value: Double) {
         if (!encodeAsKey(value, "Double")) {
-            appendValue(TomlDouble(value, elementIndex))
+            appendValue(TomlDouble(value))
         }
     }
 
@@ -106,12 +103,12 @@ public abstract class TomlAbstractEncoder protected constructor(
         }
 
         if (!encodeAsKey(value, "Long")) {
-            appendValue(TomlLong(value, elementIndex))
+            appendValue(TomlLong(value))
         }
     }
 
     override fun encodeNull() {
-        appendValue(TomlNull(elementIndex))
+        appendValue(TomlNull())
     }
 
     override fun encodeString(value: String) {
@@ -124,9 +121,9 @@ public abstract class TomlAbstractEncoder protected constructor(
         if (!encodeAsKey(value)) {
             appendValue(
                 if (attributes.isLiteral) {
-                    TomlLiteralString(value as Any, elementIndex)
+                    TomlLiteralString(value)
                 } else {
-                    TomlBasicString(value as Any, elementIndex)
+                    TomlBasicString(value)
                 }
             )
         }
@@ -138,7 +135,7 @@ public abstract class TomlAbstractEncoder protected constructor(
             localDateTimeDescriptor,
             localDateDescriptor,
             localTimeDescriptor -> if (!encodeAsKey(value as Any, desc.serialName)) {
-                appendValue(TomlDateTime(value as Any, elementIndex))
+                appendValue(TomlDateTime(value))
             }
             else -> when (val kind = desc.kind) {
                 is StructureKind,
@@ -265,7 +262,6 @@ public abstract class TomlAbstractEncoder protected constructor(
                 parent = this,
                 elementIndex,
                 attributes,
-                inputConfig,
                 outputConfig,
                 serializersModule
             )
@@ -282,7 +278,6 @@ public abstract class TomlAbstractEncoder protected constructor(
                 parent = this,
                 elementIndex,
                 attributes.child(),
-                inputConfig,
                 outputConfig,
                 serializersModule
             )
@@ -298,7 +293,6 @@ public abstract class TomlAbstractEncoder protected constructor(
                 rootNode,
                 elementIndex,
                 attributes.child(),
-                inputConfig,
                 outputConfig,
                 serializersModule
             )

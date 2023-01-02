@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.tree.nodes.TomlInlineTable
@@ -10,7 +9,6 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
-
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
@@ -29,13 +27,11 @@ public class TomlInlineTableEncoder internal constructor(
     private val parent: TomlAbstractEncoder?,
     elementIndex: Int,
     attributes: TomlEncoderAttributes,
-    inputConfig: TomlInputConfig,
     outputConfig: TomlOutputConfig,
     serializersModule: SerializersModule
 ) : TomlAbstractEncoder(
     elementIndex,
     attributes,
-    inputConfig,
     outputConfig,
     serializersModule
 ) {
@@ -52,7 +48,6 @@ public class TomlInlineTableEncoder internal constructor(
         rootNode: TomlNode,
         elementIndex: Int,
         attributes: TomlEncoderAttributes,
-        inputConfig: TomlInputConfig,
         outputConfig: TomlOutputConfig,
         serializersModule: SerializersModule
     ) : this(
@@ -60,7 +55,6 @@ public class TomlInlineTableEncoder internal constructor(
         parent = null,
         elementIndex,
         attributes,
-        inputConfig,
         outputConfig,
         serializersModule
     )
@@ -79,8 +73,6 @@ public class TomlInlineTableEncoder internal constructor(
                 elementIndex,
                 comments = emptyList(),
                 inlineComment = "",
-                name,
-                inputConfig
             )
         } else {
             TomlKeyValuePrimitive(
@@ -88,9 +80,7 @@ public class TomlInlineTableEncoder internal constructor(
                 value,
                 elementIndex,
                 comments = emptyList(),
-                inlineComment = "",
-                name,
-                inputConfig
+                inlineComment = ""
             )
         }
         
@@ -108,13 +98,11 @@ public class TomlInlineTableEncoder internal constructor(
         val name = attributes.keyOrThrow()
 
         val inlineTable = TomlInlineTable(
-            "",
-            elementIndex,
-            name,
+            TomlKey(name, elementIndex),
             pairs,
+            elementIndex,
             comments,
-            inlineComment,
-            inputConfig
+            inlineComment
         )
 
         when (parent) {
@@ -148,27 +136,21 @@ public class TomlInlineTableEncoder internal constructor(
                 child.value,
                 child.lineNo,
                 child.comments,
-                child.inlineComment,
-                name,
-                inputConfig
+                child.inlineComment
             )
             is TomlKeyValueArray -> TomlKeyValueArray(
                 TomlKey(name, child.lineNo),
                 child.value,
                 child.lineNo,
                 child.comments,
-                child.inlineComment,
-                name,
-                inputConfig
+                child.inlineComment
             )
             is TomlInlineTable -> TomlInlineTable(
-                "",
-                child.lineNo,
-                name,
+                TomlKey(name, elementIndex),
                 child.tomlKeyValues,
+                child.lineNo,
                 child.comments,
-                child.inlineComment,
-                inputConfig
+                child.inlineComment
             )
             else -> throw InternalEncodingException("Not a pair")
         }

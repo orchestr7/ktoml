@@ -11,24 +11,23 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class for parsing and representing of inline tables: inline = { a = 5, b = 6 , c = 7 }
- * @property name
  * @property tomlKeyValues The key-value pairs in the inline table
+ * @property key
  */
 public class TomlInlineTable internal constructor(
-    content: String,
-    lineNo: Int,
-    override val name: String,
+    public val key: TomlKey,
     internal val tomlKeyValues: List<TomlNode>,
+    lineNo: Int,
     comments: List<String> = emptyList(),
-    inlineComment: String = "",
-    config: TomlInputConfig = TomlInputConfig()
+    inlineComment: String = ""
 ) : TomlNode(
-    content,
     lineNo,
     comments,
-    inlineComment,
-    config
+    inlineComment
 ) {
+    @Suppress("CUSTOM_GETTERS_SETTERS")
+    override val name: String get() = key.toString()
+
     public constructor(
         keyValuePair: Pair<String, String>,
         lineNo: Int,
@@ -36,13 +35,11 @@ public class TomlInlineTable internal constructor(
         inlineComment: String = "",
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
-        "${keyValuePair.first} = ${keyValuePair.second}",
-        lineNo,
-        keyValuePair.first,
+        TomlKey(keyValuePair.first, lineNo),
         keyValuePair.second.parseInlineTableValue(lineNo, config),
+        lineNo,
         comments,
-        inlineComment,
-        config
+        inlineComment
     )
 
     @Deprecated(
@@ -64,11 +61,16 @@ public class TomlInlineTable internal constructor(
 
     public fun returnTable(tomlFileHead: TomlFile, currentParentalNode: TomlNode): TomlTable {
         val tomlTable = TomlTablePrimitive(
-            "[${if (currentParentalNode is TomlTable) "${currentParentalNode.fullTableName}." else ""}$name]",
+            TomlKey(
+                if (currentParentalNode is TomlTable) {
+                    currentParentalNode.fullTableKey.keyParts + name
+                } else {
+                    listOf(name)
+                }
+            ),
             lineNo,
             comments,
-            inlineComment,
-            config
+            inlineComment
         )
 
         // FixMe: this code duplication can be unified with the logic in TomlParser
@@ -77,7 +79,7 @@ public class TomlInlineTable internal constructor(
                 keyValue is TomlKeyValue && keyValue.key.isDotted -> {
                     // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
                     // because table is the same as dotted key
-                    val newTableSection = keyValue.createTomlTableFromDottedKey(tomlTable, config)
+                    val newTableSection = keyValue.createTomlTableFromDottedKey(tomlTable)
 
                     tomlFileHead
                         .insertTableToTree(newTableSection)
@@ -101,8 +103,6 @@ public class TomlInlineTable internal constructor(
         config: TomlOutputConfig,
         multiline: Boolean
     ) {
-        val key = TomlKey(name, 0)
-
         key.write(emitter)
 
         emitter.emitPairDelimiter()

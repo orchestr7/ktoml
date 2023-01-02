@@ -11,10 +11,9 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  */
 public class TomlDouble
 internal constructor(
-    override var content: Any,
-    lineNo: Int
-) : TomlValue(lineNo) {
-    public constructor(content: String, lineNo: Int) : this(content.toDouble(), lineNo)
+    override var content: Any
+) : TomlValue() {
+    public constructor(content: String, lineNo: Int) : this(content.toDouble())
 
     override fun write(
         emitter: TomlEmitter,

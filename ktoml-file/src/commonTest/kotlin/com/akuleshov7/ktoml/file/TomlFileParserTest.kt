@@ -84,7 +84,7 @@ class TomlFileParserTest {
         // ==== checking how table discovery works
         val lines = readAndParseFile(file)
         val parsedResult = TomlParser(TomlInputConfig()).parseStringsToTomlTree(lines, TomlInputConfig())
-        assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableName })
+        assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableKey.toString() })
     }
 
     @Serializable
@@ -200,7 +200,7 @@ class TomlFileParserTest {
                 .children
                 .filterIsInstance<TomlTablePrimitive>()
                 .filter { !it.isSynthetic }
-                .map { it.fullTableName }
+                .map { it.fullTableKey.toString() }
         )
     }
 

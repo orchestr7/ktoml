@@ -4,6 +4,7 @@
 
 package com.akuleshov7.ktoml.tree.nodes
 
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
@@ -21,18 +22,21 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
  *
  * @param comments Comments prepended to the current node
  *
- * @property content - original node content (used for logging and tests only)
  * @property lineNo - the number of a line from TOML that is linked to the current node
  * @property inlineComment A comment appended to the end of the line
- * @property config
  */
 public sealed class TomlNode(
-    public open val content: String,
     public open val lineNo: Int,
     comments: List<String>,
-    public val inlineComment: String,
-    public open val config: TomlInputConfig = TomlInputConfig()
+    public val inlineComment: String
 ) {
+    @Deprecated(
+        message = "content was replaced with toString; will be removed in future releases.",
+        replaceWith = ReplaceWith("toString()")
+    )
+    @Suppress("CUSTOM_GETTERS_SETTERS")
+    public val content: String get() = toString()
+
     /**
      * A list of comments prepended to the node.
      */
@@ -55,11 +59,9 @@ public sealed class TomlNode(
         inlineComment: String,
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
-        "${key.content}=${value.content}",
         lineNo,
         comments,
-        inlineComment,
-        config
+        inlineComment
     )
 
     /**
@@ -85,8 +87,10 @@ public sealed class TomlNode(
      * @throws InternalAstException
      */
     public fun findTableInAstByName(tableName: String): TomlTable? {
+        val tableKey = TomlKey(tableName, lineNo)
+
         // getting all child-tables (and arrays of tables) that have the same name as we are trying to find
-        val simpleTable = this.children.filterIsInstance<TomlTable>().filter { it.fullTableName == tableName }
+        val simpleTable = this.children.filterIsInstance<TomlTable>().filter { it.fullTableKey == tableKey }
         // there cannot be more than 1 table node with the same name on the same level in the tree
         if (simpleTable.size > 1) {
             throw InternalAstException(
@@ -99,7 +103,7 @@ public sealed class TomlNode(
             .map { it.children }
             .flatten()
             .filterIsInstance<TomlTable>()
-            .filter { it.fullTableName == tableName }
+            .filter { it.fullTableKey == tableKey }
             .toList()
         // return the table that we found among the list of child tables or in the array of tables
         return simpleTable.lastOrNull() ?: tableFromElements.lastOrNull()
@@ -151,18 +155,16 @@ public sealed class TomlNode(
                     // creating a synthetic (technical) fragment of the table
                     val newChildTableName = if (tomlTable is TomlArrayOfTables) {
                         TomlArrayOfTables(
-                            "[[$subTable]]",
+                            TomlKey(subTable, lineNo),
                             lineNo,
-                            config,
                             true
                         )
                     } else {
                         TomlTablePrimitive(
-                            "[$subTable]",
+                            TomlKey(subTable, lineNo),
                             lineNo,
                             tomlTable.comments,
                             tomlTable.inlineComment,
-                            config,
                             true
                         )
                     }
@@ -302,6 +304,13 @@ public sealed class TomlNode(
         }
     }
 
+    // Todo: Do we keep whitespace in pairs and change parser tests? Trim it and
+    // maintain compatibility? Add a "formatting" option later?
+    override fun toString(): String =
+            Toml.tomlWriter
+                .writeNode(this)
+                .replace(" = ", "=")
+
     public companion object {
         // number of spaces that is used to indent levels
         internal const val INDENTING_LEVEL = 4
@@ -319,7 +328,7 @@ public sealed class TomlNode(
             level: Int = 0
         ) {
             val spaces = " ".repeat(INDENTING_LEVEL * level)
-            result.append("$spaces - ${node::class.simpleName} (${node.content})\n")
+            result.append("$spaces - ${node::class.simpleName} ($node)\n")
             node.children.forEach { child ->
                 prettyPrint(child, result, level + 1)
             }

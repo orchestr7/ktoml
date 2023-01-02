@@ -27,7 +27,7 @@ public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName
         return null
     }
     children.forEach {
-        if (it is TomlTablePrimitive && it.fullTableName == fullTableName) {
+        if (it is TomlTablePrimitive && it.fullTableKey.toString() == fullTableName) {
             return it
         }
     }

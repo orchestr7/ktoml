@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.writers
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
+import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import kotlin.jvm.JvmInline
 
 /**
@@ -25,6 +26,12 @@ public value class TomlWriter(private val config: TomlOutputConfig) {
         file: TomlFile,
         emitter: TomlEmitter
     ): Unit = file.write(emitter, config)
+
+    internal fun writeNode(node: TomlNode) = buildString {
+        val emitter = TomlStringEmitter(this, config)
+
+        node.write(emitter, config)
+    }
 
     private fun write(file: TomlFile, stringBuilder: StringBuilder): StringBuilder {
         write(file, TomlStringEmitter(stringBuilder, config))

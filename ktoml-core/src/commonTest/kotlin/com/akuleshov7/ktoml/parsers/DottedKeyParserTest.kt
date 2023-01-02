@@ -3,8 +3,8 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
-import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -13,33 +13,33 @@ class DottedKeyParserTest {
     @Test
     fun positiveParsingTest() {
         var test = TomlKey("\"a.b.c\"", 0)
-        assertEquals("a.b.c", test.content)
+        assertEquals("a.b.c", test.last())
         assertEquals(false, test.isDotted)
 
         test = TomlKey("\"a.b.c\".b.c", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(listOf("\"a.b.c\"", "b", "c"), test.keyParts)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"a\".b.c", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(listOf("\"a\"", "b", "c"), test.keyParts)
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"  a  \"", 0)
-        assertEquals("a", test.content)
+        assertEquals("a", test.last())
         assertEquals(false, test.isDotted)
 
         test = TomlKey("a.b.c", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a.\"  b  .c \"", 0)
-        assertEquals("b  .c", test.content)
+        assertEquals("b  .c", test.last())
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a  .  b .  c ", 0)
-        assertEquals("c", test.content)
+        assertEquals("c", test.last())
         assertEquals(true, test.isDotted)
 
         assertFailsWith<ParseException> { TomlKey("SPACE AND SPACE", 0) }
@@ -48,13 +48,13 @@ class DottedKeyParserTest {
     @Test
     fun createTable() {
         var test = TomlKeyValuePrimitive(Pair("google.com","5"), 0).createTomlTableFromDottedKey(TomlFile())
-        assertEquals("google", test.fullTableName)
+        assertEquals("google", test.fullTableKey.toString())
 
         test = TomlKeyValuePrimitive(Pair("a.b.c.d", "5"), 0).createTomlTableFromDottedKey(TomlFile())
-        assertEquals("a.b.c", test.fullTableName)
+        assertEquals("a.b.c", test.fullTableKey.toString())
 
         val testKeyValue = TomlKeyValuePrimitive(Pair("a.b.c", "5"), 0)
-        assertEquals("c", testKeyValue.key.content)
+        assertEquals("c", testKeyValue.key.last())
     }
 
     @Test

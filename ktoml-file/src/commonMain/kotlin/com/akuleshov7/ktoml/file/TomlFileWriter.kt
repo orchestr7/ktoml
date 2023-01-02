@@ -45,7 +45,7 @@ public open class TomlFileWriter : Toml {
         value: T,
         tomlFilePath: String
     ) {
-        val fileTree = TomlMainEncoder.encode(serializer, value, inputConfig)
+        val fileTree = TomlMainEncoder.encode(serializer, value)
 
         TomlSinkEmitter(
             openFileForWrite(tomlFilePath),
