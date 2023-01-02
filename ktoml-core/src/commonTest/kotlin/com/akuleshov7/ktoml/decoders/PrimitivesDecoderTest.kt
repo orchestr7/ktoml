@@ -192,17 +192,15 @@ class PrimitivesDecoderTest {
             @Serializable
             data class Data(val value: Float)
 
-            assertFailsWith<IllegalTypeException> {
-                val data = Toml.decodeFromString<Data>(toml)
-                assertEquals(expected, data.value)
-            }
+            val data = Toml.decodeFromString<Data>(toml)
+            assertEquals(expected, data.value)
         }
 
-        test(0f, "0")
-        test(1f, "1")
-        test(-1f, "-1")
-        test(-128f, "-128")
-        test(127f, "127")
+        test(0f, "0.0")
+        test(1f, "1.0")
+        test(-1f, "-1.0")
+        test(-128f, "-128.0")
+        test(127f, "127.0")
     }
 
     @Test
@@ -218,6 +216,7 @@ class PrimitivesDecoderTest {
             }
         }
 
+        testFails((-Double.MAX_VALUE).toString())
         testFails("-129")
         testFails("128")
     }
