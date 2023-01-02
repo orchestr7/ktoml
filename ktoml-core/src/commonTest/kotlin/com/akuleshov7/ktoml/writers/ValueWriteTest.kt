@@ -6,6 +6,7 @@ import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlin.Double.Companion.NEGATIVE_INFINITY
 import kotlin.Double.Companion.NaN
 import kotlin.Double.Companion.POSITIVE_INFINITY
@@ -90,10 +91,12 @@ class PrimitiveValueWriteTest {
         val instant = "1979-05-27T07:32:00Z"
         val localDt = "1979-05-27T07:32"
         val localD = "1979-05-27"
+        val localT = "07:32:32"
 
         testTomlValue(TomlDateTime(Instant.parse(instant), 0), instant)
         testTomlValue(TomlDateTime(LocalDateTime.parse(localDt), 0), localDt)
         testTomlValue(TomlDateTime(LocalDate.parse(localD), 0), localD)
+        testTomlValue(TomlDateTime(LocalTime.parse(localT), 0), localT)
     }
 
     @Test

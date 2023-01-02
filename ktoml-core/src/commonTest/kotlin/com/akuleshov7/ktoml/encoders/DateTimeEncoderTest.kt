@@ -11,7 +11,8 @@ class DateTimeEncoderTest {
         val instantWithNanos: Instant = defaultWithNanos.toInstant(TimeZone.UTC),
         val localDateTime: LocalDateTime = default,
         val localDateTimeWithNanos: LocalDateTime = defaultWithNanos,
-        val localDate: LocalDate = default.date
+        val localDate: LocalDate = default.date,
+        val localTime: LocalTime = default.time
     ) {
         companion object {
             private val default = LocalDateTime(1979, 5, 27, 7, 32, 0)
@@ -29,6 +30,7 @@ class DateTimeEncoderTest {
                 localDateTime = 1979-05-27T07:32
                 localDateTimeWithNanos = 1979-05-27T00:32:00.999999
                 localDate = 1979-05-27
+                localTime = 07:32
             """.trimIndent()
         )
     }

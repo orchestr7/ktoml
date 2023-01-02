@@ -7,6 +7,7 @@ import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
@@ -262,6 +263,14 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun emitValue(date: LocalDate): TomlEmitter = emit(date.toString())
+
+    /**
+     * Emits a [LocalTime] value.
+     *
+     * @param time
+     * @return this instance
+     */
+    public fun emitValue(time: LocalTime): TomlEmitter = emit(time.toString())
 
     /**
      * Emits a null value.
