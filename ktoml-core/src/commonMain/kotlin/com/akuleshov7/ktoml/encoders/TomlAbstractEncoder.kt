@@ -11,6 +11,7 @@ import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.*
@@ -36,6 +37,7 @@ public abstract class TomlAbstractEncoder protected constructor(
     private val instantDescriptor = Instant.serializer().descriptor
     private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor
     private val localDateDescriptor = LocalDate.serializer().descriptor
+    private val localTimeDescriptor = LocalTime.serializer().descriptor
 
     protected open fun nextElementIndex(): Int = ++elementIndex
 
@@ -131,7 +133,8 @@ public abstract class TomlAbstractEncoder protected constructor(
         when (val desc = serializer.descriptor) {
             instantDescriptor,
             localDateTimeDescriptor,
-            localDateDescriptor -> if (!encodeAsKey(value as Any, desc.serialName)) {
+            localDateDescriptor,
+            localTimeDescriptor -> if (!encodeAsKey(value as Any, desc.serialName)) {
                 appendValue(TomlDateTime(value))
             }
             else -> when (val kind = desc.kind) {

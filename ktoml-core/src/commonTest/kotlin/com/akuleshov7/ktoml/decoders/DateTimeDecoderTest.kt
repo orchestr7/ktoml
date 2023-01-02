@@ -16,6 +16,7 @@ class DateTimeDecoderTest {
         val instants: List<Instant>,
         val localDateTimes: List<LocalDateTime>,
         val localDate: LocalDate,
+        val localTime: LocalTime,
         val dateInString: String
     )
 
@@ -25,6 +26,7 @@ class DateTimeDecoderTest {
             instants = [1979-05-27T07:32:00Z, 1979-05-27T00:32:00-07:00, 1979-05-27T00:32:00.999999-07:00, 1979-05-27 07:32:00Z]
             localDateTimes = [1979-05-27T07:32:00, 1979-05-27T00:32:00.999999]
             localDate = 1979-05-27
+            localTime = 07:45:33
             dateInString = "1979-05-27T00:32:00-07:00"
         """.trimIndent()
         val expectedInstants = listOf(
@@ -42,11 +44,13 @@ class DateTimeDecoderTest {
             LocalDateTime(1979, 5, 27, 0, 32, 0, 999999000)
         )
         val expectedLocalDate = LocalDate(1979, 5, 27)
+        val expectedLocalTime = LocalTime(7, 45, 33)
         assertEquals(
             TimeTable(
                 expectedInstants,
                 expectedLocalDateTimes,
                 expectedLocalDate,
+                expectedLocalTime,
                 "1979-05-27T00:32:00-07:00"
             ),
             Toml().decodeFromString(toml)
@@ -62,6 +66,9 @@ class DateTimeDecoderTest {
     @Serializable
     data class InvalidDate(val date: LocalDate)
 
+    @Serializable
+    data class InvalidTime(val time: LocalTime)
+
     @Test
     fun testInvalidData() {
         assertFailsWith<ParseException> {
@@ -72,6 +79,9 @@ class DateTimeDecoderTest {
         }
         assertFailsWith<ParseException> {
             Toml.decodeFromString<InvalidDate>("date=1979/05/27")
+        }
+        assertFailsWith<ParseException> {
+            Toml.decodeFromString<InvalidTime>("time=07/35/12")
         }
     }
 }
