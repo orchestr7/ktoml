@@ -32,7 +32,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeShort(): Short = decodePrimitiveType()
     override fun decodeInt(): Int = decodePrimitiveType()
     override fun decodeFloat(): Float = decodePrimitiveType()
-    override fun decodeChar(): Char = invalidType("Char", "String")
+    override fun decodeChar(): Char {
+        val value = decodeKeyValue().value.content as String
+        return value.single()
+    }
 
     // Valid Toml types that should be properly decoded
     override fun decodeBoolean(): Boolean = decodePrimitiveType()

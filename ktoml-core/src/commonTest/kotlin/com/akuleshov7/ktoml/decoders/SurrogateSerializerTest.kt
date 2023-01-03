@@ -7,6 +7,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.test.Ignore
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SurrogateTest {
     object ColorSerializer : KSerializer<Color> {
@@ -35,14 +36,14 @@ class SurrogateTest {
     class Color(val rgb: Int)
 
     @Test
-    @Ignore
     fun testDecodingWithCustomSerializer() {
-        println(Toml.decodeFromString<Color>(
+        val test = Toml.decodeFromString<Color>(
             """
                 r = 5
                 g = 6
                 b = 7
             """.trimIndent()
-        ))
+        )
+        assertEquals(Color(329223).rgb, test.rgb)
     }
 }

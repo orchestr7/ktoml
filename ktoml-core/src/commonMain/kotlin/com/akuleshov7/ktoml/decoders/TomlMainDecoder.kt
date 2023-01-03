@@ -81,7 +81,7 @@ public class TomlMainDecoder(
     private fun getCurrentNode() = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
 
     /**
-     * Trying to decode the value (ite
+     * Trying to decode the value using elementIndex
      * |--- child1, child2, ... , childN
      * ------------elementIndex------->
      *

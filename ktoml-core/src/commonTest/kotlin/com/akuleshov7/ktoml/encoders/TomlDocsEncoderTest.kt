@@ -117,7 +117,6 @@ class TomlDocsEncoderTest {
     }
 
     @Test
-    @Ignore
     fun basicStringTest() {
         @Serializable
         data class File(
@@ -131,7 +130,7 @@ class TomlDocsEncoderTest {
             expectedToml = """
                 str1 = "I'm a string."
                 str2 = "You can \"quote\" me."
-                str3 = "Name\tJos\u00E9\nLoc\tSF."
+                str3 = "Name	José\nLoc	SF."
             """.trimIndent()
         )
     }
