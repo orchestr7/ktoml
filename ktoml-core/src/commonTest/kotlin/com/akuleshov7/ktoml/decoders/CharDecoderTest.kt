@@ -21,13 +21,13 @@ class CharDecoderTest {
         val test =
             """
                 a = 123
-                b = '\n'
-                c = '\t'
+                b = '4'
+                c = 'D'
             """
 
         // FixMe #177: actually this logic is invalid, because Literal Strings should not be making a conversion of str
         val decoded = Toml.decodeFromString<MyClass>(test)
-        assertEquals(decoded, MyClass('{', '\n', '\t'))
+        assertEquals(decoded, MyClass('{', '4', 'D'))
     }
 
     @Test

@@ -54,7 +54,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 }
             // to avoid confusion, we prohibit basic strings with double quotes for decoding to a Char type
             is TomlBasicString -> throw IllegalTypeException("Double quotes were used in the input for deserialization " +
-                    "of [Char], use [String] type or single quotes ('') instead for: [${value.content}]", keyValue.lineNo)
+                    "of [Char]. Use [String] type or single quotes ('') instead for: [${value.content}]", keyValue.lineNo)
             // all other toml tree types are not supported
             else -> throw IllegalTypeException(
                 "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
