@@ -22,15 +22,15 @@ class IntegersDecoderTest {
     fun positiveScenario() {
         var test = """
                 s = 5
-                b = 5
-                i = 5
+                b = +5
+                i = -5
                 l = 5
-            """.trimMargin()
+            """
 
         var decoded = Toml.decodeFromString<Integers>(test)
         println(decoded)
         assertEquals(
-            Integers(5, 5, 5, 5),
+            Integers(5, 5, -5, 5),
             decoded
         )
 
@@ -39,7 +39,7 @@ class IntegersDecoderTest {
                 b = -128
                 i = 5
                 l = 5
-            """.trimMargin()
+            """
 
         decoded = Toml.decodeFromString(test)
         println(decoded)

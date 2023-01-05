@@ -10,6 +10,7 @@ package com.akuleshov7.ktoml.utils
  */
 public enum class IntegerLimitsEnum(public val min: Long, public val max: Long) {
     BYTE(Byte.MIN_VALUE.toLong(), Byte.MAX_VALUE.toLong()),
+    CHAR(Char.MIN_VALUE.code.toLong(), Char.MAX_VALUE.code.toLong()),
     INT(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()),
     LONG(Long.MIN_VALUE, Long.MAX_VALUE),
     SHORT(Short.MIN_VALUE.toLong(), Short.MAX_VALUE.toLong()),

@@ -279,11 +279,11 @@ class GeneralDecoderTest {
     @Test
     fun testChildTableBeforeParent() {
         val test = """
-                |[a.b] 
-                |  c = 5
-                |  [a]
-                |      a = true
-            """.trimMargin()
+                [a.b] 
+                  c = 5
+                  [a]
+                      a = true
+            """
         TomlInputConfig(true)
 
         assertEquals(ChildTableBeforeParent(A(B(5), true)), Toml.decodeFromString(test))
@@ -377,20 +377,20 @@ class GeneralDecoderTest {
     @Test
     fun severalTablesOnTheSameLevel() {
         val test = """
-            |[table]
-            |[table.in1]
-            |    a = 1
-            |    [table.in1.in1]
-            |        a = 1
-            |    [table.in1.in2]
-            |        a = 1
-            |[table.in2]
-            |    a = 1
-            |    [table.in2.in1]
-            |        a = 1
-            |    [table.in2.in2]
-            |        a = 1
-        """.trimMargin()
+            [table]
+            [table.in1]
+                a = 1
+                [table.in1.in1]
+                    a = 1
+                [table.in1.in2]
+                    a = 1
+            [table.in2]
+                a = 1
+                [table.in2.in1]
+                    a = 1
+                [table.in2.in2]
+                    a = 1
+        """
 
         assertEquals(
             MyTest(
