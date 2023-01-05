@@ -28,7 +28,6 @@ class IntegersDecoderTest {
             """
 
         var decoded = Toml.decodeFromString<Integers>(test)
-        println(decoded)
         assertEquals(
             Integers(5, 5, -5, 5),
             decoded
@@ -42,7 +41,6 @@ class IntegersDecoderTest {
             """
 
         decoded = Toml.decodeFromString(test)
-        println(decoded)
         assertEquals(
             Integers(32767, -128, 5, 5),
             decoded
