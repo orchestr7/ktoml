@@ -356,10 +356,10 @@ class SimpleArrayDecoderTest {
     @Test
     fun testSimpleArrayDecoderInNestedTable() {
         var test = """
-            |[table]
-            |name = "my name"
-            |configurationList = ["a",  "b",  "c"]
-            """.trimMargin()
+            [table]
+                name = "my name"
+                configurationList = ["a",  "b",  "c"]
+            """
 
         assertEquals(
             ArrayInInlineTable(
@@ -369,10 +369,10 @@ class SimpleArrayDecoderTest {
 
         test =
             """
-            |[table]
-            |configurationList = ["a",  "b",  "c"]
-            |name = "my name"
-            """.trimMargin()
+            [table]
+                configurationList = ["a",  "b",  "c"]
+                name = "my name"
+            """
 
         assertEquals(
             ArrayInInlineTable(
@@ -381,11 +381,11 @@ class SimpleArrayDecoderTest {
         )
 
         val testTable = """
-            |configurationList1 = ["a",  "b",  "c"]
-            |configurationList2 = ["a",  "b",  "c"]
-            |[table]
-            |name = "my name"
-            """.trimMargin()
+            configurationList1 = ["a",  "b",  "c"]
+            configurationList2 = ["a",  "b",  "c"]
+            [table]
+                name = "my name"
+            """
 
         assertEquals(
             TestArrays(
@@ -396,13 +396,13 @@ class SimpleArrayDecoderTest {
         )
 
         val testTableAndVariables = """
-            |name1 = "simple"
-            |configurationList1 = ["a",  "b",  "c"]
-            |name2 = "simple"
-            |configurationList2 = ["a",  "b",  "c"]
-            |[table]
-            |name = "my name"
-            """.trimMargin()
+            name1 = "simple"
+            configurationList1 = ["a",  "b",  "c"]
+            name2 = "simple"
+            configurationList2 = ["a",  "b",  "c"]
+            [table]
+                name = "my name"
+            """
 
 
         assertEquals(

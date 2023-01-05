@@ -24,7 +24,7 @@ class ReadMeExampleTest {
         val property1: Long?,
         // please note, that according to the specification of toml integer values should be represented with Long,
         // but we allow to use Int/Short/etc. Just be careful with overflow
-        val property2: Int,
+        val property2: Byte,
         // no need to pass this value in the input as it has the default value and so it is NOT REQUIRED
         val property3: Short = 5
     )
@@ -34,7 +34,11 @@ class ReadMeExampleTest {
         val someNumber: Long,
         @SerialName("akuleshov7.com")
         val inlineTable: NestedTable,
-        val otherNumber: Double
+        val otherNumber: Double,
+        // Char in a manner of Java/Kotlin is not supported in TOML, because single quotes are used for literal strings.
+        // However, ktoml supports reading Char from both single-char string and from it's integer code
+        val charFromString: Char,
+        val charFromInteger: Char
     )
 
     @Serializable
@@ -60,21 +64,24 @@ class ReadMeExampleTest {
             gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
             
             [table1]
-            property1 = null # null is prohibited by the TOML spec, 
-            property2 = 6
+              property1 = null # null is prohibited by the TOML spec, 
+              property2 = 6
              
             [table2]
-            someNumber = 5
+              someNumber = 5
                [table2."akuleshov7.com"]
-                   name = 'this is a "literal" string'
-                   # empty lists are also supported
-                   configurationList = ["a",  "b",  "c", null]
+                 name = 'this is a "literal" string'
+                 # empty lists are also supported
+                 configurationList = ["a",  "b",  "c", null]
             
             # such redeclaration of table2
             # is prohibited in toml specification;
             # but ktoml is allowing it in non-strict mode: 
             [table2]
-            otherNumber = 5.56
+              otherNumber = 5.56
+              # use single quotes
+              charFromString = 'a'
+              charFromInteger = 123
                 
             """.trimMargin()
 
@@ -87,12 +94,14 @@ class ReadMeExampleTest {
                 table2 = Table2(
                     someNumber = 5,
                     inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c", null)),
-                    otherNumber = 5.56
+                    otherNumber = 5.56,
+                    charFromString = 'a',
+                    charFromInteger = '{'
                 ),
+
                 kotlinJvm = GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
             ),
             decoded
         )
     }
 }
-

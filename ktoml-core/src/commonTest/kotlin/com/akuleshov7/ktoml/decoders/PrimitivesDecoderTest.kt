@@ -51,22 +51,36 @@ class PrimitivesDecoderTest {
     @Test
     fun decodeChar() {
         fun test(expected: Char, input: String) {
-            val toml = /*language=TOML*/ """value = $input"""
+            val toml = /*language=TOML*/ "value = $input"
+
+            @Serializable
+            data class Data(val value: Char)
+
+            val data = Toml.decodeFromString<Data>(toml)
+            assertEquals(expected, data.value)
+        }
+
+        test('1', "\'1\'")
+        test((1).toChar(), "1")
+        test(Char.MAX_VALUE, "65535")
+        test(Char.MIN_VALUE, "0")
+    }
+
+    @Test
+    fun decodeCharFailure() {
+        fun test(expected: Char, input: String) {
+            val toml = /*language=TOML*/ "value = $input"
 
             @Serializable
             data class Data(val value: Char)
 
             assertFailsWith<IllegalTypeException> {
-                val data = Toml.decodeFromString<Data>(toml)
-                assertEquals(expected, data.value)
+                Toml.decodeFromString<Data>(toml)
             }
         }
 
-        test((0).toChar(), "0")
         test((-1).toChar(), "-1")
-        test((1).toChar(), "1")
-        test(Char.MAX_VALUE, "0")
-        test(Char.MIN_VALUE, "1")
+        test((65536).toChar(), "65536")
     }
 
     @Test

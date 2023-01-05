@@ -175,7 +175,7 @@ private fun String.validateSymbols(lineNo: Int) {
                 throw ParseException(
                     "Not able to parse the key: [$this] as it contains invalid symbols." +
                             " In case you would like to use special symbols - use quotes as" +
-                            " it is required by TOML standard: \"My key ~ with special % symbols\"",
+                            " it is required by TOML standard: \"My key with special (%, ±) symbols\" = \"value\"",
                     lineNo
                 )
             }

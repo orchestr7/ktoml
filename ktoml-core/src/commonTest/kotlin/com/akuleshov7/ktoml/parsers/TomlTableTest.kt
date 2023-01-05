@@ -27,7 +27,6 @@ class TomlTableTest {
     }
 
     @Test
-    @Ignore
     fun nestedTomlTable() {
         val string = """
             [a]
@@ -43,7 +42,8 @@ class TomlTableTest {
         assertEquals("""
             | - TomlFile (rootNode)
             |     - TomlTablePrimitive ([a])
-            |         - TomlTablePrimitive (    [a.b])
+            |         - TomlStubEmptyNode (technical_node)
+            |         - TomlTablePrimitive ([a.b])
             |             - TomlStubEmptyNode (technical_node)
             |         - TomlKeyValuePrimitive (c=3)
             |

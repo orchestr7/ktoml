@@ -66,6 +66,7 @@ class CustomSerializerTest {
                 """.trimIndent()
             )
         )
+        UInt.MAX_VALUE
     }
 
     @Serializable

@@ -2,7 +2,9 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlBasicString
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlDouble
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLiteralString
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum.*
@@ -32,7 +34,35 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeShort(): Short = decodePrimitiveType()
     override fun decodeInt(): Int = decodePrimitiveType()
     override fun decodeFloat(): Float = decodePrimitiveType()
-    override fun decodeChar(): Char = invalidType("Char", "String")
+    override fun decodeChar(): Char {
+        val keyValue = decodeKeyValue()
+        return when (val value = keyValue.value) {
+            // converting to Char from a parsed Long number and checking bounds for the Char (MIN-MAX range)
+            is TomlLong -> validateAndConvertInteger(value.content as Long, keyValue.lineNo, CHAR) { Char(it.toInt()) }
+            // converting to Char from a parsed Literal String (with single quotes: '')
+            is TomlLiteralString ->
+                try {
+                    (value.content as String).single()
+                } catch (ex: NoSuchElementException) {
+                    throw IllegalTypeException("Empty value is not allowed for type [Char], " +
+                            "please check the value: [${value.content}] or use [String] type for deserialization of " +
+                            "[${keyValue.key}] instead", keyValue.lineNo)
+                } catch (ex: IllegalArgumentException) {
+                    throw IllegalTypeException("[Char] type should be used for decoding of single character, but " +
+                            "received multiple characters instead: [${value.content}]. " +
+                            "If you really want to decode multiple chars, use [String] instead.", keyValue.lineNo)
+                }
+            // to avoid confusion, we prohibit basic strings with double quotes for decoding to a Char type
+            is TomlBasicString -> throw IllegalTypeException("Double quotes were used in the input for deserialization " +
+                    "of [Char]. Use [String] type or single quotes ('') instead for: [${value.content}]", keyValue.lineNo)
+            // all other toml tree types are not supported
+            else -> throw IllegalTypeException(
+                "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
+                        " and with the provided type [Char]. Please check the type in your Serializable class or it's nullability",
+                keyValue.lineNo
+            )
+        }
+    }
 
     // Valid Toml types that should be properly decoded
     override fun decodeBoolean(): Boolean = decodePrimitiveType()
@@ -78,7 +108,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         } catch (e: ClassCastException) {
             throw IllegalTypeException(
                 "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
-                        " with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
+                        " and with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo
             )
         }
@@ -118,10 +148,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
      */
     private inline fun <reified T> decodeInteger(content: Long, lineNo: Int): T =
             when (T::class) {
-                Byte::class -> validateAndConvertInteger(content, lineNo, BYTE) { num: Long -> num.toByte() as T }
-                Short::class -> validateAndConvertInteger(content, lineNo, SHORT) { num: Long -> num.toShort() as T }
-                Int::class -> validateAndConvertInteger(content, lineNo, INT) { num: Long -> num.toInt() as T }
-                Long::class -> validateAndConvertInteger(content, lineNo, LONG) { num: Long -> num as T }
+                Byte::class -> validateAndConvertInteger(content, lineNo, BYTE) { it.toByte() as T }
+                Short::class -> validateAndConvertInteger(content, lineNo, SHORT) { it.toShort() as T }
+                Int::class -> validateAndConvertInteger(content, lineNo, INT) { it.toInt() as T }
+                Long::class -> validateAndConvertInteger(content, lineNo, LONG) { it as T }
                 Double::class, Float::class -> throw IllegalTypeException(
                     "Expected floating-point number, but received integer literal: <$content>. " +
                             "Deserialized floating-point number should have a dot: <$content.0>",
