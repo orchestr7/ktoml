@@ -4,7 +4,7 @@
     "PACKAGE_NAME_INCORRECT_PATH")
 
 object Versions {
-    const val KOTLIN = "1.7.20"
+    const val KOTLIN = "1.8.0"
     const val JUNIT = "5.7.1"
     const val OKIO = "3.1.0"
     const val SERIALIZATION = "1.4.1"

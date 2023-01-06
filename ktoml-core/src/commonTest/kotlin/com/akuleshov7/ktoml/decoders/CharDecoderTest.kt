@@ -1,12 +1,13 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
+import kotlin.test.assertFailsWith
 
 class CharDecoderTest {
     @Serializable
@@ -25,13 +26,26 @@ class CharDecoderTest {
                 c = 'D'
             """
 
-        // FixMe #177: actually this logic is invalid, because Literal Strings should not be making a conversion of str
         val decoded = Toml.decodeFromString<MyClass>(test)
         assertEquals(decoded, MyClass('{', '4', 'D'))
     }
 
     @Test
-    @Ignore
+    fun charLiteralBasicTest() {
+        val test =
+            """
+                a = '\r'
+                b = '\n'
+                c = '\t'
+            """
+
+        assertFailsWith<IllegalTypeException> {
+            val decoded = Toml.decodeFromString<MyClass>(test)
+            assertEquals(decoded, MyClass('\r', '\n', '\t'))
+        }
+    }
+
+    @Test
     fun charUnicodeSymbolsTest() {
         val test =
             """
@@ -40,7 +54,9 @@ class CharDecoderTest {
                 c = '\u0002'
             """
 
-        val decoded = Toml.decodeFromString<MyClass>(test)
-        assertEquals(decoded, MyClass('{', '\n', '\t'))
+        assertFailsWith<IllegalTypeException> {
+            val decoded = Toml.decodeFromString<MyClass>(test)
+            assertEquals(decoded, MyClass('{', '\n', '\t'))
+        }
     }
 }

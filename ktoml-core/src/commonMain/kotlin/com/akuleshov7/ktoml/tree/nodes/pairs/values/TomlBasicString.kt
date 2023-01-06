@@ -96,6 +96,7 @@ public class TomlBasicString internal constructor(
                         'b' -> resultString.append('\b')
                         'r' -> resultString.append('\r')
                         'n' -> resultString.append('\n')
+                        'f' -> resultString.append('\u000C')
                         '\\' -> resultString.append('\\')
                         '\'' -> resultString.append('\'')
                         '"' -> resultString.append('"')
@@ -151,6 +152,7 @@ public class TomlBasicString internal constructor(
         private fun String.escapeSpecialCharacters(): String {
             val withCtrlCharsEscaped = replace(controlCharacterRegex) { match ->
                 when (val char = match.value.single()) {
+                    '\t' -> "\\t"
                     '\b' -> "\\b"
                     '\n' -> "\\n"
                     '\u000C' -> "\\f"
