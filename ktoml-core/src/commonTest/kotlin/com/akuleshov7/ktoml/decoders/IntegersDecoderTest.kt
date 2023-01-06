@@ -64,5 +64,13 @@ class IntegersDecoderTest {
                 l = 5
             """.trimMargin()
         assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Integers>(test) }
+
+        test = """
+                s = 0.25
+                b = 5
+                i = 5
+                l = 5
+            """.trimMargin()
+        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Integers>(test) }
     }
 }

@@ -10,6 +10,7 @@ import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum.*
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
+import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -42,7 +43,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             // converting to Char from a parsed Literal String (with single quotes: '')
             is TomlLiteralString ->
                 try {
-                    (value.content as String).single()
+                    (value.content as String).convertSpecialCharacters(keyValue.lineNo).single()
                 } catch (ex: NoSuchElementException) {
                     throw IllegalTypeException("Empty value is not allowed for type [Char], " +
                             "please check the value: [${value.content}] or use [String] type for deserialization of " +
@@ -58,7 +59,8 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             // all other toml tree types are not supported
             else -> throw IllegalTypeException(
                 "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
-                        " and with the provided type [Char]. Please check the type in your Serializable class or it's nullability",
+                        " and with the provided type [Char]. Please check the type" +
+                        " in your Serializable class or it's nullability",
                 keyValue.lineNo
             )
         }

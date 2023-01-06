@@ -20,7 +20,7 @@ class ReadMeExampleTest {
 
     @Serializable
     data class Table1(
-        // nullable values, from toml you can pass null/nil/empty value to this kind of a field
+        // nullable property, from toml input you can pass "null"/"nil"/"empty" value (no quotes needed) to this field
         val property1: Long?,
         // please note, that according to the specification of toml integer values should be represented with Long,
         // but we allow to use Int/Short/etc. Just be careful with overflow
@@ -64,7 +64,9 @@ class ReadMeExampleTest {
             gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
             
             [table1]
-              property1 = null # null is prohibited by the TOML spec, 
+              # null is prohibited by the TOML spec, but allowed in ktoml for nullable types
+              # so for 'property1' null value is ok. Use: property1 = null  
+              property1 = 100 
               property2 = 6
              
             [table2]
@@ -72,7 +74,7 @@ class ReadMeExampleTest {
                [table2."akuleshov7.com"]
                  name = 'this is a "literal" string'
                  # empty lists are also supported
-                 configurationList = ["a",  "b",  "c", null]
+                 configurationList = ["a",  "b",  "c"]
             
             # such redeclaration of table2
             # is prohibited in toml specification;
@@ -82,18 +84,17 @@ class ReadMeExampleTest {
               # use single quotes
               charFromString = 'a'
               charFromInteger = 123
-                
-            """.trimMargin()
+            """
 
         val decoded = Toml.decodeFromString<MyClass>(test)
 
         assertEquals(
             MyClass(
                 someBooleanProperty = true,
-                table1 = Table1(property1 = null, property2 = 6),
+                table1 = Table1(property1 = 100, property2 = 6),
                 table2 = Table2(
                     someNumber = 5,
-                    inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c", null)),
+                    inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c")),
                     otherNumber = 5.56,
                     charFromString = 'a',
                     charFromInteger = '{'
