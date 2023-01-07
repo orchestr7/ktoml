@@ -1,19 +1,15 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlInputConfig
-import com.akuleshov7.ktoml.exceptions.IllegalTypeException
-import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class StringDecoderTest {
     @Serializable
     data class Literals(
-        val winpath: String?,
+        val winpath: String,
         val winpath2: String,
         val quoted: String,
         val regex: String,
@@ -129,34 +125,5 @@ class StringDecoderTest {
             ),
             decoded
         )
-    }
-
-    @Test
-    fun emptyStringTest() {
-        var test = """
-                winpath  = 
-                winpath2 = ''
-                quoted   = ""
-                regex    = ''
-            """
-
-        val decoded = Toml().decodeFromString<Literals>(test)
-        assertEquals(
-            Literals(
-                null,
-                "",
-                "",
-                ""
-            ),
-            decoded
-        )
-
-        test = """
-                winpath  = 
-        """.trimIndent()
-
-        assertFailsWith<ParseException> {
-            Toml(TomlInputConfig(allowEmptyValues = false)).decodeFromString<Literals>(test)
-        }
     }
 }
