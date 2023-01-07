@@ -18,7 +18,7 @@ We believe that TOML is actually the most readable and user-friendly **configura
 So we decided to support this format for the `kotlinx` serialization library.
 
 ## Contribution
-As this young and big project [is needed](https://github.com/Kotlin/kotlinx.serialization/issues/1092) by the Kotlin community, we need your help.
+As this project [is needed](https://github.com/Kotlin/kotlinx.serialization/issues/1092) by the Kotlin community, we need your help.
 We will be glad if you will test `ktoml` or contribute to this project.
 In case you don't have much time for this - at least spend 5 seconds to give us a star to attract other contributors!
 
@@ -40,7 +40,7 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 1.7
+:globe_with_meridians: ktoml supports Kotlin 1.8
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc.
