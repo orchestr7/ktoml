@@ -45,17 +45,24 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 try {
                     (value.content as String).convertSpecialCharacters(keyValue.lineNo).single()
                 } catch (ex: NoSuchElementException) {
-                    throw IllegalTypeException("Empty value is not allowed for type [Char], " +
-                            "please check the value: [${value.content}] or use [String] type for deserialization of " +
-                            "[${keyValue.key}] instead", keyValue.lineNo)
+                    throw IllegalTypeException(
+                        "Empty value is not allowed for type [Char], " +
+                                "please check the value: [${value.content}] or use [String] type for deserialization of " +
+                                "[${keyValue.key}] instead", keyValue.lineNo
+                    )
                 } catch (ex: IllegalArgumentException) {
-                    throw IllegalTypeException("[Char] type should be used for decoding of single character, but " +
-                            "received multiple characters instead: [${value.content}]. " +
-                            "If you really want to decode multiple chars, use [String] instead.", keyValue.lineNo)
+                    throw IllegalTypeException(
+                        "[Char] type should be used for decoding of single character, but " +
+                                "received multiple characters instead: [${value.content}]. " +
+                                "If you really want to decode multiple chars, use [String] instead.", keyValue.lineNo
+                    )
                 }
             // to avoid confusion, we prohibit basic strings with double quotes for decoding to a Char type
-            is TomlBasicString -> throw IllegalTypeException("Double quotes were used in the input for deserialization " +
-                    "of [Char]. Use [String] type or single quotes ('') instead for: [${value.content}]", keyValue.lineNo)
+            is TomlBasicString -> throw IllegalTypeException(
+                "Double quotes were used in the input for deserialization " +
+                        "of [Char]. Use [String] type or single quotes ('') instead for: [${value.content}]",
+                keyValue.lineNo
+            )
             // all other toml tree types are not supported
             else -> throw IllegalTypeException(
                 "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
@@ -116,11 +123,17 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         }
     }
 
-    private inline fun <reified T> decodeFloatingPoint(content: Double, lineNo: Int): T = when (T::class) {
-        Float::class -> validateAndConvertFloatingPoint(content, lineNo, FLOAT) { num: Double -> num.toFloat() as T }
-        Double::class -> validateAndConvertFloatingPoint(content, lineNo, DOUBLE) { num: Double -> num as T }
-        else -> invalidType(T::class.toString(), "Signed Type")
-    }
+    private inline fun <reified T> decodeFloatingPoint(content: Double, lineNo: Int): T =
+            when (T::class) {
+                Float::class -> validateAndConvertFloatingPoint(
+                    content,
+                    lineNo,
+                    FLOAT
+                ) { num: Double -> num.toFloat() as T }
+
+                Double::class -> validateAndConvertFloatingPoint(content, lineNo, DOUBLE) { num: Double -> num as T }
+                else -> invalidType(T::class.toString(), "Signed Type")
+            }
 
     /**
      * ktoml parser treats all integer literals as Long and all floating-point literals as Double,
@@ -131,10 +144,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         lineNo: Int,
         limits: FloatingPointLimitsEnum,
         conversion: (Double) -> T,
-    ): T = if (content in limits.min..limits.max) {
-        conversion(content)
-    } else {
-        throw IllegalTypeException(
+    ): T = when {
+        content.isInfinite() || content.isNaN() -> conversion(content)
+        content in limits.min..limits.max -> conversion(content)
+        else -> throw IllegalTypeException(
             "The floating point literal, that you have provided is <$content>, " +
                     "but the type for deserialization is <${T::class}>. You will get an overflow, " +
                     "so we advise you to check the data or use other type for deserialization (Long, for example)",
@@ -159,6 +172,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                             "Deserialized floating-point number should have a dot: <$content.0>",
                     lineNo
                 )
+
                 else -> invalidType(T::class.toString(), "Signed Type")
             }
 
