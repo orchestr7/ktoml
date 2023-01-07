@@ -71,5 +71,59 @@ class StringDecoderTest {
             ),
             decoded
         )
+
+        test = """
+            winpath  = "\u0048"
+            winpath2 = "\u0065"
+            quoted   = "\u006C"
+            regex    = "\u006F"
+        """
+
+        decoded = Toml.decodeFromString<Literals>(test)
+        assertEquals(
+            Literals(
+                "H",
+                "e",
+                "l",
+                "o"
+            ),
+            decoded
+        )
+
+        test = """
+            winpath  = "\u0048\u0065\u006C\u006F"
+            winpath2 = "My\u0048\u0065\u006C\u006FWorld"
+            quoted   = "\u0048\u0065\u006C\u006F World"
+            regex    = "My\u0048\u0065\u006CWorld"
+        """
+
+        decoded = Toml.decodeFromString<Literals>(test)
+        assertEquals(
+            Literals(
+                "Helo",
+                "MyHeloWorld",
+                "Helo World",
+                "MyHelWorld"
+            ),
+            decoded
+        )
+
+        test = """
+            winpath  = '\u0048\u0065\u006C\u006F'
+            winpath2 = 'My\u0048\u0065\u006C\u006FWorld'
+            quoted   = '\u0048\u0065\u006C\u006F World'
+            regex    = 'My\u0048\u0065\u006CWorld'
+        """
+
+        decoded = Toml.decodeFromString<Literals>(test)
+        assertEquals(
+            Literals(
+                "\\u0048\\u0065\\u006C\\u006F",
+                "My\\u0048\\u0065\\u006C\\u006FWorld",
+                "\\u0048\\u0065\\u006C\\u006F World",
+                "My\\u0048\\u0065\\u006CWorld"
+            ),
+            decoded
+        )
     }
 }

@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class StringUtilsTest {
-
     @Test
     fun testForTakeBeforeComment() {
         var lineWithoutComment = "test_key = \"test_value\"  # \" some comment".takeBeforeComment(false)

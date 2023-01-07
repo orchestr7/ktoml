@@ -4,7 +4,6 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -39,10 +38,8 @@ class CharDecoderTest {
                 c = '\t'
             """
 
-        assertFailsWith<IllegalTypeException> {
             val decoded = Toml.decodeFromString<MyClass>(test)
             assertEquals(decoded, MyClass('\r', '\n', '\t'))
-        }
     }
 
     @Test
@@ -50,13 +47,23 @@ class CharDecoderTest {
         val test =
             """
                 a = '\u0048'
-                b = '\u0FCA'
-                c = '\u0002'
+                b = '\u0065'
+                c = '\u006C'
             """
 
-        assertFailsWith<IllegalTypeException> {
             val decoded = Toml.decodeFromString<MyClass>(test)
-            assertEquals(decoded, MyClass('{', '\n', '\t'))
-        }
+            assertEquals(decoded, MyClass('H', 'e', 'l'))
+    }
+
+    @Test
+    fun charSeveralUnicodeSymbolsTest() {
+        val test =
+            """
+                a = '\u0048\u0065'
+                b = '\u0065\t'
+                c = '\u006Cdd'
+            """
+
+        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<MyClass>(test) }
     }
 }

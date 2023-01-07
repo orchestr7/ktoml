@@ -222,13 +222,10 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
     public fun emitValue(float: Double): TomlEmitter =
             emit(when {
                 float.isNaN() -> "nan"
-                float.isInfinite() ->
-                    if (float > 0) "inf" else "-inf"
-                else -> {
-                    // Whole-number floats are formatted as integers on JS.
-                    float.toString().let {
-                        if ('.' in it) it else "$it.0"
-                    }
+                float.isInfinite() -> if (float > 0) "inf" else "-inf"
+                // Whole-number floats are formatted as integers on JS.
+                else -> float.toString().let {
+                    if ('.' in it) it else "$it.0"
                 }
             })
 
