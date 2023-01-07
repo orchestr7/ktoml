@@ -215,6 +215,9 @@ class PrimitivesDecoderTest {
         test(-1f, "-1.0")
         test(-128f, "-128.0")
         test(127f, "127.0")
+        test(Float.NEGATIVE_INFINITY, "-inf")
+        test(Float.POSITIVE_INFINITY, "+inf")
+        test(Float.NaN, "nan")
     }
 
     @Test
@@ -247,12 +250,14 @@ class PrimitivesDecoderTest {
 
             assertEquals(expected, data.value)
         }
-
         test(0.0, "0.0")
         test(1.0, "1.0")
         test(-1.0, "-1.0")
         test(-128.0, "-128.0")
         test(127.0, "127.0")
+        test(Double.NEGATIVE_INFINITY, "-inf")
+        test(Double.POSITIVE_INFINITY, "+inf")
+        test(Double.NaN, "nan")
     }
 
     @Test

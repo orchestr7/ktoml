@@ -15,6 +15,8 @@ internal constructor(
 ) : TomlValue() {
     public constructor(content: String, lineNo: Int) : this(content.toDouble())
 
+    public constructor(content: Double, lineNo: Int) : this(content)
+
     override fun write(
         emitter: TomlEmitter,
         config: TomlOutputConfig,

@@ -124,6 +124,10 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInput
  * @return parsed TomlNode value
  */
 public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = when (this) {
+    // ===== special values
+    "+inf", "inf" -> TomlDouble(Double.POSITIVE_INFINITY)
+    "-inf" -> TomlDouble(Double.NEGATIVE_INFINITY)
+    "-nan", "+nan", "nan", "-NaN", "+NaN", "NaN" -> TomlDouble(Double.NaN)
     // ===== null values
     "null", "nil", "NULL", "NIL", "" -> if (config.allowNullValues) {
         TomlNull(lineNo)
