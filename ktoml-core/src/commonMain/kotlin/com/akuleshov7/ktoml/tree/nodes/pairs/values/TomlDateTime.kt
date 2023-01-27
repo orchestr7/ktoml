@@ -17,8 +17,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         when (val content = content) {
             is Instant -> emitter.emitValue(content)

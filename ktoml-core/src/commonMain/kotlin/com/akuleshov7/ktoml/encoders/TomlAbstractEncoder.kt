@@ -105,18 +105,12 @@ public abstract class TomlAbstractEncoder protected constructor(
     }
 
     override fun encodeString(value: String) {
-        if (attributes.isMultiline) {
-            throw UnsupportedEncodingFeatureException(
-                "Multiline strings are not yet supported."
-            )
-        }
-
         if (!encodeAsKey(value)) {
             appendValue(
                 if (attributes.isLiteral) {
-                    TomlLiteralString(value)
+                    TomlLiteralString(value, attributes.isMultiline)
                 } else {
-                    TomlBasicString(value)
+                    TomlBasicString(value, attributes.isMultiline)
                 }
             )
         }

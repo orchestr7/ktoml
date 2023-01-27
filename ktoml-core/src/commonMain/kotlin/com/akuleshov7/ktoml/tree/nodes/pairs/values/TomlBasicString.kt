@@ -2,7 +2,6 @@ package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import com.akuleshov7.ktoml.utils.escapeSpecialCharacters
@@ -11,9 +10,11 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 /**
  * Toml AST Node for a representation of string values: key = "value" (always should have quotes due to TOML standard)
  * @property content
+ * @property multiline Whether the string is multiline.
  */
 public class TomlBasicString internal constructor(
-    override var content: Any
+    override var content: Any,
+    public var multiline: Boolean = false
 ) : TomlValue() {
     public constructor(
         content: String,
@@ -22,19 +23,12 @@ public class TomlBasicString internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
-        if (multiline) {
-            throw TomlWritingException(
-                "Multiline strings are not yet supported."
-            )
-        }
-
         val content = content as String
 
         emitter.emitValue(
-            content.escapeSpecialCharacters(),
+            content.escapeSpecialCharacters(multiline),
             isLiteral = false,
             multiline
         )

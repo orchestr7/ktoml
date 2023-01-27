@@ -180,7 +180,6 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
                 val quotes = if (isLiteral) "'''" else "\"\"\""
 
                 emit(quotes)
-                    .emitNewLine()
                     .emit(string)
                     .emit(quotes)
             } else {

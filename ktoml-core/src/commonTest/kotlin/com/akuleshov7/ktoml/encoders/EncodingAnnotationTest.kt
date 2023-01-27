@@ -251,9 +251,16 @@ class EncodingAnnotationTest {
         data class File(
             @TomlMultiline
             val mlTextA: String = "\n\\tMultiline\ntext!\n",
+            @TomlMultiline
+            val mlTextB: String = """
+                
+                Text with escaped quotes ""\"\
+                and line break
+                
+            """.trimIndent(),
             @TomlLiteral
             @TomlMultiline
-            val mlTextB: String = "\n\"Multiline\n\"text!\n"
+            val mlTextC: String = "\n\"Multiline\ntext!\"\n"
         )
 
         val tripleQuotes = "\"\"\""
@@ -265,7 +272,11 @@ class EncodingAnnotationTest {
                 \tMultiline
                 text!
                 $tripleQuotes
-                mlTextB = '''
+                mlTextB = $tripleQuotes
+                Text with escaped quotes ""\"\
+                and line break
+                $tripleQuotes
+                mlTextC = '''
                 "Multiline
                 text!"
                 '''

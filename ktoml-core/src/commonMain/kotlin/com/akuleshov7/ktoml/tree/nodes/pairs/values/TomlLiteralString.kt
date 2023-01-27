@@ -7,6 +7,7 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
 import com.akuleshov7.ktoml.utils.controlCharacterRegex
+import com.akuleshov7.ktoml.utils.multilineControlCharacterRegex
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -14,9 +15,11 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * The only difference from the TOML specification (https://toml.io/en/v1.0.0) is that we will have one escaped symbol -
  * single quote and so it will be possible to use a single quote inside.
  * @property content
+ * @property multiline Whether the string is multiline.
  */
 public class TomlLiteralString internal constructor(
-    override var content: Any
+    override var content: Any,
+    public var multiline: Boolean = false
 ) : TomlValue() {
     public constructor(
         content: String,
@@ -39,19 +42,12 @@ public class TomlLiteralString internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
-        if (multiline) {
-            throw TomlWritingException(
-                "Multiline strings are not yet supported."
-            )
-        }
-
         val content = content as String
 
         emitter.emitValue(
-            content.escapeQuotesAndVerify(config),
+            content.escapeQuotesAndVerify(config, multiline),
             isLiteral = true,
             multiline
         )
@@ -79,8 +75,25 @@ public class TomlLiteralString internal constructor(
          */
         private fun String.convertSingleQuotes(): String = this.replace("\\'", "'")
 
-        private fun String.escapeQuotesAndVerify(config: TomlOutputConfig) =
+        private fun String.escapeQuotesAndVerify(config: TomlOutputConfig, multiline: Boolean) =
                 when {
+                    multiline ->
+                        when {
+                            multilineControlCharacterRegex in this ->
+                                throw TomlWritingException(
+                                    "Control characters (excluding tab and line" +
+                                            " terminators) are not permitted in" +
+                                            " multiline literal strings."
+                                )
+                            config.allowEscapedQuotesInLiteralStrings ->
+                                replace("'''", "''\\'")
+                            "'''" in this ->
+                                throw TomlWritingException(
+                                    "Three or more consecutive single quotes are not" +
+                                            " permitted in multiline literal strings."
+                                )
+                            else -> this
+                        }
                     controlCharacterRegex in this ->
                         throw TomlWritingException(
                             "Control characters (excluding tab) are not permitted" +

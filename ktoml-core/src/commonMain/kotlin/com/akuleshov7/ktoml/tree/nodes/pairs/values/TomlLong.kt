@@ -20,8 +20,7 @@ public class TomlLong internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         emitter.emitValue(content as Long, representation)
     }
