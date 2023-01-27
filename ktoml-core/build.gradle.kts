@@ -19,9 +19,7 @@ kotlin {
     // building jvm task only on windows
     jvm {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+            kotlinOptions.jvmTarget = "1.8"
         }
     }
 
