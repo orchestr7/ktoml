@@ -198,6 +198,7 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @param representation How the integer will be represented in TOML.
      * @return this instance
      */
+    @Suppress("MAGIC_NUMBER")
     public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter =
             when (representation) {
                 DECIMAL -> emit(integer.toString())
@@ -210,7 +211,25 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
                 OCTAL ->
                     emit("0o")
                         .emit(integer.toString(8))
-                GROUPED -> TODO()
+                GROUPED ->
+                    emit(
+                        if (integer < 1000) {
+                            // No grouping needed.
+                            integer.toString()
+                        } else {
+                            buildList {
+                                var cur = integer
+
+                                do {
+                                    val group = cur % 1_000
+                                    cur /= 1_000
+                                    this += group
+                                } while (cur > 0)
+                            }.reversed().joinToString(separator = "_") {
+                                it.toString().padStart(3, '0')
+                            }.trimStart('0')
+                        }
+                    )
             }
 
     /**

@@ -211,7 +211,7 @@ class EncodingAnnotationTest {
             @TomlInteger(BINARY)
             val bin: Long = 2,
             @TomlInteger(GROUPED)
-            val gro: Long = 1_000_000,
+            val gro: Long = 9_999_099_009,
             @TomlInteger(HEX)
             val hex: Long = 4,
             @TomlInteger(OCTAL)
@@ -223,7 +223,7 @@ class EncodingAnnotationTest {
             expectedToml = """
                 dec = 0
                 bin = 0b10
-                gro = 1_000_000
+                gro = 9_999_099_009
                 hex = 0x4
                 oct = 0o6
             """.trimIndent()

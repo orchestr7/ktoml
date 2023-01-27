@@ -7,7 +7,6 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.utils.bareKeyRegex
 import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -96,14 +95,8 @@ public abstract class TomlAbstractEncoder protected constructor(
     }
 
     override fun encodeLong(value: Long) {
-        if (attributes.intRepresentation != DECIMAL) {
-            throw UnsupportedEncodingFeatureException(
-                "Non-decimal integer representation is not yet supported."
-            )
-        }
-
         if (!encodeAsKey(value, "Long")) {
-            appendValue(TomlLong(value))
+            appendValue(TomlLong(value, attributes.intRepresentation))
         }
     }
 
