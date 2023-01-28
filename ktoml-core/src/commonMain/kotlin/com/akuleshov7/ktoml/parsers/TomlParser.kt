@@ -189,8 +189,8 @@ public value class TomlParser(private val config: TomlInputConfig) {
             return MultilineType.ARRAY
         }
 
-        // If we have more than 1 combination of (""") - it means
-        // that multi-line is closed
+        // If we have more than 1 combination of (""") - it means that
+        // multi-line is declared in one line, and we can handle it as not a multi-line
         if (value.startsWith("\"\"\"") && value.getCountOfOccurrencesOfSubstring("\"\"\"") == 1) {
             return MultilineType.BASIC_STRING
         }
