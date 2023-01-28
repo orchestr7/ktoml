@@ -67,7 +67,7 @@ public class TomlArray internal constructor(
 
         val content = (content as List<Any>).map {
             if (it is List<*>) {
-                TomlArray(it)
+                TomlArray(it, multiline)
             } else {
                 it as TomlValue
             }

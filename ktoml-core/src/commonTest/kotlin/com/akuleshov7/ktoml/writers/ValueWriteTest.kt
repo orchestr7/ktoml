@@ -104,15 +104,17 @@ class PrimitiveValueWriteTest {
 
     @Test
     fun arrayWriteTest() {
+        val innerArray = TomlArray(
+            listOf(
+                TomlDouble(3.14)
+            )
+        )
+
         val array = TomlArray(
             listOf(
                 TomlLong(1L),
                 TomlBasicString("string" as Any),
-                TomlArray(
-                    listOf(
-                        TomlDouble(3.14)
-                    )
-                )
+                innerArray
             )
         )
 
@@ -125,6 +127,9 @@ class PrimitiveValueWriteTest {
 
         // Multiline
 
+        innerArray.multiline = true
+        array.multiline = true
+
         testTomlValue(
             array,
             """
@@ -135,8 +140,7 @@ class PrimitiveValueWriteTest {
                     3.14
                 ]
             ]
-            """.trimIndent(),
-            multiline = true
+            """.trimIndent()
         )
     }
 }
@@ -144,15 +148,14 @@ class PrimitiveValueWriteTest {
 fun testTomlValue(
     value: TomlValue,
     expectedString: String,
-    config: TomlOutputConfig = TomlOutputConfig(),
-    multiline: Boolean = false
+    config: TomlOutputConfig = TomlOutputConfig()
 ) {
     assertEquals(
         expectedString,
         actual = buildString {
             val emitter = TomlStringEmitter(this, config)
 
-            value.write(emitter, config, multiline)
+            value.write(emitter, config)
         }
     )
 }

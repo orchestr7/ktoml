@@ -74,8 +74,7 @@ public class TomlTablePrimitive(
 
     override fun TomlEmitter.writeChildren(
         children: List<TomlNode>,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         if (children.first() is TomlStubEmptyNode) {
             return
@@ -109,14 +108,14 @@ public class TomlTablePrimitive(
                 else -> emitIndent()
             }
 
-            child.write(emitter = this, config, multiline)
+            child.write(emitter = this, config)
             writeChildInlineComment(child)
 
             if (i < children.lastIndex) {
                 emitNewLine()
                 // A single newline follows single-line pairs, except when a table
                 // follows. Two newlines follow multi-line pairs.
-                if ((child is TomlKeyValue && multiline) || children[i + 1] is TomlTable) {
+                if ((child is TomlKeyValue && child.isMultiline()) || children[i + 1] is TomlTable) {
                     emitNewLine()
                 }
             }

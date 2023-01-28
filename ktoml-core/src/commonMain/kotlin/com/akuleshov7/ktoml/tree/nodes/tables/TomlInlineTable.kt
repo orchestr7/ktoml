@@ -100,8 +100,7 @@ public class TomlInlineTable internal constructor(
 
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         key.write(emitter)
 

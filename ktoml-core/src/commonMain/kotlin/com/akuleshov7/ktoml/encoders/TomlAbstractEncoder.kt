@@ -190,6 +190,15 @@ public abstract class TomlAbstractEncoder protected constructor(
             }
         }
 
+        // Force primitive array elements to be single-line.
+        if (attributes.isInline && descriptor.kind == StructureKind.LIST) {
+            when (typeDescriptor.kind) {
+                is PrimitiveKind,
+                SerialKind.ENUM -> attributes.isMultiline = false
+                else -> { }
+            }
+        }
+
         return true
     }
 

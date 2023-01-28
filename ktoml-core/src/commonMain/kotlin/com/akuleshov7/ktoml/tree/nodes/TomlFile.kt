@@ -26,14 +26,8 @@ public class TomlFile() : TomlNode(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
-    ): Unit =
-            emitter.writeChildren(
-                children,
-                config,
-                multiline
-            )
+        config: TomlOutputConfig
+    ): Unit = emitter.writeChildren(children, config)
 
     override fun toString(): String = "rootNode"
 }

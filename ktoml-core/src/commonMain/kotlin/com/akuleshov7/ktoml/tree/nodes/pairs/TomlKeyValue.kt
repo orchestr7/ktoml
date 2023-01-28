@@ -58,16 +58,17 @@ internal interface TomlKeyValue {
         )
     }
 
+    fun isMultiline() = false
+
     fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         key.write(emitter)
 
         emitter.emitPairDelimiter()
 
-        value.write(emitter, config, multiline)
+        value.write(emitter, config)
     }
 }
 
