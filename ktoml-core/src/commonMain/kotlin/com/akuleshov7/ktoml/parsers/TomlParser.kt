@@ -247,7 +247,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
     private fun String.isEmptyLine() = this.trim().isEmpty()
 
     /**
-     * @property closingSymbols - symbols indicating that the string is closed
+     * @property closingSymbols - symbols indicating that the multi-line is closed
      */
     private enum class MultilineType(val closingSymbols: String) {
         ARRAY("]"),
