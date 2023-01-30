@@ -5,7 +5,7 @@ package com.akuleshov7.ktoml.writers
  *
  * @property BINARY A binary number prefixed with `0b`.
  * @property DECIMAL A decimal number.
- * @property GROUPED A grouped decimal number, such as `1_000_000`. Todo: Add support.
+ * @property GROUPED A grouped decimal number, such as `1_000_000`.
  * @property HEX A hexadecimal number prefixed with `0x`.
  * @property OCTAL An octal number prefixed with `0o`.
  */
