@@ -198,38 +198,46 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     @Suppress("MAGIC_NUMBER")
-    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter =
-            when (representation) {
-                DECIMAL -> emit(integer.toString())
-                HEX ->
-                    emit("0x")
-                        .emit(integer.toString(16))
-                BINARY ->
-                    emit("0b")
-                        .emit(integer.toString(2))
-                OCTAL ->
-                    emit("0o")
-                        .emit(integer.toString(8))
-                GROUPED ->
-                    emit(
-                        if (integer < 1000) {
-                            // No grouping needed.
-                            integer.toString()
-                        } else {
-                            buildList {
-                                var cur = integer
+    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter {
+        var value = if (integer < 0) {
+            emit('-')
+            -integer
+        } else {
+            integer
+        }
 
-                                do {
-                                    val group = cur % 1_000
-                                    cur /= 1_000
-                                    this += group
-                                } while (cur > 0)
-                            }.reversed().joinToString(separator = "_") {
-                                it.toString().padStart(3, '0')
-                            }.trimStart('0')
-                        }
-                    )
-            }
+        return when (representation) {
+            DECIMAL -> emit(value.toString())
+            HEX ->
+                emit("0x")
+                    .emit(value.toString(16))
+
+            BINARY ->
+                emit("0b")
+                    .emit(value.toString(2))
+
+            OCTAL ->
+                emit("0o")
+                    .emit(value.toString(8))
+
+            GROUPED ->
+                emit(
+                    if (value < 1000) {
+                        // No grouping needed.
+                        value.toString()
+                    } else {
+                        buildList {
+                            do {
+                                this += value % 1_000
+                                value /= 1_000
+                            } while (value > 0)
+                        }.reversed().joinToString(separator = "_") {
+                            it.toString().padStart(3, '0')
+                        }.trimStart('0')
+                    }
+                )
+        }
+    }
 
     /**
      * Emits a floating-point value.
