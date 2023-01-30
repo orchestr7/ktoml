@@ -50,7 +50,6 @@ class PrimitiveValueWriteTest {
         testTomlValue(TomlBasicString("""hello\u0000\\\Uffffffff world""" as Any), """"hello\u0000\\\Uffffffff world"""")
     }
 
-    @Suppress("COMMENTED_CODE")
     @Test
     fun integerWriteTest() {
         // Decimal
@@ -58,13 +57,20 @@ class PrimitiveValueWriteTest {
         testTomlValue(TomlLong(-1234567L), "-1234567")
 
         // Hex
-        //testTomlValue(TomlLong(0xdeadc0de, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlLong(0xdeadc0deL, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlLong(-0xdeadc0deL, IntegerRepresentation.HEX), "-0xdeadc0de")
 
         // Binary
-        //testTomlValue(TomlLong(0b10000000, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlLong(0b10000000L, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlLong(-0b10000000L, IntegerRepresentation.BINARY), "-0b10000000")
 
         // Octal
-        //testTomlValue(TomlLong(0x1FF, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlLong(0x1FFL, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlLong(-0x1FFL, IntegerRepresentation.OCTAL), "-0o777")
+
+        // Grouped
+        testTomlValue(TomlLong(1234567L, IntegerRepresentation.GROUPED), "1_234_567")
+        testTomlValue(TomlLong(-1234567L, IntegerRepresentation.GROUPED), "-1_234_567")
     }
 
     @Test
