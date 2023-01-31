@@ -199,44 +199,28 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      */
     @Suppress("MAGIC_NUMBER")
     public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter {
-        var value = if (integer < 0) {
-            emit('-')
-            -integer
-        } else {
-            integer
+        var value = integer
+
+        if (value < 0) {
+            return emit('-').emitValue(-value, representation)
         }
 
-        return when (representation) {
-            DECIMAL -> emit(value.toString())
-            HEX ->
-                emit("0x")
-                    .emit(value.toString(16))
+        return emit(representation.prefix).emit(
+            when (representation) {
+                GROUPED ->
+                    buildList {
+                        while (value > 999) {
+                            val group = value % 1_000
+                            this += group.toString().padStart(3, '0')
+                            value /= 1_000
+                        }
 
-            BINARY ->
-                emit("0b")
-                    .emit(value.toString(2))
-
-            OCTAL ->
-                emit("0o")
-                    .emit(value.toString(8))
-
-            GROUPED ->
-                emit(
-                    if (value < 1000) {
-                        // No grouping needed.
-                        value.toString()
-                    } else {
-                        buildList {
-                            do {
-                                this += value % 1_000
-                                value /= 1_000
-                            } while (value > 0)
-                        }.reversed().joinToString(separator = "_") {
-                            it.toString().padStart(3, '0')
-                        }.trimStart('0')
-                    }
-                )
-        }
+                        this += value.toString()
+                    }.reversed().joinToString(separator = "_")
+                else ->
+                    value.toString(representation.radix)
+            }
+        )
     }
 
     /**
