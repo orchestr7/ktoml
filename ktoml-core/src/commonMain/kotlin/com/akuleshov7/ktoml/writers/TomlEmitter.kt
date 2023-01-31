@@ -4,7 +4,6 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.utils.bareKeyRegex
 import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
-import kotlin.math.abs
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -196,33 +195,35 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      *
      * @param integer
      * @param representation How the integer will be represented in TOML.
+     * @param groupSize The digit group size, or less than `1` for no grouping. For
+     * example, a group size of `3` emits `1_000_000`, `4` emits `0b1111_1111`, etc.
      * @return this instance
      */
-    @Suppress("MAGIC_NUMBER")
-    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter {
-        var value = integer
-        val isNeg = value < 0
+    @Suppress("SAY_NO_TO_VAR")
+    public fun emitValue(
+        integer: Long,
+        representation: IntegerRepresentation = DECIMAL,
+        groupSize: Int = 0
+    ): TomlEmitter {
+        // Todo: Add groupSize to the annotation and AST and remove GROUPED.
+        if (representation == GROUPED) {
+            return emitValue(integer, representation = DECIMAL, groupSize = 3)
+        }
 
-        if (isNeg) {
+        if (integer < 0) {
             emit('-')
         }
 
-        return emit(representation.prefix).emit(
-            when (representation) {
-                GROUPED ->
-                    buildList {
-                        while (isNeg && value < -999 || !isNeg && value > 999) {
-                            val group = value % 1_000
-                            this += abs(group).toString().padStart(3, '0')
-                            value /= 1_000
-                        }
+        var digits = integer.toString(representation.radix).trimStart('-')
 
-                        this += abs(value).toString()
-                    }.reversed().joinToString(separator = "_")
-                else ->
-                    value.toString(representation.radix).trimStart('-')
-            }
-        )
+        if (groupSize > 0) {
+            digits = (digits as CharSequence).reversed()
+                .chunked(groupSize, CharSequence::reversed)
+                .asReversed()
+                .joinToString(separator = "_")
+        }
+
+        return emit(representation.prefix).emit(digits)
     }
 
     /**
