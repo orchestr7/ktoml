@@ -55,22 +55,27 @@ class PrimitiveValueWriteTest {
         // Decimal
         testTomlValue(TomlLong(1234567L), "1234567")
         testTomlValue(TomlLong(-1234567L), "-1234567")
+        testTomlValue(TomlLong(Long.MIN_VALUE), "${Long.MIN_VALUE}")
 
         // Hex
         testTomlValue(TomlLong(0xdeadc0deL, IntegerRepresentation.HEX), "0xdeadc0de")
         testTomlValue(TomlLong(-0xdeadc0deL, IntegerRepresentation.HEX), "-0xdeadc0de")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.HEX), "-0x" + Long.MIN_VALUE.toString(16).trimStart('-'))
 
         // Binary
         testTomlValue(TomlLong(0b10000000L, IntegerRepresentation.BINARY), "0b10000000")
         testTomlValue(TomlLong(-0b10000000L, IntegerRepresentation.BINARY), "-0b10000000")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.BINARY), "-0b" + Long.MIN_VALUE.toString(2).trimStart('-'))
 
         // Octal
         testTomlValue(TomlLong(0x1FFL, IntegerRepresentation.OCTAL), "0o777")
         testTomlValue(TomlLong(-0x1FFL, IntegerRepresentation.OCTAL), "-0o777")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.OCTAL), "-0o" + Long.MIN_VALUE.toString(8).trimStart('-'))
 
         // Grouped
         testTomlValue(TomlLong(1234567L, IntegerRepresentation.GROUPED), "1_234_567")
         testTomlValue(TomlLong(-1234567L, IntegerRepresentation.GROUPED), "-1_234_567")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.GROUPED), "-9_223_372_036_854_775_808")
     }
 
     @Test

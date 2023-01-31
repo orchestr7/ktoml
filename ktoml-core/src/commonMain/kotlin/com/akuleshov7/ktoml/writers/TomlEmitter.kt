@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.utils.bareKeyRegex
 import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+import kotlin.math.abs
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -200,25 +201,26 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
     @Suppress("MAGIC_NUMBER")
     public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter {
         var value = integer
+        val isNeg = value < 0
 
-        if (value < 0) {
-            return emit('-').emitValue(-value, representation)
+        if (isNeg) {
+            emit('-')
         }
 
         return emit(representation.prefix).emit(
             when (representation) {
                 GROUPED ->
                     buildList {
-                        while (value > 999) {
+                        while (isNeg && value < -999 || !isNeg && value > 999) {
                             val group = value % 1_000
-                            this += group.toString().padStart(3, '0')
+                            this += abs(group).toString().padStart(3, '0')
                             value /= 1_000
                         }
 
-                        this += value.toString()
+                        this += abs(value).toString()
                     }.reversed().joinToString(separator = "_")
                 else ->
-                    value.toString(representation.radix)
+                    value.toString(representation.radix).trimStart('-')
             }
         )
     }
