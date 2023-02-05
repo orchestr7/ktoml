@@ -54,13 +54,19 @@ class LiteralMultilineStringDecoderTest {
         test = "a = '''first line\n\t  \nsecond line'''"
         assertEquals(SimpleString("first line\n\t  \nsecond line"), Toml.decodeFromString(test))
 
-        test = "a = '''\n" +
-            "Roses are red\n" +
-            "Violets are blue'''"
+        test = """
+            a = '''
+            Roses are red
+            Violets are blue'''
+        """.trimIndent()
         assertEquals(SimpleString("Roses are red\nViolets are blue"), Toml.decodeFromString(test))
 
-        test = "a = '''\n\nTest''' \n\n" +
-            "b = 2"
+        test = """
+            a = '''
+            
+            Test'''
+            b = 2
+        """.trimIndent()
         assertEquals(
             StringAndInt("\nTest", 2),
             Toml.decodeFromString(test)
@@ -88,26 +94,33 @@ class LiteralMultilineStringDecoderTest {
         """.trimIndent()
         assertEquals(SimpleString("first line second line third line"), Toml.decodeFromString(test))
 
-        test = "a = '''\n" +
-            "The quick brown \\\n\n\n" +
-            "  fox jumps over \\\n" +
-            "    the lazy dog.'''"
+        test = """
+            a = '''
+            The quick brown \
+            
+                fox jumps over \
+                 the lazy dog.'''
+        """.trimIndent()
         assertEquals(SimpleString("The quick brown fox jumps over the lazy dog."), Toml.decodeFromString(test))
 
-        test = "a = '''\\\n" +
-            "       The quick brown \\\n" +
-            "       fox jumps over \\\n" +
-            "       the lazy dog.\\\n" +
-            "       '''"
+        test = """
+            a = '''\
+                The quick brown \
+                fox jumps over \
+                the lazy dog.\
+                    '''
+        """.trimIndent()
         assertEquals(SimpleString("The quick brown fox jumps over the lazy dog."), Toml.decodeFromString(test))
     }
 
     @Test
     fun testWithHashSymbol() {
-        val test = "a = '''\n" +
-            "Roses are red # Not a comment\n" +
-            "# Not a comment \n" +
-            "Violets are blue'''"
+        val test = """
+            a = '''
+            Roses are red # Not a comment
+            # Not a comment 
+            Violets are blue'''
+        """.trimIndent()
         assertEquals(
             SimpleString("Roses are red # Not a comment\n# Not a comment \nViolets are blue"),
             Toml.decodeFromString(test)
@@ -150,13 +163,20 @@ class LiteralMultilineStringDecoderTest {
     @Test
     fun leadingNewLines() {
         // "A newline immediately following the opening delimiter will be trimmed."
-        var test = "a = '''\n\nMy String''' "
+        var test = """
+            a = '''
+            
+            My String'''
+        """.trimIndent()
         assertEquals(
             SimpleString("\nMy String"),
             Toml.decodeFromString(test)
         )
 
-        test = "a = '''\nMy String''' "
+        test = """
+            a = '''
+            My String''' 
+        """.trimIndent()
         assertEquals(
             SimpleString("My String"),
             Toml.decodeFromString(test)
@@ -183,14 +203,23 @@ class LiteralMultilineStringDecoderTest {
         }
         assertTrue(exception.message!!.contains("Line 1"))
 
-        test = "a = '''\n\nTest String '" +
-            "\nb=\"abc\""
+        test = """
+            a = '''
+            
+            Test String '
+            b = "abc"
+        """.trimIndent()
         exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleStrings>(test)
         }
         assertTrue(exception.message!!.contains("Line 1"))
 
-        test = "a = '''\n\nTest String \n\n"
+        test = """
+            a = '''
+            
+            Test String
+            
+        """.trimIndent()
         exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleString>(test)
         }

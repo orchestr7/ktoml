@@ -24,52 +24,62 @@ class BasicMultilineStringDecoderTest {
     @Serializable
     data class StringAndInts(val a: String, val b: Int, val c: Int)
 
+    private val tripleQuotes = "\"\"\""
+
     @Test
     fun testMultilineBasicStringDecode() {
         var test = """
-            a = ""${'"'}abc""${'"'}
+            a = ${tripleQuotes}abc${tripleQuotes}
         """.trimIndent()
         assertEquals(SimpleString("abc"), Toml.decodeFromString(test))
 
         test = """
-            a = ""${'"'}
+            a = $tripleQuotes
             first line
-            second line""${'"'}
+            second line$tripleQuotes
         """.trimIndent()
         assertEquals(SimpleString("first line\nsecond line"), Toml.decodeFromString(test))
 
         test = """
-            a = ""${'"'}first line
-            second line""${'"'}
+            a = ${tripleQuotes}first line
+            second line$tripleQuotes
         """.trimIndent()
         assertEquals(SimpleString("first line\nsecond line"), Toml.decodeFromString(test))
 
         test = """
-            a = ""${'"'}first line
+            a = ${tripleQuotes}first line
 
-            second line""${'"'}
+            second line$tripleQuotes
         """.trimIndent()
         assertEquals(SimpleString("first line\n\nsecond line"), Toml.decodeFromString(test))
 
         test = "a = \"\"\"first line\n\t  \nsecond line\"\"\""
         assertEquals(SimpleString("first line\n\t  \nsecond line"), Toml.decodeFromString(test))
 
-        test = "a = \"\"\"\n" +
-            "Roses are red\n" +
-            "Violets are blue\"\"\""
+        test = """
+            a = $tripleQuotes
+            Roses are red
+            Violets are blue$tripleQuotes
+        """.trimIndent()
         assertEquals(SimpleString("Roses are red\nViolets are blue"), Toml.decodeFromString(test))
 
-        test = "a = \"\"\"" +
-            "\n\nTest\"\"\"" +
-            "\n\nb = 2"
+        test = """
+            a = $tripleQuotes
+            
+            Test$tripleQuotes
+            b = 2
+        """.trimIndent()
         assertEquals(
             StringAndInt("\nTest", 2),
             Toml.decodeFromString(test)
         )
 
-        test = "a = \"\"\"" +
-            "\nTest" +
-            "\nb = 32\n\"\"\""
+        test = """
+            a = $tripleQuotes
+            Test
+            b = 32
+            $tripleQuotes
+        """.trimIndent()
         assertEquals(
             SimpleString(a = "Test\nb = 32\n"),
             Toml.decodeFromString(test)
@@ -79,34 +89,41 @@ class BasicMultilineStringDecoderTest {
     @Test
     fun lineEndingBackslash() {
         var test = """
-            a = ""${'"'}
+            a = $tripleQuotes
             first line \
             second line \
             
-            third line""${'"'}
+            third line$tripleQuotes
         """.trimIndent()
         assertEquals(SimpleString("first line second line third line"), Toml.decodeFromString(test))
 
-        test = "a = \"\"\"\n" +
-            "The quick brown \\\n\n\n" +
-            "  fox jumps over \\\n" +
-            "    the lazy dog.\"\"\""
+        test = """
+            a = $tripleQuotes
+            The quick brown \
+            
+              fox jumps over \
+                   the lazy dog.$tripleQuotes
+        """.trimIndent()
         assertEquals(SimpleString("The quick brown fox jumps over the lazy dog."), Toml.decodeFromString(test))
 
-        test = "a = \"\"\"\\\n" +
-            "       The quick brown \\\n" +
-            "       fox jumps over \\\n" +
-            "       the lazy dog.\\\n" +
-            "       \"\"\""
+        test = """
+            a = $tripleQuotes\
+                The quick brown \
+                fox jumps over \
+                the lazy dog.\
+                $tripleQuotes
+        """.trimIndent()
         assertEquals(SimpleString("The quick brown fox jumps over the lazy dog."), Toml.decodeFromString(test))
     }
 
     @Test
     fun testWithHashSymbol() {
-        val test = "a = \"\"\"\n" +
-            "Roses are red # Not a comment\n" +
-            "# Not a comment \n" +
-            "Violets are blue\"\"\""
+        val test = """
+            a = $tripleQuotes
+            Roses are red # Not a comment
+            # Not a comment 
+            Violets are blue$tripleQuotes
+        """.trimIndent()
         assertEquals(
             SimpleString("Roses are red # Not a comment\n# Not a comment \nViolets are blue"),
             Toml.decodeFromString(test)
@@ -122,8 +139,10 @@ class BasicMultilineStringDecoderTest {
             Toml.decodeFromString(test)
         )
 
-        test = "a = \"\"\"Here are three quotation marks: \"\"\\\".\"\"\"" +
-            "\nb = 2"
+        test = """
+            a = ${tripleQuotes}Here are three quotation marks: ""\".$tripleQuotes
+            b = 2
+        """.trimIndent()
         assertEquals(
             StringAndInt("Here are three quotation marks: \"\"\".", 2),
             Toml.decodeFromString(test)
@@ -170,13 +189,20 @@ class BasicMultilineStringDecoderTest {
     @Test
     fun leadingNewLines() {
         // "A newline immediately following the opening delimiter will be trimmed."
-        var test = "a = \"\"\"\n\nMy String\"\"\""
+        var test = """
+            a = $tripleQuotes
+            
+            My String$tripleQuotes
+        """.trimIndent()
         assertEquals(
             SimpleString("\nMy String"),
             Toml.decodeFromString(test)
         )
 
-        test = "a = \"\"\"\nMy String\"\"\""
+        test = """
+            a = $tripleQuotes
+            My String$tripleQuotes
+        """.trimIndent()
         assertEquals(
             SimpleString("My String"),
             Toml.decodeFromString(test)
@@ -185,13 +211,17 @@ class BasicMultilineStringDecoderTest {
 
     @Test
     fun incorrectString() {
-        var test = "a = \"\"\"Test String "
+        var test = """
+            a = ${tripleQuotes}Test String 
+        """.trimIndent()
         var exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleString>(test)
         }
         assertTrue(exception.message!!.contains("Line 1"))
 
-        test = "a = \"\"\"Test String \""
+        test = """
+            a = ${tripleQuotes}Test String"
+        """.trimIndent()
         exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleString>(test)
         }
@@ -203,20 +233,31 @@ class BasicMultilineStringDecoderTest {
         }
         assertTrue(exception.message!!.contains("Line 1"))
 
-        test = "a = \"\"\"Test String \"" +
-            "\nb=\"abc\""
+        test = """
+            a = ${tripleQuotes}Test String "
+            b = "abc"
+        """.trimIndent()
         exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleStrings>(test)
         }
         assertTrue(exception.message!!.contains("Line 1"))
 
-        test = "a = \"\"\"\n\nTest String "
+        test = """
+            a = $tripleQuotes
+            
+            Test String
+        """.trimIndent()
         exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleString>(test)
         }
         assertTrue(exception.message!!.contains("Line 1"))
 
-        test = "a = \"\"\"\n\nTest String \n\n"
+        test = """
+            a = $tripleQuotes
+            
+            Test String 
+            
+        """.trimIndent()
         exception = assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleString>(test)
         }
@@ -225,9 +266,13 @@ class BasicMultilineStringDecoderTest {
 
     @Test
     fun betweenOtherValues() {
-        val test = "b = 2" +
-            "\na = \"\"\"Test \nString\n\"\"\"" +
-            "\nc = 3"
+        val test = """
+            b = 2
+            a = ${tripleQuotes}Test 
+            String
+            $tripleQuotes
+            c = 3
+        """.trimIndent()
         assertEquals(
             StringAndInts("Test \nString\n", 2, 3),
             Toml.decodeFromString(test)
