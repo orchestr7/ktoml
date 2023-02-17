@@ -28,6 +28,8 @@ kotlin {
     macosX64()
     macosArm64()
     ios()
+    iosSimulatorArm64()
+
 
     sourceSets {
         all {
