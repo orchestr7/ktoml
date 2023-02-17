@@ -59,12 +59,48 @@ internal fun String.splitKeyToTokens(lineNo: Int): List<String> {
 internal fun String.trimSingleQuotes(): String = trimSymbols(this, "'", "'")
 
 /**
+ * If this multiline string starts and end with triple quotes(''') - will return the string with
+ * quotes and newline removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimMultilineLiteralQuotes(): String = trimSymbols(this, "'''", "'''").removePrefix("\n")
+
+/**
+ *  When the last non-whitespace character on a line is an unescaped \, it will
+ *  be trimmed along with all whitespace (including newlines) up to the next
+ *  non-whitespace character or closing delimiter.
+ *
+ * @return string with the result
+ */
+internal fun String.convertLineEndingBackslash(): String {
+    // We shouldn't trim if the size of the split array == 1
+    // It means there is no ending backslash, and we should keep all spaces
+    val splitEndingBackslash = this.split("\\\n")
+    return if (splitEndingBackslash.size == 1) {
+        this
+    } else {
+        splitEndingBackslash.joinToString("") { it.trimStart() }
+    }
+}
+
+/**
  * If this string starts and end with quotes("") - will return the string with quotes removed
  * Otherwise, returns this string.
  *
  * @return string with the result
  */
 internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
+
+/**
+ * If this multiline string starts and end with triple quotes(""") - will return the string with
+ * quotes and newline removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimMultilineQuotes(): String = trimSymbols(this, "\"\"\"", "\"\"\"").removePrefix("\n")
 
 /**
  * If this string starts and end with curly braces ({}) - will return the string without them (used in inline tables)
@@ -135,6 +171,12 @@ internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): St
         drop(commentStartIndex + 1).trim()
     }
 }
+
+/**
+ * @param substring
+ * @return count of occurrences of substring in string
+ */
+internal fun String.getCountOfOccurrencesOfSubstring(substring: String): Int = this.split(substring).size - 1
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
