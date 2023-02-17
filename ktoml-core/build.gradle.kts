@@ -30,7 +30,6 @@ kotlin {
     ios()
     iosSimulatorArm64()
 
-
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
