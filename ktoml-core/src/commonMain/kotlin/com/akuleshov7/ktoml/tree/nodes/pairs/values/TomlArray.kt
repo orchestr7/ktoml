@@ -122,7 +122,7 @@ public class TomlArray internal constructor(
          */
         @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
         private fun String.parseArray(): MutableList<String> {
-            val trimmed = trimBrackets().removeTrailingComma()
+            val trimmed = trimBrackets().trim().removeTrailingComma()
             // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
             if (trimmed.isBlank()) {
                 return mutableListOf()

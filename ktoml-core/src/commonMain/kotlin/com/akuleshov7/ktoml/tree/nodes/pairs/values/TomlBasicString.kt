@@ -3,6 +3,9 @@ package com.akuleshov7.ktoml.tree.nodes.pairs.values
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
+import com.akuleshov7.ktoml.parsers.convertLineEndingBackslash
+import com.akuleshov7.ktoml.parsers.getCountOfOccurrencesOfSubstring
+import com.akuleshov7.ktoml.parsers.trimMultilineQuotes
 import com.akuleshov7.ktoml.parsers.trimQuotes
 import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import com.akuleshov7.ktoml.utils.escapeSpecialCharacters
@@ -43,19 +46,25 @@ public class TomlBasicString internal constructor(
     public companion object {
         private fun String.verifyAndTrimQuotes(lineNo: Int): Any =
                 when {
+                    // ====== multiline string (""") =======
+                    startsWith("\"\"\"") && endsWith("\"\"\"") ->
+                        trimMultilineQuotes()
+                            .checkCountOfOtherUnescapedQuotes(lineNo)
+                            .convertLineEndingBackslash()
+                            .convertSpecialCharacters(lineNo)
+
                     // ========= basic string ("abc") =======
                     startsWith("\"") && endsWith("\"") ->
                         trimQuotes()
                             .checkOtherQuotesAreEscaped(lineNo)
                             .convertSpecialCharacters(lineNo)
-                    // ====== multiline string (''') =======
 
                     // ============= other ===========
                     else ->
                         throw ParseException(
                             "According to the TOML specification string values (even Enums)" +
-                                    " should be wrapped (start and end) with quotes (\"\"), but the following value was not: <$this>." +
-                                    " Please note that multiline strings are not yet supported.",
+                                    " should be wrapped (start and end) with quotes (\"\")," +
+                                    " but the following value was not: <$this>.",
                             lineNo
                         )
                 }
@@ -69,6 +78,19 @@ public class TomlBasicString internal constructor(
                                 " in <$this> at position = [$index].", lineNo
                     )
                 }
+            }
+            return this
+        }
+
+        private fun String.checkCountOfOtherUnescapedQuotes(lineNo: Int): String {
+            // Here we do replace because the following is valid: a = """ \""" """
+            // We have 1 escaped quote + 2 unescaped quotes
+            if (this.replace("\\\"", " ").getCountOfOccurrencesOfSubstring("\"\"\"") != 0) {
+                throw ParseException(
+                    "Multi-line basic string cannot contain 3 or more quotes (\") in a row." +
+                            " Please remove the quotes or use escaping in <$this>",
+                    lineNo
+                )
             }
             return this
         }
