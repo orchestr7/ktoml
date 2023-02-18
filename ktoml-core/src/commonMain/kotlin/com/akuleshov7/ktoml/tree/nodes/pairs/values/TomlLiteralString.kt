@@ -5,6 +5,9 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
+import com.akuleshov7.ktoml.parsers.convertLineEndingBackslash
+import com.akuleshov7.ktoml.parsers.getCountOfOccurrencesOfSubstring
+import com.akuleshov7.ktoml.parsers.trimMultilineLiteralQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
 import com.akuleshov7.ktoml.utils.controlCharacterRegex
 import com.akuleshov7.ktoml.utils.multilineControlCharacterRegex
@@ -55,7 +58,17 @@ public class TomlLiteralString internal constructor(
 
     public companion object {
         private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlInputConfig): Any =
-                if (startsWith("'") && endsWith("'")) {
+                if (startsWith("'''") && endsWith("'''")) {
+                    val contentString = trimMultilineLiteralQuotes()
+                        .checkCountOfOtherQuotes(lineNo)
+                    val rawContent = if (config.allowEscapedQuotesInLiteralStrings) {
+                        contentString.convertSingleQuotes()
+                    } else {
+                        contentString
+                    }
+
+                    rawContent.convertLineEndingBackslash()
+                } else if (startsWith("'") && endsWith("'")) {
                     val contentString = trimSingleQuotes()
                     if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
                 } else {
@@ -111,5 +124,17 @@ public class TomlLiteralString internal constructor(
                         }
                     else -> this
                 }
+
+        private fun String.checkCountOfOtherQuotes(lineNo: Int): String {
+            if (this.replace("\\'", " ").getCountOfOccurrencesOfSubstring("'''") != 0) {
+                throw ParseException(
+                    "Multi-line literal basic string cannot contain 3 or more quotes (') in a row." +
+                            " Please remove the quotes or set allowEscapedQuotesInLiteral " +
+                            "Strings to true in the config and add escaping<$this>",
+                    lineNo
+                )
+            }
+            return this
+        }
     }
 }
