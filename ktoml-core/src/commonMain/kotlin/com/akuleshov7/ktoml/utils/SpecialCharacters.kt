@@ -96,34 +96,45 @@ public fun StringBuilder.appendEscapedUnicode(
 /**
  * Escaping special characters for encoding
  *
+ * @param multiline
  * @return converted string with escaped special symbols
  */
-public fun String.escapeSpecialCharacters(): String {
-    val withCtrlCharsEscaped = replace(controlCharacterRegex) { match ->
-        when (val char = match.value.single()) {
-            '\t' -> "\\t"
-            '\b' -> "\\b"
-            '\n' -> "\\n"
-            '\u000C' -> "\\f"
-            '\r' -> "\\r"
-            else -> {
-                val code = char.code
+public fun String.escapeSpecialCharacters(multiline: Boolean = false): String =
+        if (multiline) {
+            val withCtrlCharsEscaped = escapeCtrlChars(multilineControlCharacterRegex)
+            val withQuotesEscaped = withCtrlCharsEscaped.replace("\"\"\"", "\"\"\\\"")
 
-                val hexDigits = code.toString(HEX_RADIX)
-
-                "\\$SIMPLE_UNICODE_PREFIX${
-                    hexDigits.padStart(SIMPLE_UNICODE_LENGTH, '0')
-                }"
+            withQuotesEscaped.replace(
+                multilineUnescapedBackslashRegex,
+                Regex.escapeReplacement("\\\\")
+            )
+        } else {
+            val withCtrlCharsEscaped = escapeCtrlChars(controlCharacterRegex)
+            val withQuotesEscaped = withCtrlCharsEscaped.replace(unescapedDoubleQuoteRegex) { match ->
+                match.value.replace("\"", "\\\"")
             }
+
+            withQuotesEscaped.replace(
+                unescapedBackslashRegex,
+                Regex.escapeReplacement("\\\\")
+            )
+        }
+
+private fun String.escapeCtrlChars(regex: Regex) = replace(regex) { match ->
+    when (val char = match.value.single()) {
+        '\t' -> "\\t"
+        '\b' -> "\\b"
+        '\n' -> "\\n"
+        '\u000C' -> "\\f"
+        '\r' -> "\\r"
+        else -> {
+            val code = char.code
+
+            val hexDigits = code.toString(HEX_RADIX)
+
+            "\\$SIMPLE_UNICODE_PREFIX${
+                hexDigits.padStart(SIMPLE_UNICODE_LENGTH, '0')
+            }"
         }
     }
-
-    val withQuotesEscaped = withCtrlCharsEscaped.replace(unescapedDoubleQuoteRegex) { match ->
-        match.value.replace("\"", "\\\"")
-    }
-
-    return withQuotesEscaped.replace(
-        unescapedBackslashRegex,
-        Regex.escapeReplacement("\\\\")
-    )
 }

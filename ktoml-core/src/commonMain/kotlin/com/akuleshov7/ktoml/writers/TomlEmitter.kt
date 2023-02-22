@@ -180,7 +180,6 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
                 val quotes = if (isLiteral) "'''" else "\"\"\""
 
                 emit(quotes)
-                    .emitNewLine()
                     .emit(string)
                     .emit(quotes)
             } else {
@@ -196,22 +195,36 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      *
      * @param integer
      * @param representation How the integer will be represented in TOML.
+     * @param groupSize The digit group size, or less than `1` for no grouping. For
+     * example, a group size of `3` emits `1_000_000`, `4` emits `0b1111_1111`, etc.
      * @return this instance
      */
-    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter =
-            when (representation) {
-                DECIMAL -> emit(integer.toString())
-                HEX ->
-                    emit("0x")
-                        .emit(integer.toString(16))
-                BINARY ->
-                    emit("0b")
-                        .emit(integer.toString(2))
-                OCTAL ->
-                    emit("0o")
-                        .emit(integer.toString(8))
-                GROUPED -> TODO()
-            }
+    @Suppress("SAY_NO_TO_VAR")
+    public fun emitValue(
+        integer: Long,
+        representation: IntegerRepresentation = DECIMAL,
+        groupSize: Int = 0
+    ): TomlEmitter {
+        // Todo: Add groupSize to the annotation and AST and remove GROUPED.
+        if (representation == GROUPED) {
+            return emitValue(integer, representation = DECIMAL, groupSize = 3)
+        }
+
+        if (integer < 0) {
+            emit('-')
+        }
+
+        var digits = integer.toString(representation.radix).trimStart('-')
+
+        if (groupSize > 0) {
+            digits = (digits as CharSequence).reversed()
+                .chunked(groupSize, CharSequence::reversed)
+                .asReversed()
+                .joinToString(separator = "_")
+        }
+
+        return emit(representation.prefix).emit(digits)
+    }
 
     /**
      * Emits a floating-point value.

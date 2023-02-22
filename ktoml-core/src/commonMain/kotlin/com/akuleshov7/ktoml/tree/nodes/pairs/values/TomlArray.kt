@@ -12,9 +12,11 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 /**
  * Toml AST Node for a representation of arrays: key = [value1, value2, value3]
  * @property content
+ * @property multiline
  */
 public class TomlArray internal constructor(
-    override var content: Any
+    override var content: Any,
+    public var multiline: Boolean = false
 ) : TomlValue() {
     public constructor(
         rawContent: String,
@@ -59,14 +61,13 @@ public class TomlArray internal constructor(
     @Suppress("UNCHECKED_CAST")
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         emitter.startArray()
 
         val content = (content as List<Any>).map {
             if (it is List<*>) {
-                TomlArray(it)
+                TomlArray(it, multiline)
             } else {
                 it as TomlValue
             }
@@ -81,7 +82,7 @@ public class TomlArray internal constructor(
                 emitter.emitNewLine()
                     .emitIndent()
 
-                value.write(emitter, config, multiline = value is TomlArray)
+                value.write(emitter, config)
 
                 if (i < last) {
                     emitter.emitElementDelimiter()

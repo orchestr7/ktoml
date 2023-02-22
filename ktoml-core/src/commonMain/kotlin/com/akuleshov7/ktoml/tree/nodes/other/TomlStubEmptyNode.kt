@@ -24,8 +24,7 @@ public class TomlStubEmptyNode(lineNo: Int) : TomlNode(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         // Nothing to write in stub nodes.
     }

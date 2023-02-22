@@ -29,17 +29,25 @@ public sealed class TomlValue {
         multiline: Boolean = false
     ): Unit = write(emitter, config.output, multiline)
 
+    @Deprecated(
+        message = "The multiline parameter overload is deprecated, use the multiline" +
+                " property on supported types instead. Will be removed in next releases.",
+        replaceWith = ReplaceWith("write(emitter, config)")
+    )
+    public fun write(
+        emitter: TomlEmitter,
+        config: TomlOutputConfig = TomlOutputConfig(),
+        multiline: Boolean
+    ): Unit = write(emitter, config)
+
     /**
-     * Writes this value to the specified [emitter], optionally writing the value
-     * [multiline] (if supported by the value type).
+     * Writes this value to the specified [emitter].
      *
      * @param emitter
      * @param config
-     * @param multiline
      */
     public abstract fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig = TomlOutputConfig(),
-        multiline: Boolean = false
+        config: TomlOutputConfig = TomlOutputConfig()
     )
 }

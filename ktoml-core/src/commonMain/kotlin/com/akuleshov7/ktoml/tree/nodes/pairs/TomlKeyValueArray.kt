@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -77,9 +78,10 @@ public class TomlKeyValueArray(
         config.input
     )
 
+    override fun isMultiline(): Boolean = (value as TomlArray).multiline
+
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
-    ): Unit = super<TomlKeyValue>.write(emitter, config, multiline)
+        config: TomlOutputConfig
+    ): Unit = super<TomlKeyValue>.write(emitter, config)
 }

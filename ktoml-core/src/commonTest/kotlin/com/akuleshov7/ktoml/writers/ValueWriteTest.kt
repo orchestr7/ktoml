@@ -50,21 +50,32 @@ class PrimitiveValueWriteTest {
         testTomlValue(TomlBasicString("""hello\u0000\\\Uffffffff world""" as Any), """"hello\u0000\\\Uffffffff world"""")
     }
 
-    @Suppress("COMMENTED_CODE")
     @Test
     fun integerWriteTest() {
         // Decimal
         testTomlValue(TomlLong(1234567L), "1234567")
         testTomlValue(TomlLong(-1234567L), "-1234567")
+        testTomlValue(TomlLong(Long.MIN_VALUE), "${Long.MIN_VALUE}")
 
         // Hex
-        //testTomlValue(TomlLong(0xdeadc0de, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlLong(0xdeadc0deL, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlLong(-0xdeadc0deL, IntegerRepresentation.HEX), "-0xdeadc0de")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.HEX), "-0x" + Long.MIN_VALUE.toString(16).trimStart('-'))
 
         // Binary
-        //testTomlValue(TomlLong(0b10000000, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlLong(0b10000000L, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlLong(-0b10000000L, IntegerRepresentation.BINARY), "-0b10000000")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.BINARY), "-0b" + Long.MIN_VALUE.toString(2).trimStart('-'))
 
         // Octal
-        //testTomlValue(TomlLong(0x1FF, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlLong(0x1FFL, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlLong(-0x1FFL, IntegerRepresentation.OCTAL), "-0o777")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.OCTAL), "-0o" + Long.MIN_VALUE.toString(8).trimStart('-'))
+
+        // Grouped
+        testTomlValue(TomlLong(1234567L, IntegerRepresentation.GROUPED), "1_234_567")
+        testTomlValue(TomlLong(-1234567L, IntegerRepresentation.GROUPED), "-1_234_567")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.GROUPED), "-9_223_372_036_854_775_808")
     }
 
     @Test
@@ -104,15 +115,17 @@ class PrimitiveValueWriteTest {
 
     @Test
     fun arrayWriteTest() {
+        val innerArray = TomlArray(
+            listOf(
+                TomlDouble(3.14)
+            )
+        )
+
         val array = TomlArray(
             listOf(
                 TomlLong(1L),
                 TomlBasicString("string" as Any),
-                TomlArray(
-                    listOf(
-                        TomlDouble(3.14)
-                    )
-                )
+                innerArray
             )
         )
 
@@ -125,6 +138,9 @@ class PrimitiveValueWriteTest {
 
         // Multiline
 
+        innerArray.multiline = true
+        array.multiline = true
+
         testTomlValue(
             array,
             """
@@ -135,8 +151,7 @@ class PrimitiveValueWriteTest {
                     3.14
                 ]
             ]
-            """.trimIndent(),
-            multiline = true
+            """.trimIndent()
         )
     }
 }
@@ -144,15 +159,14 @@ class PrimitiveValueWriteTest {
 fun testTomlValue(
     value: TomlValue,
     expectedString: String,
-    config: TomlOutputConfig = TomlOutputConfig(),
-    multiline: Boolean = false
+    config: TomlOutputConfig = TomlOutputConfig()
 ) {
     assertEquals(
         expectedString,
         actual = buildString {
             val emitter = TomlStringEmitter(this, config)
 
-            value.write(emitter, config, multiline)
+            value.write(emitter, config)
         }
     )
 }

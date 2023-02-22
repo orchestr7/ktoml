@@ -62,8 +62,7 @@ public class TomlArrayOfTables(
 
     override fun TomlEmitter.writeChildren(
         children: List<TomlNode>,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         val last = children.lastIndex
 
@@ -83,7 +82,7 @@ public class TomlArrayOfTables(
 
                 indent()
 
-                child.write(emitter = this, config, multiline)
+                child.write(emitter = this, config)
 
                 dedent()
 
@@ -97,7 +96,7 @@ public class TomlArrayOfTables(
                     }
                 }
             } else {
-                child.write(emitter = this, config, multiline)
+                child.write(emitter = this, config)
             }
         }
     }
@@ -119,9 +118,8 @@ public class TomlArrayOfTablesElement(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
-    ): Unit = emitter.writeChildren(children, config, multiline)
+        config: TomlOutputConfig
+    ): Unit = emitter.writeChildren(children, config)
 
     override fun toString(): String = EMPTY_TECHNICAL_NODE
 }

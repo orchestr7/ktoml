@@ -159,7 +159,6 @@ class EncodingAnnotationTest {
     }
 
     @Test
-    @Ignore
     fun multilineArrayTest() {
         @Serializable
         data class File(
@@ -170,7 +169,8 @@ class EncodingAnnotationTest {
                         "fox", "jumps", "over",
                         "the", "lazy", "dog"
                     ),
-            val fib: @TomlMultiline List<Long> =
+            @TomlMultiline
+            val fib: List<Long> =
                     listOf(1, 1, 2, 3, 5, 8, 13)
         )
 
@@ -203,40 +203,29 @@ class EncodingAnnotationTest {
     }
 
     @Test
-    @Ignore
     fun integerRepresentationTest() {
         @Serializable
         data class File(
             @TomlInteger(DECIMAL)
-            val decA: Long = 0,
-            val decB: @TomlInteger(DECIMAL) Long = 1,
+            val dec: Long = 0,
             @TomlInteger(BINARY)
-            val binA: Long = 2,
-            val binB: @TomlInteger(BINARY) Long = 3,
+            val bin: Long = 2,
             @TomlInteger(GROUPED)
-            val groA: Long = 1_000_000,
-            val groB: @TomlInteger(GROUPED) Long = 1_000,
+            val gro: Long = 9_999_099_009,
             @TomlInteger(HEX)
-            val hexA: Long = 4,
-            val hexB: @TomlInteger(HEX) Long = 5,
+            val hex: Long = 4,
             @TomlInteger(OCTAL)
-            val octA: Long = 6,
-            val octB: @TomlInteger(OCTAL) Long = 7
+            val oct: Long = 6,
         )
 
         assertEncodedEquals(
             value = File(),
             expectedToml = """
-                decA = 0
-                decB = 1
-                binA = 0b10
-                binB = 0b11
-                groA = 1_000_000
-                groB = 1_000
-                hexA = 0x4
-                hexB = 0x5
-                octA = 0o6
-                octB = 0o7
+                dec = 0
+                bin = 0b10
+                gro = 9_999_099_009
+                hex = 0x4
+                oct = 0o6
             """.trimIndent()
         )
     }
@@ -257,13 +246,21 @@ class EncodingAnnotationTest {
     }
 
     @Test
-    @Ignore
     fun multilineStringTest() {
         @Serializable
         data class File(
             @TomlMultiline
             val mlTextA: String = "\n\\tMultiline\ntext!\n",
-            val mlTextB: @[TomlMultiline TomlLiteral] String = "\n\"Multiline\n\"text!\n"
+            @TomlMultiline
+            val mlTextB: String = """
+                
+                Text with escaped quotes ""\"\
+                and line break
+                
+            """.trimIndent(),
+            @TomlLiteral
+            @TomlMultiline
+            val mlTextC: String = "\n\"Multiline\ntext!\"\n"
         )
 
         val tripleQuotes = "\"\"\""
@@ -275,7 +272,11 @@ class EncodingAnnotationTest {
                 \tMultiline
                 text!
                 $tripleQuotes
-                mlTextB = '''
+                mlTextB = $tripleQuotes
+                Text with escaped quotes ""\"\
+                and line break
+                $tripleQuotes
+                mlTextC = '''
                 "Multiline
                 text!"
                 '''

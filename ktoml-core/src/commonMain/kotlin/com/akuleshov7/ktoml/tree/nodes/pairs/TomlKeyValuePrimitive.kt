@@ -78,7 +78,6 @@ public class TomlKeyValuePrimitive(
 
     public override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
-    ): Unit = super<TomlKeyValue>.write(emitter, config, multiline)
+        config: TomlOutputConfig
+    ): Unit = super<TomlKeyValue>.write(emitter, config)
 }

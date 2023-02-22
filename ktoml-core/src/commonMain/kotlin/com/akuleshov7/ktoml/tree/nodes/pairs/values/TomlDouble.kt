@@ -19,8 +19,7 @@ internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         emitter.emitValue(content as Double)
     }

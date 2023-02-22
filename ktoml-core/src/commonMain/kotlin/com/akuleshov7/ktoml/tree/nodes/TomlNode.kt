@@ -251,16 +251,31 @@ public sealed class TomlNode(
      * @param config The [TomlConfig] instance. Defaults to the node's config.
      * @param multiline Whether to write the node over multiple lines, if possible.
      */
-    public abstract fun write(
+    @Deprecated(
+        message = "The multiline parameter overload is deprecated, use the multiline" +
+                " property on supported TomlValue types instead. Will be removed in next releases.",
+        replaceWith = ReplaceWith("write(emitter, config)")
+    )
+    public fun write(
         emitter: TomlEmitter,
         config: TomlOutputConfig = TomlOutputConfig(),
         multiline: Boolean = false
+    ): Unit = write(emitter, config)
+
+    /**
+     * Writes this node as text to [emitter].
+     *
+     * @param emitter The [TomlEmitter] instance to write to.
+     * @param config The [TomlConfig] instance. Defaults to the node's config.
+     */
+    public abstract fun write(
+        emitter: TomlEmitter,
+        config: TomlOutputConfig = TomlOutputConfig()
     )
 
     protected open fun TomlEmitter.writeChildren(
         children: List<TomlNode>,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         val last = children.lastIndex
 
@@ -272,7 +287,7 @@ public sealed class TomlNode(
                 emitIndent()
             }
 
-            child.write(emitter = this, config, multiline)
+            child.write(emitter = this, config)
 
             if (child is TomlKeyValue || child is TomlInlineTable) {
                 writeChildInlineComment(child)
@@ -283,7 +298,7 @@ public sealed class TomlNode(
 
                 // A single newline follows single-line pairs, except when a table
                 // follows. Two newlines follow multi-line pairs.
-                if ((child is TomlKeyValueArray && multiline) || children[i + 1] is TomlTable) {
+                if ((child is TomlKeyValueArray && child.isMultiline()) || children[i + 1] is TomlTable) {
                     emitNewLine()
                 }
             }

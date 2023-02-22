@@ -73,8 +73,7 @@ public abstract class TomlTable(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         // Todo: Option to explicitly define super tables?
         // Todo: Support dotted key-value pairs (i.e. a.b.c.d = 7)
@@ -94,11 +93,11 @@ public abstract class TomlTable(
 
             emitter.indent()
 
-            emitter.writeChildren(children, config, multiline)
+            emitter.writeChildren(children, config)
 
             emitter.dedent()
         } else {
-            emitter.writeChildren(children, config, multiline)
+            emitter.writeChildren(children, config)
         }
     }
 

@@ -7,7 +7,6 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.utils.bareKeyRegex
 import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -96,14 +95,8 @@ public abstract class TomlAbstractEncoder protected constructor(
     }
 
     override fun encodeLong(value: Long) {
-        if (attributes.intRepresentation != DECIMAL) {
-            throw UnsupportedEncodingFeatureException(
-                "Non-decimal integer representation is not yet supported."
-            )
-        }
-
         if (!encodeAsKey(value, "Long")) {
-            appendValue(TomlLong(value))
+            appendValue(TomlLong(value, attributes.intRepresentation))
         }
     }
 
@@ -112,18 +105,12 @@ public abstract class TomlAbstractEncoder protected constructor(
     }
 
     override fun encodeString(value: String) {
-        if (attributes.isMultiline) {
-            throw UnsupportedEncodingFeatureException(
-                "Multiline strings are not yet supported."
-            )
-        }
-
         if (!encodeAsKey(value)) {
             appendValue(
                 if (attributes.isLiteral) {
-                    TomlLiteralString(value)
+                    TomlLiteralString(value, attributes.isMultiline)
                 } else {
-                    TomlBasicString(value)
+                    TomlBasicString(value, attributes.isMultiline)
                 }
             )
         }
@@ -199,6 +186,15 @@ public abstract class TomlAbstractEncoder protected constructor(
                 is PrimitiveKind,
                 SerialKind.ENUM,
                 StructureKind.LIST -> attributes.isInline = true
+                else -> { }
+            }
+        }
+
+        // Force primitive array elements to be single-line.
+        if (attributes.isInline && descriptor.kind == StructureKind.LIST) {
+            when (typeDescriptor.kind) {
+                is PrimitiveKind,
+                SerialKind.ENUM -> attributes.isMultiline = false
                 else -> { }
             }
         }

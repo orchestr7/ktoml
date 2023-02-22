@@ -18,8 +18,7 @@ public class TomlNull() : TomlValue() {
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig,
-        multiline: Boolean
+        config: TomlOutputConfig
     ) {
         emitter.emitNullValue()
     }
