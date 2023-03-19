@@ -92,8 +92,8 @@ class TomlFileParserTest {
 
     @ExperimentalSerializationApi
     @Test
-    fun regressionCast2Test() {
-        val file = "src/commonTest/resources/class_cast_regression2.toml"
+    fun regressionCastTest() {
+        val file = "src/commonTest/resources/class_cast_regression.toml"
         val parsedResult = TomlFileReader.decodeFromFile<RegressionTest>(serializer(), file)
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
@@ -101,7 +101,7 @@ class TomlFileParserTest {
     @ExperimentalSerializationApi
     @Test
     fun regressionPartialTest() {
-        val file = "src/commonTest/resources/class_cast_regression2.toml"
+        val file = "src/commonTest/resources/class_cast_regression.toml"
         val parsedResult = TomlFileReader.decodeFromFile<RegressionTest>(serializer(), file)
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
