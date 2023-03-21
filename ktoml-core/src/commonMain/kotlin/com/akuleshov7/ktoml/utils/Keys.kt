@@ -4,19 +4,17 @@
 
 package com.akuleshov7.ktoml.utils
 
+private val bareKeyCharSet = (('A'..'Z') + ('a'..'z') + ('0'..'9') + '-' + '_')
+    .toCharArray()
+    .concatToString()
+
 /**
  * Returns true if the specified key is a bare key, a key containing only
  * alphanumeric, underscore, and hyphen characters.
  *
  * @return `true` if this key is a bare key.
  */
-internal fun String.isBareKey() =
-        all {
-            it in 'A'..'Z' ||
-                    it in 'a'..'z' ||
-                    it in '0'..'9' ||
-                    it in "-_"
-        }
+internal fun String.isBareKey() = all { it in bareKeyCharSet }
 
 /**
  * Returns true if the specified key contains at least one unescaped double
