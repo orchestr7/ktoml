@@ -1,0 +1,37 @@
+{
+  "enabled": true,
+  "dependencyDashboard": true,
+  "schedule": [
+    "before 4am on Monday"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "managers": ["github-actions"],
+      "groupName": "all github actions",
+      "groupSlug": "all-github-actions"
+    },
+    {
+      "managers": ["gradle"],
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "all non-major dependencies (except core Kotlin)",
+      "groupSlug": "all-minor-patch"
+    },
+    {
+      "managers": ["gradle"],
+      "matchPackagePatterns": [
+        "^org\\.jetbrains\\.kotlin[.:]"
+      ],
+      "groupName": "Kotlin core dependencies",
+      "groupSlug": "core-kotlin"
+    }
+  ]
+}
