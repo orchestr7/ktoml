@@ -101,40 +101,90 @@ public fun StringBuilder.appendEscapedUnicode(
  */
 public fun String.escapeSpecialCharacters(multiline: Boolean = false): String =
         if (multiline) {
-            val withCtrlCharsEscaped = escapeCtrlChars(multilineControlCharacterRegex)
-            val withQuotesEscaped = withCtrlCharsEscaped.replace("\"\"\"", "\"\"\\\"")
-
-            withQuotesEscaped.replace(
-                multilineUnescapedBackslashRegex,
-                Regex.escapeReplacement("\\\\")
-            )
+            escapeControlChars(Char::isMultilineControlChar)
+                .replace("\"\"\"", "\"\"\\\"")
+                .escapeBackslashes("btnfruU\"\r\n")
         } else {
-            val withCtrlCharsEscaped = escapeCtrlChars(controlCharacterRegex)
-            val withQuotesEscaped = withCtrlCharsEscaped.replace(unescapedDoubleQuoteRegex) { match ->
-                match.value.replace("\"", "\\\"")
-            }
-
-            withQuotesEscaped.replace(
-                unescapedBackslashRegex,
-                Regex.escapeReplacement("\\\\")
-            )
+            escapeControlChars(Char::isControlChar)
+                .replace("\"", "\\\"")
+                .escapeBackslashes("btnfruU\"")
         }
 
-private fun String.escapeCtrlChars(regex: Regex) = replace(regex) { match ->
-    when (val char = match.value.single()) {
-        '\t' -> "\\t"
-        '\b' -> "\\b"
-        '\n' -> "\\n"
-        '\u000C' -> "\\f"
-        '\r' -> "\\r"
-        else -> {
-            val code = char.code
+/**
+ * Checks if a character is an invalid control character for strings. Specifically,
+ * this returns true for characters in Unicode block [`Cc`](https://www.compart.com/en/unicode/category/Cc)
+ * excluding tab.
+ *
+ * Used to replace these characters with valid Unicode escapes when writing basic
+ * strings, or throw an exception for them when writing literal strings.
+ *
+ * @return `true` if the character is a control character, except tab.
+ */
+internal fun Char.isControlChar() = this in CharCategory.CONTROL && this != '\t'
 
-            val hexDigits = code.toString(HEX_RADIX)
+/**
+ * Checks if a character is an invalid control character for multiline strings.
+ * This is the same as [isControlChar], but excludes line terminators.
+ *
+ * @return `true` if the character is a control character, except tab and line
+ * terminators.
+ */
+internal fun Char.isMultilineControlChar() = isControlChar() && this !in "\n\r"
 
-            "\\$SIMPLE_UNICODE_PREFIX${
-                hexDigits.padStart(SIMPLE_UNICODE_LENGTH, '0')
-            }"
+private inline fun String.escapeControlChars(predicate: (Char) -> Boolean): String {
+    val sb = StringBuilder(length)
+    var last = 0
+    for ((i, char) in withIndex()) {
+        if (predicate(char)) {
+            sb.append(this, last, i)
+                .append(char.escapeControlChar())
+            last = i + 1
         }
     }
+
+    if (last < length) {
+        sb.append(this, last, length)
+    }
+
+    return sb.toString()
+}
+
+private fun Char.escapeControlChar() = when (this) {
+    '\t' -> "\\t"
+    '\b' -> "\\b"
+    '\n' -> "\\n"
+    '\u000C' -> "\\f"
+    '\r' -> "\\r"
+    else -> {
+        val hexDigits = code.toString(HEX_RADIX)
+
+        "\\$SIMPLE_UNICODE_PREFIX${
+            hexDigits.padStart(SIMPLE_UNICODE_LENGTH, '0')
+        }"
+    }
+}
+
+private fun String.escapeBackslashes(escapes: String): String {
+    val sb = StringBuilder(length)
+    var slashCount = 0
+    var last = 0
+    for ((i, char) in withIndex()) {
+        if (char == '\\') {
+            slashCount++
+        } else {
+            if (slashCount > 0 && char !in escapes && slashCount % 2 != 0) {
+                sb.append(this, last, i - 1)
+                    .append("\\\\$char")
+                last = i + 1
+            }
+
+            slashCount = 0
+        }
+    }
+
+    if (last < length) {
+        sb.append(this, last, length)
+    }
+
+    return sb.toString()
 }

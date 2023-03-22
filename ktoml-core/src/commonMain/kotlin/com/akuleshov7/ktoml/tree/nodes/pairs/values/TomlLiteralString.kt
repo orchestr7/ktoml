@@ -9,8 +9,8 @@ import com.akuleshov7.ktoml.parsers.convertLineEndingBackslash
 import com.akuleshov7.ktoml.parsers.getCountOfOccurrencesOfSubstring
 import com.akuleshov7.ktoml.parsers.trimMultilineLiteralQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
-import com.akuleshov7.ktoml.utils.controlCharacterRegex
-import com.akuleshov7.ktoml.utils.multilineControlCharacterRegex
+import com.akuleshov7.ktoml.utils.isControlChar
+import com.akuleshov7.ktoml.utils.isMultilineControlChar
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -92,7 +92,7 @@ public class TomlLiteralString internal constructor(
                 when {
                     multiline ->
                         when {
-                            multilineControlCharacterRegex in this ->
+                            any(Char::isMultilineControlChar) ->
                                 throw TomlWritingException(
                                     "Control characters (excluding tab and line" +
                                             " terminators) are not permitted in" +
@@ -107,7 +107,7 @@ public class TomlLiteralString internal constructor(
                                 )
                             else -> this
                         }
-                    controlCharacterRegex in this ->
+                    any(Char::isControlChar) ->
                         throw TomlWritingException(
                             "Control characters (excluding tab) are not permitted" +
                                     " in literal strings."
