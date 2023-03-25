@@ -9,6 +9,10 @@ plugins {
 kotlin {
     explicitApi()
 
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
