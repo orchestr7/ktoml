@@ -11,6 +11,10 @@ plugins {
 kotlin {
     explicitApi()
 
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+
     js(IR) {
         browser()
         nodejs()

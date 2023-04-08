@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.utils.bareKeyRegex
-import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
+import com.akuleshov7.ktoml.utils.isBareKey
+import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -103,10 +103,10 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun emitKey(key: String): TomlEmitter =
-            if (key matches bareKeyRegex) {
+            if (key.isBareKey()) {
                 emitBareKey(key)
             } else {
-                emitQuotedKey(key, isLiteral = key matches literalKeyCandidateRegex)
+                emitQuotedKey(key, isLiteral = key.isLiteralKeyCandidate())
             }
 
     /**

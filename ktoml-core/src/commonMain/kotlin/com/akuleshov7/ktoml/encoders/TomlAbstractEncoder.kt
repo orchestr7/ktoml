@@ -5,8 +5,8 @@ import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
-import com.akuleshov7.ktoml.utils.bareKeyRegex
-import com.akuleshov7.ktoml.utils.literalKeyCandidateRegex
+import com.akuleshov7.ktoml.utils.isBareKey
+import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -236,8 +236,8 @@ public abstract class TomlAbstractEncoder protected constructor(
      */
     protected fun setKey(key: String) {
         attributes.key = when {
-            key matches bareKeyRegex -> key
-            key matches literalKeyCandidateRegex -> "'$key'"
+            key.isBareKey() -> key
+            key.isLiteralKeyCandidate() -> "'$key'"
             else -> "\"$key\""
         }
     }
