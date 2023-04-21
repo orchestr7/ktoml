@@ -1,41 +1,51 @@
+package com.akuleshov7.ktoml.source
 
-package com.akuleshov7.ktoml.file
-
+import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.source.TomlSourceReader
+
+import okio.Source
 
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
 
 /**
- * TomlFile class can be used for reading files in TOML format
- * that is used to serialize/deserialize TOML file or string
+ * This class can be used for reading [Source] in TOML format
  * @property serializersModule
  */
-public open class TomlFileReader public constructor(
+@OptIn(ExperimentalSerializationApi::class)
+public open class TomlSourceReader(
     inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
-    serializersModule: SerializersModule = EmptySerializersModule()
-) : TomlSourceReader(
+    override val serializersModule: SerializersModule = EmptySerializersModule
+) : Toml(
     inputConfig,
     outputConfig,
     serializersModule
 ) {
     /**
-     * Simple deserializer of a file that contains toml. Reading file with okio native library
+     * Simple deserializer of a source that contains toml.
      *
      * @param deserializer deserialization strategy
-     * @param tomlFilePath path to the file where toml is stored
+     * @param source source where toml is stored
      * @return deserialized object of type T
      */
-    public fun <T> decodeFromFile(
+    public fun <T> decodeFromSource(
         deserializer: DeserializationStrategy<T>,
-        tomlFilePath: String,
-    ): T = decodeFromSource(deserializer, getFileSource(tomlFilePath))
+        source: Source,
+    ): T = source.useLines { decodeFromString(deserializer, it, inputConfig) }
+
+    /**
+     * Simple deserializer of a source that contains toml.
+     *
+     * @param source source where toml is stored
+     * @return deserialized object of type T
+     */
+    public inline fun <reified T> decodeFromSource(source: Source): T = decodeFromSource(serializersModule.serializer(), source)
 
     /**
      * Partial deserializer of a file that contains toml. Reading file with okio native library.
@@ -46,15 +56,17 @@ public open class TomlFileReader public constructor(
      * and you do not want to reproduce whole object structure in the code
      *
      * @param deserializer deserialization strategy
-     * @param tomlFilePath path to the file where toml is stored
+     * @param source source where toml is stored
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
      * @return deserialized object of type T
      */
-    public fun <T> partiallyDecodeFromFile(
+    public fun <T> partiallyDecodeFromSource(
         deserializer: DeserializationStrategy<T>,
-        tomlFilePath: String,
+        source: Source,
         tomlTableName: String,
-    ): T = partiallyDecodeFromSource(deserializer, getFileSource(tomlFilePath), tomlTableName)
+    ): T = source.useLines {
+        partiallyDecodeFromLines(deserializer, it, tomlTableName, inputConfig)
+    }
 
     /**
      * Partial deserializer of a file that contains toml. Reading file with okio native library.
@@ -64,23 +76,20 @@ public open class TomlFileReader public constructor(
      * (!) Useful when you would like to deserialize only ONE table
      * and you do not want to reproduce whole object structure in the code
      *
-     * @param tomlFilePath path to the file where toml is stored
+     * @param source source where toml is stored
      * @param tomlTableName fully qualified name of the toml table (it should be the full name -  a.b.c.d)
      * @return deserialized object of type T
      */
-    public inline fun <reified T> partiallyDecodeFromFile(
-        tomlFilePath: String,
+    public inline fun <reified T> partiallyDecodeFromSource(
+        source: Source,
         tomlTableName: String,
-    ): T = partiallyDecodeFromFile(serializersModule.serializer(), tomlFilePath, tomlTableName)
+    ): T = partiallyDecodeFromSource(serializersModule.serializer(), source, tomlTableName)
 
     /**
-     * The default instance of [TomlFileReader] with the default configuration.
+     * The default instance of [TomlSourceReader] with the default configuration.
      * See [TomlConfig] for the list of the default options
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : TomlFileReader(
-        inputConfig = TomlInputConfig(),
-        outputConfig = TomlOutputConfig()
-    )
+    public companion object Default : TomlSourceReader(TomlInputConfig())
 }

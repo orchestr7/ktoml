@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
@@ -30,7 +31,7 @@ class NullableTablesTest {
     @Test
     fun nullableKey() {
         val mapper = Toml(
-            config = TomlConfig(
+            inputConfig = TomlInputConfig(
                 ignoreUnknownNames = true,
                 allowEmptyValues = true
             )
@@ -80,7 +81,7 @@ class NullableTablesTest {
 class EmptyTomlTest {
     @Test
     fun emptyToml() {
-        var res = Toml().decodeFromString<Config>(
+        var res = Toml.decodeFromString<Config>(
             """            
              
              
@@ -89,7 +90,7 @@ class EmptyTomlTest {
 
         assertEquals(Config(), res)
 
-        res = Toml().decodeFromString(
+        res = Toml.decodeFromString(
             "".trimIndent()
         )
 

@@ -34,11 +34,19 @@ class BasicMultilineStringDecoderTest {
         assertEquals(SimpleString("abc"), Toml.decodeFromString(test))
 
         test = """
+            
+            a = ${tripleQuotes}abc${tripleQuotes}
+            
+            b = 123
+        """.trimIndent()
+        assertEquals(StringAndInt("abc", 123), Toml.decodeFromString(test))
+
+        test = """
             a = $tripleQuotes
-            first line
+            first line # comment \
             second line$tripleQuotes
         """.trimIndent()
-        assertEquals(SimpleString("first line\nsecond line"), Toml.decodeFromString(test))
+        assertEquals(SimpleString("first line # comment second line"), Toml.decodeFromString(test))
 
         test = """
             a = ${tripleQuotes}first line

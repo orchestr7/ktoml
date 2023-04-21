@@ -311,7 +311,7 @@ class GeneralDecoderTest {
             Regression(
                 General("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             ),
-            Toml().decodeFromString(test)
+            Toml.decodeFromString(test)
         )
     }
 
@@ -323,7 +323,7 @@ class GeneralDecoderTest {
         """.trimIndent()
         assertEquals(
             Regression(General("dgfdgfd # f # hi")),
-            Toml().decodeFromString(test)
+            Toml.decodeFromString(test)
         )
 
         test = """
@@ -334,7 +334,7 @@ class GeneralDecoderTest {
         assertEquals(
             Regression(General(null)),
 
-            Toml().decodeFromString(test)
+            Toml.decodeFromString(test)
         )
 
         test = """
@@ -344,7 +344,7 @@ class GeneralDecoderTest {
         assertEquals(
             Regression(General(" hello ")),
 
-            Toml().decodeFromString(test)
+            Toml.decodeFromString(test)
         )
 
         test = """
@@ -354,7 +354,7 @@ class GeneralDecoderTest {
         assertEquals(
             Regression(GeneralInt(0)),
 
-            Toml().decodeFromString(test)
+            Toml.decodeFromString(test)
         )
     }
 

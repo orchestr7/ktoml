@@ -13,6 +13,7 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
 
+    // building jvm task only on windows
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
@@ -24,6 +25,7 @@ kotlin {
     macosX64()
     macosArm64()
     ios()
+    iosSimulatorArm64()
 
     sourceSets {
         all {
@@ -32,10 +34,10 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
                 implementation(project(":ktoml-core"))
-                implementation(project(":ktoml-source"))
             }
         }
 
@@ -64,12 +66,4 @@ configurePublishing()
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()
-}
-
-// ios tests on github are behaving differently than locally - as github moves resources to a different directory
-// so, as it is not critical, skipping them
-tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest> {
-    if (this.name.contains("ios")) {
-        this.enabled = false
-    }
 }
