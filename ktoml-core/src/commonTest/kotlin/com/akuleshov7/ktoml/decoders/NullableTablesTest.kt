@@ -81,7 +81,7 @@ class NullableTablesTest {
 class EmptyTomlTest {
     @Test
     fun emptyToml() {
-        var res = Toml().decodeFromString<Config>(
+        var res = Toml.decodeFromString<Config>(
             """            
              
              
@@ -90,7 +90,7 @@ class EmptyTomlTest {
 
         assertEquals(Config(), res)
 
-        res = Toml().decodeFromString(
+        res = Toml.decodeFromString(
             "".trimIndent()
         )
 

@@ -30,7 +30,7 @@ class StreamTests {
         )
         assertEquals(
             expected,
-            Toml().decodeFromStream(getTestDataStream("simple_example.toml"))
+            Toml.decodeFromStream(getTestDataStream("simple_example.toml"))
         )
     }
 
@@ -42,7 +42,7 @@ class StreamTests {
             A(Ab(InnerTest("Undefined")), InnerTest("Undefined")),
             D(InnerTest("Undefined"))
         )
-        assertEquals(test, Toml().decodeFromStream(getTestDataStream("complex_toml_tables.toml")))
+        assertEquals(test, Toml.decodeFromStream(getTestDataStream("complex_toml_tables.toml")))
         // ==== checking how table discovery works
         val parsedResult =
                 getTestDataStream("complex_toml_tables.toml").source().useLines { lines ->
@@ -57,7 +57,7 @@ class StreamTests {
     @Test
     fun regressionCast2Test() {
         val parsedResult =
-                Toml().decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
+                Toml.decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
@@ -65,7 +65,7 @@ class StreamTests {
     @Test
     fun regressionPartialTest() {
         val parsedResult =
-                Toml().decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
+                Toml.decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
         assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
     }
 
@@ -82,7 +82,7 @@ class StreamTests {
                 includedTests = null,
                 ignoreSaveComments = null
             ),
-            Toml().partiallyDecodeFromStream(
+            Toml.partiallyDecodeFromStream(
                 getTestDataStream("partial_parser_regression.toml"),
                 "general"
             )
@@ -103,7 +103,7 @@ class StreamTests {
                 warn = WarnConfig(list = listOf("12a", "12f")),
                 list3 = listOf("mystr", "2", "3")
             ),
-            Toml().decodeFromStream(getTestDataStream("partial_parser_regression.toml"))
+            Toml.decodeFromStream(getTestDataStream("partial_parser_regression.toml"))
         )
     }
 
@@ -112,7 +112,7 @@ class StreamTests {
         val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
         assertEquals(
             test.table1,
-            Toml().partiallyDecodeFromStream(
+            Toml.partiallyDecodeFromStream(
                 getTestDataStream("partial_decoder.toml"),
                 "table1"
             )
@@ -135,6 +135,7 @@ class StreamTests {
     }
 
     private fun getTestDataStream(name: String): InputStream = requireNotNull(StreamTests::class.java.getResourceAsStream(name))
+
     /**
      * @property title
      * @property owner

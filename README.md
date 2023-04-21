@@ -117,8 +117,9 @@ implementation("com.akuleshov7:ktoml-file:0.4.0")
 ## How to use
 :heavy_exclamation_mark: as TOML is a foremost language for config files, we have also supported the deserialization from file.
 However, we are using [okio](https://github.com/square/okio) to read the file, so it will be added as a dependency to your
-project if you will import [ktoml-file](https://search.maven.org/artifact/com.akuleshov7/ktoml-file).
-For basic scenarios of decoding strings you can simple use [ktoml-core](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
+project if you will import [ktoml-file](https://search.maven.org/artifact/com.akuleshov7/ktoml-file). 
+Same about okio `Source` (for example if you need Streaming): [ktoml-source](https://search.maven.org/artifact/com.akuleshov7/ktoml-source).
+For basic scenarios of decoding strings you can simply use [ktoml-core](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
 
 :heavy_exclamation_mark: don't forget to add the serialization plugin `kotlin("plugin.serialization")` to your project.
 Otherwise, `@Serialization` annotation won't work properly.

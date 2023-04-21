@@ -53,7 +53,7 @@ class DateTimeDecoderTest {
                 expectedLocalTime,
                 "1979-05-27T00:32:00-07:00"
             ),
-            Toml().decodeFromString(toml)
+            Toml.decodeFromString(toml)
         )
     }
 

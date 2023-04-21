@@ -22,7 +22,11 @@ public open class TomlSourceReader(
     inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
-) : Toml(inputConfig, outputConfig, serializersModule) {
+) : Toml(
+    inputConfig,
+    outputConfig,
+    serializersModule
+) {
     /**
      * Simple deserializer of a source that contains toml.
      *
@@ -33,7 +37,7 @@ public open class TomlSourceReader(
     public fun <T> decodeFromSource(
         deserializer: DeserializationStrategy<T>,
         source: Source,
-    ): T = source.useLines { lines -> decodeFromString(deserializer, lines, inputConfig) }
+    ): T = source.useLines { decodeFromString(deserializer, it, inputConfig) }
 
     /**
      * Simple deserializer of a source that contains toml.
@@ -60,8 +64,8 @@ public open class TomlSourceReader(
         deserializer: DeserializationStrategy<T>,
         source: Source,
         tomlTableName: String,
-    ): T = source.useLines { lines ->
-        partiallyDecodeFromLines(deserializer, lines, tomlTableName, inputConfig)
+    ): T = source.useLines {
+        partiallyDecodeFromLines(deserializer, it, tomlTableName, inputConfig)
     }
 
     /**

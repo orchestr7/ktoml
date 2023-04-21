@@ -87,8 +87,8 @@ class TomlFileParserTest {
         assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
 
         // ==== checking how table discovery works
-        val parsedResult = getFileSource(file).useLines { lines ->
-            TomlParser(TomlInputConfig()).parseStringsToTomlTree(lines, TomlInputConfig())
+        val parsedResult = getFileSource(file).useLines {
+            TomlParser(TomlInputConfig()).parseStringsToTomlTree(it, TomlInputConfig())
         }
 
         assertEquals(

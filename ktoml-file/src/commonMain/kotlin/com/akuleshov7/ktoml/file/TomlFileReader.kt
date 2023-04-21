@@ -1,7 +1,6 @@
 
 package com.akuleshov7.ktoml.file
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.source.TomlSourceReader

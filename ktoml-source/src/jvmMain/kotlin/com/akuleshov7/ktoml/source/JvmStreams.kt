@@ -23,8 +23,8 @@ import kotlinx.serialization.serializer
 public fun <T> Toml.decodeFromStream(
     deserializer: DeserializationStrategy<T>,
     stream: InputStream
-): T = stream.source().useLines { lines ->
-    decodeFromString(deserializer, lines)
+): T = stream.source().useLines {
+    decodeFromString(deserializer, it)
 }
 
 /**
@@ -52,8 +52,8 @@ public fun <T> Toml.partiallyDecodeFromStream(
     deserializer: DeserializationStrategy<T>,
     stream: InputStream,
     tomlTableName: String
-): T = stream.source().useLines { lines ->
-    partiallyDecodeFromLines(deserializer, lines, tomlTableName)
+): T = stream.source().useLines {
+    partiallyDecodeFromLines(deserializer, it, tomlTableName)
 }
 
 /**

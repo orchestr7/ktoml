@@ -29,7 +29,7 @@ internal fun getFileSource(filePath: String): Source {
 /**
  * Opens a file for writing via a [BufferedSink].
  *
- * @param tomlFile The path string pointing to a .toml file.
+ * @param filePath The path string pointing to a .toml file.
  * @return A [BufferedSink] writing to the specified [tomlFile] path.
  * @throws FileNotFoundException
  */
