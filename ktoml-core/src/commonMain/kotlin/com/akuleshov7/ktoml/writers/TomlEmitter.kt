@@ -1,17 +1,18 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.utils.isBareKey
+import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
-
-import kotlin.jvm.JvmStatic
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
  */
-public abstract class TomlEmitter(config: TomlConfig) {
+public abstract class TomlEmitter(config: TomlOutputConfig) {
     private val indentation = config.indentation.value
 
     /**
@@ -85,12 +86,12 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * Emits a [comment], optionally making it end-of-line.
      *
      * @param comment
-     * @param endOfLine Whether the comment is at the end of a line, e.g. after a
+     * @param inline Whether the comment is at the end of a line, e.g. after a
      * table header.
      * @return this instance
      */
-    public fun emitComment(comment: String, endOfLine: Boolean = false): TomlEmitter =
-            emit(if (endOfLine) " # " else "# ")
+    public fun emitComment(comment: String, inline: Boolean = false): TomlEmitter =
+            emit(if (inline) " # " else "# ")
                 .emit(comment)
 
     /**
@@ -102,10 +103,10 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @return this instance
      */
     public fun emitKey(key: String): TomlEmitter =
-            if (key matches bareKeyRegex) {
+            if (key.isBareKey()) {
                 emitBareKey(key)
             } else {
-                emitQuotedKey(key, isLiteral = key matches literalKeyCandidateRegex)
+                emitQuotedKey(key, isLiteral = key.isLiteralKeyCandidate())
             }
 
     /**
@@ -179,7 +180,6 @@ public abstract class TomlEmitter(config: TomlConfig) {
                 val quotes = if (isLiteral) "'''" else "\"\"\""
 
                 emit(quotes)
-                    .emitNewLine()
                     .emit(string)
                     .emit(quotes)
             } else {
@@ -195,22 +195,36 @@ public abstract class TomlEmitter(config: TomlConfig) {
      *
      * @param integer
      * @param representation How the integer will be represented in TOML.
+     * @param groupSize The digit group size, or less than `1` for no grouping. For
+     * example, a group size of `3` emits `1_000_000`, `4` emits `0b1111_1111`, etc.
      * @return this instance
      */
-    public fun emitValue(integer: Long, representation: IntegerRepresentation = DECIMAL): TomlEmitter =
-            when (representation) {
-                DECIMAL -> emit(integer.toString())
-                HEX ->
-                    emit("0x")
-                        .emit(integer.toString(16))
-                BINARY ->
-                    emit("0b")
-                        .emit(integer.toString(2))
-                OCTAL ->
-                    emit("0o")
-                        .emit(integer.toString(8))
-                GROUPED -> TODO()
-            }
+    @Suppress("SAY_NO_TO_VAR")
+    public fun emitValue(
+        integer: Long,
+        representation: IntegerRepresentation = DECIMAL,
+        groupSize: Int = 0
+    ): TomlEmitter {
+        // Todo: Add groupSize to the annotation and AST and remove GROUPED.
+        if (representation == GROUPED) {
+            return emitValue(integer, representation = DECIMAL, groupSize = 3)
+        }
+
+        if (integer < 0) {
+            emit('-')
+        }
+
+        var digits = integer.toString(representation.radix).trimStart('-')
+
+        if (groupSize > 0) {
+            digits = (digits as CharSequence).reversed()
+                .chunked(groupSize, CharSequence::reversed)
+                .asReversed()
+                .joinToString(separator = "_")
+        }
+
+        return emit(representation.prefix).emit(digits)
+    }
 
     /**
      * Emits a floating-point value.
@@ -221,9 +235,11 @@ public abstract class TomlEmitter(config: TomlConfig) {
     public fun emitValue(float: Double): TomlEmitter =
             emit(when {
                 float.isNaN() -> "nan"
-                float.isInfinite() ->
-                    if (float > 0) "inf" else "-inf"
-                else -> float.toString()
+                float.isInfinite() -> if (float > 0) "inf" else "-inf"
+                // Whole-number floats are formatted as integers on JS.
+                else -> float.toString().let {
+                    if ('.' in it) it else "$it.0"
+                }
             })
 
     /**
@@ -257,6 +273,14 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @return this instance
      */
     public fun emitValue(date: LocalDate): TomlEmitter = emit(date.toString())
+
+    /**
+     * Emits a [LocalTime] value.
+     *
+     * @param time
+     * @return this instance
+     */
+    public fun emitValue(time: LocalTime): TomlEmitter = emit(time.toString())
 
     /**
      * Emits a null value.
@@ -306,16 +330,4 @@ public abstract class TomlEmitter(config: TomlConfig) {
      * @return this instance
      */
     public fun emitPairDelimiter(): TomlEmitter = emit(" = ")
-
-    public companion object {
-        @JvmStatic
-        private val bareKeyRegex = Regex("[A-Za-z0-9_-]+")
-
-        /**
-         * Matches a key with at least one unescaped double quote and no single
-         * quotes.
-         */
-        @JvmStatic
-        private val literalKeyCandidateRegex = Regex("""[^'"]*((?<!\\)")((?<!\\)"|[^'"])*""")
-    }
 }

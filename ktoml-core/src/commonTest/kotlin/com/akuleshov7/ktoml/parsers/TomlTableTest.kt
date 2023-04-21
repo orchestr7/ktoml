@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,7 +27,6 @@ class TomlTableTest {
     }
 
     @Test
-    @Ignore
     fun nestedTomlTable() {
         val string = """
             [a]
@@ -43,7 +42,8 @@ class TomlTableTest {
         assertEquals("""
             | - TomlFile (rootNode)
             |     - TomlTablePrimitive ([a])
-            |         - TomlTablePrimitive (    [a.b])
+            |         - TomlStubEmptyNode (technical_node)
+            |         - TomlTablePrimitive ([a.b])
             |             - TomlStubEmptyNode (technical_node)
             |         - TomlKeyValuePrimitive (c=3)
             |
@@ -116,6 +116,6 @@ class TomlTableTest {
     @Test
     fun createSimpleTomlTable() {
         val table = TomlTablePrimitive("[abcd]", 0)
-        assertEquals(table.fullTableName, "abcd")
+        assertEquals(table.fullTableKey.toString(), "abcd")
     }
 }

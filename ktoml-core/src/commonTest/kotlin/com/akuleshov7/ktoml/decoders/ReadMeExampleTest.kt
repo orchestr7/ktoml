@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.tree.TomlInlineTable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -21,12 +20,13 @@ class ReadMeExampleTest {
 
     @Serializable
     data class Table1(
-        // nullable values, from toml you can pass null/nil/empty value to this kind of a field
+        // nullable property, from toml input you can pass "null"/"nil"/"empty" value (no quotes needed) to this field
         val property1: Long?,
-        // please note, that according to the specification of toml integer values should be represented with Long
-        val property2: Long,
-        // no need to pass this value as it has the default value and is NOT REQUIRED
-        val property3: Long = 5
+        // please note, that according to the specification of toml integer values should be represented with Long,
+        // but we allow to use Int/Short/etc. Just be careful with overflow
+        val property2: Byte,
+        // no need to pass this value in the input as it has the default value and so it is NOT REQUIRED
+        val property3: Short = 5
     )
 
     @Serializable
@@ -34,7 +34,11 @@ class ReadMeExampleTest {
         val someNumber: Long,
         @SerialName("akuleshov7.com")
         val inlineTable: NestedTable,
-        val otherNumber: Double
+        val otherNumber: Double,
+        // Char in a manner of Java/Kotlin is not supported in TOML, because single quotes are used for literal strings.
+        // However, ktoml supports reading Char from both single-char string and from it's integer code
+        val charFromString: Char,
+        val charFromInteger: Char
     )
 
     @Serializable
@@ -60,39 +64,45 @@ class ReadMeExampleTest {
             gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
             
             [table1]
-            property1 = null # null is prohibited by the TOML spec, 
-            property2 = 6
+              # null is prohibited by the TOML spec, but allowed in ktoml for nullable types
+              # so for 'property1' null value is ok. Use: property1 = null  
+              property1 = 100 
+              property2 = 6
              
             [table2]
-            someNumber = 5
+              someNumber = 5
                [table2."akuleshov7.com"]
-                   name = 'this is a "literal" string'
-                   # empty lists are also supported
-                   configurationList = ["a",  "b",  "c", null]
+                 name = 'this is a "literal" string'
+                 # empty lists are also supported
+                 configurationList = ["a",  "b",  "c"]
             
             # such redeclaration of table2
             # is prohibited in toml specification;
             # but ktoml is allowing it in non-strict mode: 
             [table2]
-            otherNumber = 5.56
-                
-            """.trimMargin()
+              otherNumber = 5.56
+              # use single quotes
+              charFromString = 'a'
+              charFromInteger = 123
+            """
 
         val decoded = Toml.decodeFromString<MyClass>(test)
 
         assertEquals(
             MyClass(
                 someBooleanProperty = true,
-                table1 = Table1(property1 = null, property2 = 6),
+                table1 = Table1(property1 = 100, property2 = 6),
                 table2 = Table2(
                     someNumber = 5,
-                    inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c", null)),
-                    otherNumber = 5.56
+                    inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c")),
+                    otherNumber = 5.56,
+                    charFromString = 'a',
+                    charFromInteger = '{'
                 ),
+
                 kotlinJvm = GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
             ),
             decoded
         )
     }
 }
-

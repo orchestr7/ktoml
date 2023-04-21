@@ -1,8 +1,10 @@
 package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
+import com.akuleshov7.ktoml.tree.nodes.splitKeyValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -33,7 +35,7 @@ class ValueParserTest {
     fun nullParsingTest() {
         testTomlValue("a" to "null", NodeType.NULL)
         assertFailsWith<ParseException> {
-            testTomlValue("a" to "null", NodeType.NULL, TomlConfig(allowNullValues = false))
+            testTomlValue("a" to "null", NodeType.NULL, TomlInputConfig(allowNullValues = false))
         }
     }
 
@@ -111,6 +113,12 @@ class ValueParserTest {
     }
 
     @Test
+    fun symbolsAfterComment() {
+        val keyValue = "test_key = \"test_value\"  # \" some comment".splitKeyValue(0)
+        assertEquals("test_value", TomlKeyValuePrimitive(keyValue, 0).value.content)
+    }
+
+    @Test
     fun parsingIssueValue() {
         assertFailsWith<ParseException> { " = false".splitKeyValue(0) }
         assertFailsWith<ParseException> { " just false".splitKeyValue(0) }
@@ -154,7 +162,7 @@ fun getNodeType(v: TomlValue): NodeType = when (v) {
 fun testTomlValue(
     keyValuePair: Pair<String, String>,
     expectedType: NodeType,
-    config: TomlConfig = TomlConfig()
+    config: TomlInputConfig = TomlInputConfig()
 ) {
-    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config).value))
+    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config = config).value))
 }

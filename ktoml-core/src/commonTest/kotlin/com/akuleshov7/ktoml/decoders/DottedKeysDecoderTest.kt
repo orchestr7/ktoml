@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -110,16 +110,16 @@ class DottedKeysDecoderTest {
             ),
             Toml().decodeFromString(
                 """
-                      |table2.b.d = 2
-                      |[table1] 
-                      |a.c = 1 
-                      |[table1.table2]
-                      |b.b.a = 1
-                      |[table2] 
-                      |b.f = 2 
-                      |table2."foo bar".d = 2
-                      |[table3]
-                      """.trimMargin()
+                      table2.b.d = 2
+                      [table1] 
+                          a.c = 1 
+                      [table1.table2]
+                          b.b.a = 1
+                      [table2] 
+                          b.f = 2 
+                          table2."foo bar".d = 2
+                      [table3]
+                      """
             )
         )
     }
@@ -128,13 +128,13 @@ class DottedKeysDecoderTest {
     fun tableTest() {
         assertEquals(
             SimpleNestedExample(table2 = Table4(b = B(f = 2, d = 2), e = 5)),
-            Toml(TomlConfig(true)).decodeFromString(
+            Toml(TomlInputConfig(true)).decodeFromString(
                 """
-                      |table2.b.d = 2
-                      |[table2]
-                      |e = 5
-                      |b.f = 2
-                      """.trimMargin()
+                      table2.b.d = 2
+                      [table2]
+                          e = 5
+                          b.f = 2
+                      """
             )
         )
     }
@@ -143,15 +143,15 @@ class DottedKeysDecoderTest {
     fun tableAndDottedKeys() {
         assertEquals(
             SimpleNestedExample(table2 = Table4(b = B(f = 7, d = 2), e = 6)),
-            Toml(TomlConfig(true)).decodeFromString(
+            Toml(TomlInputConfig(true)).decodeFromString(
                 """
-                      |[table2]
-                      |table2."foo bar".d = 2
-                      |e = 6
-                      |[table2.b]
-                      |d = 2
-                      |f = 7
-                      """.trimMargin()
+                      [table2]
+                          table2."foo bar".d = 2
+                          e = 6
+                      [table2.b]
+                          d = 2
+                          f = 7
+                      """
             )
         )
     }
@@ -208,14 +208,14 @@ class DottedKeysDecoderTest {
             ),
             Toml.decodeFromString(
                 """
-            |[a."b.c..".d."e.f"]
-            |    val = 1
-            | [a]
-            | [a."b.c.."]
-            |    val = 2
-            | [a."b.c..".inner]
-            |    val = 3
-        """.trimMargin()
+            [a."b.c..".d."e.f"]
+                val = 1
+             [a]
+             [a."b.c.."]
+                val = 2
+             [a."b.c..".inner]
+                val = 3
+        """
             )
         )
     }

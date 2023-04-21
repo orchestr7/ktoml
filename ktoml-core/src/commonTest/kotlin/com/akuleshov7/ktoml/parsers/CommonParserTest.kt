@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.tree.TomlArray
-import com.akuleshov7.ktoml.tree.TomlBasicString
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlBasicString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -12,7 +13,8 @@ class CommonParserTest {
         var midLevelValues = 0
         var lowLevelValues = 0
 
-        TomlArray("[[\"a\", [\"b\"]], \"c\", \"d\"]", 0).parse().forEach {
+        @Suppress("UNCHECKED_CAST")
+        (TomlArray("[[\"a\", [\"b\"]], \"c\", \"d\"]", 0, TomlInputConfig()).content as List<Any>).forEach {
             when (it) {
                 is TomlBasicString -> highLevelValues++
                 is List<*> -> it.forEach {

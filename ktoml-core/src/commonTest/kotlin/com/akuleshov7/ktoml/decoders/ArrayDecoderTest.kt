@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.exceptions.CastException
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,9 +10,13 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 @Serializable
 data class SimpleArray(val a: List<Long>)
+
+@Serializable
+data class SimpleArrayWithNullableValues(val a: List<Long?>)
 
 @Serializable
 data class SimpleStringArray(val a: List<String>)
@@ -74,7 +79,7 @@ class SimpleArrayDecoderTest {
         val testWithNullArray2: ClassWithMutableList = Toml.decodeFromString("field = null")
         assertEquals(null, testWithNullArray2.field)
 
-        assertFailsWith<CastException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
+        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
 
         val testWithOnlyNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null ]")
         assertEquals(listOf(null), testWithOnlyNullInArray.field)
@@ -83,7 +88,6 @@ class SimpleArrayDecoderTest {
         assertEquals(listOf<Long?>(null, 1), testWithNullInArray.field)
     }
 
-
     @Test
     fun testSimpleArrayDecoder() {
         val test = "a = [1, 2,      3]"
@@ -91,12 +95,18 @@ class SimpleArrayDecoderTest {
     }
 
     @Test
+    fun testArrayWithTrailingComma() {
+        val test = "a = [1, 2, 3,]"
+        assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
+    }
+
+    @Test
     fun testSimpleArrayDecoderInNestedTable() {
         var test = """
-            |[table]
-            |name = "my name"
-            |configurationList = ["a",  "b",  "c"]
-            """.trimMargin()
+            [table]
+                name = "my name"
+                configurationList = ["a",  "b",  "c"]
+            """
 
         assertEquals(
             ArrayInInlineTable(
@@ -106,10 +116,10 @@ class SimpleArrayDecoderTest {
 
         test =
             """
-            |[table]
-            |configurationList = ["a",  "b",  "c"]
-            |name = "my name"
-            """.trimMargin()
+            [table]
+                configurationList = ["a",  "b",  "c"]
+                name = "my name"
+            """
 
         assertEquals(
             ArrayInInlineTable(
@@ -118,11 +128,11 @@ class SimpleArrayDecoderTest {
         )
 
         val testTable = """
-            |configurationList1 = ["a",  "b",  "c"]
-            |configurationList2 = ["a",  "b",  "c"]
-            |[table]
-            |name = "my name"
-            """.trimMargin()
+            configurationList1 = ["a",  "b",  "c"]
+            configurationList2 = ["a",  "b",  "c"]
+            [table]
+                name = "my name"
+            """
 
         assertEquals(
             TestArrays(
@@ -133,13 +143,13 @@ class SimpleArrayDecoderTest {
         )
 
         val testTableAndVariables = """
-            |name1 = "simple"
-            |configurationList1 = ["a",  "b",  "c"]
-            |name2 = "simple"
-            |configurationList2 = ["a",  "b",  "c"]
-            |[table]
-            |name = "my name"
-            """.trimMargin()
+            name1 = "simple"
+            configurationList1 = ["a",  "b",  "c"]
+            name2 = "simple"
+            configurationList2 = ["a",  "b",  "c"]
+            [table]
+                name = "my name"
+            """
 
 
         assertEquals(

@@ -1,9 +1,9 @@
 package com.akuleshov7.ktoml.source
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
 
 import okio.source
 import org.junit.jupiter.api.Test
@@ -46,7 +46,7 @@ class StreamTests {
         // ==== checking how table discovery works
         val parsedResult =
                 getTestDataStream("complex_toml_tables.toml").source().useLines { lines ->
-                    TomlParser(TomlConfig()).parseStringsToTomlTree(lines, TomlConfig())
+                    TomlParser(TomlInputConfig()).parseStringsToTomlTree(lines, TomlInputConfig())
                 }
         assertEquals(
             listOf("a", "a.b.c", "a.d", "d", "d.a"),
@@ -124,8 +124,8 @@ class StreamTests {
         assertEquals(
             listOf("owner", "database"),
             getTestDataStream("simple_example.toml").source().useLines { lines ->
-                TomlParser(TomlConfig())
-                    .parseStringsToTomlTree(lines, TomlConfig())
+                TomlParser(TomlInputConfig())
+                    .parseStringsToTomlTree(lines, TomlInputConfig())
                     .children
                     .filterIsInstance<TomlTablePrimitive>()
                     .filter { !it.isSynthetic }

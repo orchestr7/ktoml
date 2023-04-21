@@ -11,6 +11,10 @@ plugins {
 kotlin {
     explicitApi()
 
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+
     js(IR) {
         browser()
         nodejs()
@@ -19,15 +23,16 @@ kotlin {
     // building jvm task only on windows
     jvm {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+            kotlinOptions.jvmTarget = "1.8"
         }
     }
 
     mingwX64()
     linuxX64()
     macosX64()
+    macosArm64()
+    ios()
+    iosSimulatorArm64()
 
     sourceSets {
         all {
@@ -37,7 +42,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
             }
         }
@@ -75,7 +80,7 @@ tasks.withType<KotlinJvmTest> {
 }
 
 tasks.withType<KotlinJsTest> {
-    if (this.name.contains("testTask")) {
+    if (this.name.contains("jsBrowserTest")) {
         this.enabled = false
     }
 }

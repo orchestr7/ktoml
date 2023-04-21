@@ -3,10 +3,12 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.*
-import com.akuleshov7.ktoml.tree.*
-import com.akuleshov7.ktoml.tree.TomlNull
-import com.akuleshov7.ktoml.tree.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.*
+import com.akuleshov7.ktoml.tree.nodes.TomlFile
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlNull
+
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -26,10 +28,23 @@ import kotlinx.serialization.modules.SerializersModule
 @ExperimentalSerializationApi
 public class TomlMainDecoder(
     private var rootNode: TomlNode,
-    private val config: TomlConfig,
+    private val config: TomlInputConfig,
     private var elementIndex: Int = 0
 ) : TomlAbstractDecoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = EmptySerializersModule()
+
+    @Deprecated(
+        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
+    )
+    public constructor(
+        rootNode: TomlNode,
+        config: TomlConfig,
+        elementIndex: Int = 0
+    ) : this(
+        rootNode,
+        config.input,
+        elementIndex
+    )
 
     override fun decodeValue(): Any = decodeKeyValue().value.content
 
@@ -66,7 +81,7 @@ public class TomlMainDecoder(
     private fun getCurrentNode() = rootNode.getNeighbourNodes().elementAt(elementIndex - 1)
 
     /**
-     * Trying to decode the value (ite
+     * Trying to decode the value using elementIndex
      * |--- child1, child2, ... , childN
      * ------------elementIndex------->
      *
@@ -222,14 +237,14 @@ public class TomlMainDecoder(
                     is TomlTablePrimitive -> {
                         val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                             "Decoding process failed due to invalid structure of parsed AST tree: missing children" +
-                                    " in a table <${nextProcessingNode.fullTableName}>"
+                                    " in a table <${nextProcessingNode.fullTableKey}>"
                         )
                         checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
                         TomlMainDecoder(firstTableChild, config)
                     }
                     else -> throw InternalDecodingException(
                         "Incorrect decoding state in the beginStructure()" +
-                                " with $nextProcessingNode (${nextProcessingNode.content})[${nextProcessingNode.name}]"
+                                " with $nextProcessingNode ($nextProcessingNode)[${nextProcessingNode.name}]"
                     )
                 }
             }
@@ -254,7 +269,7 @@ public class TomlMainDecoder(
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlNode,
-            config: TomlConfig = TomlConfig()
+            config: TomlInputConfig = TomlInputConfig()
         ): T {
             val decoder = TomlMainDecoder(rootNode, config)
             return decoder.decodeSerializableValue(deserializer)

@@ -7,15 +7,6 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 
 /**
- * method to find the beginning of the comments in TOML string
- *
- * @param startSearchFrom the index after that the search will be done
- * @return the index of the first hash symbol or the index of the end of the string
- */
-internal fun String.findBeginningOfTheComment(startSearchFrom: Int) =
-        (startSearchFrom until this.length).filter { this[it] == '#' }.minOrNull() ?: this.length
-
-/**
  * Splitting dot-separated string to the list of tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
  *
@@ -68,12 +59,48 @@ internal fun String.splitKeyToTokens(lineNo: Int): List<String> {
 internal fun String.trimSingleQuotes(): String = trimSymbols(this, "'", "'")
 
 /**
+ * If this multiline string starts and end with triple quotes(''') - will return the string with
+ * quotes and newline removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimMultilineLiteralQuotes(): String = trimSymbols(this, "'''", "'''").removePrefix("\n")
+
+/**
+ *  When the last non-whitespace character on a line is an unescaped \, it will
+ *  be trimmed along with all whitespace (including newlines) up to the next
+ *  non-whitespace character or closing delimiter.
+ *
+ * @return string with the result
+ */
+internal fun String.convertLineEndingBackslash(): String {
+    // We shouldn't trim if the size of the split array == 1
+    // It means there is no ending backslash, and we should keep all spaces
+    val splitEndingBackslash = this.split("\\\n")
+    return if (splitEndingBackslash.size == 1) {
+        this
+    } else {
+        splitEndingBackslash.joinToString("") { it.trimStart() }
+    }
+}
+
+/**
  * If this string starts and end with quotes("") - will return the string with quotes removed
  * Otherwise, returns this string.
  *
  * @return string with the result
  */
 internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
+
+/**
+ * If this multiline string starts and end with triple quotes(""") - will return the string with
+ * quotes and newline removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimMultilineQuotes(): String = trimSymbols(this, "\"\"\"", "\"\"\"").removePrefix("\n")
 
 /**
  * If this string starts and end with curly braces ({}) - will return the string without them (used in inline tables)
@@ -92,12 +119,64 @@ internal fun String.trimCurlyBraces(): String = trimSymbols(this, "{", "}")
 internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
 
 /**
+ * If this string ends with comma(,) - will return the string with trailing comma removed.
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.removeTrailingComma(): String = this.removeSuffix(",")
+
+/**
  * If this string starts and end with a pair brackets([[]]) - will return the string with brackets removed
  * Otherwise, returns this string.
  *
  * @return string with the result
  */
 internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
+
+/**
+ * Takes only the text before a comment
+ *
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
+ * @return The text before a comment, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".takeBeforeComment() == "a = 0"
+ * ```
+ */
+internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
+    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
+
+    return if (commentStartIndex == -1) {
+        this.trim()
+    } else {
+        this.substring(0, commentStartIndex).trim()
+    }
+}
+
+/**
+ * Trims a comment of any text before it and its hash token.
+ *
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
+ * @return The comment text, i.e.
+ * ```kotlin
+ * "a = 0 # Comment".trimComment() == "Comment"
+ * ```
+ */
+internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
+    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
+
+    return if (commentStartIndex == -1) {
+        ""
+    } else {
+        drop(commentStartIndex + 1).trim()
+    }
+}
+
+/**
+ * @param substring
+ * @return count of occurrences of substring in string
+ */
+internal fun String.getCountOfOccurrencesOfSubstring(substring: String): Int = this.split(substring).size - 1
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
@@ -138,12 +217,47 @@ private fun String.validateSymbols(lineNo: Int) {
                 throw ParseException(
                     "Not able to parse the key: [$this] as it contains invalid symbols." +
                             " In case you would like to use special symbols - use quotes as" +
-                            " it is required by TOML standard: \"My key ~ with special % symbols\"",
+                            " it is required by TOML standard: \"My key with special (%, ±) symbols\" = \"value\"",
                     lineNo
                 )
             }
         }
     }
+}
+
+private fun String.getCommentStartIndex(allowEscapedQuotesInLiteralStrings: Boolean): Int {
+    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
+        // escaping is disabled when the config option is true AND we have a literal string
+        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
+        firstQuoteLetter == '\''
+    } else {
+        false
+    }
+
+    val chars = if (!isEscapingDisabled) {
+        this.replace("\\\"", "__")
+            .replace("\\\'", "__")
+    } else {
+        this
+    }.toCharArray()
+    var currentQuoteChar: Char? = null
+
+    chars.forEachIndexed { idx, symbol ->
+        // take hash index if it's not enclosed in quotation marks
+        if (symbol == '#' && currentQuoteChar == null) {
+            return idx
+        }
+
+        if (symbol == '\"' || symbol == '\'') {
+            if (currentQuoteChar == null) {
+                currentQuoteChar = symbol
+            } else if (currentQuoteChar == symbol) {
+                currentQuoteChar = null
+            }
+        }
+    }
+
+    return -1
 }
 
 private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||

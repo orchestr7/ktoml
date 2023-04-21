@@ -9,57 +9,33 @@ plugins {
 kotlin {
     explicitApi()
 
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+
     jvm {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+            kotlinOptions.jvmTarget = "1.8"
         }
     }
 
     mingwX64()
     linuxX64()
     macosX64()
+    macosArm64()
+    ios()
 
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
-        val linuxX64Main by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
-        val mingwX64Main by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
-        val macosX64Main by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
         val commonMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-                implementation(project(":ktoml-source"))
                 implementation(project(":ktoml-core"))
+                implementation(project(":ktoml-source"))
             }
         }
 
@@ -88,4 +64,12 @@ configurePublishing()
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()
+}
+
+// ios tests on github are behaving differently than locally - as github moves resources to a different directory
+// so, as it is not critical, skipping them
+tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest> {
+    if (this.name.contains("ios")) {
+        this.enabled = false
+    }
 }

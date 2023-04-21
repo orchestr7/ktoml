@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.exceptions.ParseException
@@ -125,10 +125,12 @@ class GeneralDecoderTest {
 
     @Test
     fun testForSimpleNestedTable() {
-        val test = ("c = 5 \n" +
-                "[table1] \n" +
-                " b = 6  \n" +
-                " a = 5  \n ")
+        val test = """
+            c = 5 
+            [table1] 
+            b = 6  
+            a = 5  
+        """.trimIndent()
         assertEquals(NestedSimpleTable(5, Table1(5, 6)), Toml.decodeFromString(test))
     }
 
@@ -178,7 +180,7 @@ class GeneralDecoderTest {
         ) {
             // 'err' key is unknown, but this should not trigger an error becuase of ignoreUnknown
             // 'b' key is not provided and should trigger an error
-            Toml(TomlConfig(true)).decodeFromString<Table3>(
+            Toml(TomlInputConfig(true)).decodeFromString<Table3>(
                 " a = true \n" +
                         " d = 5 \n" +
                         " e = \"my test\"\n" +
@@ -193,7 +195,7 @@ class GeneralDecoderTest {
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table3> in the input"
         ) {
-            Toml(TomlConfig(true)).decodeFromString<ComplexPlainTomlCase>(
+            Toml(TomlInputConfig(true)).decodeFromString<ComplexPlainTomlCase>(
                 "[tableUNKNOWN] \n" +
                         " a = true \n" +
                         " d = 5 \n" +
@@ -209,7 +211,7 @@ class GeneralDecoderTest {
                 " b = \"A\" \n" +
                 " d = 55 \n")
 
-        assertEquals(Table3(true, b = TestEnum.A, d = 55), Toml(TomlConfig(true)).decodeFromString(test))
+        assertEquals(Table3(true, b = TestEnum.A, d = 55), Toml(TomlInputConfig(true)).decodeFromString(test))
 
 
         // e is missing, because it has a default value
@@ -222,7 +224,7 @@ class GeneralDecoderTest {
                     "a = true \n" +
                     " b = \"A\" \n"
 
-            Toml(TomlConfig(true)).decodeFromString<Table3>(failMissing)
+            Toml(TomlInputConfig(true)).decodeFromString<Table3>(failMissing)
         }
     }
 
@@ -236,7 +238,7 @@ class GeneralDecoderTest {
                 "f = NIL\n")
         assertEquals(NullableValues(null, null, null, null, null, null), Toml.decodeFromString(test))
         assertFailsWith<ParseException> {
-            Toml(TomlConfig(allowNullValues = false)).decodeFromString<NullableValues>(test)
+            Toml(TomlInputConfig(allowNullValues = false)).decodeFromString<NullableValues>(test)
         }
     }
 
@@ -246,7 +248,7 @@ class GeneralDecoderTest {
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <d> in the input"
         ) {
-            Toml(TomlConfig(true)).decodeFromString<Table3>("[table3] \n a = true")
+            Toml(TomlInputConfig(true)).decodeFromString<Table3>("[table3] \n a = true")
         }
     }
 
@@ -256,7 +258,7 @@ class GeneralDecoderTest {
             "Invalid number of arguments provided for deserialization." +
                     " Missing required field <table2> in the input"
         ) {
-            Toml(TomlConfig(true)).decodeFromString<Table3>(
+            Toml(TomlInputConfig(true)).decodeFromString<Table3>(
                 "[table1] \n a = 5 \n b = 6"
             )
         }
@@ -269,7 +271,7 @@ class GeneralDecoderTest {
 
         assertEquals(
             ComplexPlainTomlCase(Table3(a = true, d = 5, b = TestEnum.B)), Toml(
-                TomlConfig(true)
+                TomlInputConfig(true)
             ).decodeFromString(test)
         )
     }
@@ -277,12 +279,12 @@ class GeneralDecoderTest {
     @Test
     fun testChildTableBeforeParent() {
         val test = """
-                |[a.b] 
-                |  c = 5
-                |  [a]
-                |      a = true
-            """.trimMargin()
-        TomlConfig(true)
+                [a.b] 
+                  c = 5
+                  [a]
+                      a = true
+            """
+        TomlInputConfig(true)
 
         assertEquals(ChildTableBeforeParent(A(B(5), true)), Toml.decodeFromString(test))
     }
@@ -290,7 +292,7 @@ class GeneralDecoderTest {
     @Test
     fun testIncorrectEnumValue() {
         assertFailsWith<InvalidEnumValueException> {
-            Toml(TomlConfig(true)).decodeFromString<Table3>(
+            Toml(TomlInputConfig(true)).decodeFromString<Table3>(
                 ("a = true \n" +
                         " b = \"F\"\n" +
                         " e = \"my string\"\n" +
@@ -374,20 +376,21 @@ class GeneralDecoderTest {
 
     @Test
     fun severalTablesOnTheSameLevel() {
-        val test = """|[table]
-           |[table.in1]
-           |    a = 1
-           |    [table.in1.in1]
-           |        a = 1
-           |    [table.in1.in2]
-           |        a = 1
-           |[table.in2]
-           |    a = 1
-           |    [table.in2.in1]
-           |        a = 1
-           |    [table.in2.in2]
-           |        a = 1
-        """.trimMargin()
+        val test = """
+            [table]
+            [table.in1]
+                a = 1
+                [table.in1.in1]
+                    a = 1
+                [table.in1.in2]
+                    a = 1
+            [table.in2]
+                a = 1
+                [table.in2.in1]
+                    a = 1
+                [table.in2.in2]
+                    a = 1
+        """
 
         assertEquals(
             MyTest(

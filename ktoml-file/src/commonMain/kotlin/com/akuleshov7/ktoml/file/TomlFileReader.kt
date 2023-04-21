@@ -1,11 +1,13 @@
+
 package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.source.TomlSourceReader
 
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
@@ -15,11 +17,15 @@ import kotlinx.serialization.serializer
  * that is used to serialize/deserialize TOML file or string
  * @property serializersModule
  */
-@OptIn(ExperimentalSerializationApi::class)
-public open class TomlFileReader(
-    config: TomlConfig = TomlConfig(),
-    override val serializersModule: SerializersModule = EmptySerializersModule
-) : TomlSourceReader(config, serializersModule) {
+public open class TomlFileReader public constructor(
+    inputConfig: TomlInputConfig = TomlInputConfig(),
+    outputConfig: TomlOutputConfig = TomlOutputConfig(),
+    serializersModule: SerializersModule = EmptySerializersModule()
+) : TomlSourceReader(
+    inputConfig,
+    outputConfig,
+    serializersModule
+) {
     /**
      * Simple deserializer of a file that contains toml. Reading file with okio native library
      *
@@ -31,16 +37,6 @@ public open class TomlFileReader(
         deserializer: DeserializationStrategy<T>,
         tomlFilePath: String,
     ): T = decodeFromSource(deserializer, getFileSource(tomlFilePath))
-
-    /**
-     * Simple deserializer of a file that contains toml. Reading file with okio native library
-     *
-     * @param tomlFilePath path to the file where toml is stored
-     * @return deserialized object of type T
-     */
-    public inline fun <reified T> decodeFromFile(
-        tomlFilePath: String,
-    ): T = decodeFromFile(serializersModule.serializer(), tomlFilePath)
 
     /**
      * Partial deserializer of a file that contains toml. Reading file with okio native library.
@@ -84,5 +80,8 @@ public open class TomlFileReader(
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : TomlFileReader(TomlConfig())
+    public companion object Default : TomlFileReader(
+        inputConfig = TomlInputConfig(),
+        outputConfig = TomlOutputConfig()
+    )
 }

@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.annotations
 
-import kotlin.annotation.AnnotationTarget.PROPERTY
-import kotlin.annotation.AnnotationTarget.TYPE_PARAMETER
+import kotlin.annotation.AnnotationTarget.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
@@ -58,5 +57,9 @@ import kotlinx.serialization.SerialInfo
  */
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
-@Target(PROPERTY, TYPE_PARAMETER)
+@Target(
+    PROPERTY,
+    TYPE_PARAMETER,
+    TYPE
+)
 public annotation class TomlMultiline

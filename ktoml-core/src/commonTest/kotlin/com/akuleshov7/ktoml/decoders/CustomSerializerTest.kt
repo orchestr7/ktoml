@@ -63,9 +63,10 @@ class CustomSerializerTest {
                 """
                     rgb = "0" 
                     brg = "1"
-                """.trimIndent()
+                """
             )
         )
+        UInt.MAX_VALUE
     }
 
     @Serializable
@@ -74,13 +75,13 @@ class CustomSerializerTest {
     @Test
     @Ignore
     fun testDecodingWithCustomSerializer() {
-        println(Toml.decodeFromString<Settings>(
+        Toml.decodeFromString<Settings>(
             """
                 [background]
                     rgb = "0"
                 [foreground]
                     rgb = "0"
-            """.trimIndent()
-        ))
+            """
+        )
     }
 }

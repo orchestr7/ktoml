@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml.Default.tomlParser
-import com.akuleshov7.ktoml.tree.TomlArrayOfTablesElement
+import com.akuleshov7.ktoml.tree.nodes.TomlArrayOfTablesElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -30,14 +30,14 @@ class ArraysOfTablesTest {
                 | - TomlFile (rootNode)
                 |     - TomlArrayOfTables ([[fruits]])
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlKeyValuePrimitive (a=apple)
-                |             - TomlKeyValuePrimitive (b=qwerty)
+                |             - TomlKeyValuePrimitive (a="apple")
+                |             - TomlKeyValuePrimitive (b="qwerty")
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlKeyValuePrimitive (a=banana)
-                |             - TomlKeyValuePrimitive (b=qwerty)
+                |             - TomlKeyValuePrimitive (a="banana")
+                |             - TomlKeyValuePrimitive (b="qwerty")
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlKeyValuePrimitive (a=plantain)
-                |             - TomlKeyValuePrimitive (b=qwerty)
+                |             - TomlKeyValuePrimitive (a="plantain")
+                |             - TomlKeyValuePrimitive (b="qwerty")
                 |
         """.trimMargin(),
             parsedToml.prettyStr()
@@ -68,13 +68,13 @@ class ArraysOfTablesTest {
                 | - TomlFile (rootNode)
                 |     - TomlArrayOfTables ([[products]])
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlKeyValuePrimitive (name=Hammer)
+                |             - TomlKeyValuePrimitive (name="Hammer")
                 |             - TomlKeyValuePrimitive (sku=738594937)
                 |         - TomlArrayOfTablesElement (technical_node)
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlKeyValuePrimitive (name=Nail)
+                |             - TomlKeyValuePrimitive (name="Nail")
                 |             - TomlKeyValuePrimitive (sku=284758393)
-                |             - TomlKeyValuePrimitive (color=gray)
+                |             - TomlKeyValuePrimitive (color="gray")
                 |
         """.trimMargin(),
             parsedToml.prettyStr()
@@ -98,12 +98,12 @@ class ArraysOfTablesTest {
             """
                 | - TomlFile (rootNode)
                 |     - TomlArrayOfTables ([[fruits]])
-                |         - TomlArrayOfTables ([[fruits.varieties]] )
+                |         - TomlArrayOfTables ([[fruits.varieties]])
                 |             - TomlArrayOfTablesElement (technical_node)
-                |                 - TomlKeyValuePrimitive (name=red delicious)
+                |                 - TomlKeyValuePrimitive (name="red delicious")
                 |                 - TomlArrayOfTables ([[fruits.varieties.inside]])
                 |                     - TomlArrayOfTablesElement (technical_node)
-                |                         - TomlKeyValuePrimitive (name=granny smith)
+                |                         - TomlKeyValuePrimitive (name="granny smith")
                 |
         """.trimMargin(),
             parsedToml.prettyStr()
@@ -127,11 +127,11 @@ class ArraysOfTablesTest {
             """
                 | - TomlFile (rootNode)
                 |     - TomlArrayOfTables ([[fruits]])
-                |         - TomlArrayOfTables ([[fruits.varieties]] )
+                |         - TomlArrayOfTables ([[fruits.varieties]])
                 |             - TomlArrayOfTablesElement (technical_node)
-                |                 - TomlKeyValuePrimitive (name=red delicious)
+                |                 - TomlKeyValuePrimitive (name="red delicious")
                 |                 - TomlTablePrimitive ([fruits.varieties.inside])
-                |                     - TomlKeyValuePrimitive (name=granny smith)
+                |                     - TomlKeyValuePrimitive (name="granny smith")
                 |
         """.trimMargin(),
             parsedToml.prettyStr()
@@ -196,7 +196,7 @@ class ArraysOfTablesTest {
         assertEquals(
             """ 
                 | - TomlFile (rootNode)
-                |     - TomlArrayOfTables ([[a]] )
+                |     - TomlArrayOfTables ([[a]])
                 |         - TomlArrayOfTablesElement (technical_node)
                 |             - TomlArrayOfTables ([[a.b]])
                 |                 - TomlArrayOfTablesElement (technical_node)
@@ -225,7 +225,7 @@ class ArraysOfTablesTest {
         assertEquals(
             """ 
                 | - TomlFile (rootNode)
-                |     - TomlArrayOfTables ([[a]] )
+                |     - TomlArrayOfTables ([[a]])
                 |         - TomlArrayOfTablesElement (technical_node)
                 |             - TomlArrayOfTables ([[a.b]])
                 |                 - TomlArrayOfTablesElement (technical_node)
@@ -281,24 +281,24 @@ class ArraysOfTablesTest {
                     | - TomlFile (rootNode)
                     |     - TomlArrayOfTables ([[fruits]])
                     |         - TomlArrayOfTablesElement (technical_node)
-                    |             - TomlKeyValuePrimitive (name=apple)
+                    |             - TomlKeyValuePrimitive (name="apple")
                     |             - TomlTablePrimitive ([fruits.physical])
-                    |                 - TomlKeyValuePrimitive (color=red)
-                    |                 - TomlKeyValuePrimitive (shape=round)
+                    |                 - TomlKeyValuePrimitive (color="red")
+                    |                 - TomlKeyValuePrimitive (shape="round")
                     |             - TomlTablePrimitive ([fruits.physical])
                     |                 - TomlTablePrimitive ([fruits.physical.inside])
-                    |                     - TomlKeyValuePrimitive (color=red)
-                    |                     - TomlKeyValuePrimitive (shape=round)
-                    |             - TomlArrayOfTables ([[fruits.varieties]] )
-                    |                 - TomlArrayOfTablesElement (technical_node)
-                    |                     - TomlKeyValuePrimitive (name=red delicious)
-                    |                 - TomlArrayOfTablesElement (technical_node)
-                    |                     - TomlKeyValuePrimitive (name=granny smith)
-                    |         - TomlArrayOfTablesElement (technical_node)
-                    |             - TomlKeyValuePrimitive (name=banana)
+                    |                     - TomlKeyValuePrimitive (color="red")
+                    |                     - TomlKeyValuePrimitive (shape="round")
                     |             - TomlArrayOfTables ([[fruits.varieties]])
                     |                 - TomlArrayOfTablesElement (technical_node)
-                    |                     - TomlKeyValuePrimitive (name=plantain)
+                    |                     - TomlKeyValuePrimitive (name="red delicious")
+                    |                 - TomlArrayOfTablesElement (technical_node)
+                    |                     - TomlKeyValuePrimitive (name="granny smith")
+                    |         - TomlArrayOfTablesElement (technical_node)
+                    |             - TomlKeyValuePrimitive (name="banana")
+                    |             - TomlArrayOfTables ([[fruits.varieties]])
+                    |                 - TomlArrayOfTablesElement (technical_node)
+                    |                     - TomlKeyValuePrimitive (name="plantain")
                     |     - TomlTablePrimitive ([vegetables])
                     |         - TomlKeyValuePrimitive (outSideOfArray=true)
                     |
@@ -399,16 +399,16 @@ class ArraysOfTablesTest {
                         |     - TomlArrayOfTables ([[a]])
                         |         - TomlArrayOfTables ([[a.b]])
                         |             - TomlArrayOfTablesElement (technical_node)
-                        |                 - TomlArrayOfTables (    [[a.b.c]])
+                        |                 - TomlArrayOfTables ([[a.b.c]])
                         |                     - TomlArrayOfTablesElement (technical_node)
                         |                     - TomlArrayOfTablesElement (technical_node)
                         |                         - TomlKeyValuePrimitive (a=1)
                         |                         - TomlArrayOfTables ([[a.b.c.d]])
                         |                             - TomlArrayOfTables ([[a.b.c.d.e]])
-                        |                                 - TomlArrayOfTables (       [[a.b.c.d.e.f]])
+                        |                                 - TomlArrayOfTables ([[a.b.c.d.e.f]])
                         |                                     - TomlArrayOfTablesElement (technical_node)
                         |             - TomlArrayOfTablesElement (technical_node)
-                        |                 - TomlTablePrimitive (    [a.b.c])
+                        |                 - TomlTablePrimitive ([a.b.c])
                         |                     - TomlStubEmptyNode (technical_node)
                         |
         """.trimMargin(), parsedToml.prettyStr()
@@ -477,13 +477,13 @@ class ArraysOfTablesTest {
                 | - TomlFile (rootNode)
                 |     - TomlArrayOfTables ([[a]])
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlTablePrimitive (  [a.b])
+                |             - TomlTablePrimitive ([a.b])
                 |                 - TomlStubEmptyNode (technical_node)
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlTablePrimitive (  [a.b])
+                |             - TomlTablePrimitive ([a.b])
                 |                 - TomlStubEmptyNode (technical_node)
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlTablePrimitive (  [a.b])
+                |             - TomlTablePrimitive ([a.b])
                 |                 - TomlStubEmptyNode (technical_node)
                 |
         """.trimMargin(),
@@ -589,13 +589,13 @@ class ArraysOfTablesTest {
                 | - TomlFile (rootNode)
                 |     - TomlArrayOfTables ([[fruit]])
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlTablePrimitive ([fruit.physical]  )
-                |                 - TomlKeyValuePrimitive (color=red)
-                |                 - TomlKeyValuePrimitive (shape=round)
+                |             - TomlTablePrimitive ([fruit.physical])
+                |                 - TomlKeyValuePrimitive (color="red")
+                |                 - TomlKeyValuePrimitive (shape="round")
                 |         - TomlArrayOfTablesElement (technical_node)
-                |             - TomlTablePrimitive ([fruit.physical]  )
-                |                 - TomlKeyValuePrimitive (color=red)
-                |                 - TomlKeyValuePrimitive (shape=round)
+                |             - TomlTablePrimitive ([fruit.physical])
+                |                 - TomlKeyValuePrimitive (color="red")
+                |                 - TomlKeyValuePrimitive (shape="round")
                 |
                """.trimMargin(),
             parsedToml.prettyStr())

@@ -46,6 +46,7 @@ import kotlinx.serialization.SerialInfo
 @Target(
     PROPERTY,
     TYPE_PARAMETER,
-    CLASS
+    CLASS,
+    TYPE
 )
 public annotation class TomlInlineTable

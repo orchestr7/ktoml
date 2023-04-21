@@ -1,11 +1,12 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
-import com.akuleshov7.ktoml.tree.*
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlin.Double.Companion.NEGATIVE_INFINITY
 import kotlin.Double.Companion.NaN
 import kotlin.Double.Companion.POSITIVE_INFINITY
@@ -18,19 +19,16 @@ class PrimitiveValueWriteTest {
     @Test
     fun literalStringWriteTest() {
         // Valid, normal case
-        testTomlValue(TomlLiteralString("literal \tstring" as Any, 0), "'literal \tstring'")
+        testTomlValue(TomlLiteralString("literal \tstring" as Any), "'literal \tstring'")
 
         // Control characters rejection
-        testTomlValueFailure(TomlLiteralString("control \u0000\bchars" as Any, 0))
-
-        // Escape rejection
-        testTomlValueFailure(TomlLiteralString("\\\" escapes\\n \\\"" as Any, 0))
+        testTomlValueFailure(TomlLiteralString("control \u0000\bchars" as Any))
 
         // Escaped single quotes
 
-        val disallowQuotes = TomlConfig(allowEscapedQuotesInLiteralStrings = false)
+        val disallowQuotes = TomlOutputConfig(allowEscapedQuotesInLiteralStrings = false)
 
-        val escapedSingleQuotes = TomlLiteralString("'escaped quotes'" as Any, 0)
+        val escapedSingleQuotes = TomlLiteralString("'escaped quotes'" as Any)
 
         testTomlValueFailure(escapedSingleQuotes, disallowQuotes)
 
@@ -39,48 +37,64 @@ class PrimitiveValueWriteTest {
 
     @Test
     fun basicStringWriteTest() {
-        testTomlValue(TomlBasicString("hello world" as Any, 0), "\"hello world\"")
+        testTomlValue(TomlBasicString("hello world" as Any), "\"hello world\"")
 
         // Control character escaping
-        testTomlValue(TomlBasicString("hello \b\t\n\u000C\r world" as Any, 0), "\"hello \\b\t\\n\\f\\r world\"")
-        testTomlValue(TomlBasicString("hello \u0000 world" as Any, 0), "\"hello \\u0000 world\"")
+        testTomlValue(TomlBasicString("hello \b\t\n\u000C\r world" as Any), "\"hello \\b\t\\n\\f\\r world\"")
+        testTomlValue(TomlBasicString("hello \u0000 world" as Any), "\"hello \\u0000 world\"")
 
         // Backslash escaping
-        testTomlValue(TomlBasicString("""hello\world""" as Any, 0), """"hello\\world"""")
-        testTomlValue(TomlBasicString("""hello\\\ world""" as Any, 0), """"hello\\\\ world"""")
-        testTomlValue(TomlBasicString("""hello\b\t\n\\\f\r world""" as Any, 0), """"hello\b\t\n\\\f\r world"""")
-        testTomlValue(TomlBasicString("""hello\u0000\\\Uffffffff world""" as Any, 0), """"hello\u0000\\\Uffffffff world"""")
+        testTomlValue(TomlBasicString("""hello\world""" as Any), """"hello\\world"""")
+        testTomlValue(TomlBasicString("""hello\\\ world""" as Any), """"hello\\\\ world"""")
+        testTomlValue(TomlBasicString("""hello\b\t\n\\\f\r world""" as Any), """"hello\b\t\n\\\f\r world"""")
+        testTomlValue(TomlBasicString("""hello\u0000\\\Uffffffff world""" as Any), """"hello\u0000\\\Uffffffff world"""")
     }
 
-    @Suppress("COMMENTED_CODE")
     @Test
     fun integerWriteTest() {
         // Decimal
-        testTomlValue(TomlLong(1234567L, 0), "1234567")
-        testTomlValue(TomlLong(-1234567L, 0), "-1234567")
+        testTomlValue(TomlLong(1234567L), "1234567")
+        testTomlValue(TomlLong(-1234567L), "-1234567")
+        testTomlValue(TomlLong(Long.MIN_VALUE), "${Long.MIN_VALUE}")
 
         // Hex
-        //testTomlValue(TomlLong(0xdeadc0de, 0, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlLong(0xdeadc0deL, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlLong(-0xdeadc0deL, IntegerRepresentation.HEX), "-0xdeadc0de")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.HEX), "-0x" + Long.MIN_VALUE.toString(16).trimStart('-'))
 
         // Binary
-        //testTomlValue(TomlLong(0b10000000, 0, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlLong(0b10000000L, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlLong(-0b10000000L, IntegerRepresentation.BINARY), "-0b10000000")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.BINARY), "-0b" + Long.MIN_VALUE.toString(2).trimStart('-'))
 
         // Octal
-        //testTomlValue(TomlLong(0x1FF, 0, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlLong(0x1FFL, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlLong(-0x1FFL, IntegerRepresentation.OCTAL), "-0o777")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.OCTAL), "-0o" + Long.MIN_VALUE.toString(8).trimStart('-'))
+
+        // Grouped
+        testTomlValue(TomlLong(1234567L, IntegerRepresentation.GROUPED), "1_234_567")
+        testTomlValue(TomlLong(-1234567L, IntegerRepresentation.GROUPED), "-1_234_567")
+        testTomlValue(TomlLong(Long.MIN_VALUE, IntegerRepresentation.GROUPED), "-9_223_372_036_854_775_808")
     }
 
     @Test
     fun floatWriteTest() {
-        testTomlValue(TomlDouble(PI, 0), "$PI")
-        testTomlValue(TomlDouble(NaN, 0), "nan")
-        testTomlValue(TomlDouble(POSITIVE_INFINITY, 0), "inf")
-        testTomlValue(TomlDouble(NEGATIVE_INFINITY, 0), "-inf")
+        testTomlValue(TomlDouble(PI), "$PI")
+        testTomlValue(TomlDouble(NaN), "nan")
+        testTomlValue(TomlDouble(POSITIVE_INFINITY), "inf")
+        testTomlValue(TomlDouble(NEGATIVE_INFINITY), "-inf")
+    }
+
+    @Test
+    fun wholeNumberFloatRegressionTest() {
+        testTomlValue(TomlDouble(3.0), "3.0")
     }
 
     @Test
     fun booleanWriteTest() {
-        testTomlValue(TomlBoolean(true, 0), "true")
-        testTomlValue(TomlBoolean(false, 0), "false")
+        testTomlValue(TomlBoolean(true), "true")
+        testTomlValue(TomlBoolean(false), "false")
     }
 
     @Test
@@ -88,31 +102,31 @@ class PrimitiveValueWriteTest {
         val instant = "1979-05-27T07:32:00Z"
         val localDt = "1979-05-27T07:32"
         val localD = "1979-05-27"
+        val localT = "07:32:32"
 
-        testTomlValue(TomlDateTime(Instant.parse(instant), 0), instant)
-        testTomlValue(TomlDateTime(LocalDateTime.parse(localDt), 0), localDt)
-        testTomlValue(TomlDateTime(LocalDate.parse(localD), 0), localD)
+        testTomlValue(TomlDateTime(Instant.parse(instant)), instant)
+        testTomlValue(TomlDateTime(LocalDateTime.parse(localDt)), localDt)
+        testTomlValue(TomlDateTime(LocalDate.parse(localD)), localD)
+        testTomlValue(TomlDateTime(LocalTime.parse(localT)), localT)
     }
 
     @Test
-    fun nullWriteTest() = testTomlValue(TomlNull(0), "null")
+    fun nullWriteTest() = testTomlValue(TomlNull(), "null")
 
     @Test
     fun arrayWriteTest() {
+        val innerArray = TomlArray(
+            listOf(
+                TomlDouble(3.14)
+            )
+        )
+
         val array = TomlArray(
             listOf(
-                TomlLong(1L, 0),
-                TomlBasicString("string" as Any, 0),
-                TomlArray(
-                    listOf(
-                        TomlDouble(3.14, 0)
-                    ),
-                    "",
-                    0
-                )
-            ),
-            "",
-            0
+                TomlLong(1L),
+                TomlBasicString("string" as Any),
+                innerArray
+            )
         )
 
         // Inline
@@ -124,6 +138,9 @@ class PrimitiveValueWriteTest {
 
         // Multiline
 
+        innerArray.multiline = true
+        array.multiline = true
+
         testTomlValue(
             array,
             """
@@ -134,8 +151,7 @@ class PrimitiveValueWriteTest {
                     3.14
                 ]
             ]
-            """.trimIndent(),
-            multiline = true
+            """.trimIndent()
         )
     }
 }
@@ -143,22 +159,21 @@ class PrimitiveValueWriteTest {
 fun testTomlValue(
     value: TomlValue,
     expectedString: String,
-    config: TomlConfig = TomlConfig(),
-    multiline: Boolean = false
+    config: TomlOutputConfig = TomlOutputConfig()
 ) {
     assertEquals(
         expectedString,
         actual = buildString {
             val emitter = TomlStringEmitter(this, config)
 
-            value.write(emitter, config, multiline)
+            value.write(emitter, config)
         }
     )
 }
 
 fun testTomlValueFailure(
     value: TomlValue,
-    config: TomlConfig = TomlConfig()
+    config: TomlOutputConfig = TomlOutputConfig()
 ) {
     assertFailsWith<TomlWritingException> {
         val emitter = TomlStringEmitter(StringBuilder(), config)

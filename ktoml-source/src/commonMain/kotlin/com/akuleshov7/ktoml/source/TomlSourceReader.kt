@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.source
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
+import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.TomlOutputConfig
 
 import okio.Source
 
@@ -18,9 +19,10 @@ import kotlinx.serialization.serializer
  */
 @OptIn(ExperimentalSerializationApi::class)
 public open class TomlSourceReader(
-    private val config: TomlConfig = TomlConfig(),
+    inputConfig: TomlInputConfig = TomlInputConfig(),
+    outputConfig: TomlOutputConfig = TomlOutputConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule
-) : Toml(config, serializersModule) {
+) : Toml(inputConfig, outputConfig, serializersModule) {
     /**
      * Simple deserializer of a source that contains toml.
      *
@@ -31,7 +33,7 @@ public open class TomlSourceReader(
     public fun <T> decodeFromSource(
         deserializer: DeserializationStrategy<T>,
         source: Source,
-    ): T = source.useLines { lines -> decodeFromString(deserializer, lines, config) }
+    ): T = source.useLines { lines -> decodeFromString(deserializer, lines, inputConfig) }
 
     /**
      * Simple deserializer of a source that contains toml.
@@ -59,7 +61,7 @@ public open class TomlSourceReader(
         source: Source,
         tomlTableName: String,
     ): T = source.useLines { lines ->
-        partiallyDecodeFromLines(deserializer, lines, tomlTableName, config)
+        partiallyDecodeFromLines(deserializer, lines, tomlTableName, inputConfig)
     }
 
     /**
@@ -85,5 +87,5 @@ public open class TomlSourceReader(
      * ThreadLocal annotation is used here for caching.
      */
     @ThreadLocal
-    public companion object Default : TomlSourceReader(TomlConfig())
+    public companion object Default : TomlSourceReader(TomlInputConfig())
 }

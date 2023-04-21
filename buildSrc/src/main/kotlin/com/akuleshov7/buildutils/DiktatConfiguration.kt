@@ -30,10 +30,10 @@ fun Project.configureDiktat() {
             // using `Project#path` here, because it must be unique in gradle's project hierarchy
             if (path == rootProject.path) {
                 include("$rootDir/buildSrc/src/**/*.kt", "$rootDir/*.kts", "$rootDir/buildSrc/**/*.kts")
-                exclude("src/test/**/*.kt", "src/commonTest/**/*.kt", "src/jvmTest/**/*.kt")  // path matching this pattern will not be checked by diktat
+                exclude("src/test/**/*.kt", "src/commonTest/**/*.kt")  // path matching this pattern will not be checked by diktat
             } else {
                 include("src/**/*.kt", "**/*.kts")
-                exclude("src/**test/**/*.kt", "src/commonTest/**/*.kt", "src/jvmTest/**/*.kt")  // path matching this pattern will not be checked by diktat
+                exclude("src/**test/**/*.kt", "src/commonTest/**/*.kt")  // path matching this pattern will not be checked by diktat
             }
         }
     }

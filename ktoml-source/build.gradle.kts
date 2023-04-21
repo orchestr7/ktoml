@@ -9,53 +9,32 @@ plugins {
 kotlin {
     explicitApi()
 
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+
+    // building jvm task only on windows
     jvm {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+            kotlinOptions.jvmTarget = "1.8"
         }
     }
 
     mingwX64()
     linuxX64()
     macosX64()
+    macosArm64()
+    ios()
+    iosSimulatorArm64()
 
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
-        val linuxX64Main by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
-        val mingwX64Main by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
-        val macosX64Main by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
-                implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-            }
-        }
-
         val commonMain by getting {
             dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
                 implementation(project(":ktoml-core"))

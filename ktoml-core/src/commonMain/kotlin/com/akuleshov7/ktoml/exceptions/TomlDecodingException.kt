@@ -9,7 +9,13 @@ import kotlinx.serialization.descriptors.elementNames
 
 public sealed class TomlDecodingException(message: String) : SerializationException(message)
 
-internal class ParseException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
+internal open class ParseException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
+
+internal class UnknownEscapeSymbolsException(invalid: String, lineNo: Int) : ParseException(
+    "According to TOML documentation unknown" +
+            " escape symbols are not allowed. Please check: [\\$invalid]",
+    lineNo
+)
 
 internal class InternalDecodingException(message: String) : TomlDecodingException(message)
 
@@ -31,8 +37,6 @@ internal class NullValueException(propertyName: String, lineNo: Int) : TomlDecod
     "Non-null property <$propertyName> got a null value in the input." +
             " Please check the input (line: <$lineNo>) or make the property nullable"
 )
-
-internal class CastException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
 
 internal class IllegalTypeException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
 
