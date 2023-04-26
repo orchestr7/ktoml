@@ -33,7 +33,7 @@ fun Project.configureDiktat() {
                 exclude("src/test/**/*.kt", "src/commonTest/**/*.kt")  // path matching this pattern will not be checked by diktat
             } else {
                 include("src/**/*.kt", "**/*.kts")
-                exclude("src/**test/**/*.kt", "src/commonTest/**/*.kt")  // path matching this pattern will not be checked by diktat
+                exclude("src/**test/**/*.kt", "src/commonTest/**/*.kt", "src/jvmTest/**/*.kt")  // path matching this pattern will not be checked by diktat
             }
         }
     }

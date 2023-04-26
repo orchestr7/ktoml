@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
+import com.akuleshov7.ktoml.source.useLines
 import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -51,7 +52,10 @@ class TomlFileParserTest {
         )
         assertEquals(
             expected,
-            TomlFileReader().decodeFromFile(serializer(), "src/commonTest/resources/simple_example.toml")
+            TomlFileReader().decodeFromFile(
+                serializer(),
+                "src/commonTest/resources/simple_example.toml"
+            )
         )
     }
 
@@ -81,10 +85,15 @@ class TomlFileParserTest {
         // ==== reading from file
         val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
         assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
+
         // ==== checking how table discovery works
-        val lines = readAndParseFile(file)
-        val parsedResult = TomlParser(TomlInputConfig()).parseStringsToTomlTree(lines, TomlInputConfig())
-        assertEquals(listOf("a", "a.b.c", "a.d", "d", "d.a"), parsedResult.getRealTomlTables().map { it.fullTableKey.toString() })
+        val parsedResult = getFileSource(file).useLines {
+            TomlParser(TomlInputConfig()).parseStringsToTomlTree(it, TomlInputConfig())
+        }
+
+        assertEquals(
+            listOf("a", "a.b.c", "a.d", "d", "d.a"),
+            parsedResult.getRealTomlTables().map { it.fullTableKey.toString() })
     }
 
     @Serializable
@@ -192,15 +201,16 @@ class TomlFileParserTest {
     @Test
     fun readTopLevelTables() {
         val file = "src/commonTest/resources/simple_example.toml"
-        val lines = readAndParseFile(file)
         assertEquals(
             listOf("owner", "database"),
-            TomlParser(TomlInputConfig())
-                .parseStringsToTomlTree(lines, TomlInputConfig())
-                .children
-                .filterIsInstance<TomlTablePrimitive>()
-                .filter { !it.isSynthetic }
-                .map { it.fullTableKey.toString() }
+            getFileSource(file).useLines { lines ->
+                TomlParser(TomlInputConfig())
+                    .parseStringsToTomlTree(lines, TomlInputConfig())
+                    .children
+                    .filterIsInstance<TomlTablePrimitive>()
+                    .filter { !it.isSynthetic }
+                    .map { it.fullTableKey.toString() }
+            }
         )
     }
 
@@ -208,7 +218,7 @@ class TomlFileParserTest {
     fun invalidFile() {
         val file = "src/commonTest/resources/simple_example.wrongext"
         assertFailsWith<IllegalStateException> {
-            readAndParseFile(file)
+            getFileSource(file)
         }
     }
 }

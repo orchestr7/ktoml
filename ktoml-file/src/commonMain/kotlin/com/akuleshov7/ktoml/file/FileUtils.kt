@@ -4,48 +4,41 @@
 
 package com.akuleshov7.ktoml.file
 
-import okio.BufferedSink
-import okio.FileNotFoundException
-import okio.FileSystem
+import okio.*
 import okio.Path.Companion.toPath
-import okio.buffer
 
 /**
  * Simple file reading with okio (returning a list with strings)
  *
- * @param tomlFile string with a path to a file
+ * @param filePath string with a path to a file
  * @return list with strings
  * @throws FileNotFoundException if the toml file is missing
  */
-internal fun readAndParseFile(tomlFile: String): List<String> {
+internal fun getFileSource(filePath: String): Source {
     try {
-        val tomlPath = tomlFile.toPath()
-        val extension = tomlPath.name.substringAfterLast('.', "")
+        val extension = filePath.substringAfterLast('.', "")
         check(extension == "toml") {
             "TOML file should end with a .toml extension"
         }
-        return getOsSpecificFileSystem().read(tomlPath) {
-            // FixMe: may be we need to read and at the same time parse (to make it parallel)
-            generateSequence { readUtf8Line() }.toList()
-        }
+        return getOsSpecificFileSystem().source(filePath.toPath())
     } catch (e: FileNotFoundException) {
-        throw FileNotFoundException("Not able to find TOML file on path $tomlFile: ${e.message}")
+        throw FileNotFoundException("Not able to find TOML file on path $filePath: ${e.message}")
     }
 }
 
 /**
  * Opens a file for writing via a [BufferedSink].
  *
- * @param tomlFile The path string pointing to a .toml file.
+ * @param filePath The path string pointing to a .toml file.
  * @return A [BufferedSink] writing to the specified [tomlFile] path.
  * @throws FileNotFoundException
  */
-internal fun openFileForWrite(tomlFile: String): BufferedSink {
+internal fun openFileForWrite(filePath: String): BufferedSink {
     try {
-        val tomlPath = tomlFile.toPath()
+        val tomlPath = filePath.toPath()
         return getOsSpecificFileSystem().sink(tomlPath).buffer()
     } catch (e: FileNotFoundException) {
-        throw FileNotFoundException("Not able to find TOML file on path $tomlFile: ${e.message}")
+        throw FileNotFoundException("Not able to find TOML file on path $filePath: ${e.message}")
     }
 }
 

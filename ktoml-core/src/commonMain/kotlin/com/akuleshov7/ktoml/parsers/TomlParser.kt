@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.parsers
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.*
@@ -12,11 +11,6 @@ import kotlin.jvm.JvmInline
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")
 public value class TomlParser(private val config: TomlInputConfig) {
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(config: TomlConfig) : this(config.input)
-
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
      *
@@ -25,8 +19,18 @@ public value class TomlParser(private val config: TomlInputConfig) {
      */
     public fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
-        val tomlString = toml.replace("\r\n", "\n")
-        return parseStringsToTomlTree(tomlString.split("\n"), config)
+        return parseLines(toml.replace("\r\n", "\n").splitToSequence("\n"))
+    }
+
+    /**
+     * Method for parsing of TOML lines
+     *
+     * @param tomlLines toml lines
+     * @return the root TomlFile node of the Tree that we have built after parsing
+     */
+    public fun parseLines(tomlLines: Sequence<String>): TomlFile {
+        // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
+        return parseStringsToTomlTree(tomlLines, config)
     }
 
     /**
@@ -38,19 +42,21 @@ public value class TomlParser(private val config: TomlInputConfig) {
      * @throws InternalAstException - if toml node does not inherit TomlNode class
      */
     @Suppress("TOO_LONG_FUNCTION", "NESTED_BLOCK")
-    public fun parseStringsToTomlTree(tomlLines: List<String>, config: TomlInputConfig): TomlFile {
+    public fun parseStringsToTomlTree(tomlLines: Sequence<String>, config: TomlInputConfig): TomlFile {
         var currentParentalNode: TomlNode = TomlFile()
         // link to the head of the tree
         val tomlFileHead = currentParentalNode as TomlFile
         // need to trim empty lines BEFORE the start of processing
-        val mutableTomlLines = tomlLines.toMutableList().trimEmptyTrailingLines()
+        val trimmedTomlLines = tomlLines.trimEmptyLines()
         // here we always store the bucket of the latest created array of tables
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
         val comments: MutableList<String> = mutableListOf()
         var index = 0
-        while (index < mutableTomlLines.size) {
-            val line = mutableTomlLines[index]
+        val linesIterator = trimmedTomlLines.iterator()
+        // all lines will be streamed sequentially
+        while (linesIterator.hasNext()) {
+            val line = linesIterator.next()
             val lineNo = index + 1
 
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
@@ -63,9 +69,14 @@ public value class TomlParser(private val config: TomlInputConfig) {
 
                 val multilineType = line.getMultilineType()
                 val tomlLine = if (multilineType != MultilineType.NOT_A_MULTILINE) {
+                    // first line from multiline is already taken from the sequence and can be processed
                     val collectedMultiline = StringBuilder()
+                    collectLineWithComments(collectedMultiline, comments, multilineType, line)
+                    collectedMultiline.append("\n")
+
+                    // processing remaining lines from a multiline
                     val indexAtTheEndOfMultiline = collectMultiline(
-                        mutableTomlLines,
+                        linesIterator,
                         collectedMultiline,
                         index,
                         multilineType,
@@ -97,7 +108,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                         val tableSection = TomlTablePrimitive(tomlLine, lineNo, comments, inlineComment)
                         // if the table is the last line in toml, then it has no children, and we need to
                         // add at least fake node as a child
-                        if (index == mutableTomlLines.lastIndex) {
+                        if (!linesIterator.hasNext()) {
                             tableSection.appendChild(TomlStubEmptyNode(lineNo))
                         }
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
@@ -125,7 +136,6 @@ public value class TomlParser(private val config: TomlInputConfig) {
                         else -> currentParentalNode.appendChild(keyValue)
                     }
                 }
-
                 comments.clear()
             }
             index++
@@ -133,42 +143,105 @@ public value class TomlParser(private val config: TomlInputConfig) {
         return tomlFileHead
     }
 
+    @Suppress("TOO_LONG_FUNCTION")
+    // This code is heavily inspired by the TransformingSequence code in kotlin-lib, simple trimming of empty lines
+    private fun Sequence<String>.trimEmptyLines(): Sequence<String> = object : Sequence<String> {
+        override fun iterator(): Iterator<String> = object : Iterator<String> {
+            private val linesIterator = this@trimEmptyLines.iterator()
+
+            // -1 for unknown, 0 for done, 1 for empty lines, 2 for continue
+            private var nextState: Int = -1
+            private var nextItem: String? = null
+            private var nextRealItem: String? = null
+            private val emptyLinesBuffer: ArrayDeque<String> = ArrayDeque()
+
+            private fun calcNext() {
+                var nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
+                nextEmptyLine?.let {
+                    nextState = 1
+                    nextItem = nextEmptyLine
+                    return
+                }
+                nextRealItem?.let {
+                    nextState = 2
+                    nextItem = nextRealItem
+                    nextRealItem = null
+                    return
+                }
+                while (linesIterator.hasNext()) {
+                    val line = linesIterator.next()
+                    if (line.isEmptyLine()) {
+                        emptyLinesBuffer.add(line)
+                    } else {
+                        nextRealItem = line
+                        nextEmptyLine = emptyLinesBuffer.removeFirstOrNull()
+                        nextEmptyLine?.let {
+                            nextState = 1
+                            nextItem = nextEmptyLine
+                        }
+                            ?: run {
+                                nextState = 2
+                                nextItem = nextRealItem
+                                nextRealItem = null
+                            }
+                        return
+                    }
+                }
+                nextState = 0
+            }
+
+            override fun hasNext(): Boolean {
+                if (nextState == -1) {
+                    calcNext()
+                }
+                return nextState == 1 || nextState == 2
+            }
+
+            override fun next(): String {
+                if (nextState == -1) {
+                    calcNext()
+                }
+                if (nextState == 0) {
+                    throw NoSuchElementException()
+                }
+                val result = nextItem
+                nextItem = null
+                nextState = -1
+                return result as String
+            }
+        }
+    }
+
     /**
-     * @param collectTo append all multi-lines to this argument
+     * @param collectedMultiline append all multi-lines to this argument
      * @return index at the end of multiline
      */
     private fun collectMultiline(
-        mutableTomlLines: List<String>,
-        collectTo: StringBuilder,
+        linesIterator: Iterator<String>,
+        collectedMultiline: StringBuilder,
         startIndex: Int,
         multilineType: MultilineType,
         comments: MutableList<String>
     ): Int {
         var index = startIndex
-        var lineNo = index + 1
         var line: String
+        var hasFoundEnd = false
 
-        while (index < mutableTomlLines.size) {
-            line = mutableTomlLines[index]
-            if (multilineType == MultilineType.ARRAY) {
-                collectTo.append(line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings))
-                comments += line.trimComment(config.allowEscapedQuotesInLiteralStrings)
-            } else {
-                // we can't have comments inside a multi-line basic/literal string
-                collectTo.append(line)
-            }
+        // all lines will be streamed sequentially
+        while (linesIterator.hasNext()) {
+            line = linesIterator.next()
+            collectLineWithComments(collectedMultiline, comments, multilineType, line)
 
-            val isFirstLine = index == startIndex
-            if (!isFirstLine && line.isEndOfMultilineValue(multilineType, lineNo)) {
+            if (line.isEndOfMultilineValue(multilineType, index + 1)) {
+                hasFoundEnd = true
                 break
             }
             // append new line to collect string as is
-            collectTo.append("\n")
+            collectedMultiline.append("\n")
             index++
-            lineNo++
         }
 
-        if (index >= mutableTomlLines.size) {
+        if (!hasFoundEnd) {
             throw ParseException(
                 "Expected (${multilineType.closingSymbols}) in the end of ${multilineType.name}",
                 startIndex + 1
@@ -177,6 +250,24 @@ public value class TomlParser(private val config: TomlInputConfig) {
         return index
     }
 
+    private fun collectLineWithComments(
+        collectTo: StringBuilder,
+        comments: MutableList<String>,
+        multilineType: MultilineType,
+        line: String
+    ) {
+        if (multilineType == MultilineType.ARRAY) {
+            collectTo.append(line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings))
+            comments += line.trimComment(config.allowEscapedQuotesInLiteralStrings)
+        } else {
+            // we can't have comments inside a multi-line basic/literal string
+            collectTo.append(line)
+        }
+    }
+
+    /**
+     * Important! We treat a multi-line that is declared in one line ("""abc""") as a regular not multiline string
+     */
     private fun String.getMultilineType(): MultilineType {
         val line = this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
         val firstEqualsSign = line.indexOfFirst { it == '=' }

@@ -108,7 +108,7 @@ class DottedKeysDecoderTest {
                 table2 = Table2(b = B(f = 2, d = 2), table2 = InnerTable2in2(myFieldWithSerialName = C(d = 2))),
                 table3 = Table3(notRequiredFieldBecauseOfEmptyTable = 0)
             ),
-            Toml().decodeFromString(
+            Toml.decodeFromString(
                 """
                       table2.b.d = 2
                       [table1] 

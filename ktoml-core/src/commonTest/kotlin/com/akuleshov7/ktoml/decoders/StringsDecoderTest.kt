@@ -139,7 +139,7 @@ class StringDecoderTest {
                 regex    = ''
             """
 
-        val decoded = Toml().decodeFromString<Literals>(test)
+        val decoded = Toml.decodeFromString<Literals>(test)
         assertEquals(
             Literals(
                 null,
