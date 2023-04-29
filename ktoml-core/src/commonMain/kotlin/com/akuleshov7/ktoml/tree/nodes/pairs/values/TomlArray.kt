@@ -114,9 +114,9 @@ public class TomlArray internal constructor(
          * recursively parse TOML array from the string: [ParsingArray -> Trimming values -> Parsing Nested Arrays]
          */
         private fun String.parse(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): List<Any> =
-                this.parseArray()
-                    .map { it.trim() }
-                    .map { if (it.startsWith("[")) it.parse(lineNo, config) else it.parseValue(lineNo, config) }
+            this.parseArray()
+                .map { it.trim() }
+                .map { if (it.startsWith("[")) it.parse(lineNo, config) else it.parseValue(lineNo, config) }
 
         /**
          * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]

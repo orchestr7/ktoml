@@ -62,7 +62,7 @@ public class TomlKey internal constructor(
 
         if (keys.isEmpty() || keys.any(String::isEmpty)) {
             throw TomlWritingException(
-                "Empty keys are not allowed: key is empty or has an empty key part."
+                "Empty keys are not allowed: key <$keys> is empty or has an empty key part."
             )
         }
 

@@ -26,7 +26,7 @@ internal constructor(
             is LocalTime -> emitter.emitValue(content)
             else ->
                 throw TomlWritingException(
-                    "Unknown date type ${content::class.simpleName}"
+                    "Unknown date type ${content::class.simpleName} of <$content>"
                 )
         }
     }

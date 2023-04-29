@@ -95,13 +95,13 @@ public data class TomlInputConfig(
             ignoreUnknownNames: Boolean = false,
             allowEmptyToml: Boolean = true
         ): TomlInputConfig =
-                TomlInputConfig(
-                    ignoreUnknownNames,
-                    allowEmptyValues = false,
-                    allowNullValues = false,
-                    allowEmptyToml,
-                    allowEscapedQuotesInLiteralStrings = false
-                )
+            TomlInputConfig(
+                ignoreUnknownNames,
+                allowEmptyValues = false,
+                allowNullValues = false,
+                allowEmptyToml,
+                allowEscapedQuotesInLiteralStrings = false
+            )
     }
 }
 
@@ -135,13 +135,13 @@ public data class TomlOutputConfig(
             ignoreDefaultValues: Boolean = false,
             explicitTables: Boolean = false,
         ): TomlOutputConfig =
-                TomlOutputConfig(
-                    indentation,
-                    allowEscapedQuotesInLiteralStrings = false,
-                    ignoreNullValues = true,
-                    ignoreDefaultValues,
-                    explicitTables
-                )
+            TomlOutputConfig(
+                indentation,
+                allowEscapedQuotesInLiteralStrings = false,
+                ignoreNullValues = true,
+                ignoreDefaultValues,
+                explicitTables
+            )
     }
 }
 

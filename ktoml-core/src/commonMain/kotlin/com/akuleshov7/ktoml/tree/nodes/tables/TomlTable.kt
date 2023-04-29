@@ -148,13 +148,15 @@ public abstract class TomlTable(
                             " It has missing closing bracket${if (isArray) "s" else ""}: '$close'", lineNo
                 )
             }
-            val sectionFromContent = content.takeBeforeComment(false).trim().let {
-                if (isArray) {
-                    it.trimDoubleBrackets()
-                } else {
-                    it.trimBrackets()
+            val sectionFromContent = content.takeBeforeComment(false)
+                .trim()
+                .let {
+                    if (isArray) {
+                        it.trimDoubleBrackets()
+                    } else {
+                        it.trimBrackets()
+                    }
                 }
-            }
                 .trim()
 
             if (sectionFromContent.isBlank()) {

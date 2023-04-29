@@ -100,15 +100,15 @@ public fun StringBuilder.appendEscapedUnicode(
  * @return converted string with escaped special symbols
  */
 public fun String.escapeSpecialCharacters(multiline: Boolean = false): String =
-        if (multiline) {
-            escapeControlChars(Char::isMultilineControlChar)
-                .replace("\"\"\"", "\"\"\\\"")
-                .escapeBackslashes("btnfruU\"\r\n")
-        } else {
-            escapeControlChars(Char::isControlChar)
-                .replace("\"", "\\\"")
-                .escapeBackslashes("btnfruU\"")
-        }
+    if (multiline) {
+        escapeControlChars(Char::isMultilineControlChar)
+            .replace("\"\"\"", "\"\"\\\"")
+            .escapeBackslashes("btnfruU\"\r\n")
+    } else {
+        escapeControlChars(Char::isControlChar)
+            .replace("\"", "\\\"")
+            .escapeBackslashes("btnfruU\"")
+    }
 
 /**
  * Checks if a character is an invalid control character for strings. Specifically,

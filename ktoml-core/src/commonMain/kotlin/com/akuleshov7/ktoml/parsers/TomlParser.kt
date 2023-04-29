@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.*
 import kotlin.jvm.JvmInline
@@ -202,7 +203,8 @@ public value class TomlParser(private val config: TomlInputConfig) {
                     calcNext()
                 }
                 if (nextState == 0) {
-                    throw NoSuchElementException()
+                    throw InternalDecodingException("Tried to trim empty lines in the input, " +
+                            "but was not able to iterate through an input, because next object is unexpectedly missing.")
                 }
                 val result = nextItem
                 nextItem = null

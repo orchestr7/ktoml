@@ -21,7 +21,6 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
  * String, Integer, Float, Boolean, Datetime, Array, and Table.
  *
  * @param comments Comments prepended to the current node
- *
  * @property lineNo - the number of a line from TOML that is linked to the current node
  * @property inlineComment A comment appended to the end of the line
  */
@@ -94,11 +93,13 @@ public sealed class TomlNode(
         // there cannot be more than 1 table node with the same name on the same level in the tree
         if (simpleTable.size > 1) {
             throw InternalAstException(
-                "Invalid number of tables on the same level of AST were found. Is the tree corrupted?"
+                "While searching a table by name ($tableName), invalid number of tables on the same level of AST were found. " +
+                        "Is the tree corrupted?"
             )
         }
         // we need to search this table in special technical nodes (TomlArrayOfTablesElement) that also contain tables
-        val tableFromElements = this.children.asSequence()
+        val tableFromElements = this.children
+            .asSequence()
             .filterIsInstance<TomlArrayOfTablesElement>()
             .map { it.children }
             .flatten()
@@ -187,6 +188,7 @@ public sealed class TomlNode(
     /**
      * print the structure of parsed AST tree
      */
+    @Suppress("DEBUG_PRINT")
     public fun prettyPrint() {
         val sb = StringBuilder()
         prettyPrint(this, sb)
@@ -221,7 +223,7 @@ public sealed class TomlNode(
      * @return all real table nodes
      */
     public fun getRealTomlTables(): List<TomlTablePrimitive> =
-            this.getAllChildTomlTables().filter { !it.isSynthetic }
+        this.getAllChildTomlTables().filter { !it.isSynthetic }
 
     private fun determineParentAndInsertFragmentOfTable(childTable: TomlTable) {
         if (this.children.filterIsInstance<TomlArrayOfTablesElement>().isNotEmpty()) {
@@ -322,9 +324,9 @@ public sealed class TomlNode(
     // Todo: Do we keep whitespace in pairs and change parser tests? Trim it and
     // maintain compatibility? Add a "formatting" option later?
     override fun toString(): String =
-            Toml.tomlWriter
-                .writeNode(this)
-                .replace(" = ", "=")
+        Toml.tomlWriter
+            .writeNode(this)
+            .replace(" = ", "=")
 
     public companion object {
         // number of spaces that is used to indent levels

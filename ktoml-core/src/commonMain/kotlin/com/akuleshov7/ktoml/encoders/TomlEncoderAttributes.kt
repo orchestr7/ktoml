@@ -32,7 +32,7 @@ public data class TomlEncoderAttributes(
     public var inlineComment: String = "",
     public var isImplicit: Boolean = false,
 ) {
-    public fun keyOrThrow(): String = key ?: throw InternalEncodingException("Key not set")
+    public fun keyOrThrow(): String = key ?: throw InternalEncodingException("Key is not set")
 
     public fun child(): TomlEncoderAttributes = copy(parent = copy(), isImplicit = false)
 

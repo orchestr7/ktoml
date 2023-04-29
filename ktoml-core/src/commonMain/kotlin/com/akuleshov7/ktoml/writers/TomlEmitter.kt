@@ -91,8 +91,8 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun emitComment(comment: String, inline: Boolean = false): TomlEmitter =
-            emit(if (inline) " # " else "# ")
-                .emit(comment)
+        emit(if (inline) " # " else "# ")
+            .emit(comment)
 
     /**
      * Emits a [key]. Its type is inferred by its content, with bare keys being
@@ -103,11 +103,11 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun emitKey(key: String): TomlEmitter =
-            if (key.isBareKey()) {
-                emitBareKey(key)
-            } else {
-                emitQuotedKey(key, isLiteral = key.isLiteralKeyCandidate())
-            }
+        if (key.isBareKey()) {
+            emitBareKey(key)
+        } else {
+            emitQuotedKey(key, isLiteral = key.isLiteralKeyCandidate())
+        }
 
     /**
      * Emits a [key] as a bare key.
@@ -126,7 +126,7 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return `this`
      */
     public fun emitQuotedKey(key: String, isLiteral: Boolean = false): TomlEmitter =
-            emitValue(string = key, isLiteral)
+        emitValue(string = key, isLiteral)
 
     /**
      * Emits a key separator.
@@ -176,19 +176,19 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
         isLiteral: Boolean = false,
         isMultiline: Boolean = false
     ): TomlEmitter =
-            if (isMultiline) {
-                val quotes = if (isLiteral) "'''" else "\"\"\""
+        if (isMultiline) {
+            val quotes = if (isLiteral) "'''" else "\"\"\""
 
-                emit(quotes)
-                    .emit(string)
-                    .emit(quotes)
-            } else {
-                val quote = if (isLiteral) '\'' else '"'
+            emit(quotes)
+                .emit(string)
+                .emit(quotes)
+        } else {
+            val quote = if (isLiteral) '\'' else '"'
 
-                emit(quote)
-                    .emit(string)
-                    .emit(quote)
-            }
+            emit(quote)
+                .emit(string)
+                .emit(quote)
+        }
 
     /**
      * Emits an integer value, optionally changing its representation from decimal.
@@ -233,14 +233,14 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun emitValue(float: Double): TomlEmitter =
-            emit(when {
-                float.isNaN() -> "nan"
-                float.isInfinite() -> if (float > 0) "inf" else "-inf"
-                // Whole-number floats are formatted as integers on JS.
-                else -> float.toString().let {
-                    if ('.' in it) it else "$it.0"
-                }
-            })
+        emit(when {
+            float.isNaN() -> "nan"
+            float.isInfinite() -> if (float > 0) "inf" else "-inf"
+            // Whole-number floats are formatted as integers on JS.
+            else -> float.toString().let {
+                if ('.' in it) it else "$it.0"
+            }
+        })
 
     /**
      * Emits a boolean value.
