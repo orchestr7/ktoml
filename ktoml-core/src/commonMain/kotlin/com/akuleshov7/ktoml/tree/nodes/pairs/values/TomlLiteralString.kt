@@ -58,25 +58,25 @@ public class TomlLiteralString internal constructor(
 
     public companion object {
         private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlInputConfig): Any =
-                if (startsWith("'''") && endsWith("'''")) {
-                    val contentString = trimMultilineLiteralQuotes()
-                        .checkCountOfOtherQuotes(lineNo)
-                    val rawContent = if (config.allowEscapedQuotesInLiteralStrings) {
-                        contentString.convertSingleQuotes()
-                    } else {
-                        contentString
-                    }
-
-                    rawContent.convertLineEndingBackslash()
-                } else if (startsWith("'") && endsWith("'")) {
-                    val contentString = trimSingleQuotes()
-                    if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
+            if (startsWith("'''") && endsWith("'''")) {
+                val contentString = trimMultilineLiteralQuotes()
+                    .checkCountOfOtherQuotes(lineNo)
+                val rawContent = if (config.allowEscapedQuotesInLiteralStrings) {
+                    contentString.convertSingleQuotes()
                 } else {
-                    throw ParseException(
-                        "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
-                                " the single quote in the end of the following string: <$this>", lineNo
-                    )
+                    contentString
                 }
+
+                rawContent.convertLineEndingBackslash()
+            } else if (startsWith("'") && endsWith("'")) {
+                val contentString = trimSingleQuotes()
+                if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
+            } else {
+                throw ParseException(
+                    "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
+                            " the single quote in the end of the following string: <$this>", lineNo
+                )
+            }
 
         /**
          * According to the TOML standard (https://toml.io/en/v1.0.0#string) single quote is prohibited.
@@ -89,41 +89,41 @@ public class TomlLiteralString internal constructor(
         private fun String.convertSingleQuotes(): String = this.replace("\\'", "'")
 
         private fun String.escapeQuotesAndVerify(config: TomlOutputConfig, multiline: Boolean) =
-                when {
-                    multiline ->
-                        when {
-                            any(Char::isMultilineControlChar) ->
-                                throw TomlWritingException(
-                                    "Control characters (excluding tab and line" +
-                                            " terminators) are not permitted in" +
-                                            " multiline literal strings."
-                                )
-                            config.allowEscapedQuotesInLiteralStrings ->
-                                replace("'''", "''\\'")
-                            "'''" in this ->
-                                throw TomlWritingException(
-                                    "Three or more consecutive single quotes are not" +
-                                            " permitted in multiline literal strings."
-                                )
-                            else -> this
-                        }
-                    any(Char::isControlChar) ->
-                        throw TomlWritingException(
-                            "Control characters (excluding tab) are not permitted" +
-                                    " in literal strings."
-                        )
-                    '\'' in this ->
-                        if (config.allowEscapedQuotesInLiteralStrings) {
-                            replace("'", "\\'")
-                        } else {
+            when {
+                multiline ->
+                    when {
+                        any(Char::isMultilineControlChar) ->
                             throw TomlWritingException(
-                                "Single quotes are not permitted in literal string" +
-                                        " by default. Set allowEscapedQuotesInLiteral" +
-                                        "Strings to true in the config to ignore this."
+                                "Control characters (excluding tab and line" +
+                                        " terminators) are not permitted in" +
+                                        " multiline literal strings. Please check: <$this>"
                             )
-                        }
-                    else -> this
-                }
+                        config.allowEscapedQuotesInLiteralStrings ->
+                            replace("'''", "''\\'")
+                        "'''" in this ->
+                            throw TomlWritingException(
+                                "Three or more consecutive single quotes are not" +
+                                        " permitted in multiline literal strings. Please check: <$this>"
+                            )
+                        else -> this
+                    }
+                any(Char::isControlChar) ->
+                    throw TomlWritingException(
+                        "Control characters (excluding tab) are not permitted" +
+                                " in literal strings. Please check: <$this>"
+                    )
+                '\'' in this ->
+                    if (config.allowEscapedQuotesInLiteralStrings) {
+                        replace("'", "\\'")
+                    } else {
+                        throw TomlWritingException(
+                            "Single quotes are not permitted in literal string" +
+                                    " by default. Set allowEscapedQuotesInLiteral" +
+                                    "Strings to true in the config to ignore this. Please check: <$this>"
+                        )
+                    }
+                else -> this
+            }
 
         private fun String.checkCountOfOtherQuotes(lineNo: Int): String {
             if (this.replace("\\'", " ").getCountOfOccurrencesOfSubstring("'''") != 0) {

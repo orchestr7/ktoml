@@ -152,7 +152,7 @@ public class TomlInlineTableEncoder internal constructor(
                 child.comments,
                 child.inlineComment
             )
-            else -> throw InternalEncodingException("Not a pair")
+            else -> throw InternalEncodingException("Tried to encode $child as a pair, but it has unknown type.")
         }
     }
 }

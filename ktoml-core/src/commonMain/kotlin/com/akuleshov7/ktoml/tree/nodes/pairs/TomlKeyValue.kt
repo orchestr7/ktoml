@@ -167,13 +167,13 @@ private fun String.checkNotEmpty(
     config: TomlInputConfig = TomlInputConfig(),
     lineNo: Int
 ): String =
-        this.also {
-            // key should never be empty, but the value can be empty (and treated as null)
-            // see the discussion: https://github.com/toml-lang/toml/issues/30
-            if ((!config.allowEmptyValues || log == "key") && it.isBlank()) {
-                throw ParseException(
-                    "Incorrect format of Key-Value pair. It has empty $log: $content",
-                    lineNo
-                )
-            }
+    this.also {
+        // key should never be empty, but the value can be empty (and treated as null)
+        // see the discussion: https://github.com/toml-lang/toml/issues/30
+        if ((!config.allowEmptyValues || log == "key") && it.isBlank()) {
+            throw ParseException(
+                "Incorrect format of Key-Value pair. It has empty $log: $content",
+                lineNo
+            )
         }
+    }
