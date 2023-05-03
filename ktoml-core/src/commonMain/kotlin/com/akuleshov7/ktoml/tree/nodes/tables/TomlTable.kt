@@ -4,7 +4,6 @@
 
 package com.akuleshov7.ktoml.tree.nodes
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
@@ -17,17 +16,20 @@ import com.akuleshov7.ktoml.writers.TomlStringEmitter
 import kotlin.jvm.JvmStatic
 
 /**
- * Abstract class to represent all types of tables: primitive/arrays/etc.
- * @property lineNo - line number
- * @property isSynthetic
+ * Class to represent all types of tables: primitive/arrays/etc.
  * @property fullTableKey
+ * @property lineNo - line number
+ * @property type The table type
+ * @property isSynthetic flag to determine that this node was synthetically and
+ * there is no such table in the input
  */
 @Suppress("COMMENT_WHITE_SPACE")
-public abstract class TomlTable(
+public class TomlTable(
     public var fullTableKey: TomlKey,
     override val lineNo: Int,
-    comments: List<String>,
-    inlineComment: String,
+    public val type: TableType,
+    comments: List<String> = emptyList(),
+    inlineComment: String = "",
     public var isSynthetic: Boolean = false
 ) : TomlNode(
     lineNo,
@@ -50,22 +52,18 @@ public abstract class TomlTable(
 
     // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
     public override val name: String = fullTableKey.keyParts.last().trimQuotes()
-    public abstract val type: TableType
 
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
     public constructor(
         content: String,
         lineNo: Int,
+        type: TableType,
         comments: List<String> = emptyList(),
         inlineComment: String = "",
-        config: TomlConfig,
         isSynthetic: Boolean = false
     ) : this(
-        TomlKey(content.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings).trim('[', ']'), lineNo),
-        // Todo: Temporary workaround until this constructor is removed
+        parseSection(content, lineNo, type),
         lineNo,
+        type,
         comments,
         inlineComment,
         isSynthetic
@@ -81,7 +79,7 @@ public abstract class TomlTable(
         val firstChild = children.first()
 
         if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
-            emitter.writeHeader(config)
+            emitter.writeHeader()
 
             if (inlineComment.isNotEmpty()) {
                 emitter.emitComment(inlineComment, inline = true)
@@ -101,9 +99,117 @@ public abstract class TomlTable(
         }
     }
 
-    protected abstract fun TomlEmitter.writeHeader(
+    private fun TomlEmitter.writeHeader() {
+        startTableHeader(type)
+        fullTableKey.write(emitter = this)
+        endTableHeader(type)
+    }
+
+    private fun TomlEmitter.writeArrayChild(
+        index: Int,
+        child: TomlNode,
+        children: List<TomlNode>,
         config: TomlOutputConfig
-    )
+    ) {
+        if (child is TomlArrayOfTablesElement) {
+            if (parent !is TomlArrayOfTablesElement) {
+                emitIndent()
+            }
+
+            writeChildComments(child)
+            writeHeader()
+            writeChildInlineComment(child)
+
+            if (!child.hasNoChildren()) {
+                emitNewLine()
+            }
+
+            indent()
+
+            child.write(emitter = this, config)
+
+            dedent()
+
+            if (index < children.lastIndex) {
+                emitNewLine()
+
+                // Primitive pairs have a single newline after, except when a
+                // table follows.
+                if (child !is TomlKeyValuePrimitive || children[index + 1] is TomlTable) {
+                    emitNewLine()
+                }
+            }
+        } else {
+            child.write(emitter = this, config)
+        }
+    }
+
+    private fun TomlEmitter.writePrimitiveChild(
+        index: Int,
+        prevChild: TomlNode?,
+        child: TomlNode,
+        children: List<TomlNode>,
+        config: TomlOutputConfig
+    ) {
+        writeChildComments(child)
+
+        // Declare the super table after a nested table, to avoid a pair being a
+        // part of the previous table by mistake.
+        if ((child is TomlKeyValue || child is TomlInlineTable) && prevChild is TomlTable) {
+            dedent()
+
+            emitNewLine()
+            emitIndent()
+            writeHeader()
+            emitNewLine()
+
+            indent()
+            indent()
+        }
+
+        if (child !is TomlTable ||
+                (child.type == TableType.PRIMITIVE &&
+                        !child.isSynthetic &&
+                        child.getFirstChild() !is TomlTable)) {
+            emitIndent()
+        }
+
+        child.write(emitter = this, config)
+        writeChildInlineComment(child)
+
+        if (index < children.lastIndex) {
+            emitNewLine()
+            // A single newline follows single-line pairs, except when a table
+            // follows. Two newlines follow multi-line pairs.
+            if ((child is TomlKeyValue && child.isMultiline()) || children[index + 1] is TomlTable) {
+                emitNewLine()
+            }
+        }
+    }
+
+    override fun TomlEmitter.writeChildren(
+        children: List<TomlNode>,
+        config: TomlOutputConfig
+    ) {
+        when (type) {
+            TableType.ARRAY ->
+                children.forEachIndexed { i, child ->
+                    writeArrayChild(i, child, children, config)
+                }
+            TableType.PRIMITIVE -> {
+                if (children.first() is TomlStubEmptyNode) {
+                    return
+                }
+
+                var prevChild: TomlNode? = null
+
+                children.forEachIndexed { i, child ->
+                    writePrimitiveChild(i, prevChild, child, children, config)
+                    prevChild = child
+                }
+            }
+        }
+    }
 
     /**
      * Determines whether the table should be explicitly defined. Synthetic tables
@@ -129,29 +235,29 @@ public abstract class TomlTable(
         val config = TomlOutputConfig()
         val emitter = TomlStringEmitter(this, config)
 
-        emitter.writeHeader(config)
+        emitter.writeHeader()
     }
 
     public companion object {
         @JvmStatic
-        protected fun parseSection(
+        private fun parseSection(
             content: String,
             lineNo: Int,
-            isArray: Boolean
+            type: TableType
         ): TomlKey {
-            val close = if (isArray) "]]" else "]"
-
-            val lastIndexOfBrace = content.lastIndexOf(close)
+            val lastIndexOfBrace = content.lastIndexOf(type.close)
             if (lastIndexOfBrace == -1) {
                 throw ParseException(
                     "Invalid Tables provided: $content." +
-                            " It has missing closing bracket${if (isArray) "s" else ""}: '$close'", lineNo
+                            " It has missing closing bracket${
+                                if (type == TableType.ARRAY) "s" else ""
+                            }: '${type.close}'", lineNo
                 )
             }
             val sectionFromContent = content.takeBeforeComment(false)
                 .trim()
                 .let {
-                    if (isArray) {
+                    if (type == TableType.ARRAY) {
                         it.trimDoubleBrackets()
                     } else {
                         it.trimBrackets()
@@ -160,7 +266,9 @@ public abstract class TomlTable(
                 .trim()
 
             if (sectionFromContent.isBlank()) {
-                throw ParseException("Incorrect blank name for ${if (isArray) "array of tables" else "table"}: $content", lineNo)
+                throw ParseException("Incorrect blank name for ${
+                    if (type == TableType.ARRAY) "array of tables" else "table"
+                }: $content", lineNo)
             }
 
             return TomlKey(sectionFromContent, lineNo)
@@ -170,9 +278,15 @@ public abstract class TomlTable(
 
 /**
  * Special Enum that is used in a logic related to insertion of tables to AST
+ *
+ * @property open The header opening sequence.
+ * @property close The header closing sequence.
  */
-public enum class TableType {
-    ARRAY,
-    PRIMITIVE,
+public enum class TableType(
+    internal val open: String,
+    internal val close: String
+) {
+    ARRAY("[[", "]]"),
+    PRIMITIVE("[", "]"),
     ;
 }

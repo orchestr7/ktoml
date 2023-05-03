@@ -69,11 +69,11 @@ class DottedKeyParserTest {
         assertEquals(
             """
                 | - TomlFile (rootNode)
-                |     - TomlTablePrimitive (["a.b.c"])
-                |         - TomlTablePrimitive (["a.b.c".f])
-                |             - TomlTablePrimitive (["a.b.c".f.e])
-                |                 - TomlTablePrimitive (["a.b.c".f.e.g])
-                |                     - TomlTablePrimitive (["a.b.c".f.e.g."a.b.c"])
+                |     - TomlTable (["a.b.c"])
+                |         - TomlTable (["a.b.c".f])
+                |             - TomlTable (["a.b.c".f.e])
+                |                 - TomlTable (["a.b.c".f.e.g])
+                |                     - TomlTable (["a.b.c".f.e.g."a.b.c"])
                 |                         - TomlKeyValuePrimitive (d=10)
                 |
         """.trimMargin(),
@@ -93,10 +93,10 @@ class DottedKeyParserTest {
         assertEquals(
             """
                  | - TomlFile (rootNode)
-                 |     - TomlTablePrimitive ([a])
-                 |         - TomlTablePrimitive ([a."a.b.c"])
+                 |     - TomlTable ([a])
+                 |         - TomlTable ([a."a.b.c"])
                  |             - TomlKeyValuePrimitive (d=10)
-                 |     - TomlTablePrimitive (["a.b.c"])
+                 |     - TomlTable (["a.b.c"])
                  |         - TomlStubEmptyNode (technical_node)
                  |
         """.trimMargin(),
@@ -116,9 +116,9 @@ class DottedKeyParserTest {
         assertEquals(
             """
                  | - TomlFile (rootNode)
-                 |     - TomlTablePrimitive (["a.b.c"])
-                 |         - TomlTablePrimitive (["a.b.c".a])
-                 |             - TomlTablePrimitive (["a.b.c".a."a.b.c"])
+                 |     - TomlTable (["a.b.c"])
+                 |         - TomlTable (["a.b.c".a])
+                 |             - TomlTable (["a.b.c".a."a.b.c"])
                  |                 - TomlKeyValuePrimitive (d=10)
                  |
         """.trimMargin(),

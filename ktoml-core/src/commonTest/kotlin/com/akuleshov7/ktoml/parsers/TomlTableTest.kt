@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
-import kotlin.test.Ignore
+import com.akuleshov7.ktoml.tree.nodes.TableType
+import com.akuleshov7.ktoml.tree.nodes.TomlTable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -41,9 +41,9 @@ class TomlTableTest {
 
         assertEquals("""
             | - TomlFile (rootNode)
-            |     - TomlTablePrimitive ([a])
+            |     - TomlTable ([a])
             |         - TomlStubEmptyNode (technical_node)
-            |         - TomlTablePrimitive ([a.b])
+            |         - TomlTable ([a.b])
             |             - TomlStubEmptyNode (technical_node)
             |         - TomlKeyValuePrimitive (c=3)
             |
@@ -80,22 +80,22 @@ class TomlTableTest {
         assertEquals(
             """
                 | - TomlFile (rootNode)
-                |     - TomlTablePrimitive ([a])
+                |     - TomlTable ([a])
                 |         - TomlKeyValuePrimitive (name=1)
-                |         - TomlTablePrimitive ([a.b])
+                |         - TomlTable ([a.b])
                 |             - TomlKeyValuePrimitive (name=2)
-                |     - TomlTablePrimitive ([c])
-                |         - TomlTablePrimitive ([c.a])
-                |             - TomlTablePrimitive ([c.a.b])
+                |     - TomlTable ([c])
+                |         - TomlTable ([c.a])
+                |             - TomlTable ([c.a.b])
                 |                 - TomlKeyValuePrimitive (name=3)
-                |                 - TomlTablePrimitive ([c.a.b.a])
-                |                     - TomlTablePrimitive ([c.a.b.a.b])
-                |                         - TomlTablePrimitive ([c.a.b.a.b.c])
+                |                 - TomlTable ([c.a.b.a])
+                |                     - TomlTable ([c.a.b.a.b])
+                |                         - TomlTable ([c.a.b.a.b.c])
                 |                             - TomlKeyValuePrimitive (test=3)
                 |         - TomlKeyValuePrimitive (name=5)
-                |     - TomlTablePrimitive (["a.b.c"])
-                |         - TomlTablePrimitive (["a.b.c".a])
-                |             - TomlTablePrimitive (["a.b.c".a."a.b.c"])
+                |     - TomlTable (["a.b.c"])
+                |         - TomlTable (["a.b.c".a])
+                |             - TomlTable (["a.b.c".a."a.b.c"])
                 |                 - TomlKeyValuePrimitive (d=10)
                 |
         """.trimMargin(),
@@ -115,7 +115,7 @@ class TomlTableTest {
 
     @Test
     fun createSimpleTomlTable() {
-        val table = TomlTablePrimitive("[abcd]", 0)
+        val table = TomlTable("[abcd]", 0, TableType.PRIMITIVE)
         assertEquals(table.fullTableKey.toString(), "abcd")
     }
 }

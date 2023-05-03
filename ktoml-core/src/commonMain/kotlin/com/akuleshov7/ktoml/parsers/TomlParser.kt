@@ -92,7 +92,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 if (tomlLine.isTableNode()) {
                     if (tomlLine.isArrayOfTables()) {
                         // TomlArrayOfTables contains all information about the ArrayOfTables ([[array of tables]])
-                        val tableArray = TomlArrayOfTables(tomlLine, lineNo)
+                        val tableArray = TomlTable(tomlLine, lineNo, TableType.ARRAY)
                         val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, latestCreatedBucket)
                         // creating a new empty element that will be used as an element in array and the parent for next key-value records
                         val newArrayElement = TomlArrayOfTablesElement(lineNo, comments, inlineComment)
@@ -106,7 +106,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                         // here we set the bucket that will be incredibly useful when we will be inserting the next array of tables
                         latestCreatedBucket = newArrayElement
                     } else {
-                        val tableSection = TomlTablePrimitive(tomlLine, lineNo, comments, inlineComment)
+                        val tableSection = TomlTable(tomlLine, lineNo, TableType.PRIMITIVE, comments, inlineComment)
                         // if the table is the last line in toml, then it has no children, and we need to
                         // add at least fake node as a child
                         if (!linesIterator.hasNext()) {
