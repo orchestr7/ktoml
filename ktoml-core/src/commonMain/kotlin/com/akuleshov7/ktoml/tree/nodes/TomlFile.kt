@@ -22,7 +22,7 @@ public class TomlFile() : TomlNode(
     public constructor(config: TomlConfig) : this()
 
     override fun getNeighbourNodes(): MutableList<TomlNode> =
-            throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
+        throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")
 
     override fun write(
         emitter: TomlEmitter,

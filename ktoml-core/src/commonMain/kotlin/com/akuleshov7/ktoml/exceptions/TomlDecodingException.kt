@@ -17,7 +17,8 @@ internal class UnknownEscapeSymbolsException(invalid: String, lineNo: Int) : Par
     lineNo
 )
 
-internal class InternalDecodingException(message: String) : TomlDecodingException(message)
+internal class InternalDecodingException(message: String) : TomlDecodingException(message +
+        " It's an internal error - you can do nothing with it, please report it to https://github.com/akuleshov7/ktoml/")
 
 internal class InternalAstException(message: String) : TomlDecodingException(message)
 
@@ -28,7 +29,11 @@ internal class UnknownNameException(key: String, parent: String?) : TomlDecoding
 )
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class InvalidEnumValueException(value: String, enumSerialDescriptor: SerialDescriptor) : TomlDecodingException(
+internal class InvalidEnumValueException(
+    value: String,
+    enumSerialDescriptor: SerialDescriptor,
+    lineNo: Int
+) : TomlDecodingException(
     "Value <$value> is not a valid enum option." +
             " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}"
 )

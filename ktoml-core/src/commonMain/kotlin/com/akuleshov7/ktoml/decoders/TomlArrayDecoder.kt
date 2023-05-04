@@ -69,8 +69,10 @@ public class TomlArrayDecoder(
         return super.beginStructure(descriptor)
     }
 
+    // decodeKeyValue is usually used for simple plain structures, but as it is present in TomlAbstractDecoder,
+    // we should implement it and have this stub
     override fun decodeKeyValue(): TomlKeyValue = throw NotImplementedError("Method `decodeKeyValue`" +
-            " should never be called for TomlListDecoder, it should use ")
+            " should never be called for TomlArrayDecoder, because it is a more complex structure")
 
     override fun decodeString(): String = currentElementDecoder.decodeString()
     override fun decodeInt(): Int = currentElementDecoder.decodeInt()

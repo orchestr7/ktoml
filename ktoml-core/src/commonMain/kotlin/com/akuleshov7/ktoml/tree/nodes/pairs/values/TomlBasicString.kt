@@ -39,29 +39,29 @@ public class TomlBasicString internal constructor(
 
     public companion object {
         private fun String.verifyAndTrimQuotes(lineNo: Int): Any =
-                when {
-                    // ====== multiline string (""") =======
-                    startsWith("\"\"\"") && endsWith("\"\"\"") ->
-                        trimMultilineQuotes()
-                            .checkCountOfOtherUnescapedQuotes(lineNo)
-                            .convertLineEndingBackslash()
-                            .convertSpecialCharacters(lineNo)
+            when {
+                // ====== multiline string (""") =======
+                startsWith("\"\"\"") && endsWith("\"\"\"") ->
+                    trimMultilineQuotes()
+                        .checkCountOfOtherUnescapedQuotes(lineNo)
+                        .convertLineEndingBackslash()
+                        .convertSpecialCharacters(lineNo)
 
-                    // ========= basic string ("abc") =======
-                    startsWith("\"") && endsWith("\"") ->
-                        trimQuotes()
-                            .checkOtherQuotesAreEscaped(lineNo)
-                            .convertSpecialCharacters(lineNo)
+                // ========= basic string ("abc") =======
+                startsWith("\"") && endsWith("\"") ->
+                    trimQuotes()
+                        .checkOtherQuotesAreEscaped(lineNo)
+                        .convertSpecialCharacters(lineNo)
 
-                    // ============= other ===========
-                    else ->
-                        throw ParseException(
-                            "According to the TOML specification string values (even Enums)" +
-                                    " should be wrapped (start and end) with quotes (\"\")," +
-                                    " but the following value was not: <$this>.",
-                            lineNo
-                        )
-                }
+                // ============= other ===========
+                else ->
+                    throw ParseException(
+                        "According to the TOML specification string values (even Enums)" +
+                                " should be wrapped (start and end) with quotes (\"\")," +
+                                " but the following value was not: <$this>.",
+                        lineNo
+                    )
+            }
 
         private fun String.checkOtherQuotesAreEscaped(lineNo: Int): String {
             this.forEachIndexed { index, ch ->

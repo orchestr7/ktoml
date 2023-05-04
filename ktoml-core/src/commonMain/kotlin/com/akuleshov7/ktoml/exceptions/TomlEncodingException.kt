@@ -8,7 +8,8 @@ public sealed class TomlEncodingException(message: String) : SerializationExcept
 
 internal class TomlWritingException(message: String) : TomlEncodingException(message)
 
-internal class InternalEncodingException(message: String) : TomlEncodingException(message)
+internal class InternalEncodingException(message: String) : TomlEncodingException(message +
+        " It's an internal error - you can do nothing with it, please report it to https://github.com/akuleshov7/ktoml/")
 
 // Todo: This needs a better name
 internal class IllegalEncodingTypeException(message: String, lineNo: Int) : TomlEncodingException("Line $lineNo: $message")

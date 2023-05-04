@@ -52,7 +52,7 @@ public abstract class TomlAbstractEncoder protected constructor(
 
         if (key !is String) {
             throw UnsupportedEncodingFeatureException(
-                "Arbitrary map key types are not supported. Must be either a string" +
+                "Arbitrary map key ($key) types are not supported. Must be either a string" +
                         " or enum. Provide a custom serializer for $type to either " +
                         "of the supported key types."
             )
@@ -253,14 +253,14 @@ public abstract class TomlAbstractEncoder protected constructor(
         rootNode: TomlNode,
         attributes: TomlEncoderAttributes = this.attributes.child()
     ): TomlAbstractEncoder =
-            TomlArrayEncoder(
-                rootNode,
-                parent = this,
-                elementIndex,
-                attributes,
-                outputConfig,
-                serializersModule
-            )
+        TomlArrayEncoder(
+            rootNode,
+            parent = this,
+            elementIndex,
+            attributes,
+            outputConfig,
+            serializersModule
+        )
 
     /**
      * Creates a new inline table encoder instance, with the encoder as its parent.
@@ -269,14 +269,14 @@ public abstract class TomlAbstractEncoder protected constructor(
      * @return The new instance.
      */
     protected open fun inlineTableEncoder(rootNode: TomlNode): TomlAbstractEncoder =
-            TomlInlineTableEncoder(
-                rootNode,
-                parent = this,
-                elementIndex,
-                attributes.child(),
-                outputConfig,
-                serializersModule
-            )
+        TomlInlineTableEncoder(
+            rootNode,
+            parent = this,
+            elementIndex,
+            attributes.child(),
+            outputConfig,
+            serializersModule
+        )
 
     /**
      * Creates a new table encoder instance.
@@ -285,11 +285,11 @@ public abstract class TomlAbstractEncoder protected constructor(
      * @return The new instance.
      */
     protected open fun tableEncoder(rootNode: TomlNode): TomlAbstractEncoder =
-            TomlMainEncoder(
-                rootNode,
-                elementIndex,
-                attributes.child(),
-                outputConfig,
-                serializersModule
-            )
+        TomlMainEncoder(
+            rootNode,
+            elementIndex,
+            attributes.child(),
+            outputConfig,
+            serializersModule
+        )
 }
