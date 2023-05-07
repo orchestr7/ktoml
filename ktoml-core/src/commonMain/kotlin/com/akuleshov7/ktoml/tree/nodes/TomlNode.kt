@@ -29,13 +29,6 @@ public sealed class TomlNode(
     comments: List<String>,
     public val inlineComment: String
 ) {
-    @Deprecated(
-        message = "content was replaced with toString; will be removed in future releases.",
-        replaceWith = ReplaceWith("toString()")
-    )
-    @Suppress("CUSTOM_GETTERS_SETTERS")
-    public val content: String get() = toString()
-
     /**
      * A list of comments prepended to the node.
      */
@@ -187,20 +180,25 @@ public sealed class TomlNode(
 
     /**
      * print the structure of parsed AST tree
+     * Important: as prettyPrint calls toString() of the node, and not just prints the value, but emits and reconstruct a source string,
+     * so in some cases (for example in case of multiline strings) it can work incorrectly.
+     *
+     * @param emitLine - if true - will print line number in this debug print
      */
     @Suppress("DEBUG_PRINT")
-    public fun prettyPrint() {
+    public fun prettyPrint(emitLine: Boolean = false) {
         val sb = StringBuilder()
-        prettyPrint(this, sb)
+        prettyPrint(this, sb, emitLine)
         println(sb.toString())
     }
 
     /**
+     * @param emitLine - if true - will print line number in this debug print
      * @return the string with AST tree visual representation
      */
-    public fun prettyStr(): String {
+    public fun prettyStr(emitLine: Boolean = false): String {
         val sb = StringBuilder()
-        prettyPrint(this, sb)
+        prettyPrint(this, sb, emitLine)
         return sb.toString()
     }
 
@@ -232,37 +230,6 @@ public sealed class TomlNode(
             this.appendChild(childTable)
         }
     }
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlOutputConfig instead. Will be removed in next releases.",
-        replaceWith = ReplaceWith(
-            "write(emitter, config, multiline)",
-            "com.akuleshov7.ktoml.TomlOutputConfig"
-        )
-    )
-    public fun write(
-        emitter: TomlEmitter,
-        config: TomlConfig,
-        multiline: Boolean = false
-    ): Unit = write(emitter, config.output, multiline)
-
-    /**
-     * Writes this node as text to [emitter].
-     *
-     * @param emitter The [TomlEmitter] instance to write to.
-     * @param config The [TomlConfig] instance. Defaults to the node's config.
-     * @param multiline Whether to write the node over multiple lines, if possible.
-     */
-    @Deprecated(
-        message = "The multiline parameter overload is deprecated, use the multiline" +
-                " property on supported TomlValue types instead. Will be removed in next releases.",
-        replaceWith = ReplaceWith("write(emitter, config)")
-    )
-    public fun write(
-        emitter: TomlEmitter,
-        config: TomlOutputConfig = TomlOutputConfig(),
-        multiline: Boolean = false
-    ): Unit = write(emitter, config)
 
     /**
      * Writes this node as text to [emitter].
@@ -328,6 +295,9 @@ public sealed class TomlNode(
             .writeNode(this)
             .replace(" = ", "=")
 
+    internal fun print(emitLine: Boolean = false): String =
+        "${this::class.simpleName} ($this)${if (emitLine) "[line:${this.lineNo}]" else ""}\n"
+
     public companion object {
         // number of spaces that is used to indent levels
         internal const val INDENTING_LEVEL = 4
@@ -335,19 +305,22 @@ public sealed class TomlNode(
         /**
          * recursive print the tree using the current node
          *
-         * @param node
-         * @param level
-         * @param result
+         * @param node that will be printed
+         * @param level depth of hierarchy for print
+         * @param result string builder where the result is stored
+         * @param emitLine if true - will print line number in this debug print
          */
         public fun prettyPrint(
             node: TomlNode,
             result: StringBuilder,
+            emitLine: Boolean = false,
             level: Int = 0
         ) {
             val spaces = " ".repeat(INDENTING_LEVEL * level)
-            result.append("$spaces - ${node::class.simpleName} ($node)\n")
+            // we are using print() method here instead of toString()
+            result.append("$spaces - ${node.print(emitLine)}")
             node.children.forEach { child ->
-                prettyPrint(child, result, level + 1)
+                prettyPrint(child, result, emitLine, level + 1)
             }
         }
     }

@@ -101,10 +101,10 @@ public class TomlMainDecoder(
             is TomlKeyValuePrimitive -> node
             is TomlKeyValueArray -> node
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
-            // branch, we should throw an exception as it is not expected at all and we should catch this in tests
+            // branch, we should throw an exception as it is not expected at all, and we should catch this in tests
             else ->
                 throw InternalDecodingException(
-                    "Node of type [${node::class}] should not be processed in TomlDecoder.decodeValue(): <${node.content}>."
+                    "Node of type [${node::class}] should not be processed in TomlDecoder.decodeValue(): <$node>."
                 )
         }
     }

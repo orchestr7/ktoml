@@ -28,7 +28,7 @@ public class TomlLiteralString internal constructor(
         content: String,
         lineNo: Int,
         config: TomlInputConfig = TomlInputConfig()
-    ) : this(content.verifyAndTrimQuotes(lineNo, config))
+    ) : this(content.verifyAndTrimQuotes(lineNo, config), content.contains("\n"))
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
@@ -45,7 +45,7 @@ public class TomlLiteralString internal constructor(
 
     override fun write(
         emitter: TomlEmitter,
-        config: TomlOutputConfig
+        config: TomlOutputConfig,
     ) {
         val content = content as String
 
