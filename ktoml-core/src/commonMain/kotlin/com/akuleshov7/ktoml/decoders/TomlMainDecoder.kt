@@ -104,7 +104,7 @@ public class TomlMainDecoder(
             // branch, we should throw an exception as it is not expected at all, and we should catch this in tests
             else ->
                 throw InternalDecodingException(
-                    "Node of type [${node::class}] should not be processed in TomlDecoder.decodeValue(): <${node}>."
+                    "Node of type [${node::class}] should not be processed in TomlDecoder.decodeValue(): <$node>."
                 )
         }
     }

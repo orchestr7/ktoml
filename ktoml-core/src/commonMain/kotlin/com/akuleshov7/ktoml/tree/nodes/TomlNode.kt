@@ -182,6 +182,8 @@ public sealed class TomlNode(
      * print the structure of parsed AST tree
      * Important: as prettyPrint calls toString() of the node, and not just prints the value, but emits and reconstruct a source string,
      * so in some cases (for example in case of multiline strings) it can work incorrectly.
+     *
+     * @param emitLine - if true - will print line number in this debug print
      */
     @Suppress("DEBUG_PRINT")
     public fun prettyPrint(emitLine: Boolean = false) {
@@ -191,6 +193,7 @@ public sealed class TomlNode(
     }
 
     /**
+     * @param emitLine - if true - will print line number in this debug print
      * @return the string with AST tree visual representation
      */
     public fun prettyStr(emitLine: Boolean = false): String {
@@ -295,7 +298,6 @@ public sealed class TomlNode(
     internal fun print(emitLine: Boolean = false): String =
         "${this::class.simpleName} ($this)${if (emitLine) "[line:${this.lineNo}]" else ""}\n"
 
-
     public companion object {
         // number of spaces that is used to indent levels
         internal const val INDENTING_LEVEL = 4
@@ -303,9 +305,10 @@ public sealed class TomlNode(
         /**
          * recursive print the tree using the current node
          *
-         * @param node
-         * @param level
-         * @param result
+         * @param node that will be printed
+         * @param level depth of hierarchy for print
+         * @param result string builder where the result is stored
+         * @param emitLine if true - will print line number in this debug print
          */
         public fun prettyPrint(
             node: TomlNode,
@@ -317,7 +320,7 @@ public sealed class TomlNode(
             // we are using print() method here instead of toString()
             result.append("$spaces - ${node.print(emitLine)}")
             node.children.forEach { child ->
-                prettyPrint(child, result, emitLine, level + 1, )
+                prettyPrint(child, result, emitLine, level + 1)
             }
         }
     }

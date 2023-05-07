@@ -269,16 +269,22 @@ class EncodingAnnotationTest {
             value = File(),
             expectedToml = """
                 mlTextA = $tripleQuotes
+                
                 \tMultiline
                 text!
+                
                 $tripleQuotes
                 mlTextB = $tripleQuotes
+                
                 Text with escaped quotes ""\"\
                 and line break
+                
                 $tripleQuotes
                 mlTextC = '''
+                
                 "Multiline
                 text!"
+                
                 '''
             """.trimIndent()
         )

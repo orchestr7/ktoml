@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlLiteral
+import com.akuleshov7.ktoml.annotations.TomlMultiline
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -78,6 +79,38 @@ class PrimitiveEncoderTest {
         assertEncodedEquals(
             value = File(literalEscapeString = "'quotes'"),
             expectedToml = """literalEscapeString = '\'quotes\''"""
+        )
+    }
+
+    @Test
+    fun multilineStringsSpecifications() {
+        @Serializable
+        data class MultilineLiteralStr(
+            @TomlMultiline
+            @TomlLiteral
+            val a: String
+        )
+
+        @Serializable
+        data class MultilineBasicStr(
+            @TomlMultiline
+            val a: String
+        )
+
+        assertEncodedEquals(
+            value = MultilineLiteralStr("test \n test \n test \'\'\'"),
+            expectedToml = """
+                |a = '''
+                |test 
+                | test 
+                | test ''\'
+                |'''
+            """.trimMargin()
+        )
+
+        assertEncodedEquals(
+            value = MultilineBasicStr("test \n test \n test \'\'\'"),
+            expectedToml = "a = \"\"\"\ntest \n test \n test \'\'\'\n\"\"\""
         )
     }
 
