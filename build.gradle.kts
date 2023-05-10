@@ -11,6 +11,7 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
     configureDiktat()
     configureDetekt()
 
@@ -22,4 +23,3 @@ allprojects {
 createDetektTask()
 installGitHooks()
 
-configurePublishing()
