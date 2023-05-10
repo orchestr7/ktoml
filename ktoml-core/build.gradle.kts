@@ -1,11 +1,11 @@
-import com.akuleshov7.buildutils.configurePublishing
-
+import com.akuleshov7.buildutils.configureSigning
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+    id("com.akuleshov7.buildutils.publishing-configuration")
 }
 
 kotlin {
@@ -20,7 +20,6 @@ kotlin {
         nodejs()
     }
 
-    // building jvm task only on windows
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
@@ -73,7 +72,18 @@ kotlin {
     }
 }
 
-configurePublishing()
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.akuleshov7"
+            artifactId = "ktoml-core"
+            version = version
+            from(components["kotlin"])
+        }
+    }
+}
+
+configureSigning()
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()

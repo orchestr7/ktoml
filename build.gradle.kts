@@ -3,6 +3,7 @@ import com.akuleshov7.buildutils.*
 plugins {
     kotlin("multiplatform") apply false
     kotlin("plugin.serialization") version Versions.KOTLIN apply false
+    id("com.akuleshov7.buildutils.publishing-configuration")
 }
 
 configureVersioning()
@@ -11,6 +12,7 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
     configureDiktat()
     configureDetekt()
 
@@ -22,4 +24,3 @@ allprojects {
 createDetektTask()
 installGitHooks()
 
-configurePublishing()
