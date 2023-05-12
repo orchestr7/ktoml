@@ -21,7 +21,7 @@ import kotlinx.serialization.serializer
 public open class TomlSourceReader(
     inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
-    override val serializersModule: SerializersModule = EmptySerializersModule
+    override val serializersModule: SerializersModule = EmptySerializersModule()
 ) : Toml(
     inputConfig,
     outputConfig,
