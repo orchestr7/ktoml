@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
+import com.akuleshov7.ktoml.annotations.TomlMultiline
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -39,6 +40,7 @@ class ReadMeExampleTest {
     @Serializable
     data class NestedTable(
         @TomlLiteral
+        @TomlMultiline
         val name: String,
         @SerialName("configurationList")
         val overriddenName: List<String?>
@@ -59,7 +61,7 @@ class ReadMeExampleTest {
                 Table1(null, 6),
                 Table2(
                     5,
-                    NestedTable("this is a \"literal\" string", listOf("a", "b", "c", null)),
+                    NestedTable("this is a \"literal\" \n string", listOf("a", "b", "c", null)),
                     5.56
                 ),
                 GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
@@ -78,7 +80,10 @@ class ReadMeExampleTest {
                     otherNumber = 5.56
                 
                     [table2."akuleshov7.com"]
-                        name = 'this is a "literal" string'
+                        name = '''
+                this is a "literal" 
+                 string
+                '''
                         configurationList = [ "a", "b", "c", null ]
             """.trimIndent(),
             tomlInstance = Toml(

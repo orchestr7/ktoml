@@ -35,12 +35,14 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 - mingwx64
 - linuxx64
 - macosx64
+- macosArm64 (M1)
 - ios
+- iosSimulatorArm64
 - js (obviously only for ktoml-core!). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 1.8
+:globe_with_meridians: ktoml supports Kotlin 1.8.21
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc.
@@ -86,12 +88,12 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.4.0</version>
+  <version>0.5.0</version>
 </dependency>
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-file</artifactId>
-  <version>0.4.0</version>
+  <version>0.5.0</version>
 </dependency>
 ```
 </details>
@@ -100,8 +102,8 @@ To import `ktoml` library you need to add following dependencies to your code:
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.4.0'
-implementation 'com.akuleshov7:ktoml-file:0.4.0'
+implementation 'com.akuleshov7:ktoml-core:0.5.0'
+implementation 'com.akuleshov7:ktoml-file:0.5.0'
 ```
 </details>
 
@@ -109,8 +111,8 @@ implementation 'com.akuleshov7:ktoml-file:0.4.0'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.4.0")
-implementation("com.akuleshov7:ktoml-file:0.4.0")
+implementation("com.akuleshov7:ktoml-core:0.5.0")
+implementation("com.akuleshov7:ktoml-file:0.5.0")
 ```
 </details>
 
@@ -142,7 +144,7 @@ data class MyClass(/* your fields */)
 // no need to provide serializer() explicitly if you will use extension method from
 // <kotlinx.serialization.decodeFromString>
 val resultFromString = Toml.decodeFromString<MyClass>(/* string with a toml input */)
-val resultFromList = Toml.decodeFromString<MyClass>(serializer(), /* list with lines of strings with a toml input */)
+val resultFromList = Toml.decodeFromString<MyClass>(serializer(), /* sequence with lines of strings with a toml input */)
 ```
 </details>
 
@@ -175,6 +177,21 @@ import com.akuleshov7.ktoml.file
 
 val resultFromString = TomlFileReader.decodeFromFile<MyClass>(serializer(), /* file path to toml file */)
 val resultFromList = TomlFileReader.partiallyDecodeFromFile<MyClass>(serializer(),  /* file path to toml file */, /* table name */)
+```
+
+:heavy_exclamation_mark: `toml-file` is only one of the example for reading the data from source.
+For your particular case you can implement your own source provider based on
+[okio.Source](https://github.com/square/okio/blob/1d86391ca0ee8e5730fd0bbb6bee94c4a41ad945/okio/src/commonMain/kotlin/okio/Source.kt#L8).
+For this purpose we have prepared `toml-source` module and implemented an 
+[example](https://github.com/akuleshov7/ktoml/blob/main/ktoml-source/src/jvmMain/kotlin/com/akuleshov7/ktoml/source/JvmStreams.kt) 
+with java streams for JVM target.
+
+```kotlin
+// add com.akuleshov7:ktoml-source to your project
+import com.akuleshov7.ktoml.source
+
+val resultFromString = TomlFileReader.decodeFromSource<MyClass>(serializer(), /* your source */)
+val resultFromList = TomlFileReader.partiallyDecodeFromSource<MyClass>(serializer(),  /* your source */, /* table name */)
 ```
 </details>
 
