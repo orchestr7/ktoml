@@ -72,7 +72,10 @@ class ReadMeExampleTest {
             [table2]
               someNumber = 5
                [table2."akuleshov7.com"]
-                 name = 'this is a "literal" string'
+                 name = '''
+                     this is a "literal" multiline
+                     string
+                 '''
                  # empty lists are also supported
                  configurationList = ["a",  "b",  "c"]
             
@@ -94,7 +97,12 @@ class ReadMeExampleTest {
                 table1 = Table1(property1 = 100, property2 = 6),
                 table2 = Table2(
                     someNumber = 5,
-                    inlineTable = NestedTable(name = "this is a \"literal\" string", overriddenName = listOf("a", "b", "c")),
+                    inlineTable = NestedTable(
+                        name = "                     this is a \"literal\" multiline\n" +
+                                "                     string\n" +
+                                "                 ",
+                        overriddenName = listOf("a", "b", "c")
+                    ),
                     otherNumber = 5.56,
                     charFromString = 'a',
                     charFromInteger = '{'

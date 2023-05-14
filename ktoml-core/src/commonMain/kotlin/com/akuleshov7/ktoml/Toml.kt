@@ -62,6 +62,14 @@ public open class Toml(
      * @param config
      * @return deserialized object of type T
      */
+    @Deprecated(
+        message = "List of strings as an input was replaced with a sequence, " +
+                "to avoid extra conversion use sequence instead",
+        replaceWith = ReplaceWith(
+            "decodeFromString",
+            "com.akuleshov7.ktoml.decodeFromString"
+        )
+    )
     public fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         toml: List<String>,
