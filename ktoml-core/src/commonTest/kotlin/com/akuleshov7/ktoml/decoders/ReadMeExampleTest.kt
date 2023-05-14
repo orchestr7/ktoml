@@ -99,8 +99,7 @@ class ReadMeExampleTest {
                     someNumber = 5,
                     inlineTable = NestedTable(
                         name = "                     this is a \"literal\" multiline\n" +
-                                "                     string\n" +
-                                "                 ",
+                                "                     string\n",
                         overriddenName = listOf("a", "b", "c")
                     ),
                     otherNumber = 5.56,
