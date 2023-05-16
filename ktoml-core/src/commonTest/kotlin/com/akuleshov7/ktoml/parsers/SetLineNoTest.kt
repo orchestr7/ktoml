@@ -48,7 +48,7 @@ class SetLineNoTest {
                  |      1
                  |      2
                  |      3
-                 | 
+                 |
                  |''')[line:13]
                  |                 - TomlKeyValueArray (mla=[ "a", "b", "c" ])[line:18]
                  |
