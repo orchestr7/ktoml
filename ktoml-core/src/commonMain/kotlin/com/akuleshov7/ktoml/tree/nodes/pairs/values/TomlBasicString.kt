@@ -42,6 +42,7 @@ public class TomlBasicString internal constructor(
             when {
                 // ====== multiline string (""") =======
                 startsWith("\"\"\"") && endsWith("\"\"\"") ->
+                    // please note that for a better user experience we will also trim spaces for a standalone closing quotes
                     trimMultilineQuotes()
                         .checkCountOfOtherUnescapedQuotes(lineNo)
                         .convertLineEndingBackslash()
@@ -55,6 +56,9 @@ public class TomlBasicString internal constructor(
 
                 // ============= other ===========
                 else ->
+                    // TomlBasicString - is the last chance to parse a value, so if we came into this branch, then
+                    // it appears that other types like Number/Float/arrays/etc. are not also applicable
+                    // and looks like user just forgot to add quotes to some string value
                     throw ParseException(
                         "According to the TOML specification string values (even Enums)" +
                                 " should be wrapped (start and end) with quotes (\"\")," +

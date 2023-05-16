@@ -188,3 +188,10 @@ private fun String.escapeBackslashes(escapes: String): String {
 
     return sb.toString()
 }
+
+/**
+ * just a newline character on different platforms/targets
+ *
+ * @return newline
+ */
+public expect fun newLineChar(): Char
