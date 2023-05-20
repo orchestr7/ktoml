@@ -5,6 +5,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.utils.newLineChar
 
 /**
  * Splitting dot-separated string to the list of tokens:
@@ -65,7 +66,8 @@ internal fun String.trimSingleQuotes(): String = trimSymbols(this, "'", "'")
  *
  * @return string with the result
  */
-internal fun String.trimMultilineLiteralQuotes(): String = trimSymbols(this, "'''", "'''").removePrefix("\n")
+internal fun String.trimMultilineLiteralQuotes(): String = trimMultilineQuotes("'''")
+    .removePrefix(newLineChar().toString())
 
 /**
  *  When the last non-whitespace character on a line is an unescaped \, it will
@@ -100,7 +102,8 @@ internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
  *
  * @return string with the result
  */
-internal fun String.trimMultilineQuotes(): String = trimSymbols(this, "\"\"\"", "\"\"\"").removePrefix("\n")
+internal fun String.trimMultilineQuotes(): String = trimMultilineQuotes("\"\"\"")
+    .removePrefix(newLineChar().toString())
 
 /**
  * If this string starts and end with curly braces ({}) - will return the string without them (used in inline tables)
@@ -265,6 +268,32 @@ private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||
         CharRange('0', '9').contains(this)
 
 private fun String.isNotQuoted() = !(this.startsWith("\"") && this.endsWith("\""))
+
+private fun String.trimMultilineQuotes(quotes: String): String {
+    // if a suffix is a separator on a separate string, we need to trim whitespaces for a better user experience
+    // name = '''
+    // this is a "literal" multiline
+    // string
+    // <these whitespaces also should be removed>'''
+    if (this.startsWith(quotes) && this.endsWith(quotes)) {
+        val trimmedStr = this.removePrefix(quotes).removeSuffix(quotes)
+        val lastNewLine = trimmedStr.lastIndexOf(newLineChar())
+        if (lastNewLine != -1 &&
+                // if there are only spaces after a new line - we can trim them
+                // (this means that closing quotes were on a separate line):
+                // """
+                // aaa
+                // """
+                trimmedStr.removePrefix(newLineChar().toString()).substring(lastNewLine).all { it == ' ' }) {
+            return trimmedStr.substring(0, lastNewLine + 1)
+        }
+        // we haven't found newlines (weird) or have found, but quotes are not on a separate line:
+        // """
+        // aaa """ <- in this case nothing to remove
+        return trimmedStr
+    }
+    return this
+}
 
 private fun trimSymbols(
     str: String,

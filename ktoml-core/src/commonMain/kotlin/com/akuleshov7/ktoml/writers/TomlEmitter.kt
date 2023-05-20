@@ -4,8 +4,8 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.utils.isBareKey
 import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
+import com.akuleshov7.ktoml.utils.newLineChar
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -59,7 +59,7 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      *
      * @return this instance
      */
-    public fun emitNewLine(): TomlEmitter = emit('\n')
+    public fun emitNewLine(): TomlEmitter = emit(newLineChar())
 
     /**
      * Emits indentation up to the current [indentDepth].

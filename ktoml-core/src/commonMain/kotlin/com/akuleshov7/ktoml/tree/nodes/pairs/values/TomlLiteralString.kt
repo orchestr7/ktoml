@@ -11,6 +11,7 @@ import com.akuleshov7.ktoml.parsers.trimMultilineLiteralQuotes
 import com.akuleshov7.ktoml.parsers.trimSingleQuotes
 import com.akuleshov7.ktoml.utils.isControlChar
 import com.akuleshov7.ktoml.utils.isMultilineControlChar
+import com.akuleshov7.ktoml.utils.newLineChar
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -28,7 +29,7 @@ public class TomlLiteralString internal constructor(
         content: String,
         lineNo: Int,
         config: TomlInputConfig = TomlInputConfig()
-    ) : this(content.verifyAndTrimQuotes(lineNo, config), content.contains("\n"))
+    ) : this(content.verifyAndTrimQuotes(lineNo, config), content.contains(newLineChar()))
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
@@ -58,24 +59,29 @@ public class TomlLiteralString internal constructor(
 
     public companion object {
         private fun String.verifyAndTrimQuotes(lineNo: Int, config: TomlInputConfig): Any =
-            if (startsWith("'''") && endsWith("'''")) {
-                val contentString = trimMultilineLiteralQuotes()
-                    .checkCountOfOtherQuotes(lineNo)
-                val rawContent = if (config.allowEscapedQuotesInLiteralStrings) {
-                    contentString.convertSingleQuotes()
-                } else {
-                    contentString
+            when {
+                // ====== multiline string (''') =======
+                startsWith("'''") && endsWith("'''") -> {
+                    val contentString = trimMultilineLiteralQuotes()
+                        .checkCountOfOtherQuotes(lineNo)
+                    val rawContent = if (config.allowEscapedQuotesInLiteralStrings) {
+                        contentString.convertSingleQuotes()
+                    } else {
+                        contentString
+                    }
+                    rawContent.convertLineEndingBackslash()
                 }
-
-                rawContent.convertLineEndingBackslash()
-            } else if (startsWith("'") && endsWith("'")) {
-                val contentString = trimSingleQuotes()
-                if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
-            } else {
-                throw ParseException(
-                    "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
-                            " the single quote in the end of the following string: <$this>", lineNo
-                )
+                // ====== basic literal string (') =======
+                startsWith("'") && endsWith("'") -> {
+                    val contentString = trimSingleQuotes()
+                    if (config.allowEscapedQuotesInLiteralStrings) contentString.convertSingleQuotes() else contentString
+                }
+                else ->
+                    // here we complain only about non-multiline strings, as for multiline string we have the same logic in parsing
+                    throw ParseException(
+                        "Literal string should be wrapped with single quotes (''), it looks that you have forgotten" +
+                                " the single quote in the end of the following string: <$this>", lineNo
+                    )
             }
 
         /**
@@ -98,20 +104,25 @@ public class TomlLiteralString internal constructor(
                                         " terminators) are not permitted in" +
                                         " multiline literal strings. Please check: <$this>"
                             )
+
                         config.allowEscapedQuotesInLiteralStrings ->
                             replace("'''", "''\\'")
+
                         "'''" in this ->
                             throw TomlWritingException(
                                 "Three or more consecutive single quotes are not" +
                                         " permitted in multiline literal strings. Please check: <$this>"
                             )
+
                         else -> this
                     }
+
                 any(Char::isControlChar) ->
                     throw TomlWritingException(
                         "Control characters (excluding tab) are not permitted" +
                                 " in literal strings. Please check: <$this>"
                     )
+
                 '\'' in this ->
                     if (config.allowEscapedQuotesInLiteralStrings) {
                         replace("'", "\\'")
@@ -122,6 +133,7 @@ public class TomlLiteralString internal constructor(
                                     "Strings to true in the config to ignore this. Please check: <$this>"
                         )
                     }
+
                 else -> this
             }
 

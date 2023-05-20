@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.*
+import com.akuleshov7.ktoml.utils.newLineChar
 import kotlin.jvm.JvmInline
 
 /**
@@ -20,7 +21,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
      */
     public fun parseString(toml: String): TomlFile {
         // It looks like we need this hack to process line separator properly, as we don't have System.lineSeparator()
-        return parseLines(toml.replace("\r\n", "\n").splitToSequence("\n"))
+        return parseLines(toml.replace("\r\n", newLineChar().toString()).splitToSequence(newLineChar().toString()))
     }
 
     /**
@@ -73,7 +74,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                     // first line from multiline is already taken from the sequence and can be processed
                     val collectedMultiline = StringBuilder()
                     collectLineWithComments(collectedMultiline, comments, multilineType, line)
-                    collectedMultiline.append("\n")
+                    collectedMultiline.append(newLineChar())
 
                     // processing remaining lines from a multiline
                     val indexAtTheEndOfMultiline = collectMultiline(
@@ -239,7 +240,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 break
             }
             // append new line to collect string as is
-            collectedMultiline.append("\n")
+            collectedMultiline.append(newLineChar())
             index++
         }
 
