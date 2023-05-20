@@ -4,8 +4,9 @@
 
 package com.akuleshov7.ktoml.utils
 
+import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
-import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlTable
 
 /**
  * Append a code point to a [StringBuilder]
@@ -22,12 +23,12 @@ internal expect fun StringBuilder.appendCodePointCompat(codePoint: Int): StringB
  * @param children list of nodes
  * @param fullTableName string with a table name
  */
-public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName: String): TomlTablePrimitive? {
+public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName: String): TomlTable? {
     if (children.isEmpty()) {
         return null
     }
     children.forEach {
-        if (it is TomlTablePrimitive && it.fullTableKey.toString() == fullTableName) {
+        if (it is TomlTable && it.type == TableType.PRIMITIVE && it.fullTableKey.toString() == fullTableName) {
             return it
         }
     }

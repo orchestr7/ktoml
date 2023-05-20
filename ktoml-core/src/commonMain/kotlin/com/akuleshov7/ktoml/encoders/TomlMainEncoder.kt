@@ -1,12 +1,10 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.Toml.Default.outputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
-
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -82,9 +80,10 @@ public class TomlMainEncoder(
             serializersModule
         )
         else -> {
-            val table = TomlTablePrimitive(
+            val table = TomlTable(
                 TomlKey(attributes.getFullKey(), elementIndex),
                 elementIndex,
+                type = TableType.PRIMITIVE,
                 attributes.comments,
                 attributes.inlineComment
             )
@@ -96,7 +95,7 @@ public class TomlMainEncoder(
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        if (rootNode is TomlTablePrimitive && rootNode.hasNoChildren()) {
+        if (rootNode is TomlTable && rootNode.type == TableType.PRIMITIVE && rootNode.hasNoChildren()) {
             rootNode.appendChild(TomlStubEmptyNode(elementIndex))
         }
 
@@ -107,7 +106,8 @@ public class TomlMainEncoder(
         // tables, to avoid extraneous definition.
         // Todo: Find a more elegant solution that doesn't make isSynthetic mutable.
         if (!outputConfig.explicitTables &&
-                rootNode is TomlTablePrimitive &&
+                rootNode is TomlTable &&
+                rootNode.type == TableType.PRIMITIVE &&
                 rootNode.children.all { it is TomlTable }) {
             rootNode.isSynthetic = true
         }

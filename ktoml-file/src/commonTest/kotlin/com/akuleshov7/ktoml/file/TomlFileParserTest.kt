@@ -3,7 +3,8 @@ package com.akuleshov7.ktoml.file
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.source.useLines
-import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TableType
+import com.akuleshov7.ktoml.tree.nodes.TomlTable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -207,8 +208,8 @@ class TomlFileParserTest {
                 TomlParser(TomlInputConfig())
                     .parseStringsToTomlTree(lines, TomlInputConfig())
                     .children
-                    .filterIsInstance<TomlTablePrimitive>()
-                    .filter { !it.isSynthetic }
+                    .filterIsInstance<TomlTable>()
+                    .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
                     .map { it.fullTableKey.toString() }
             }
         )

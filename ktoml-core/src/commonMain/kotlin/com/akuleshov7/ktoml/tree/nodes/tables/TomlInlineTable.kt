@@ -60,7 +60,7 @@ public class TomlInlineTable internal constructor(
     )
 
     public fun returnTable(tomlFileHead: TomlFile, currentParentalNode: TomlNode): TomlTable {
-        val tomlTable = TomlTablePrimitive(
+        val tomlTable = TomlTable(
             TomlKey(
                 if (currentParentalNode is TomlTable) {
                     currentParentalNode.fullTableKey.keyParts + name
@@ -69,6 +69,7 @@ public class TomlInlineTable internal constructor(
                 }
             ),
             lineNo,
+            type = TableType.PRIMITIVE,
             comments,
             inlineComment
         )

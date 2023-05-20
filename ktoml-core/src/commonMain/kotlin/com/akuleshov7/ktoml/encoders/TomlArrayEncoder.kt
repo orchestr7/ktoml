@@ -3,10 +3,7 @@ package com.akuleshov7.ktoml.encoders
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
-import com.akuleshov7.ktoml.tree.nodes.TomlArrayOfTables
-import com.akuleshov7.ktoml.tree.nodes.TomlArrayOfTablesElement
-import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
-import com.akuleshov7.ktoml.tree.nodes.TomlNode
+import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
@@ -41,7 +38,6 @@ public class TomlArrayEncoder internal constructor(
      * @param rootNode The root node to add the array to.
      * @param elementIndex The current element index.
      * @param attributes The current attributes.
-     * @param inputConfig The input config, used for constructing nodes.
      * @param outputConfig The output config.
      */
     public constructor(
@@ -150,7 +146,7 @@ public class TomlArrayEncoder internal constructor(
         tables.singleOrNull()?.let { element ->
             if (element is TomlArrayOfTablesElement) {
                 element.children.singleOrNull()?.let { nested ->
-                    if (nested is TomlArrayOfTables) {
+                    if (nested is TomlTable && nested.type == TableType.ARRAY) {
                         tables.clear()
 
                         tables += nested
@@ -160,10 +156,11 @@ public class TomlArrayEncoder internal constructor(
             }
         }
 
-        val tableArray = TomlArrayOfTables(
+        val tableArray = TomlTable(
             TomlKey(attributes.parent!!.getFullKey(), elementIndex),
             elementIndex,
-            isSynthetic
+            type = TableType.ARRAY,
+            isSynthetic = isSynthetic
         )
 
         tables.forEach(tableArray::appendChild)

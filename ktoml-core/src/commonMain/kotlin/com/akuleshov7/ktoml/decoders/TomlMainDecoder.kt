@@ -6,9 +6,7 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.tree.nodes.*
-import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlNull
-
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -235,7 +233,7 @@ public class TomlMainDecoder(
             when (nextProcessingNode) {
                 is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
                 is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
-                is TomlTablePrimitive -> {
+                is TomlTable -> {
                     val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                         "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +
                                 " in a table <${nextProcessingNode.fullTableKey}>"

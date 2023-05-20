@@ -27,7 +27,7 @@ internal interface TomlKeyValue {
     fun createTomlTableFromDottedKey(
         parentNode: TomlNode,
         config: TomlInputConfig = TomlInputConfig()
-    ): TomlTablePrimitive = createTomlTableFromDottedKey(parentNode)
+    ): TomlTable = createTomlTableFromDottedKey(parentNode)
 
     /**
      * this is a small hack to support dotted keys
@@ -39,7 +39,7 @@ internal interface TomlKeyValue {
      * @param parentNode
      * @return the table that is parsed from a dotted key
      */
-    fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTablePrimitive {
+    fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTable {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
         // creating new key with the last dot-separated fragment
@@ -49,9 +49,10 @@ internal interface TomlKeyValue {
         // tables should contain fully qualified name, so we need to add parental name
         val parentalPrefix = if (parentNode is TomlTable) parentNode.fullTableKey.keyParts else emptyList()
         // and creating a new table that will be created from dotted key
-        return TomlTablePrimitive(
+        return TomlTable(
             TomlKey(parentalPrefix + syntheticTablePrefix),
             lineNo,
+            type = TableType.PRIMITIVE,
             comments,
             inlineComment,
             true

@@ -39,9 +39,9 @@ class SetLineNoTest {
         assertEquals(
             """
                  | - TomlFile (rootNode)[line:0]
-                 |     - TomlTablePrimitive ([a])[line:4]
+                 |     - TomlTable ([a])[line:4]
                  |         - TomlKeyValuePrimitive (test=1)[line:6]
-                 |         - TomlArrayOfTables ([[a.b]])[line:10]
+                 |         - TomlTable ([[a.b]])[line:10]
                  |             - TomlArrayOfTablesElement (technical_node)[line:10]
                  |                 - TomlKeyValuePrimitive (test=1)[line:11]
                  |                 - TomlKeyValuePrimitive (mlls='''

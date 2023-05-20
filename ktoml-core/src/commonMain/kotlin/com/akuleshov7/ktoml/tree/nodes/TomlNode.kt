@@ -119,14 +119,14 @@ public sealed class TomlNode(
             var constructNewBucket = false
             // if the part of the table was found and it is inside the array - we need to determine if we need to create a copy or not
             if (foundTable != null && foundTable.parent is TomlArrayOfTablesElement) {
-                val freeBucket = (foundTable.parent?.parent as TomlArrayOfTables).children.last()
+                val freeBucket = (foundTable.parent?.parent as TomlTable).children.last()
                 // need to create a new array of tables in the tree only
                 // if there was an array before:
                 // [[a]]                                                                      [[a]]
                 // [[a.b]]   in case of the nested array we should not create a copy:      [[a.b]]
                 // [[a]]                                                                       [[a.b]]
                 // [[a.b]]                                                                 [[a.b]]
-                if (tomlTable !is TomlArrayOfTables || freeBucket == latestCreatedBucket) {
+                if (tomlTable.type == TableType.PRIMITIVE || freeBucket == latestCreatedBucket) {
                     previousParent = freeBucket
                     constructNewBucket = true
                 }
@@ -147,21 +147,14 @@ public sealed class TomlNode(
                     tomlTable
                 } else {
                     // creating a synthetic (technical) fragment of the table
-                    val newChildTableName = if (tomlTable is TomlArrayOfTables) {
-                        TomlArrayOfTables(
-                            TomlKey(subTable, lineNo),
-                            lineNo,
-                            true
-                        )
-                    } else {
-                        TomlTablePrimitive(
-                            TomlKey(subTable, lineNo),
-                            lineNo,
-                            tomlTable.comments,
-                            tomlTable.inlineComment,
-                            true
-                        )
-                    }
+                    val newChildTableName = TomlTable(
+                        TomlKey(subTable, lineNo),
+                        lineNo,
+                        tomlTable.type,
+                        tomlTable.comments,
+                        tomlTable.inlineComment,
+                        isSynthetic = true
+                    )
                     previousParent.determineParentAndInsertFragmentOfTable(newChildTableName)
                     newChildTableName
                 }
@@ -208,8 +201,8 @@ public sealed class TomlNode(
      *
      * @return all detected toml tables
      */
-    public fun getAllChildTomlTables(): List<TomlTablePrimitive> {
-        val result = if (this is TomlTablePrimitive) mutableListOf(this) else mutableListOf()
+    public fun getAllChildTomlTables(): List<TomlTable> {
+        val result = if (this is TomlTable && type == TableType.PRIMITIVE) mutableListOf(this) else mutableListOf()
         return result + this.children.flatMap {
             it.getAllChildTomlTables()
         }
@@ -220,7 +213,7 @@ public sealed class TomlNode(
      *
      * @return all real table nodes
      */
-    public fun getRealTomlTables(): List<TomlTablePrimitive> =
+    public fun getRealTomlTables(): List<TomlTable> =
         this.getAllChildTomlTables().filter { !it.isSynthetic }
 
     private fun determineParentAndInsertFragmentOfTable(childTable: TomlTable) {

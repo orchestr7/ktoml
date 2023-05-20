@@ -3,7 +3,8 @@ package com.akuleshov7.ktoml.source
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
-import com.akuleshov7.ktoml.tree.nodes.TomlTablePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TableType
+import com.akuleshov7.ktoml.tree.nodes.TomlTable
 
 import okio.source
 import org.junit.jupiter.api.Test
@@ -127,8 +128,8 @@ class StreamTests {
                 TomlParser(TomlInputConfig())
                     .parseStringsToTomlTree(lines, TomlInputConfig())
                     .children
-                    .filterIsInstance<TomlTablePrimitive>()
-                    .filter { !it.isSynthetic }
+                    .filterIsInstance<TomlTable>()
+                    .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
                     .map { it.fullTableName }
             }
         )
