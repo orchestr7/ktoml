@@ -76,7 +76,7 @@ public class TomlTable(
         // Todo: Option to explicitly define super tables?
         // Todo: Support dotted key-value pairs (i.e. a.b.c.d = 7)
 
-        val firstChild = children.first()
+        val firstChild = children.firstOrNull() ?: return
 
         if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
             emitter.writeHeader()
