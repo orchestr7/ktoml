@@ -18,7 +18,7 @@ class ArrayEncoderTest {
             expectedToml = "a = [ ]"
         )
     }
-
+    
     @Test
     fun simpleArrayTest() {
         @Serializable
@@ -126,6 +126,20 @@ class ArrayEncoderTest {
         assertEncodedEquals(
             value = ArrayInInlineTable(),
             expectedToml = "a = { b = [ 1, 2, 3 ] }"
+        )
+    }
+
+    @Test
+    fun emptyArrayInTableTest(){
+        @Serializable
+        data class EmbeddedData(val data: String = "embedded data")
+
+        @Serializable
+        data class EmptyListData(val content: List<EmbeddedData> = listOf() )
+        
+        assertEncodedEquals(
+            value = EmptyListData(),
+            expectedToml = ""
         )
     }
 }
