@@ -26,6 +26,7 @@ kotlin {
     macosX64()
     macosArm64()
     ios()
+    iosSimulatorArm64()
 
     sourceSets {
         all {
@@ -37,7 +38,7 @@ kotlin {
                 implementation("com.squareup.okio:okio:${Versions.OKIO}")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
                 implementation(project(":ktoml-core"))
-                implementation(project(":ktoml-source"))
+                api(project(":ktoml-source"))
             }
         }
 
