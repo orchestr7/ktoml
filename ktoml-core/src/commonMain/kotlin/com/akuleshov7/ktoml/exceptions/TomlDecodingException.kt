@@ -2,6 +2,7 @@
 
 package com.akuleshov7.ktoml.exceptions
 
+import com.akuleshov7.ktoml.utils.closestEnumName
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -28,14 +29,16 @@ internal class UnknownNameException(key: String, parent: String?) : TomlDecoding
             " to true if you would like to skip unknown keys"
 )
 
+
 @OptIn(ExperimentalSerializationApi::class)
 internal class InvalidEnumValueException(
     value: String,
     enumSerialDescriptor: SerialDescriptor,
     lineNo: Int
 ) : TomlDecodingException(
-    "Value <$value> is not a valid enum option." +
-            " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}"
+    "Line $lineNo: value <$value> is not a valid enum option." +
+            " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}." +
+            " Did you mean <${enumSerialDescriptor.elementNames.closestEnumName(value)}>?"
 )
 
 internal class NullValueException(propertyName: String, lineNo: Int) : TomlDecodingException(
