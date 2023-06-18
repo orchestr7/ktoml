@@ -2,6 +2,7 @@
 
 package com.akuleshov7.ktoml.exceptions
 
+import com.akuleshov7.ktoml.utils.closestEnumName
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -34,8 +35,9 @@ internal class InvalidEnumValueException(
     enumSerialDescriptor: SerialDescriptor,
     lineNo: Int
 ) : TomlDecodingException(
-    "Value <$value> is not a valid enum option." +
-            " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}"
+    "Line $lineNo: value <$value> is not a valid enum option." +
+            " Did you mean <${enumSerialDescriptor.elementNames.closestEnumName(value)}>?" +
+            " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}."
 )
 
 internal class NullValueException(propertyName: String, lineNo: Int) : TomlDecodingException(
