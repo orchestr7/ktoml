@@ -29,7 +29,6 @@ internal class UnknownNameException(key: String, parent: String?) : TomlDecoding
             " to true if you would like to skip unknown keys"
 )
 
-
 @OptIn(ExperimentalSerializationApi::class)
 internal class InvalidEnumValueException(
     value: String,
@@ -37,8 +36,8 @@ internal class InvalidEnumValueException(
     lineNo: Int
 ) : TomlDecodingException(
     "Line $lineNo: value <$value> is not a valid enum option." +
-            " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}." +
-            " Did you mean <${enumSerialDescriptor.elementNames.closestEnumName(value)}>?"
+            " Did you mean <${enumSerialDescriptor.elementNames.closestEnumName(value)}>?" +
+            " Permitted choices are: ${enumSerialDescriptor.elementNames.sorted().joinToString(", ")}."
 )
 
 internal class NullValueException(propertyName: String, lineNo: Int) : TomlDecodingException(

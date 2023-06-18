@@ -9,6 +9,13 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
 
 /**
+ * @param enumValue input value that we need to compare with elements of enum
+ * @return nearest enum value (using levenshtein distance algorithm)
+ */
+public fun Iterable<String>.closestEnumName(enumValue: String): String? =
+    this.minByOrNull { levenshteinDistance(it, enumValue) }
+
+/**
  * Append a code point to a [StringBuilder]
  *
  * @param codePoint code point
@@ -39,12 +46,19 @@ public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName
 /**
  * Unfortunately Levenshtein method is implemented in jline and not ported to Kotlin Native.
  * So we need to implement it (inspired by: https://pl.kotl.in/ifo0z0vMC)
+ *
+ * @param first string to compare
+ * @param second string for comparison
+ * @return the distance between compared strings
  */
 public fun levenshteinDistance(first: String, second: String): Int {
     when {
         first == second -> return 0
         first.isEmpty() -> return second.length
         second.isEmpty() -> return first.length
+        else -> {
+            // this is a generated else block
+        }
     }
 
     val firstLen = first.length + 1
@@ -65,6 +79,3 @@ public fun levenshteinDistance(first: String, second: String): Int {
     }
     return distance[firstLen - 1]
 }
-
-public fun Iterable<String>.closestEnumName(enumValue: String): String? =
-    this.minByOrNull { levenshteinDistance(it, enumValue) }
