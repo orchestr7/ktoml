@@ -15,6 +15,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
 
 /**
@@ -104,6 +105,12 @@ public abstract class TomlAbstractEncoder protected constructor(
         appendValue(TomlNull())
     }
 
+    override fun encodeInline(descriptor: SerialDescriptor): Encoder {
+        // Value (inline) class always has one element
+        encodeElement(descriptor, 0)
+        return this
+    }
+
     override fun encodeString(value: String) {
         if (!encodeAsKey(value)) {
             appendValue(
@@ -116,6 +123,7 @@ public abstract class TomlAbstractEncoder protected constructor(
         }
     }
 
+    @Suppress("NESTED_BLOCK")
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
         when (val desc = serializer.descriptor) {
             instantDescriptor,
@@ -126,14 +134,14 @@ public abstract class TomlAbstractEncoder protected constructor(
             }
             else -> when (val kind = desc.kind) {
                 is StructureKind,
-                is PolymorphicKind -> if (!encodeAsKey(value as Any, desc.serialName)) {
-                    val encoder = encodeStructure(kind)
-
-                    serializer.serialize(encoder, value)
-
-                    elementIndex = encoder.elementIndex
-
-                    attributes.reset()
+                is PolymorphicKind -> when {
+                    desc.isInline -> serializer.serialize(this, value)
+                    !encodeAsKey(value as Any, desc.serialName) -> {
+                        val encoder = encodeStructure(kind)
+                        serializer.serialize(encoder, value)
+                        elementIndex = encoder.elementIndex
+                        attributes.reset()
+                    }
                 }
                 else -> super.encodeSerializableValue(serializer, value)
             }
@@ -204,7 +212,13 @@ public abstract class TomlAbstractEncoder protected constructor(
 
     protected open fun isNextElementKey(descriptor: SerialDescriptor, index: Int): Boolean {
         when (val kind = descriptor.kind) {
-            StructureKind.CLASS -> setKey(descriptor.getElementName(index))
+            StructureKind.CLASS -> {
+                // We should keep previous key when we have value (inline) class
+                // But if key is null, it means that value class isn't nested, and we have to use its own key
+                if (!descriptor.isInline || attributes.key == null) {
+                    setKey(descriptor.getElementName(index))
+                }
+            }
             StructureKind.MAP -> {
                 // When the index is even (key) mark the next element as a key and
                 // skip annotations and element index incrementing.
