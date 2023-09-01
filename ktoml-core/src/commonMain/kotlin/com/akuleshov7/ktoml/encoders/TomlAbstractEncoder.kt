@@ -123,6 +123,7 @@ public abstract class TomlAbstractEncoder protected constructor(
         }
     }
 
+    @Suppress("NESTED_BLOCK")
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
         when (val desc = serializer.descriptor) {
             instantDescriptor,
@@ -133,16 +134,14 @@ public abstract class TomlAbstractEncoder protected constructor(
             }
             else -> when (val kind = desc.kind) {
                 is StructureKind,
-                is PolymorphicKind -> if (desc.isInline) {
-                    serializer.serialize(this, value)
-                } else if (!encodeAsKey(value as Any, desc.serialName)) {
-                    val encoder = encodeStructure(kind)
-
-                    serializer.serialize(encoder, value)
-
-                    elementIndex = encoder.elementIndex
-
-                    attributes.reset()
+                is PolymorphicKind -> when {
+                    desc.isInline -> serializer.serialize(this, value)
+                    !encodeAsKey(value as Any, desc.serialName) -> {
+                        val encoder = encodeStructure(kind)
+                        serializer.serialize(encoder, value)
+                        elementIndex = encoder.elementIndex
+                        attributes.reset()
+                    }
                 }
                 else -> super.encodeSerializableValue(serializer, value)
             }
@@ -216,9 +215,7 @@ public abstract class TomlAbstractEncoder protected constructor(
             StructureKind.CLASS -> {
                 // We should keep previous key when we have value (inline) class
                 // But if key is null, it means that value class isn't nested, and we have to use its own key
-                if (descriptor.isInline && attributes.key != null) {
-                    // do nothing
-                } else {
+                if (!descriptor.isInline || attributes.key == null) {
                     setKey(descriptor.getElementName(index))
                 }
             }
