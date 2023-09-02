@@ -131,6 +131,9 @@ public class TomlInlineTable internal constructor(
                 .trimCurlyBraces()
                 .trim()
                 .also {
+                    if (it.isEmpty()) {
+                        return listOf(TomlStubEmptyNode(lineNo))
+                    }
                     if (it.endsWith(",")) {
                         throw ParseException(
                             "Trailing commas are not permitted in inline tables: [$this] ", lineNo

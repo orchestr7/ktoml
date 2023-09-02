@@ -78,4 +78,44 @@ class InlineTableDecoderTest {
             decoded
         )
     }
+
+    @Serializable
+    data class Point(val x: Int? = null, val y: Int? = null)
+
+    @Serializable
+    data class Position(val point: Point)
+
+    @Serializable
+    data class PositionWrapper(
+        val id: Int,
+        val position: Position,
+        val description: String
+    )
+
+    @Test
+    fun testEmptyInlineTable() {
+        val test1 = """
+            point = {  }
+        """.trimIndent()
+        val test2 = """
+            [point] 
+        """.trimIndent()
+
+        val result1 = Toml.decodeFromString<Position>(test1)
+        val result2 = Toml.decodeFromString<Position>(test2)
+        assertEquals(result2, result1)
+    }
+
+    @Test
+    fun testNestedEmptyInlineTable() {
+        val test = """
+            id = 15
+            description = "abc"
+
+            [position]
+                point = {}
+        """.trimIndent()
+
+        Toml.decodeFromString<PositionWrapper>(test)
+    }
 }
