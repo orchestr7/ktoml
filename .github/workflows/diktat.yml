@@ -7,14 +7,14 @@ on:
 
 jobs:
   diktat_check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       GRADLE_OPTS: -Dorg.gradle.daemon=false
 
     steps:
-      - uses: actions/checkout@v2.7.0
+      - uses: actions/checkout@v4.0.0
       - name: Set up JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: zulu
@@ -33,7 +33,7 @@ jobs:
           i=0
           find . -path "*/build/reports/diktat/*.sarif" | while read -r f; do echo "$f -> diktat-$i.sarif" && cp $f build/diktat-sarif-reports/diktat-$i.sarif || echo Cannot copy && echo Copied && i=$((i+1)); done
       - name: Upload SARIF report to Github
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         if: ${{ failure() }}
         with:
           sarif_file: build/diktat-sarif-reports
