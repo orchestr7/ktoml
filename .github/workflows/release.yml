@@ -28,6 +28,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 1.8
+          distribution: zulu
       - name: Status git before
         run: git status
       - uses: burrunan/gradle-cache-action@v1
