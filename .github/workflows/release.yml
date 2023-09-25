@@ -20,7 +20,7 @@ jobs:
         os: [ macos-latest ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4
         with:
           # release workflow should have access to all tags
           fetch-depth: 0
