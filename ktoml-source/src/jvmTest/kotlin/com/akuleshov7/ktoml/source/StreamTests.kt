@@ -5,20 +5,22 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
+import io.kotest.matchers.shouldBe
 
 import okio.source
 import org.junit.jupiter.api.Test
 
 import java.io.InputStream
 
-import kotlin.test.assertEquals
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 class StreamTests {
     @Test
     fun readParseAndDecodeStream() {
-        val expected = TestClass(
+        val parsedResult = Toml.decodeFromStream<TestClass>(getTestDataStream("simple_example.toml"))
+
+        parsedResult shouldBe TestClass(
             "TOML \"Example\"",
             Owner(
                 "Tom Preston-Werner",
@@ -29,52 +31,64 @@ class StreamTests {
                 "192.168.1.1"
             )
         )
-        assertEquals(
-            expected,
-            Toml.decodeFromStream(getTestDataStream("simple_example.toml"))
-        )
     }
 
     @Test
     @ExperimentalSerializationApi
     fun testTableDiscovery() {
         // ==== reading from stream
-        val test = MyTableTest(
+        val parsedMyTableTest = Toml.decodeFromStream<MyTableTest>(getTestDataStream("complex_toml_tables.toml"))
+        parsedMyTableTest shouldBe MyTableTest(
             A(Ab(InnerTest("Undefined")), InnerTest("Undefined")),
             D(InnerTest("Undefined"))
         )
-        assertEquals(test, Toml.decodeFromStream(getTestDataStream("complex_toml_tables.toml")))
         // ==== checking how table discovery works
         val parsedResult =
-                getTestDataStream("complex_toml_tables.toml").source().useLines { lines ->
-                    TomlParser(TomlInputConfig()).parseStringsToTomlTree(lines, TomlInputConfig())
-                }
-        assertEquals(
-            listOf("a", "a.b.c", "a.d", "d", "d.a"),
-            parsedResult.getRealTomlTables().map { it.fullTableName })
+            getTestDataStream("complex_toml_tables.toml").source().useLines { lines ->
+                TomlParser(TomlInputConfig()).parseStringsToTomlTree(lines, TomlInputConfig())
+            }
+        val tableNames = parsedResult.getRealTomlTables().map { it.fullTableKey.toString() }
+        tableNames shouldBe listOf("a", "a.b.c", "a.d", "d", "d.a")
     }
 
     @ExperimentalSerializationApi
     @Test
     fun regressionCast2Test() {
         val parsedResult =
-                Toml.decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
-        assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
+            Toml.decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
+        parsedResult shouldBe RegressionTest(null, 1, 2, null)
     }
 
     @ExperimentalSerializationApi
     @Test
     fun regressionPartialTest() {
         val parsedResult =
-                Toml.decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
-        assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
+            Toml.decodeFromStream<RegressionTest>(getTestDataStream("class_cast_regression2.toml"))
+        parsedResult shouldBe RegressionTest(null, 1, 2, null)
     }
 
     @ExperimentalSerializationApi
     @Test
     fun regressionInvalidIndex() {
-        assertEquals(
-            GeneralConfig(
+        val parsedGeneralConfig = Toml.partiallyDecodeFromStream<GeneralConfig>(
+            getTestDataStream("partial_parser_regression.toml"),
+            "general"
+        )
+        parsedGeneralConfig shouldBe GeneralConfig(
+            execCmd = "echo hello world",
+            tags = listOf("Tag", "Other tag"),
+            description = "My description",
+            suiteName = "// DocsCheck",
+            excludedTests = null,
+            includedTests = null,
+            ignoreSaveComments = null
+        )
+
+        val parsedTestRegression =
+            Toml.decodeFromStream<TestRegression>(getTestDataStream("partial_parser_regression.toml"))
+        parsedTestRegression shouldBe TestRegression(
+            list1 = listOf(1.0, 2.0),
+            general = GeneralConfig(
                 execCmd = "echo hello world",
                 tags = listOf("Tag", "Other tag"),
                 description = "My description",
@@ -83,59 +97,38 @@ class StreamTests {
                 includedTests = null,
                 ignoreSaveComments = null
             ),
-            Toml.partiallyDecodeFromStream(
-                getTestDataStream("partial_parser_regression.toml"),
-                "general"
-            )
-        )
-        assertEquals(
-            TestRegression(
-                list1 = listOf(1.0, 2.0),
-                general = GeneralConfig(
-                    execCmd = "echo hello world",
-                    tags = listOf("Tag", "Other tag"),
-                    description = "My description",
-                    suiteName = "// DocsCheck",
-                    excludedTests = null,
-                    includedTests = null,
-                    ignoreSaveComments = null
-                ),
-                list2 = listOf(1, 3, 5),
-                warn = WarnConfig(list = listOf("12a", "12f")),
-                list3 = listOf("mystr", "2", "3")
-            ),
-            Toml.decodeFromStream(getTestDataStream("partial_parser_regression.toml"))
+            list2 = listOf(1, 3, 5),
+            warn = WarnConfig(list = listOf("12a", "12f")),
+            list3 = listOf("mystr", "2", "3")
         )
     }
 
     @Test
     fun testPartialFileDecoding() {
-        val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
-        assertEquals(
-            test.table1,
-            Toml.partiallyDecodeFromStream(
-                getTestDataStream("partial_decoder.toml"),
-                "table1"
-            )
+        val parsedResult = Toml.partiallyDecodeFromStream<Table1>(
+            getTestDataStream("partial_decoder.toml"),
+            "table1"
         )
+
+        parsedResult shouldBe Table1(1, 2)
     }
 
     @Test
     fun readTopLevelTables() {
-        assertEquals(
-            listOf("owner", "database"),
-            getTestDataStream("simple_example.toml").source().useLines { lines ->
-                TomlParser(TomlInputConfig())
-                    .parseStringsToTomlTree(lines, TomlInputConfig())
-                    .children
-                    .filterIsInstance<TomlTable>()
-                    .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
-                    .map { it.fullTableName }
-            }
-        )
+        val tableNames = getTestDataStream("simple_example.toml").source().useLines { lines ->
+            TomlParser(TomlInputConfig())
+                .parseStringsToTomlTree(lines, TomlInputConfig())
+                .children
+                .filterIsInstance<TomlTable>()
+                .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
+                .map { it.fullTableKey.toString() }
+        }
+
+        tableNames shouldBe listOf("owner", "database")
     }
 
-    private fun getTestDataStream(name: String): InputStream = requireNotNull(StreamTests::class.java.getResourceAsStream(name))
+    private fun getTestDataStream(name: String): InputStream =
+        requireNotNull(StreamTests::class.java.getResourceAsStream(name))
 
     /**
      * @property title
@@ -279,23 +272,4 @@ class StreamTests {
      */
     @Serializable
     data class Table1(val a: Long, val b: Long)
-
-    /**
-     * @property c
-     * @property e
-     * @property d
-     */
-    @Serializable
-    data class Table2(
-        val c: Long,
-        val e: Long,
-        val d: Long
-    )
-
-    /**
-     * @property table1
-     * @property table2
-     */
-    @Serializable
-    data class TwoTomlTables(val table1: Table1, val table2: Table2)
 }

@@ -1,13 +1,12 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 @Serializable
 data class Key(val value: Long)
@@ -43,8 +42,8 @@ class NullableTablesTest {
         """.trimIndent()
         )
 
-        assertNotNull(toml1)
-        assertEquals(1L, toml1.key?.value)
+        toml1.shouldNotBeNull()
+        toml1.key?.value shouldBe 1L
 
         val toml2 = mapper.decodeFromString<Config2>(
             """            
@@ -53,8 +52,8 @@ class NullableTablesTest {
         """.trimIndent()
         )
 
-        assertNotNull(toml2)
-        assertEquals(1L, toml2.key?.value)
+        toml2.shouldNotBeNull()
+        toml2.key?.value shouldBe 1L
 
         val toml3 = mapper.decodeFromString<Config3>(
             """            
@@ -63,8 +62,8 @@ class NullableTablesTest {
         """.trimIndent()
         )
 
-        assertNotNull(toml3)
-        assertEquals(1L, toml3.key.value)
+        toml3.shouldNotBeNull()
+        toml3.key.value shouldBe 1L
 
         val toml4 = mapper.decodeFromString<Config4>(
             """            
@@ -73,8 +72,8 @@ class NullableTablesTest {
         """.trimIndent()
         )
 
-        assertNotNull(toml4)
-        assertEquals(1L, toml4.key.value)
+        toml4.shouldNotBeNull()
+        toml4.key.value shouldBe 1L
     }
 }
 
@@ -88,12 +87,12 @@ class EmptyTomlTest {
                 """.trimIndent()
         )
 
-        assertEquals(Config(), res)
+        res shouldBe Config()
 
         res = Toml.decodeFromString(
             "".trimIndent()
         )
 
-        assertEquals(Config(), res)
+        res shouldBe Config()
     }
 }

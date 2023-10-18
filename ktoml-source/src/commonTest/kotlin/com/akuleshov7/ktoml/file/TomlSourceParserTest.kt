@@ -1,11 +1,11 @@
 package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.source.TomlSourceReader
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import okio.Buffer
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class TomlSourceParserTest {
     @Serializable
@@ -35,7 +35,11 @@ class TomlSourceParserTest {
 
     @Test
     fun readParseAndDecodeSource() {
-        val expected = TestClass(
+        val buffer = Buffer()
+        buffer.writeUtf8(SIMPLE_EXAMPLE)
+        val parsedResult = TomlSourceReader.decodeFromSource<TestClass>(serializer(), buffer)
+
+        parsedResult shouldBe TestClass(
             "TOML \"Example\"",
             Owner(
                 "Tom Preston-Werner",
@@ -45,12 +49,6 @@ class TomlSourceParserTest {
             Database(
                 "192.168.1.1"
             )
-        )
-        val buffer = Buffer()
-        buffer.writeUtf8(SIMPLE_EXAMPLE)
-        assertEquals(
-            expected,
-            TomlSourceReader.decodeFromSource(serializer(), buffer)
         )
     }
 

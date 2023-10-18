@@ -8,4 +8,5 @@ object Versions {
     const val JUNIT = "5.7.1"
     const val OKIO = "3.1.0"
     const val SERIALIZATION = "1.5.0"
+    const val KOTEST = "5.7.2"
 }

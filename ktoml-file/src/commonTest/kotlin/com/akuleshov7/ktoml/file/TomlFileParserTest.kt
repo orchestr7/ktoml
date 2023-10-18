@@ -5,12 +5,12 @@ import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.source.useLines
 import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class TomlFileParserTest {
     @Serializable
@@ -40,7 +40,10 @@ class TomlFileParserTest {
 
     @Test
     fun readParseAndDecodeFile() {
-        val expected = TestClass(
+        val parsedResult =
+            TomlFileReader().decodeFromFile<TestClass>(serializer(), "src/commonTest/resources/simple_example.toml")
+
+        parsedResult shouldBe TestClass(
             "TOML \"Example\"",
             Owner(
                 "Tom Preston-Werner",
@@ -49,13 +52,6 @@ class TomlFileParserTest {
             ),
             Database(
                 "192.168.1.1"
-            )
-        )
-        assertEquals(
-            expected,
-            TomlFileReader().decodeFromFile(
-                serializer(),
-                "src/commonTest/resources/simple_example.toml"
             )
         )
     }
@@ -84,17 +80,18 @@ class TomlFileParserTest {
     fun testTableDiscovery() {
         val file = "src/commonTest/resources/complex_toml_tables.toml"
         // ==== reading from file
-        val test = MyTableTest(A(Ab(InnerTest("Undefined")), InnerTest("Undefined")), D(InnerTest("Undefined")))
-        assertEquals(test, TomlFileReader.decodeFromFile(serializer(), file))
+        val parsedMyTableTest = TomlFileReader.decodeFromFile<MyTableTest>(serializer(), file)
+        parsedMyTableTest shouldBe MyTableTest(
+            A(Ab(InnerTest("Undefined")), InnerTest("Undefined")),
+            D(InnerTest("Undefined"))
+        )
 
         // ==== checking how table discovery works
         val parsedResult = getFileSource(file).useLines {
             TomlParser(TomlInputConfig()).parseStringsToTomlTree(it, TomlInputConfig())
         }
-
-        assertEquals(
-            listOf("a", "a.b.c", "a.d", "d", "d.a"),
-            parsedResult.getRealTomlTables().map { it.fullTableKey.toString() })
+        val tableNames = parsedResult.getRealTomlTables().map { it.fullTableKey.toString() }
+        tableNames shouldBe listOf("a", "a.b.c", "a.d", "d", "d.a")
     }
 
     @Serializable
@@ -105,7 +102,7 @@ class TomlFileParserTest {
     fun regressionCastTest() {
         val file = "src/commonTest/resources/class_cast_regression.toml"
         val parsedResult = TomlFileReader.decodeFromFile<RegressionTest>(serializer(), file)
-        assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
+        parsedResult shouldBe RegressionTest(null, 1, 2, null)
     }
 
     @ExperimentalSerializationApi
@@ -113,7 +110,7 @@ class TomlFileParserTest {
     fun regressionPartialTest() {
         val file = "src/commonTest/resources/class_cast_regression.toml"
         val parsedResult = TomlFileReader.decodeFromFile<RegressionTest>(serializer(), file)
-        assertEquals(RegressionTest(null, 1, 2, null), parsedResult)
+        parsedResult shouldBe RegressionTest(null, 1, 2, null)
     }
 
 
@@ -146,8 +143,21 @@ class TomlFileParserTest {
     @Test
     fun regressionInvalidIndex() {
         val file = "src/commonTest/resources/partial_parser_regression.toml"
-        assertEquals(
-            GeneralConfig(
+        val parsedGeneralConfig = TomlFileReader.partiallyDecodeFromFile<GeneralConfig>(serializer(), file, "general")
+        parsedGeneralConfig shouldBe GeneralConfig(
+            execCmd = "echo hello world",
+            tags = listOf("Tag", "Other tag"),
+            description = "My description",
+            suiteName = "// DocsCheck",
+            excludedTests = null,
+            includedTests = null,
+            ignoreSaveComments = null
+        )
+
+        val parsedTestRegression = TomlFileReader.decodeFromFile<TestRegression>(serializer(), file)
+        parsedTestRegression shouldBe TestRegression(
+            list1 = listOf(1.0, 2.0),
+            general = GeneralConfig(
                 execCmd = "echo hello world",
                 tags = listOf("Tag", "Other tag"),
                 description = "My description",
@@ -156,69 +166,41 @@ class TomlFileParserTest {
                 includedTests = null,
                 ignoreSaveComments = null
             ),
-            TomlFileReader.partiallyDecodeFromFile(serializer(), file, "general")
-        )
-        assertEquals(
-            TestRegression(
-                list1 = listOf(1.0, 2.0),
-                general = GeneralConfig(
-                    execCmd = "echo hello world",
-                    tags = listOf("Tag", "Other tag"),
-                    description = "My description",
-                    suiteName = "// DocsCheck",
-                    excludedTests = null,
-                    includedTests = null,
-                    ignoreSaveComments = null
-                ),
-                list2 = listOf(1, 3, 5),
-                warn = WarnConfig(list = listOf("12a", "12f")),
-                list3 = listOf("mystr", "2", "3")
-            ),
-            TomlFileReader.decodeFromFile(serializer(), file)
+            list2 = listOf(1, 3, 5),
+            warn = WarnConfig(list = listOf("12a", "12f")),
+            list3 = listOf("mystr", "2", "3")
         )
     }
 
     @Serializable
     data class Table1(val a: Long, val b: Long)
 
-    @Serializable
-    data class Table2(val c: Long, val e: Long, val d: Long)
-
-    @Serializable
-    data class TwoTomlTables(val table1: Table1, val table2: Table2)
-
     @Test
     fun testPartialFileDecoding() {
         val file = "src/commonTest/resources/partial_decoder.toml"
-        val test = TwoTomlTables(Table1(1, 2), Table2(1, 2, 3))
-        assertEquals(
-            test.table1,
-            TomlFileReader.partiallyDecodeFromFile(
-                serializer(), file, "table1"
-            )
-        )
+        val parsedResult = TomlFileReader.partiallyDecodeFromFile<Table1>(serializer(), file, "table1")
+        parsedResult shouldBe Table1(1, 2)
     }
 
     @Test
     fun readTopLevelTables() {
         val file = "src/commonTest/resources/simple_example.toml"
-        assertEquals(
-            listOf("owner", "database"),
-            getFileSource(file).useLines { lines ->
-                TomlParser(TomlInputConfig())
-                    .parseStringsToTomlTree(lines, TomlInputConfig())
-                    .children
-                    .filterIsInstance<TomlTable>()
-                    .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
-                    .map { it.fullTableKey.toString() }
-            }
-        )
+        val tableNames = getFileSource(file).useLines { lines ->
+            TomlParser(TomlInputConfig())
+                .parseStringsToTomlTree(lines, TomlInputConfig())
+                .children
+                .filterIsInstance<TomlTable>()
+                .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
+                .map { it.fullTableKey.toString() }
+        }
+
+        tableNames shouldBe listOf("owner", "database")
     }
 
     @Test
     fun invalidFile() {
         val file = "src/commonTest/resources/simple_example.wrongext"
-        assertFailsWith<IllegalStateException> {
+        shouldThrow<IllegalStateException> {
             getFileSource(file)
         }
     }

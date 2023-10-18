@@ -3,6 +3,7 @@ import com.akuleshov7.buildutils.*
 plugins {
     kotlin("multiplatform") apply false
     kotlin("plugin.serialization") version Versions.KOTLIN apply false
+    id("io.kotest.multiplatform") version Versions.KOTEST apply false
     id("com.akuleshov7.buildutils.publishing-configuration")
 }
 
