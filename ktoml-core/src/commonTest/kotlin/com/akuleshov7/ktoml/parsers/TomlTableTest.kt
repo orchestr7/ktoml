@@ -3,8 +3,10 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
+import io.kotest.matchers.collections.haveSize
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class TomlTableTest {
     @Test
@@ -23,7 +25,8 @@ class TomlTableTest {
 
         val parsedToml = Toml.tomlParser.parseString(string)
         parsedToml.prettyPrint()
-        assertEquals( 3, parsedToml.children.single().children.size)
+
+        parsedToml.children.single().children should haveSize(3)
     }
 
     @Test
@@ -39,7 +42,7 @@ class TomlTableTest {
         val parsedToml = Toml.tomlParser.parseString(string)
         parsedToml.prettyPrint()
 
-        assertEquals("""
+        parsedToml.prettyStr() shouldBe """
             | - TomlFile (rootNode)
             |     - TomlTable ([a])
             |         - TomlStubEmptyNode (technical_node)
@@ -47,8 +50,7 @@ class TomlTableTest {
             |             - TomlStubEmptyNode (technical_node)
             |         - TomlKeyValuePrimitive (c=3)
             |
-        """.trimMargin(), parsedToml.prettyStr())
-
+        """.trimMargin()
     }
 
 
@@ -77,8 +79,8 @@ class TomlTableTest {
 
         val parsedToml = Toml.tomlParser.parseString(string)
         parsedToml.prettyPrint()
-        assertEquals(
-            """
+
+        parsedToml.prettyStr() shouldBe """
                 | - TomlFile (rootNode)
                 |     - TomlTable ([a])
                 |         - TomlKeyValuePrimitive (name=1)
@@ -98,9 +100,7 @@ class TomlTableTest {
                 |             - TomlTable (["a.b.c".a."a.b.c"])
                 |                 - TomlKeyValuePrimitive (d=10)
                 |
-        """.trimMargin(),
-            parsedToml.prettyStr()
-        )
+        """.trimMargin()
     }
 
     @Test
@@ -116,6 +116,6 @@ class TomlTableTest {
     @Test
     fun createSimpleTomlTable() {
         val table = TomlTable("[abcd]", 0, TableType.PRIMITIVE)
-        assertEquals(table.fullTableKey.toString(), "abcd")
+        table.fullTableKey.toString() shouldBe "abcd"
     }
 }

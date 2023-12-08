@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class SetLineNoTest {
     @Test
@@ -36,8 +36,8 @@ class SetLineNoTest {
         val parsedToml = Toml.tomlParser.parseString(string)
 
         parsedToml.prettyPrint(true)
-        assertEquals(
-            """
+
+        parsedToml.prettyStr(true) shouldBe """
                  | - TomlFile (rootNode)[line:0]
                  |     - TomlTable ([a])[line:4]
                  |         - TomlKeyValuePrimitive (test=1)[line:6]
@@ -52,9 +52,7 @@ class SetLineNoTest {
                  |''')[line:13]
                  |                 - TomlKeyValueArray (mla=[ "a", "b", "c" ])[line:18]
                  |
-            """.trimMargin(),
-            parsedToml.prettyStr(true)
-        )
+            """.trimMargin()
     }
 
     @Test
@@ -69,8 +67,7 @@ class SetLineNoTest {
         val parsedToml = Toml.tomlParser.parseString(string)
         parsedToml.prettyPrint(true)
 
-        assertEquals(
-            """
+        parsedToml.prettyStr(true) shouldBe """
                  | - TomlFile (rootNode)[line:0]
                  |     - TomlKeyValuePrimitive (mlls='''
                  |1
@@ -79,8 +76,6 @@ class SetLineNoTest {
                  |3
                  |''')[line:3]
                  |
-            """.trimMargin(),
-            parsedToml.prettyStr(true)
-        )
+            """.trimMargin()
     }
 }

@@ -3,8 +3,8 @@ package com.akuleshov7.ktoml.writers
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class TableWriteTest {
     @Test
@@ -88,12 +88,10 @@ fun testTable(
 
     file.prettyPrint()
 
-    assertEquals(
-        expected,
-        buildString(expected.length) {
-            val emitter = TomlStringEmitter(this, outputConfig)
+    val result = buildString(expected.length) {
+        val emitter = TomlStringEmitter(this, outputConfig)
+        file.write(emitter, outputConfig)
+    }
 
-            file.write(emitter, outputConfig)
-        }
-    )
+    result shouldBe expected
 }

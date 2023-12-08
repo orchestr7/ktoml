@@ -3,6 +3,8 @@ package com.akuleshov7.ktoml.writers
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -12,8 +14,6 @@ import kotlin.Double.Companion.NaN
 import kotlin.Double.Companion.POSITIVE_INFINITY
 import kotlin.math.PI
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class PrimitiveValueWriteTest {
     @Test
@@ -161,23 +161,20 @@ fun testTomlValue(
     expectedString: String,
     config: TomlOutputConfig = TomlOutputConfig()
 ) {
-    assertEquals(
-        expectedString,
-        actual = buildString {
-            val emitter = TomlStringEmitter(this, config)
+    val result = buildString {
+        val emitter = TomlStringEmitter(this, config)
+        value.write(emitter, config)
+    }
 
-            value.write(emitter, config)
-        }
-    )
+    result shouldBe expectedString
 }
 
 fun testTomlValueFailure(
     value: TomlValue,
     config: TomlOutputConfig = TomlOutputConfig()
 ) {
-    assertFailsWith<TomlWritingException> {
+    shouldThrow<TomlWritingException> {
         val emitter = TomlStringEmitter(StringBuilder(), config)
-
         value.write(emitter, config)
     }
 }

@@ -2,8 +2,9 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class TableFinder {
     @Test
@@ -28,6 +29,9 @@ class TableFinder {
         """.trimIndent()
 
         val parsedToml = Toml.tomlParser.parseString(string)
-        assertEquals("a.b.d.e.f", findPrimitiveTableInAstByName(listOf(parsedToml), "a.b.d.e.f")?.fullTableKey.toString())
+
+        val primitiveTable = findPrimitiveTableInAstByName(listOf(parsedToml), "a.b.d.e.f")
+        primitiveTable.shouldNotBeNull()
+        primitiveTable.fullTableKey.toString() shouldBe "a.b.d.e.f"
     }
 }

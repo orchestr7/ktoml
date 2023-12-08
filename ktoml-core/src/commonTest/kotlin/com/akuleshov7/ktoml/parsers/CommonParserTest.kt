@@ -3,8 +3,8 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlBasicString
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class CommonParserTest {
     @Test
@@ -31,8 +31,8 @@ class CommonParserTest {
         // highLevelValues = a and b
         // midLevelValues = c
         // lowLevelValues = d
-        assertEquals(1, lowLevelValues)
-        assertEquals(1, midLevelValues)
-        assertEquals(2, highLevelValues)
+        lowLevelValues shouldBe 1
+        midLevelValues shouldBe 1
+        highLevelValues shouldBe 2
     }
 }

@@ -7,8 +7,8 @@ import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class KeyValueWriteTest {
     @Test
@@ -133,12 +133,9 @@ fun testTomlPair(
     expectedString: String,
     config: TomlOutputConfig = TomlOutputConfig()
 ) {
-    assertEquals(
-        expectedString,
-        actual = buildString {
-            val emitter = TomlStringEmitter(this, config)
-
-            pair.write(emitter, config)
-        }
-    )
+    val result = buildString {
+        val emitter = TomlStringEmitter(this, config)
+        pair.write(emitter, config)
+    }
+    result shouldBe expectedString
 }

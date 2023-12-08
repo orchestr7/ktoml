@@ -2,9 +2,11 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import io.kotest.matchers.collections.containOnly
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
 
 class CommentsParsing {
     @Test
@@ -23,33 +25,16 @@ class CommentsParsing {
         val tableA = parsedToml.findTableInAstByName("a")!!
         val tableB = tableA.findTableInAstByName("a.b")?.getFirstChild()!!
 
-        val pairA =
-                tableA.children
-                    .first { it is TomlKeyValuePrimitive }
+        val pairA = tableA.children
+            .first { it is TomlKeyValuePrimitive }
 
-        assertContentEquals(
-            listOf("comment 1"),
-            tableA.comments
-        )
+        tableA.comments should containOnly("comment 1")
+        tableA.inlineComment shouldBe "comment 2"
 
-        assertEquals(
-            "comment 2",
-            tableA.inlineComment
-        )
+        pairA.comments should containOnly("comment 3")
+        pairA.inlineComment shouldBe "comment 4"
 
-        assertContentEquals(
-            listOf("comment 3"),
-            pairA.comments
-        )
-
-        assertEquals(
-            "comment 4",
-            pairA.inlineComment
-        )
-
-        assertEquals(
-            "comment 5",
-            tableB.inlineComment
-        )
+        tableB.comments.shouldBeEmpty()
+        tableB.inlineComment shouldBe "comment 5"
     }
 }

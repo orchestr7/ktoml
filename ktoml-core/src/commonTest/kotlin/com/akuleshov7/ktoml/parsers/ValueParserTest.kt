@@ -5,11 +5,12 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.tree.nodes.splitKeyValue
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class ValueParserTest {
+
     @Test
     fun parsingTest() {
         testTomlValue(Pair("a", "\"gfhgfhfg\""), NodeType.STRING)
@@ -34,112 +35,107 @@ class ValueParserTest {
     @Test
     fun nullParsingTest() {
         testTomlValue("a" to "null", NodeType.NULL)
-        assertFailsWith<ParseException> {
-            testTomlValue("a" to "null", NodeType.NULL, TomlInputConfig(allowNullValues = false))
-        }
+        testTomlValueFail("a" to "null", TomlInputConfig(allowNullValues = false))
     }
 
     @Test
     fun quotesParsingTest() {
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive(Pair("\"a", "123"), 0)
-        }
-
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive(Pair("a", "hello world"), 0)
-        }
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive(Pair("a", "\"before \" string\""), 0)
-        }
+        testTomlValueFail("\"a" to "123")
+        testTomlValueFail("a" to  "hello world")
+        testTomlValueFail("a" to "\"before \" string\"")
     }
 
     @Test
     fun specialSymbolsParsing() {
-        assertFailsWith<ParseException> { TomlKeyValuePrimitive(Pair("a", "\"hello\\world\""), 0) }
-
-        var test = TomlKeyValuePrimitive(Pair("a", "\"hello\\tworld\""), 0)
-        assertEquals("hello\tworld", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"helloworld\\n\""), 0)
-        assertEquals("helloworld\n", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"helloworld\\\""), 0)
-        assertEquals("helloworld\\", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello\\nworld\""), 0)
-        assertEquals("hello\nworld", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello\\bworld\""), 0)
-        assertEquals("hello\bworld", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello\\rworld\""), 0)
-        assertEquals("hello\rworld", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello\\\\tworld\""), 0)
-        assertEquals("hello\\tworld", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello\\\\world\""), 0)
-        assertEquals("hello\\world", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello tworld\""), 0)
-        assertEquals("hello tworld", test.value.content)
-
-        test = TomlKeyValuePrimitive(Pair("a", "\"hello\t\\\\\\\\world\""), 0)
-        assertEquals("hello\t\\\\world", test.value.content)
-
-        test = TomlKeyValuePrimitive("a" to "\"Ɣ is greek\"", 0)
-        assertEquals("Ɣ is greek", test.value.content)
-
-        test = TomlKeyValuePrimitive("a" to "\"\\u0194 is greek\"", 0)
-        assertEquals("Ɣ is greek", test.value.content)
-
-        test = TomlKeyValuePrimitive("a" to "\"\\U0001F615 is emoji\"", 0)
-        assertEquals("\uD83D\uDE15 is emoji", test.value.content)
-
-        test = TomlKeyValuePrimitive("a" to "\"\uD83D\uDE15 is emoji\"", 0)
-        assertEquals("\uD83D\uDE15 is emoji", test.value.content)
-
-        test = TomlKeyValuePrimitive("a" to "\"I'm a string. \\\"You can quote me\\\". Name\\tJos\\u00E9\\nLocation\\tSF.\"", 0)
-        assertEquals("I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.", test.value.content)
-
+        testTomlValueFail("a" to "\"hello\\world\"")
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\\tworld\"",
+            expectedContent = "hello\tworld"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"helloworld\\n\"",
+            expectedContent = "helloworld\n"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"helloworld\\\"",
+            expectedContent = "helloworld\\"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\\nworld\"",
+            expectedContent = "hello\nworld"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\\bworld\"",
+            expectedContent = "hello\bworld"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\\rworld\"",
+            expectedContent = "hello\rworld"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\\\\tworld\"",
+            expectedContent = "hello\\tworld"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\\\\world\"",
+            expectedContent = "hello\\world"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello tworld\"",
+            expectedContent = "hello tworld"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"hello\t\\\\\\\\world\"",
+            expectedContent = "hello\t\\\\world"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"Ɣ is greek\"",
+            expectedContent = "Ɣ is greek"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"\\u0194 is greek\"",
+            expectedContent = "Ɣ is greek"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"\\U0001F615 is emoji\"",
+            expectedContent = "\uD83D\uDE15 is emoji"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"\uD83D\uDE15 is emoji\"",
+            expectedContent = "\uD83D\uDE15 is emoji"
+        )
+        testTomlValueContent(
+            keyValuePair = "a" to "\"I'm a string. \\\"You can quote me\\\". Name\\tJos\\u00E9\\nLocation\\tSF.\"",
+            expectedContent = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
+        )
         // regression test related to comments with an equals symbol after it
-        var pairTest =
-            "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0)
-        assertEquals(1L, TomlKeyValuePrimitive(pairTest, 0).value.content)
-
-        pairTest =
-            "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0)
-        assertEquals("1 = 2", TomlKeyValuePrimitive(pairTest, 0).value.content)
+        testTomlValueContent(
+            keyValuePair = "lineCaptureGroup = 1  # index `warningTextHasLine = false`\n".splitKeyValue(0),
+            expectedContent = 1L
+        )
+        testTomlValueContent(
+            keyValuePair = "lineCaptureGroup = \"1 = 2\"  # index = `warningTextHasLine = false`\n".splitKeyValue(0),
+            expectedContent = "1 = 2"
+        )
     }
 
     @Test
     fun symbolsAfterComment() {
-        val keyValue = "test_key = \"test_value\"  # \" some comment".splitKeyValue(0)
-        assertEquals("test_value", TomlKeyValuePrimitive(keyValue, 0).value.content)
+        testTomlValueContent(
+            keyValuePair = "test_key = \"test_value\"  # \" some comment".splitKeyValue(0),
+            expectedContent = "test_value"
+        )
     }
 
     @Test
     fun parsingIssueValue() {
-        assertFailsWith<ParseException> { " = false".splitKeyValue(0) }
-        assertFailsWith<ParseException> { " just false".splitKeyValue(0) }
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive(
-                Pair("a", "\"\\hello tworld\""),
-                0
-            )
-        }
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "val\\ue", 0)
-        }
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "\\x33", 0)
-        }
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "\\UFFFFFFFF", 0)
-        }
-        assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "\\U00D80000", 0)
-        }
+        shouldThrow<ParseException> { " = false".splitKeyValue(0) }
+        shouldThrow<ParseException> { " just false".splitKeyValue(0) }
+        testTomlValueFail("a" to  "\"\\hello tworld\"")
+        testTomlValueFail("a" to "val\\ue")
+        testTomlValueFail("a" to "\\x33")
+        testTomlValueFail("a" to "\\UFFFFFFFF")
+        testTomlValueFail("a" to "\\U00D80000")
     }
 }
 
@@ -164,5 +160,22 @@ fun testTomlValue(
     expectedType: NodeType,
     config: TomlInputConfig = TomlInputConfig()
 ) {
-    assertEquals(expectedType, getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config = config).value))
+    val nodeType = getNodeType(TomlKeyValuePrimitive(keyValuePair, 0, config = config).value)
+    nodeType shouldBe expectedType
+}
+
+fun testTomlValueFail(
+    keyValuePair: Pair<String, String>,
+    config: TomlInputConfig = TomlInputConfig()
+) {
+    shouldThrow<ParseException> {
+        TomlKeyValuePrimitive(keyValuePair, 0, config = config)
+    }
+}
+
+fun testTomlValueContent(
+    keyValuePair: Pair<String, String>,
+    expectedContent: Any
+) {
+    TomlKeyValuePrimitive(keyValuePair, 0).value.content shouldBe expectedContent
 }

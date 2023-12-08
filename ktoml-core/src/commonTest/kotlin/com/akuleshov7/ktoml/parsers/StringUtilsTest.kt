@@ -1,49 +1,50 @@
 package com.akuleshov7.ktoml.parsers
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldBeEmpty
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class StringUtilsTest {
     @Test
     fun testForTakeBeforeComment() {
         var lineWithoutComment = "test_key = \"test_value\"  # \" some comment".takeBeforeComment(false)
-        assertEquals("test_key = \"test_value\"", lineWithoutComment)
+        lineWithoutComment shouldBe "test_key = \"test_value\""
 
         lineWithoutComment = "key = \"\"\"value\"\"\" # \"".takeBeforeComment(false)
-        assertEquals("key = \"\"\"value\"\"\"", lineWithoutComment)
+        lineWithoutComment shouldBe "key = \"\"\"value\"\"\""
 
         lineWithoutComment = "key = 123 # \"\"\"abc".takeBeforeComment(false)
-        assertEquals("key = 123", lineWithoutComment)
+        lineWithoutComment shouldBe "key = 123"
 
         lineWithoutComment = "key = \"ab\\\"#cdef\"#123".takeBeforeComment(false)
-        assertEquals("key = \"ab\\\"#cdef\"", lineWithoutComment)
+        lineWithoutComment shouldBe "key = \"ab\\\"#cdef\""
 
         lineWithoutComment = "  \t#123".takeBeforeComment(false)
-        assertEquals("", lineWithoutComment)
+        lineWithoutComment.shouldBeEmpty()
 
         lineWithoutComment = "key = \"ab\'c\" # ".takeBeforeComment(false)
-        assertEquals("key = \"ab\'c\"", lineWithoutComment)
+        lineWithoutComment shouldBe "key = \"ab\'c\""
 
         lineWithoutComment = """
             a = 'C:\some\path\' #\abc
         """.trimIndent().takeBeforeComment(true)
-        assertEquals("""a = 'C:\some\path\'""", lineWithoutComment)
+        lineWithoutComment shouldBe """a = 'C:\some\path\'"""
     }
 
     @Test
     fun testForTrimComment() {
         var comment = "a = \"here#hash\" # my comment".trimComment(false)
-        assertEquals("my comment", comment)
+        comment shouldBe "my comment"
 
         comment = "a = \"here#\\\"hash\" # my comment".trimComment(false)
-        assertEquals("my comment", comment)
+        comment shouldBe "my comment"
 
         comment = " # my comment".trimComment(false)
-        assertEquals("my comment", comment)
+        comment shouldBe "my comment"
 
         comment = """
             a = 'C:\some\path\' #\abc
         """.trimIndent().trimComment(true)
-        assertEquals("\\abc", comment)
+        comment shouldBe "\\abc"
     }
 }
