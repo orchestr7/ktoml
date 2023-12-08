@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
+import io.kotest.matchers.should
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -71,9 +72,8 @@ class PolymorphicEncoderTest {
             )
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 [[polymorphicTables]]
                     type = "childA"
                     value = [ 1, 2, 3 ]
@@ -101,9 +101,8 @@ class PolymorphicEncoderTest {
             )
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """polymorphicArray = [ [ "childA", [ 1, 2, 3 ] ], [ "childB", "string" ], [ "childC", "A" ] ]"""
+        File() should encodeInto(
+            """polymorphicArray = [ [ "childA", [ 1, 2, 3 ] ], [ "childB", "string" ], [ "childC", "A" ] ]"""
         )
     }
 }

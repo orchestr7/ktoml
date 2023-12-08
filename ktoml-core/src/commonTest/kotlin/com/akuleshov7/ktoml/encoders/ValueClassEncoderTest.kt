@@ -1,11 +1,11 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.Toml
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlin.jvm.JvmInline
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class ValueClassEncoderTest {
 
@@ -21,7 +21,7 @@ class ValueClassEncoderTest {
         val color = Color(15)
         val result = Toml.encodeToString(color)
 
-        assertEquals("rgb = 15", result)
+        result shouldBe "rgb = 15"
     }
 
     @Test
@@ -31,14 +31,10 @@ class ValueClassEncoderTest {
             "black"
         )
 
-        val result = Toml.encodeToString(namedColor)
-        assertEquals(
-            """
-                color = 150
-                name = "black"
-            """.trimIndent(),
-            result
-        )
+        Toml.encodeToString(namedColor) shouldBe """
+            color = 150
+            name = "black"
+        """.trimIndent()
     }
 
     @Test
@@ -53,8 +49,7 @@ class ValueClassEncoderTest {
             )
         )
 
-        val result = Toml.encodeToString(palette)
-        assertEquals("colors = [ 0, 255, 128 ]", result)
+        Toml.encodeToString(palette) shouldBe "colors = [ 0, 255, 128 ]"
     }
 
     @Serializable
@@ -73,15 +68,11 @@ class ValueClassEncoderTest {
             num1 = Num(5),
             num2 = Num(111)
         )
-        val result = Toml.encodeToString(nums)
 
-        assertEquals(
-            """
-                num1 = 5
-                num2 = 111
-            """.trimIndent(),
-            result
-        )
+        Toml.encodeToString(nums) shouldBe """
+            num1 = 5
+            num2 = 111
+        """.trimIndent()
     }
 
     @Serializable
@@ -108,19 +99,15 @@ class ValueClassEncoderTest {
             info = Info(MyObject(10, 20)),
             metaInfo2 = "test"
         )
-        val result = Toml.encodeToString(obj)
 
-        assertEquals(
-            """
-                metaInfo1 = 1
-                metaInfo2 = "test"
-                
-                [info]
-                    height = 10
-                    width = 20
-            """.trimIndent(),
-            result
-        )
+        Toml.encodeToString(obj) shouldBe """
+            metaInfo1 = 1
+            metaInfo2 = "test"
+            
+            [info]
+                height = 10
+                width = 20
+        """.trimIndent()
     }
 
     @Serializable
@@ -130,30 +117,22 @@ class ValueClassEncoderTest {
     @Test
     fun testForValueClassInsideValueClass() {
         val obj = AnotherInfoWrapper(Info(MyObject(10, 20)))
-        val result = Toml.encodeToString(obj)
 
-        assertEquals(
-            """
-                [info]
-                    height = 10
-                    width = 20
-            """.trimIndent(),
-            result
-        )
+        Toml.encodeToString(obj) shouldBe """
+            [info]
+                height = 10
+                width = 20
+        """.trimIndent()
     }
 
     @Test
     fun testDataClassInsideValueClass() {
         val obj = Info(MyObject(32, 64))
-        val result = Toml.encodeToString(obj)
 
-        assertEquals(
-            """
-                [obj]
-                    height = 32
-                    width = 64
-            """.trimIndent(),
-            result
-        )
+        Toml.encodeToString(obj) shouldBe """
+            [obj]
+                height = 32
+                width = 64
+        """.trimIndent()
     }
 }

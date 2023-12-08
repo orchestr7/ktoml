@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlMultiline
+import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
@@ -37,7 +38,7 @@ class MapEncoderTest {
         "keyC" to "c"
     )
 
-    private val enumMap = Key.values().associateWith(Key::value)
+    private val enumMap = Key.entries.associateWith(Key::value)
 
     @Serializable
     enum class Key(val value: String) {
@@ -51,7 +52,7 @@ class MapEncoderTest {
         @Serializable
         data class File(val map: Map<String, String>)
 
-        assertEncodedEquals(value = File(stringMap), expectedToml = simpleTable)
+       File(stringMap) should encodeInto(simpleTable)
     }
 
     @Test
@@ -62,7 +63,7 @@ class MapEncoderTest {
             val map: Map<String, String>
         )
 
-        assertEncodedEquals(value = File(stringMap), expectedToml = inlineTable)
+        File(stringMap) should encodeInto(inlineTable)
     }
 
     @Test
@@ -70,7 +71,7 @@ class MapEncoderTest {
         @Serializable
         data class File(val map: Map<Key, String>)
 
-        assertEncodedEquals(value = File(enumMap), expectedToml = simpleTable)
+        File(enumMap) should encodeInto(simpleTable)
     }
 
     @Test
@@ -81,7 +82,7 @@ class MapEncoderTest {
             val map: Map<Key, String>
         )
 
-        assertEncodedEquals(value = File(enumMap), expectedToml = inlineTable)
+        File(enumMap) should encodeInto(inlineTable)
     }
 
     @Test
@@ -101,6 +102,6 @@ class MapEncoderTest {
             )
         )
 
-        assertEncodedEquals(value = File(), expectedToml = pairArray)
+        File() should encodeInto(pairArray)
     }
 }

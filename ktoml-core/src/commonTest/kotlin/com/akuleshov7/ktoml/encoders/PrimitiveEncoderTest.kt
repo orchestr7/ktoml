@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
+import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -26,9 +27,8 @@ class PrimitiveEncoderTest {
             val path: String = """C:\some\path\"""
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 enabled = true
                 pi = 3.14
                 count = 3
@@ -51,34 +51,28 @@ class PrimitiveEncoderTest {
 
         val tab = '\t'
 
-        assertEncodedEquals(
-            value = File("\"hello world\""),
-            expectedToml = """escapeString = "\"hello world\"""""
+        File("\"hello world\"") should encodeInto(
+            """escapeString = "\"hello world\"""""
         )
 
-        assertEncodedEquals(
-            value = File("hello \b\t\n\u000C\r world"),
-            expectedToml = """escapeString = "hello \b$tab\n\f\r world""""
+        File("hello \b\t\n\u000C\r world") should encodeInto(
+            """escapeString = "hello \b$tab\n\f\r world""""
         )
 
-        assertEncodedEquals(
-            value = File("hello \u0000 world"),
-            expectedToml = """escapeString = "hello \u0000 world""""
+        File("hello \u0000 world") should encodeInto(
+            """escapeString = "hello \u0000 world""""
         )
 
-        assertEncodedEquals(
-            value = File("""hello\world"""),
-            expectedToml = """escapeString = "hello\\world""""
+        File("""hello\world""") should encodeInto(
+            """escapeString = "hello\\world""""
         )
 
-        assertEncodedEquals(
-            value = File("""hello \Uffffffff world"""),
-            expectedToml = """escapeString = "hello \Uffffffff world""""
+        File("""hello \Uffffffff world""") should encodeInto(
+            """escapeString = "hello \Uffffffff world""""
         )
 
-        assertEncodedEquals(
-            value = File(literalEscapeString = "'quotes'"),
-            expectedToml = """literalEscapeString = '\'quotes\''"""
+        File(literalEscapeString = "'quotes'") should encodeInto(
+            """literalEscapeString = '\'quotes\''"""
         )
     }
 
@@ -97,9 +91,8 @@ class PrimitiveEncoderTest {
             val a: String
         )
 
-        assertEncodedEquals(
-            value = MultilineLiteralStr("test \n test \n test \'\'\'"),
-            expectedToml = """
+        MultilineLiteralStr("test \n test \n test \'\'\'") should encodeInto(
+            """
                 |a = '''
                 |test 
                 | test 
@@ -108,9 +101,8 @@ class PrimitiveEncoderTest {
             """.trimMargin()
         )
 
-        assertEncodedEquals(
-            value = MultilineBasicStr("test \n test \n test \'\'\'"),
-            expectedToml = "a = \"\"\"\ntest \n test \n test \'\'\'\n\"\"\""
+        MultilineBasicStr("test \n test \n test \'\'\'") should encodeInto(
+            "a = \"\"\"\ntest \n test \n test \'\'\'\n\"\"\""
         )
     }
 
@@ -121,9 +113,6 @@ class PrimitiveEncoderTest {
             val wholeNumberDouble: Double = 3.0
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = "wholeNumberDouble = 3.0"
-        )
+        File() should encodeInto("wholeNumberDouble = 3.0")
     }
 }

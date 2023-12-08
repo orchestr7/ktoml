@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.TomlIndentation
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
+import io.kotest.matchers.should
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -83,9 +84,8 @@ class TomlDocsEncoderTest {
 
     @Test
     fun readMeTest() {
-        assertEncodedEquals(
-            value = ReadMe(),
-            expectedToml = """
+        ReadMe() should encodeInto(
+            """
                 title = "TOML Example"
                 
                 [owner]
@@ -125,9 +125,8 @@ class TomlDocsEncoderTest {
             val str3: String = "Name\tJos\u00E9\nLoc\tSF."
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 str1 = "I'm a string."
                 str2 = "You can \"quote\" me."
                 str3 = "Name	José\nLoc	SF."
@@ -149,9 +148,8 @@ class TomlDocsEncoderTest {
             val regex: String = """<\i\c*\s*>"""
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 winpath = 'C:\Users\nodejs\templates'
                 winpath2 = '\\ServerX\admin${'$'}\system32\'
                 quoted = 'Tom "Dubs" Preston-Werner'

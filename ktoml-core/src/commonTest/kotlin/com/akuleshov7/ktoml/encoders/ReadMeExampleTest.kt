@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
+import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -55,18 +56,17 @@ class ReadMeExampleTest {
 
     @Test
     fun readMeExampleTest() {
-        assertEncodedEquals(
-            value = MyClass(
-                true,
-                Table1(null, 6),
-                Table2(
-                    5,
-                    NestedTable("this is a \"literal\" \n string", listOf("a", "b", "c", null)),
-                    5.56
-                ),
-                GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
+        MyClass(
+            true,
+            Table1(null, 6),
+            Table2(
+                5,
+                NestedTable("this is a \"literal\" \n string", listOf("a", "b", "c", null)),
+                5.56
             ),
-            expectedToml = """
+            GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
+        ) should encodeInto(
+            """
                 someBooleanProperty = true
                 gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
                 

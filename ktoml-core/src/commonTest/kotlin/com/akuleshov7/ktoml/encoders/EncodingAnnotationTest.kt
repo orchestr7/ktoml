@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.*
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+import io.kotest.matchers.should
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -28,9 +29,8 @@ class EncodingAnnotationTest {
             val d: Double = Double.NaN
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 # Single comment
                 a = 3
                 # Comment 1
@@ -61,9 +61,8 @@ class EncodingAnnotationTest {
             val tableB: TableB = TableB()
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 # Comment 1
                 # Comment 2
                 [tableA]
@@ -96,9 +95,8 @@ class EncodingAnnotationTest {
             //val b2: @TomlInlineTable InlineTableB = InlineTableB()
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 a = { a1 = "test", a2 = "test" }
                 b1 = { b = false }
             """.trimIndent()
@@ -122,9 +120,8 @@ class EncodingAnnotationTest {
             val nested: NestedInlineTable = NestedInlineTable()
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """nested = { inner1 = { message = "a" }, inner2 = { message = "b" } }""",
+        File() should encodeInto(
+            """nested = { inner1 = { message = "a" }, inner2 = { message = "b" } }""",
             tomlInstance = Toml(
                 outputConfig = TomlOutputConfig(explicitTables = true)
             )
@@ -148,9 +145,8 @@ class EncodingAnnotationTest {
                     (6L..8L).map(::InlineTable)
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 inlineTablesA = [ { value = 0 }, { value = 1 }, { value = 2 } ]
                 inlineTablesB = [ { value = 3 }, { value = 4 }, { value = 5 } ]
                 inlineTablesC = [ { value = 6 }, { value = 7 }, { value = 8 } ]
@@ -174,9 +170,8 @@ class EncodingAnnotationTest {
                     listOf(1, 1, 2, 3, 5, 8, 13)
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 words = [
                     "the",
                     "quick",
@@ -218,9 +213,8 @@ class EncodingAnnotationTest {
             val oct: Long = 6,
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 dec = 0
                 bin = 0b10
                 gro = 9_999_099_009
@@ -239,9 +233,8 @@ class EncodingAnnotationTest {
             //val quote: @TomlLiteral String = "\"hello!\""
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """regex = '/[a-z-_]+|"[^"]+"/'"""
+        File() should encodeInto(
+            """regex = '/[a-z-_]+|"[^"]+"/'"""
         )
     }
 
@@ -265,9 +258,8 @@ class EncodingAnnotationTest {
 
         val tripleQuotes = "\"\"\""
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 mlTextA = $tripleQuotes
                 
                 \tMultiline

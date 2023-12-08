@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlOutputConfig
+import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -15,10 +16,7 @@ class ClassEncoderTest {
         @Serializable
         data class File(val obj: Object = Object)
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = "[obj]"
-        )
+        File() should encodeInto("[obj]")
     }
 
     @Test
@@ -43,9 +41,8 @@ class ClassEncoderTest {
             val parent: ParentTable = ParentTable()
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 "key with spaces" = false
                 'keyWith"Quotes"' = 3
                 
@@ -74,9 +71,8 @@ class ClassEncoderTest {
             val b: List<Long> = listOf(1, 2, 3)
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                 a = 0
                 b = [ 1, 2, 3 ]
                 
@@ -105,12 +101,11 @@ class ClassEncoderTest {
             val presentTable: Table,
         )
 
-        assertEncodedEquals(
-            value = File(
-                present = true,
-                presentTable = Table(present = "value")
-            ),
-            expectedToml = """
+        File(
+            present = true,
+            presentTable = Table(present = "value")
+        ) should encodeInto(
+            """
                 present = true
                 
                 [presentTable]
@@ -140,9 +135,8 @@ class ClassEncoderTest {
             val presentTable: Table? = Table()
         )
 
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
+        File() should encodeInto(
+            """
                present = nan
                
                [presentTable]

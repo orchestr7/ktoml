@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.encoders
 
+import io.kotest.matchers.should
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -31,9 +32,6 @@ class CustomSerializerTest {
 
     @Test
     fun singlePropertyCustomSerializerTest() {
-        assertEncodedEquals(
-            value = SingleProperty(),
-            expectedToml = """rgb = "0""""
-        )
+        SingleProperty() should encodeInto("""rgb = "0"""")
     }
 }

@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.encoders
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
+import io.kotest.matchers.should
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -13,10 +14,7 @@ class ArrayEncoderTest {
         @Serializable
         data class EmptyArray(val a: List<String> = emptyList())
 
-        assertEncodedEquals(
-            value = EmptyArray(),
-            expectedToml = "a = [ ]"
-        )
+        EmptyArray() should encodeInto("a = [ ]")
     }
     
     @Test
@@ -24,10 +22,7 @@ class ArrayEncoderTest {
         @Serializable
         data class SimpleArray(val a: List<Long> = listOf(1, 2, 3))
 
-        assertEncodedEquals(
-            value = SimpleArray(),
-            expectedToml = "a = [ 1, 2, 3 ]"
-        )
+        SimpleArray() should encodeInto("a = [ 1, 2, 3 ]")
     }
 
     @Test
@@ -42,9 +37,8 @@ class ArrayEncoderTest {
             val literalStrings: List<String> = listOf("\"string\"")
         )
 
-        assertEncodedEquals(
-            value = Arrays(),
-            expectedToml = """
+        Arrays() should encodeInto(
+            """
                 booleans = [ true, false ]
                 longs = [ 1, 2, 3 ]
                 doubles = [ 3.14 ]
@@ -68,9 +62,8 @@ class ArrayEncoderTest {
                     (0L..2L).map(::InlineTable)
         )
 
-        assertEncodedEquals(
-            value = InlineTableArray(),
-            expectedToml = """
+        InlineTableArray() should encodeInto(
+            """
                 inlineTables = [
                     { index = 0 },
                     { index = 1 },
@@ -91,10 +84,7 @@ class ArrayEncoderTest {
                     )
         )
 
-        assertEncodedEquals(
-            value = NestedArray(),
-            expectedToml = "a = [ [ 1, 2 ], [ 3, 4 ] ]"
-        )
+        NestedArray() should encodeInto("a = [ [ 1, 2 ], [ 3, 4 ] ]")
     }
 
     @Test
@@ -105,9 +95,8 @@ class ArrayEncoderTest {
         @Serializable
         data class ArrayInTable(val table: Table = Table())
 
-        assertEncodedEquals(
-            value = ArrayInTable(),
-            expectedToml = """
+        ArrayInTable() should encodeInto(
+            """
                 [table]
                     a = [ 1, 2, 3 ]
             """.trimIndent()
@@ -123,10 +112,7 @@ class ArrayEncoderTest {
         @Serializable
         data class ArrayInInlineTable(val a: InlineTable = InlineTable())
 
-        assertEncodedEquals(
-            value = ArrayInInlineTable(),
-            expectedToml = "a = { b = [ 1, 2, 3 ] }"
-        )
+        ArrayInInlineTable() should encodeInto("a = { b = [ 1, 2, 3 ] }")
     }
 
     @Test
@@ -137,9 +123,6 @@ class ArrayEncoderTest {
         @Serializable
         data class EmptyListData(val content: List<EmbeddedData> = listOf() )
         
-        assertEncodedEquals(
-            value = EmptyListData(),
-            expectedToml = ""
-        )
+        EmptyListData() should encodeInto("")
     }
 }
