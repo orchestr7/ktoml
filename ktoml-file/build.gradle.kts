@@ -55,7 +55,6 @@ kotlin {
             dependsOn(commonTest)
             dependencies {
                 implementation(kotlin("test-junit5"))
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.0.0")
             }
         }
 
