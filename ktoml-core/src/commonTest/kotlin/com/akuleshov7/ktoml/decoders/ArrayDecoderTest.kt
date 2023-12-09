@@ -1,16 +1,10 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
-import com.akuleshov7.ktoml.exceptions.ParseException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 @Serializable
 data class SimpleArray(val a: List<Long>)
@@ -67,96 +61,95 @@ class SimpleArrayDecoderTest {
     @Test
     fun testRegressions() {
         // ==== #77 ====
-        val testClassWithMutableList: ClassWithMutableList = Toml.decodeFromString("field = []")
-        assertEquals(mutableListOf(), testClassWithMutableList.field)
+        "field = []"
+            .shouldDecodeInto(ClassWithMutableList(mutableListOf()))
 
-        val testClassWithImmutableList: ClassWithImmutableList = Toml.decodeFromString("field = []")
-        assertEquals(emptyList(), testClassWithImmutableList.field)
+        "field = []"
+            .shouldDecodeInto(ClassWithImmutableList(emptyList()))
 
-        val testWithNullArray1: ClassWithImmutableList = Toml.decodeFromString("field = null")
-        assertEquals(null, testWithNullArray1.field)
+        "field = null"
+            .shouldDecodeInto(ClassWithImmutableList(null))
 
-        val testWithNullArray2: ClassWithMutableList = Toml.decodeFromString("field = null")
-        assertEquals(null, testWithNullArray2.field)
+        "field = null"
+            .shouldDecodeInto(ClassWithMutableList(null))
 
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<ClassWithMutableList>("field = [null]").field }
+        "field = [null]"
+            .shouldThrowExceptionWhileDecoding<ClassWithMutableList, IllegalTypeException>()
 
-        val testWithOnlyNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null ]")
-        assertEquals(listOf(null), testWithOnlyNullInArray.field)
+        "field = [null ]"
+            .shouldDecodeInto(ClassWithImmutableList(listOf(null)))
 
-        val testWithNullInArray: ClassWithImmutableList = Toml.decodeFromString("field = [null, 1 ]")
-        assertEquals(listOf<Long?>(null, 1), testWithNullInArray.field)
+        "field = [null, 1 ]"
+            .shouldDecodeInto(ClassWithImmutableList(listOf(null, 1)))
     }
 
     @Test
     fun testSimpleArrayDecoder() {
-        val test = "a = [1, 2,      3]"
-        assertEquals(SimpleArray(listOf(1, 2, 3)), Toml.decodeFromString(test))
+        "a = [1, 2,      3]"
+            .shouldDecodeInto(SimpleArray(listOf(1, 2, 3)))
     }
 
     @Test
     fun testArrayWithTrailingComma() {
-        val test = "a = [1, 2, 3,]"
-        assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
+        "a = [1, 2, 3,]"
+            .shouldDecodeInto(SimpleArrayWithNullableValues(listOf(1, 2, 3)))
     }
 
     @Test
     fun testSimpleArrayDecoderInNestedTable() {
-        var test = """
+        """
             [table]
                 name = "my name"
                 configurationList = ["a",  "b",  "c"]
-            """
-
-        assertEquals(
+        """.shouldDecodeInto(
             ArrayInInlineTable(
-                table = InlineTable(name = "my name", overriddenName = listOf("a", "b", "c"))
-            ), Toml.decodeFromString(test)
+                table = InlineTable(
+                    name = "my name",
+                    overriddenName = listOf("a", "b", "c")
+                )
+            )
         )
 
-        test =
-            """
+        """
             [table]
                 configurationList = ["a",  "b",  "c"]
                 name = "my name"
-            """
-
-        assertEquals(
+        """.shouldDecodeInto(
             ArrayInInlineTable(
-                table = InlineTable(name = "my name", overriddenName = listOf("a", "b", "c"))
-            ), Toml.decodeFromString(test)
+                table = InlineTable(
+                    name = "my name",
+                    overriddenName = listOf("a", "b", "c")
+                )
+            )
         )
 
-        val testTable = """
+        """
             configurationList1 = ["a",  "b",  "c"]
             configurationList2 = ["a",  "b",  "c"]
             [table]
                 name = "my name"
-            """
-
-        assertEquals(
-            TestArrays(
+        """.shouldDecodeInto(TestArrays(
                 overriddenName1 = listOf("a", "b", "c"),
                 overriddenName2 = listOf("a", "b", "c"),
                 table = Table(name = "my name")
-            ), Toml.decodeFromString(testTable)
+            )
         )
 
-        val testTableAndVariables = """
+        """
             name1 = "simple"
             configurationList1 = ["a",  "b",  "c"]
             name2 = "simple"
             configurationList2 = ["a",  "b",  "c"]
             [table]
                 name = "my name"
-            """
-
-
-        assertEquals(
+        """.shouldDecodeInto(
             TestArraysAndSimple(
-                name1 = "simple", overriddenName1 = listOf("a", "b", "c"),
-                overriddenName2 = listOf("a", "b", "c"), table = Table(name = "my name"), name2 = "simple"
-            ), Toml.decodeFromString(testTableAndVariables)
+                name1 = "simple",
+                overriddenName1 = listOf("a", "b", "c"),
+                overriddenName2 = listOf("a", "b", "c"),
+                table = Table(name = "my name"),
+                name2 = "simple"
+            )
         )
     }
 
@@ -164,19 +157,19 @@ class SimpleArrayDecoderTest {
     @Ignore
     fun testNestedArrayDecoder() {
         // FixMe: nested array decoding causes issues and is not supported yet
-        val test = "a = [[1, 2],      [3,  4]]"
-        assertEquals(NestedArray(listOf(listOf(1, 2), listOf(3, 4))), Toml.decodeFromString(test))
+        "a = [[1, 2],      [3,  4]]"
+            .shouldDecodeInto(NestedArray(listOf(listOf(1, 2), listOf(3, 4))))
     }
 
     @Test
     fun testCommasInString() {
-        val test = "a = [\"yes, indeed\", \"hmm, hmm\"]"
-        assertEquals(SimpleStringArray(listOf("yes, indeed", "hmm, hmm")), Toml.decodeFromString(test))
-        val testSingleQuote = "a = ['yes, indeed', 'hmm, hmm']"
-        assertEquals(SimpleStringArray(listOf("yes, indeed", "hmm, hmm")), Toml.decodeFromString(testSingleQuote))
-        val testWithInternalQuote = "a = [\"yes, \\\"indeed\\\"\", \"hmm, 'hmm'\"]"
-        assertEquals(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, 'hmm'")), Toml.decodeFromString(testWithInternalQuote))
-        val testSingleWithInternalQuote = "a = ['yes, \"indeed\"', 'hmm, \"hmm\"']"
-        assertEquals(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, \"hmm\"")), Toml.decodeFromString(testSingleWithInternalQuote))
+        "a = [\"yes, indeed\", \"hmm, hmm\"]"
+            .shouldDecodeInto(SimpleStringArray(listOf("yes, indeed", "hmm, hmm")))
+        "a = ['yes, indeed', 'hmm, hmm']"
+            .shouldDecodeInto(SimpleStringArray(listOf("yes, indeed", "hmm, hmm")))
+        "a = [\"yes, \\\"indeed\\\"\", \"hmm, 'hmm'\"]"
+            .shouldDecodeInto(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, 'hmm'")))
+        "a = ['yes, \"indeed\"', 'hmm, \"hmm\"']"
+            .shouldDecodeInto(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, \"hmm\"")))
     }
 }

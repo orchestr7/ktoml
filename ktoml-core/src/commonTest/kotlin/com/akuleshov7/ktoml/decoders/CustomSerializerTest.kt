@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -9,7 +8,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.test.Ignore
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class CustomSerializerTest {
     object SinglePropertyAsStringSerializer : KSerializer<SingleProperty> {
@@ -29,14 +27,10 @@ class CustomSerializerTest {
 
     @Test
     fun testDecodingWithCustomSerializerSingleProperty() {
-        assertEquals(
-            SingleProperty(15),
-            Toml.decodeFromString(
-                """
-                    rgb = "0" 
-                """.trimIndent()
-            )
-        )
+        """
+            rgb = "0" 
+        """.trimIndent()
+            .shouldDecodeInto(SingleProperty(15))
     }
 
     @Serializable(with = SeveralPropertiesAsStringSerializer::class)
@@ -57,16 +51,10 @@ class CustomSerializerTest {
     @Test
     @Ignore
     fun testDecodingWithCustomSerializerSeveralProperties() {
-        assertEquals(
-            SeveralProperties(15, 1),
-            Toml.decodeFromString(
-                """
-                    rgb = "0" 
-                    brg = "1"
-                """
-            )
-        )
-        UInt.MAX_VALUE
+        """
+            rgb = "0" 
+            brg = "1"
+        """.shouldDecodeInto(SeveralProperties(15, 1))
     }
 
     @Serializable
@@ -75,13 +63,11 @@ class CustomSerializerTest {
     @Test
     @Ignore
     fun testDecodingWithCustomSerializer() {
-        Toml.decodeFromString<Settings>(
-            """
-                [background]
-                    rgb = "0"
-                [foreground]
-                    rgb = "0"
-            """
-        )
+        """
+            [background]
+                rgb = "0"
+            [foreground]
+                rgb = "0"
+        """.shouldDecodeInto(Settings(SingleProperty(15), SingleProperty(15)))
     }
 }

@@ -2,10 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 
 @Serializable
@@ -29,70 +26,60 @@ data class Config4(val key: Key)
 class NullableTablesTest {
     @Test
     fun nullableKey() {
-        val mapper = Toml(
+        val tomlInstance = Toml(
             inputConfig = TomlInputConfig(
                 ignoreUnknownNames = true,
                 allowEmptyValues = true
             )
         )
-        val toml1 = mapper.decodeFromString<Config1>(
-            """            
+
+        """            
             [key]
             value = 1            
         """.trimIndent()
-        )
+            .shouldDecodeInto(
+                decodedValue = Config1(Key(1L)),
+                tomlInstance = tomlInstance
+            )
 
-        toml1.shouldNotBeNull()
-        toml1.key?.value shouldBe 1L
-
-        val toml2 = mapper.decodeFromString<Config2>(
-            """            
+        """            
             [key]
             value = 1            
         """.trimIndent()
-        )
+            .shouldDecodeInto(
+                decodedValue = Config2(Key(1L)),
+                tomlInstance = tomlInstance
+            )
 
-        toml2.shouldNotBeNull()
-        toml2.key?.value shouldBe 1L
-
-        val toml3 = mapper.decodeFromString<Config3>(
-            """            
+        """            
             [key]
             value = 1            
         """.trimIndent()
-        )
+            .shouldDecodeInto(
+                decodedValue = Config3(Key(1L)),
+                tomlInstance = tomlInstance
+            )
 
-        toml3.shouldNotBeNull()
-        toml3.key.value shouldBe 1L
-
-        val toml4 = mapper.decodeFromString<Config4>(
-            """            
+        """            
             [key]
             value = 1            
         """.trimIndent()
-        )
-
-        toml4.shouldNotBeNull()
-        toml4.key.value shouldBe 1L
+            .shouldDecodeInto(
+                decodedValue = Config4(Key(1L)),
+                tomlInstance = tomlInstance
+            )
     }
 }
 
 class EmptyTomlTest {
     @Test
     fun emptyToml() {
-        var res = Toml.decodeFromString<Config>(
-            """            
+        """            
              
              
-                """.trimIndent()
-        )
+        """.trimIndent()
+            .shouldDecodeInto(Config())
 
-        res shouldBe Config()
-
-        res = Toml.decodeFromString(
-            "".trimIndent()
-        )
-
-        res shouldBe Config()
+        "".shouldDecodeInto(Config())
     }
 }

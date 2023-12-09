@@ -3,8 +3,16 @@ package com.akuleshov7.ktoml.encoders
 import com.akuleshov7.ktoml.Toml
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
+import io.kotest.matchers.should
 import kotlinx.serialization.encodeToString
 import kotlin.test.assertEquals
+
+inline fun <reified T> T.shouldEncodeInto(
+    encodedValue: String,
+    tomlInstance: Toml = Toml
+) = apply {
+    this should encodeInto(encodedValue, tomlInstance)
+}
 
 inline fun <reified T> encodeInto(
     encodedValue: String,

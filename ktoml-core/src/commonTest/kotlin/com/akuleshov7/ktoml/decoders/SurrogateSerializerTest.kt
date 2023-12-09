@@ -1,13 +1,10 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlin.test.Ignore
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class SurrogateTest {
     object ColorSerializer : KSerializer<Color> {
@@ -33,17 +30,15 @@ class SurrogateTest {
     }
 
     @Serializable(with = ColorSerializer::class)
-    class Color(val rgb: Int)
+    data class Color(val rgb: Int)
 
     @Test
     fun testDecodingWithCustomSerializer() {
-        val test = Toml.decodeFromString<Color>(
-            """
-                r = 5
-                g = 6
-                b = 7
-            """.trimIndent()
-        )
-        assertEquals(Color(329223).rgb, test.rgb)
+        """
+            r = 5
+            g = 6
+            b = 7
+        """.trimIndent()
+            .shouldDecodeInto(Color(329223))
     }
 }

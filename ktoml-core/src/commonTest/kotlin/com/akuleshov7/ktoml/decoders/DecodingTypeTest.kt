@@ -1,11 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 
 @Serializable
 data class Bool(val a: Boolean)
@@ -37,15 +34,15 @@ data class Str(val a: String)
 class DecodingTypeTest {
     @Test
     fun testExceptions() {
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<S>("a = true") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<B>("a = true") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<F>("a = true") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<I>("a = true") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<C>("a = true") }
+        "a = true".shouldThrowExceptionWhileDecoding<S, IllegalTypeException>()
+        "a = true".shouldThrowExceptionWhileDecoding<B, IllegalTypeException>()
+        "a = true".shouldThrowExceptionWhileDecoding<F, IllegalTypeException>()
+        "a = true".shouldThrowExceptionWhileDecoding<I, IllegalTypeException>()
+        "a = true".shouldThrowExceptionWhileDecoding<C, IllegalTypeException>()
 
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Bool>("a = \"test\"") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Str>("a = true") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<L>("a = 12.0") }
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<D>("a = 1") }
+        "a = \"test\"".shouldThrowExceptionWhileDecoding<Bool, IllegalTypeException>()
+        "a = true".shouldThrowExceptionWhileDecoding<Str, IllegalTypeException>()
+        "a = 12.0".shouldThrowExceptionWhileDecoding<L, IllegalTypeException>()
+        "a = 1".shouldThrowExceptionWhileDecoding<D, IllegalTypeException>()
     }
 }

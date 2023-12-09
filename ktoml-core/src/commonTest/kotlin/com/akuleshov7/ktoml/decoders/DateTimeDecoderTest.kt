@@ -1,13 +1,9 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class DateTimeDecoderTest {
 
@@ -22,13 +18,6 @@ class DateTimeDecoderTest {
 
     @Test
     fun testDateParsing() {
-        val toml = """
-            instants = [1979-05-27T07:32:00Z, 1979-05-27T00:32:00-07:00, 1979-05-27T00:32:00.999999-07:00, 1979-05-27 07:32:00Z]
-            localDateTimes = [1979-05-27T07:32:00, 1979-05-27T00:32:00.999999]
-            localDate = 1979-05-27
-            localTime = 07:45:33
-            dateInString = "1979-05-27T00:32:00-07:00"
-        """.trimIndent()
         val expectedInstants = listOf(
             LocalDateTime(1979, 5, 27, 7, 32, 0)
                 .toInstant(TimeZone.UTC),
@@ -45,16 +34,23 @@ class DateTimeDecoderTest {
         )
         val expectedLocalDate = LocalDate(1979, 5, 27)
         val expectedLocalTime = LocalTime(7, 45, 33)
-        assertEquals(
-            TimeTable(
-                expectedInstants,
-                expectedLocalDateTimes,
-                expectedLocalDate,
-                expectedLocalTime,
-                "1979-05-27T00:32:00-07:00"
-            ),
-            Toml.decodeFromString(toml)
+
+        val expectedTimeTable = TimeTable(
+            expectedInstants,
+            expectedLocalDateTimes,
+            expectedLocalDate,
+            expectedLocalTime,
+            "1979-05-27T00:32:00-07:00"
         )
+
+        """
+            instants = [1979-05-27T07:32:00Z, 1979-05-27T00:32:00-07:00, 1979-05-27T00:32:00.999999-07:00, 1979-05-27 07:32:00Z]
+            localDateTimes = [1979-05-27T07:32:00, 1979-05-27T00:32:00.999999]
+            localDate = 1979-05-27
+            localTime = 07:45:33
+            dateInString = "1979-05-27T00:32:00-07:00"
+        """.trimIndent()
+            .shouldDecodeInto(expectedTimeTable)
     }
 
     @Serializable
@@ -71,17 +67,13 @@ class DateTimeDecoderTest {
 
     @Test
     fun testInvalidData() {
-        assertFailsWith<ParseException> {
-            Toml.decodeFromString<InvalidInstant>("instant=1979-05-27T07:32:00INVALID")
-        }
-        assertFailsWith<ParseException> {
-            Toml.decodeFromString<InvalidDateTime>("dateTime=1979/05/27T07:32:00")
-        }
-        assertFailsWith<ParseException> {
-            Toml.decodeFromString<InvalidDate>("date=1979/05/27")
-        }
-        assertFailsWith<ParseException> {
-            Toml.decodeFromString<InvalidTime>("time=07/35/12")
-        }
+        "instant=1979-05-27T07:32:00INVALID"
+            .shouldThrowExceptionWhileDecoding<InvalidInstant, ParseException>()
+        "dateTime=1979/05/27T07:32:00"
+            .shouldThrowExceptionWhileDecoding<InvalidDateTime, ParseException>()
+        "date=1979/05/27"
+            .shouldThrowExceptionWhileDecoding<InvalidDate, ParseException>()
+        "time=07/35/12"
+            .shouldThrowExceptionWhileDecoding<InvalidTime, ParseException>()
     }
 }

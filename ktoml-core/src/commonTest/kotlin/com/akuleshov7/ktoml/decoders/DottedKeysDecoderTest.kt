@@ -5,9 +5,7 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @ExperimentalSerializationApi
 class DottedKeysDecoderTest {
@@ -102,57 +100,50 @@ class DottedKeysDecoderTest {
     @ExperimentalSerializationApi
     @Test
     fun testDottedKeys() {
-        assertEquals(
+        """
+            table2.b.d = 2
+            [table1] 
+                a.c = 1 
+            [table1.table2]
+                b.b.a = 1
+            [table2] 
+                b.f = 2 
+                table2."foo bar".d = 2
+            [table3]
+        """.shouldDecodeInto(
             TestExample(
                 table1 = Table1(a = AC(c = 1), table2 = InnerTable2in1(b = BA(b = A(a = 1)))),
                 table2 = Table2(b = B(f = 2, d = 2), table2 = InnerTable2in2(myFieldWithSerialName = C(d = 2))),
                 table3 = Table3(notRequiredFieldBecauseOfEmptyTable = 0)
-            ),
-            Toml.decodeFromString(
-                """
-                      table2.b.d = 2
-                      [table1] 
-                          a.c = 1 
-                      [table1.table2]
-                          b.b.a = 1
-                      [table2] 
-                          b.f = 2 
-                          table2."foo bar".d = 2
-                      [table3]
-                      """
             )
         )
     }
 
     @Test
     fun tableTest() {
-        assertEquals(
+        """
+            table2.b.d = 2
+            [table2]
+                e = 5
+                b.f = 2
+        """.shouldDecodeInto(
             SimpleNestedExample(table2 = Table4(b = B(f = 2, d = 2), e = 5)),
-            Toml(TomlInputConfig(true)).decodeFromString(
-                """
-                      table2.b.d = 2
-                      [table2]
-                          e = 5
-                          b.f = 2
-                      """
-            )
+            Toml(TomlInputConfig(true))
         )
     }
 
     @Test
     fun tableAndDottedKeys() {
-        assertEquals(
+        """
+            [table2]
+                table2."foo bar".d = 2
+                e = 6
+            [table2.b]
+                d = 2
+                f = 7
+        """.shouldDecodeInto(
             SimpleNestedExample(table2 = Table4(b = B(f = 7, d = 2), e = 6)),
-            Toml(TomlInputConfig(true)).decodeFromString(
-                """
-                      [table2]
-                          table2."foo bar".d = 2
-                          e = 6
-                      [table2.b]
-                          d = 2
-                          f = 7
-                      """
-            )
+            Toml(TomlInputConfig(true))
         )
     }
 
@@ -196,7 +187,15 @@ class DottedKeysDecoderTest {
 
     @Test
     fun dottedTableDecoder() {
-        assertEquals(
+        """
+            [a."b.c..".d."e.f"]
+                val = 1
+            [a]
+            [a."b.c.."]
+                val = 2
+            [a."b.c..".inner]
+                val = 3
+        """.shouldDecodeInto(
             DottedTable(
                 a1 = AClass(
                     bc1 = BCClass(
@@ -205,17 +204,6 @@ class DottedKeysDecoderTest {
                         inner = InnerClass(variable = 3)
                     )
                 )
-            ),
-            Toml.decodeFromString(
-                """
-            [a."b.c..".d."e.f"]
-                val = 1
-             [a]
-             [a."b.c.."]
-                val = 2
-             [a."b.c..".inner]
-                val = 3
-        """
             )
         )
     }
@@ -242,9 +230,7 @@ class DottedKeysDecoderTest {
 
     @Test
     fun decodeQuotedKey() {
-        assertEquals(
-            QuotedKey(a = AQ(b = ABCQ(b = BQ(d = 123)))),
-            Toml.decodeFromString("a.\"a.b.c\".b.d = 123")
-        )
+        "a.\"a.b.c\".b.d = 123"
+            .shouldDecodeInto(QuotedKey(a = AQ(b = ABCQ(b = BQ(d = 123)))))
     }
 }

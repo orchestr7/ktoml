@@ -1,13 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlin.test.assertFailsWith
 
 class IntegersDecoderTest {
     @Serializable
@@ -20,57 +15,45 @@ class IntegersDecoderTest {
 
     @Test
     fun positiveScenario() {
-        var test = """
-                s = 5
-                b = +5
-                i = -5
-                l = 5
-            """
+        """
+            s = 5
+            b = +5
+            i = -5
+            l = 5
+        """.shouldDecodeInto(Integers(5, 5, -5, 5))
 
-        var decoded = Toml.decodeFromString<Integers>(test)
-        assertEquals(
-            Integers(5, 5, -5, 5),
-            decoded
-        )
-
-        test = """
-                s = 32767
-                b = -128
-                i = 5
-                l = 5
-            """
-
-        decoded = Toml.decodeFromString(test)
-        assertEquals(
-            Integers(32767, -128, 5, 5),
-            decoded
-        )
+        """
+            s = 32767
+            b = -128
+            i = 5
+            l = 5
+        """.shouldDecodeInto(Integers(32767, -128, 5, 5))
     }
 
     @Test
     fun negativeScenario() {
-        var test = """
-                s = 32768
-                b = 5
-                i = 5
-                l = 5
-            """.trimMargin()
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Integers>(test) }
+        """
+            s = 32768
+            b = 5
+            i = 5
+            l = 5
+        """.trimMargin()
+            .shouldThrowExceptionWhileDecoding<Integers, IllegalTypeException>()
 
-        test = """
-                s = -32769
-                b = 5
-                i = 5
-                l = 5
-            """.trimMargin()
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Integers>(test) }
+        """
+            s = -32769
+            b = 5
+            i = 5
+            l = 5
+        """.trimMargin()
+            .shouldThrowExceptionWhileDecoding<Integers, IllegalTypeException>()
 
-        test = """
-                s = 0.25
-                b = 5
-                i = 5
-                l = 5
-            """.trimMargin()
-        assertFailsWith<IllegalTypeException> { Toml.decodeFromString<Integers>(test) }
+        """
+            s = 0.25
+            b = 5
+            i = 5
+            l = 5
+        """.trimMargin()
+            .shouldThrowExceptionWhileDecoding<Integers, IllegalTypeException>()
     }
 }

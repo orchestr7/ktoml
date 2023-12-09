@@ -1,11 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlinx.serialization.ExperimentalSerializationApi
 
 class ReadMeExampleTest {
@@ -57,8 +54,7 @@ class ReadMeExampleTest {
     @OptIn(ExperimentalSerializationApi::class)
     @Test
     fun readmeExampleTest() {
-        val test =
-            """
+        """
             someBooleanProperty = true
             # inline tables in gradle 'libs.versions.toml' notation
             gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -87,11 +83,7 @@ class ReadMeExampleTest {
               # use single quotes
               charFromString = 'a'
               charFromInteger = 123
-            """
-
-        val decoded = Toml.decodeFromString<MyClass>(test)
-
-        assertEquals(
+        """.shouldDecodeInto(
             MyClass(
                 someBooleanProperty = true,
                 table1 = Table1(property1 = 100, property2 = 6),
@@ -108,8 +100,7 @@ class ReadMeExampleTest {
                 ),
 
                 kotlinJvm = GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
-            ),
-            decoded
+            )
         )
     }
 }

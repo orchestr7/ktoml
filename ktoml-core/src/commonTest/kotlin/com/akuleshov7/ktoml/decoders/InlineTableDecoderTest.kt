@@ -1,10 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlin.test.*
 
 class InlineTableDecoderTest {
@@ -32,8 +30,7 @@ class InlineTableDecoderTest {
     @Test
     @Ignore
     fun decodeInlineTable() {
-        val test =
-            """
+        """
             |someBooleanProperty = true
             |
             |table1 = { property1 = null, property2 = 6 }
@@ -41,42 +38,36 @@ class InlineTableDecoderTest {
             |table2 = { otherNumber = 5.56 }
             |inlineTable = { inlineValStr = "inline", inlineValInt = -1 }
             |       
-            """.trimMargin()
-
-        Toml.decodeFromString<ReadMeExampleTest.MyClass>(test)
+        """.trimMargin()
+//            .shouldDecodeInto(ReadMeExampleTest.MyClass(...))
     }
 
     @Test
     fun trailingCommaIsNotPermitted() {
-        val test =
-            """
+        """
             |inlineTable = { inlineValStr = "inline", inlineValInt = -1, }
             |       
-            """.trimMargin()
-
-        assertFailsWith<ParseException> { Toml.decodeFromString<ReadMeExampleTest.MyClass>(test) }
+        """.trimMargin()
+            .shouldThrowExceptionWhileDecoding<ReadMeExampleTest.MyClass, ParseException>()
     }
 
     @Test
     fun gradleLibsToml() {
-        val test =
-            """
-                |[plugins]
-                |kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-                |kotlin-multiplatform = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-                |kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-            """.trimMargin()
-
-        val decoded = Toml.decodeFromString<GradleExample>(test)
-
-        assertEquals(
-            GradleExample(ListOfInlines(
-                Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
-                Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
-                Plugin("org.jetbrains.kotlin.plugin.serialization", Version("kotlin")))
-            ),
-            decoded
-        )
+        """
+            |[plugins]
+            |kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            |kotlin-multiplatform = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            |kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+        """.trimMargin()
+            .shouldDecodeInto(
+                GradleExample(
+                    ListOfInlines(
+                        Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
+                        Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
+                        Plugin("org.jetbrains.kotlin.plugin.serialization", Version("kotlin"))
+                    )
+                )
+            )
     }
 
     @Serializable
@@ -94,28 +85,34 @@ class InlineTableDecoderTest {
 
     @Test
     fun testEmptyInlineTable() {
-        val test1 = """
+        """
             point = {  }
         """.trimIndent()
-        val test2 = """
+            .shouldDecodeInto(Position(point = Point()))
+
+        """
             [point] 
         """.trimIndent()
-
-        val result1 = Toml.decodeFromString<Position>(test1)
-        val result2 = Toml.decodeFromString<Position>(test2)
-        assertEquals(result2, result1)
+            .shouldDecodeInto(Position(point = Point()))
     }
 
     @Test
     fun testNestedEmptyInlineTable() {
-        val test = """
+        """
             id = 15
             description = "abc"
 
             [position]
                 point = {}
         """.trimIndent()
-
-        Toml.decodeFromString<PositionWrapper>(test)
+            .shouldDecodeInto(
+                PositionWrapper(
+                    id = 15,
+                    description = "abc",
+                    position = Position(
+                        point = Point()
+                    )
+                )
+            )
     }
 }
