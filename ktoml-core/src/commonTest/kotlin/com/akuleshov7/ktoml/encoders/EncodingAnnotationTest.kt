@@ -4,7 +4,6 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.*
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
-import io.kotest.matchers.should
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -29,7 +28,7 @@ class EncodingAnnotationTest {
             val d: Double = Double.NaN
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 # Single comment
                 a = 3
@@ -61,7 +60,7 @@ class EncodingAnnotationTest {
             val tableB: TableB = TableB()
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 # Comment 1
                 # Comment 2
@@ -95,7 +94,7 @@ class EncodingAnnotationTest {
             //val b2: @TomlInlineTable InlineTableB = InlineTableB()
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 a = { a1 = "test", a2 = "test" }
                 b1 = { b = false }
@@ -120,7 +119,7 @@ class EncodingAnnotationTest {
             val nested: NestedInlineTable = NestedInlineTable()
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """nested = { inner1 = { message = "a" }, inner2 = { message = "b" } }""",
             tomlInstance = Toml(
                 outputConfig = TomlOutputConfig(explicitTables = true)
@@ -145,7 +144,7 @@ class EncodingAnnotationTest {
                     (6L..8L).map(::InlineTable)
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 inlineTablesA = [ { value = 0 }, { value = 1 }, { value = 2 } ]
                 inlineTablesB = [ { value = 3 }, { value = 4 }, { value = 5 } ]
@@ -170,7 +169,7 @@ class EncodingAnnotationTest {
                     listOf(1, 1, 2, 3, 5, 8, 13)
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 words = [
                     "the",
@@ -213,7 +212,7 @@ class EncodingAnnotationTest {
             val oct: Long = 6,
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 dec = 0
                 bin = 0b10
@@ -233,7 +232,7 @@ class EncodingAnnotationTest {
             //val quote: @TomlLiteral String = "\"hello!\""
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """regex = '/[a-z-_]+|"[^"]+"/'"""
         )
     }
@@ -258,7 +257,7 @@ class EncodingAnnotationTest {
 
         val tripleQuotes = "\"\"\""
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 mlTextA = $tripleQuotes
                 

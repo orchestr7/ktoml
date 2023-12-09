@@ -1,9 +1,6 @@
 package com.akuleshov7.ktoml.encoders
 
-import com.akuleshov7.ktoml.Toml
-import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlin.jvm.JvmInline
 import kotlin.test.Test
 
@@ -18,38 +15,32 @@ class ValueClassEncoderTest {
 
     @Test
     fun testForSimpleValueClass() {
-        val color = Color(15)
-        val result = Toml.encodeToString(color)
-
-        result shouldBe "rgb = 15"
+        Color(15).shouldEncodeInto("rgb = 15")
     }
 
     @Test
     fun testForNestedValueClass() {
-        val namedColor = NamedColor(
-            Color(150),
-            "black"
-        )
-
-        Toml.encodeToString(namedColor) shouldBe """
-            color = 150
-            name = "black"
-        """.trimIndent()
+        NamedColor(Color(150), "black")
+            .shouldEncodeInto(
+                """
+                color = 150
+                name = "black"
+                """.trimIndent()
+            )
     }
 
     @Test
     fun testForLisOfValueClass() {
         @Serializable
         class Palette(val colors: List<Color>)
-        val palette = Palette(
+
+        Palette(
             listOf(
                 Color(0),
                 Color(255),
                 Color(128),
             )
-        )
-
-        Toml.encodeToString(palette) shouldBe "colors = [ 0, 255, 128 ]"
+        ).shouldEncodeInto("colors = [ 0, 255, 128 ]")
     }
 
     @Serializable
@@ -64,15 +55,15 @@ class ValueClassEncoderTest {
 
     @Test
     fun testForMultipleValueClass() {
-        val nums = Nums(
+        Nums(
             num1 = Num(5),
             num2 = Num(111)
-        )
-
-        Toml.encodeToString(nums) shouldBe """
+        ).shouldEncodeInto(
+            """
             num1 = 5
             num2 = 111
-        """.trimIndent()
+            """.trimIndent()
+        )
     }
 
     @Serializable
@@ -94,20 +85,20 @@ class ValueClassEncoderTest {
 
     @Test
     fun testForValueClassWithObjectInside() {
-        val obj = InfoWrapper(
+        InfoWrapper(
             metaInfo1 = 1,
             info = Info(MyObject(10, 20)),
             metaInfo2 = "test"
-        )
-
-        Toml.encodeToString(obj) shouldBe """
+        ).shouldEncodeInto(
+            """
             metaInfo1 = 1
             metaInfo2 = "test"
             
             [info]
                 height = 10
                 width = 20
-        """.trimIndent()
+            """.trimIndent()
+        )
     }
 
     @Serializable
@@ -116,23 +107,25 @@ class ValueClassEncoderTest {
 
     @Test
     fun testForValueClassInsideValueClass() {
-        val obj = AnotherInfoWrapper(Info(MyObject(10, 20)))
-
-        Toml.encodeToString(obj) shouldBe """
-            [info]
-                height = 10
-                width = 20
-        """.trimIndent()
+        AnotherInfoWrapper(Info(MyObject(10, 20)))
+            .shouldEncodeInto(
+                """
+                [info]
+                    height = 10
+                    width = 20
+                """.trimIndent()
+            )
     }
 
     @Test
     fun testDataClassInsideValueClass() {
-        val obj = Info(MyObject(32, 64))
-
-        Toml.encodeToString(obj) shouldBe """
-            [obj]
-                height = 32
-                width = 64
-        """.trimIndent()
+        Info(MyObject(32, 64))
+            .shouldEncodeInto(
+                """
+                [obj]
+                    height = 32
+                    width = 64
+                """.trimIndent()
+            )
     }
 }

@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.encoders
 
-import io.kotest.matchers.should
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 
@@ -20,7 +19,7 @@ class ArrayOfTablesEncoderTest {
                     )
         )
 
-        SimpleTableArray() should encodeInto(
+        SimpleTableArray().shouldEncodeInto(
             """
                 [[fruits]]
                     a = "apple"
@@ -56,7 +55,7 @@ class ArrayOfTablesEncoderTest {
                     )
         )
 
-        SimpleTableArrayWithEmpty() should encodeInto(
+        SimpleTableArrayWithEmpty().shouldEncodeInto(
             """
                 [[products]]
                     name = "Hammer"
@@ -93,7 +92,7 @@ class ArrayOfTablesEncoderTest {
             val fruits: List<Table1> = listOf(Table1())
         )
 
-        NestedTableArray() should encodeInto(
+        NestedTableArray().shouldEncodeInto(
             """
                 [[fruits.varieties]]
                     name = "red delicious"
@@ -123,7 +122,7 @@ class ArrayOfTablesEncoderTest {
             val fruits: List<Table1> = listOf(Table1())
         )
 
-        TableArrayWithNestedTable() should encodeInto(
+        TableArrayWithNestedTable().shouldEncodeInto(
             """
                 [[fruits.varieties]]
                     name = "red delicious"
@@ -154,7 +153,7 @@ class ArrayOfTablesEncoderTest {
                     )
         )
 
-        TableArrayWithNestedTable() should encodeInto(
+        TableArrayWithNestedTable().shouldEncodeInto(
             """
                 [[fruit]]
                     [fruit.physical]
@@ -190,7 +189,7 @@ class ArrayOfTablesEncoderTest {
 
         )
 
-        FlatTableArray() should encodeInto(
+        FlatTableArray().shouldEncodeInto(
             """
                 [[fruits.varieties]]
                     name = "red delicious"
@@ -230,7 +229,7 @@ class ArrayOfTablesEncoderTest {
             val c: List<InnerTable> = listOf(InnerTable(5))
         )
 
-        ComplexTableArrays() should encodeInto(
+        ComplexTableArrays().shouldEncodeInto(
             """
                 [[a.b]]
                     name = 1
@@ -273,7 +272,7 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class ComplexTable(val a: Table1 = Table1())
 
-        ComplexTable() should encodeInto(
+        ComplexTable().shouldEncodeInto(
             """
                 [a]
                     name = 1

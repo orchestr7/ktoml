@@ -5,7 +5,6 @@ import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
 import io.kotest.matchers.should
 import kotlinx.serialization.encodeToString
-import kotlin.test.assertEquals
 
 inline fun <reified T> T.shouldEncodeInto(
     encodedValue: String,

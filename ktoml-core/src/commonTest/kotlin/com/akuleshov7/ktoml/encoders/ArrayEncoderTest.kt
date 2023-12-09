@@ -3,7 +3,6 @@ package com.akuleshov7.ktoml.encoders
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
-import io.kotest.matchers.should
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -14,7 +13,7 @@ class ArrayEncoderTest {
         @Serializable
         data class EmptyArray(val a: List<String> = emptyList())
 
-        EmptyArray() should encodeInto("a = [ ]")
+        EmptyArray().shouldEncodeInto("a = [ ]")
     }
     
     @Test
@@ -22,7 +21,7 @@ class ArrayEncoderTest {
         @Serializable
         data class SimpleArray(val a: List<Long> = listOf(1, 2, 3))
 
-        SimpleArray() should encodeInto("a = [ 1, 2, 3 ]")
+        SimpleArray().shouldEncodeInto("a = [ 1, 2, 3 ]")
     }
 
     @Test
@@ -37,7 +36,7 @@ class ArrayEncoderTest {
             val literalStrings: List<String> = listOf("\"string\"")
         )
 
-        Arrays() should encodeInto(
+        Arrays().shouldEncodeInto(
             """
                 booleans = [ true, false ]
                 longs = [ 1, 2, 3 ]
@@ -62,7 +61,7 @@ class ArrayEncoderTest {
                     (0L..2L).map(::InlineTable)
         )
 
-        InlineTableArray() should encodeInto(
+        InlineTableArray().shouldEncodeInto(
             """
                 inlineTables = [
                     { index = 0 },
@@ -84,7 +83,7 @@ class ArrayEncoderTest {
                     )
         )
 
-        NestedArray() should encodeInto("a = [ [ 1, 2 ], [ 3, 4 ] ]")
+        NestedArray().shouldEncodeInto("a = [ [ 1, 2 ], [ 3, 4 ] ]")
     }
 
     @Test
@@ -95,7 +94,7 @@ class ArrayEncoderTest {
         @Serializable
         data class ArrayInTable(val table: Table = Table())
 
-        ArrayInTable() should encodeInto(
+        ArrayInTable().shouldEncodeInto(
             """
                 [table]
                     a = [ 1, 2, 3 ]
@@ -112,7 +111,7 @@ class ArrayEncoderTest {
         @Serializable
         data class ArrayInInlineTable(val a: InlineTable = InlineTable())
 
-        ArrayInInlineTable() should encodeInto("a = { b = [ 1, 2, 3 ] }")
+        ArrayInInlineTable().shouldEncodeInto("a = { b = [ 1, 2, 3 ] }")
     }
 
     @Test
@@ -123,6 +122,6 @@ class ArrayEncoderTest {
         @Serializable
         data class EmptyListData(val content: List<EmbeddedData> = listOf() )
         
-        EmptyListData() should encodeInto("")
+        EmptyListData().shouldEncodeInto("")
     }
 }

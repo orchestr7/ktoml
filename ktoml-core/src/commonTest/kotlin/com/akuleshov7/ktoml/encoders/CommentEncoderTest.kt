@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlComments
-import io.kotest.matchers.should
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -25,7 +24,7 @@ class CommentEncoderTest {
             val table: Table = Table()
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 # Comment
                 a = 0 # Comment

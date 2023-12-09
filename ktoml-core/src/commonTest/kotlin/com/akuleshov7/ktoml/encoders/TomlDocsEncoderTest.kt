@@ -5,7 +5,6 @@ import com.akuleshov7.ktoml.TomlIndentation
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
-import io.kotest.matchers.should
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -17,7 +16,6 @@ import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.encodeCollection
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class TomlDocsEncoderTest {
@@ -84,7 +82,7 @@ class TomlDocsEncoderTest {
 
     @Test
     fun readMeTest() {
-        ReadMe() should encodeInto(
+        ReadMe().shouldEncodeInto(
             """
                 title = "TOML Example"
                 
@@ -125,7 +123,7 @@ class TomlDocsEncoderTest {
             val str3: String = "Name\tJos\u00E9\nLoc\tSF."
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 str1 = "I'm a string."
                 str2 = "You can \"quote\" me."
@@ -148,7 +146,7 @@ class TomlDocsEncoderTest {
             val regex: String = """<\i\c*\s*>"""
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 winpath = 'C:\Users\nodejs\templates'
                 winpath2 = '\\ServerX\admin${'$'}\system32\'

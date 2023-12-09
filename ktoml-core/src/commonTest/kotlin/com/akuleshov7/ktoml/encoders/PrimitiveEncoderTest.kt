@@ -2,7 +2,6 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
-import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -27,7 +26,7 @@ class PrimitiveEncoderTest {
             val path: String = """C:\some\path\"""
         )
 
-        File() should encodeInto(
+        File().shouldEncodeInto(
             """
                 enabled = true
                 pi = 3.14
@@ -51,27 +50,27 @@ class PrimitiveEncoderTest {
 
         val tab = '\t'
 
-        File("\"hello world\"") should encodeInto(
+        File("\"hello world\"").shouldEncodeInto(
             """escapeString = "\"hello world\"""""
         )
 
-        File("hello \b\t\n\u000C\r world") should encodeInto(
+        File("hello \b\t\n\u000C\r world").shouldEncodeInto(
             """escapeString = "hello \b$tab\n\f\r world""""
         )
 
-        File("hello \u0000 world") should encodeInto(
+        File("hello \u0000 world").shouldEncodeInto(
             """escapeString = "hello \u0000 world""""
         )
 
-        File("""hello\world""") should encodeInto(
+        File("""hello\world""").shouldEncodeInto(
             """escapeString = "hello\\world""""
         )
 
-        File("""hello \Uffffffff world""") should encodeInto(
+        File("""hello \Uffffffff world""").shouldEncodeInto(
             """escapeString = "hello \Uffffffff world""""
         )
 
-        File(literalEscapeString = "'quotes'") should encodeInto(
+        File(literalEscapeString = "'quotes'").shouldEncodeInto(
             """literalEscapeString = '\'quotes\''"""
         )
     }
@@ -91,7 +90,7 @@ class PrimitiveEncoderTest {
             val a: String
         )
 
-        MultilineLiteralStr("test \n test \n test \'\'\'") should encodeInto(
+        MultilineLiteralStr("test \n test \n test \'\'\'").shouldEncodeInto(
             """
                 |a = '''
                 |test 
@@ -101,7 +100,7 @@ class PrimitiveEncoderTest {
             """.trimMargin()
         )
 
-        MultilineBasicStr("test \n test \n test \'\'\'") should encodeInto(
+        MultilineBasicStr("test \n test \n test \'\'\'").shouldEncodeInto(
             "a = \"\"\"\ntest \n test \n test \'\'\'\n\"\"\""
         )
     }
@@ -113,6 +112,6 @@ class PrimitiveEncoderTest {
             val wholeNumberDouble: Double = 3.0
         )
 
-        File() should encodeInto("wholeNumberDouble = 3.0")
+        File().shouldEncodeInto("wholeNumberDouble = 3.0")
     }
 }

@@ -2,7 +2,6 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlMultiline
-import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
@@ -52,7 +51,7 @@ class MapEncoderTest {
         @Serializable
         data class File(val map: Map<String, String>)
 
-       File(stringMap) should encodeInto(simpleTable)
+       File(stringMap).shouldEncodeInto(simpleTable)
     }
 
     @Test
@@ -63,7 +62,7 @@ class MapEncoderTest {
             val map: Map<String, String>
         )
 
-        File(stringMap) should encodeInto(inlineTable)
+        File(stringMap).shouldEncodeInto(inlineTable)
     }
 
     @Test
@@ -71,7 +70,7 @@ class MapEncoderTest {
         @Serializable
         data class File(val map: Map<Key, String>)
 
-        File(enumMap) should encodeInto(simpleTable)
+        File(enumMap).shouldEncodeInto(simpleTable)
     }
 
     @Test
@@ -82,7 +81,7 @@ class MapEncoderTest {
             val map: Map<Key, String>
         )
 
-        File(enumMap) should encodeInto(inlineTable)
+        File(enumMap).shouldEncodeInto(inlineTable)
     }
 
     @Test
@@ -102,6 +101,6 @@ class MapEncoderTest {
             )
         )
 
-        File() should encodeInto(pairArray)
+        File().shouldEncodeInto(pairArray)
     }
 }

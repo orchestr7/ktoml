@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.encoders
 
-import io.kotest.matchers.should
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -23,7 +22,7 @@ class DateTimeEncoderTest {
 
     @Test
     fun dateTimeTest() {
-        DateTimes() should encodeInto(
+        DateTimes().shouldEncodeInto(
             """
                 instant = 1979-05-27T07:32:00Z
                 instantWithNanos = 1979-05-27T00:32:00.999999Z

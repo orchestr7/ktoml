@@ -5,7 +5,6 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
-import io.kotest.matchers.should
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -65,7 +64,7 @@ class ReadMeExampleTest {
                 5.56
             ),
             GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
-        ) should encodeInto(
+        ).shouldEncodeInto(
             """
                 someBooleanProperty = true
                 gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
