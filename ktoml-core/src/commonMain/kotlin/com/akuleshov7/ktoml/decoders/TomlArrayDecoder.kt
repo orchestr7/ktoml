@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
@@ -29,14 +28,6 @@ public class TomlArrayDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule()
     private lateinit var currentElementDecoder: TomlPrimitiveDecoder
     private lateinit var currentPrimitiveElementOfArray: TomlValue
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(
-        rootNode: TomlKeyValueArray,
-        config: TomlConfig
-    ) : this(rootNode, config.input)
 
     private fun haveStartedReadingElements() = nextElementIndex > 0
 
@@ -90,6 +81,6 @@ public class TomlArrayDecoder(
         super.decodeSerializableValue(deserializer)
     }
 
-    // this should be applied to [currentPrimitiveElementOfArray] and not to the [rootNode], because
+    // this should be applied to [currentPrimitiveElementOfArray] and not to the [rootNode]
     override fun decodeNotNullMark(): Boolean = currentPrimitiveElementOfArray !is TomlNull
 }

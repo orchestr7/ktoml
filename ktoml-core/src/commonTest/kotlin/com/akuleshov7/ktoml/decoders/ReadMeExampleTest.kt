@@ -15,7 +15,8 @@ class ReadMeExampleTest {
         val table1: Table1,
         val table2: Table2,
         @SerialName("gradle-libs-like-property")
-        val kotlinJvm: GradlePlugin
+        val kotlinJvm: GradlePlugin,
+        val myMap: Map<String, String>
     )
 
     @Serializable
@@ -68,6 +69,10 @@ class ReadMeExampleTest {
               # so for 'property1' null value is ok. Use: property1 = null  
               property1 = 100 
               property2 = 6
+              
+            [myMap]
+              a = "b"
+              c = "d"
              
             [table2]
               someNumber = 5
@@ -107,7 +112,8 @@ class ReadMeExampleTest {
                     charFromInteger = '{'
                 ),
 
-                kotlinJvm = GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin"))
+                kotlinJvm = GradlePlugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
+                myMap = mapOf("a" to "b", "c" to "d")
             ),
             decoded
         )

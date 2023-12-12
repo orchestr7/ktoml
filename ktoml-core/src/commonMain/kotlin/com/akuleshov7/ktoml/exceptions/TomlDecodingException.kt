@@ -48,3 +48,4 @@ internal class NullValueException(propertyName: String, lineNo: Int) : TomlDecod
 internal class IllegalTypeException(message: String, lineNo: Int) : TomlDecodingException("Line $lineNo: $message")
 
 internal class MissingRequiredPropertyException(message: String) : TomlDecodingException(message)
+internal class UnsupportedDecoderException(message: String) : TomlDecodingException(message)

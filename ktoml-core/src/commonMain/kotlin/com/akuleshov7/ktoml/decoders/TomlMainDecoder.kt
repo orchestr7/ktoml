@@ -2,12 +2,12 @@
 
 package com.akuleshov7.ktoml.decoders
 
-import TomlMapDecoder
 import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlNull
+
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -164,8 +164,8 @@ public class TomlMainDecoder(
         descriptor: SerialDescriptor
     ) {
         if (currentNode is TomlKeyValue &&
-            currentNode.value is TomlNull &&
-            !descriptor.getElementDescriptor(currentProperty).isNullable
+                currentNode.value is TomlNull &&
+                !descriptor.getElementDescriptor(currentProperty).isNullable
         ) {
             throw NullValueException(
                 descriptor.getElementName(currentProperty),
@@ -182,7 +182,9 @@ public class TomlMainDecoder(
     private fun checkMissingRequiredProperties(children: MutableList<TomlNode>?, descriptor: SerialDescriptor) {
         // the only case when we are not able to check required properties is when our descriptor type is a Map with unnamed properties:
         // in this case we will just ignore this check and will put all values that we have in the table to the map
-        if (descriptor.kind == StructureKind.MAP) return
+        if (descriptor.kind == StructureKind.MAP) {
+            return
+        }
 
         val propertyNames = children?.map {
             it.name
@@ -240,22 +242,20 @@ public class TomlMainDecoder(
             when (nextProcessingNode) {
                 is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
                 is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
-                is TomlTable -> {
-                    when (descriptor.kind) {
-                        // This logic is a special case when user would like to parse key-values from a table to a map.
-                        // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
-                        // if parsing
-                        StructureKind.MAP -> TomlMapDecoder(nextProcessingNode)
+                is TomlTable -> when (descriptor.kind) {
+                    // This logic is a special case when user would like to parse key-values from a table to a map.
+                    // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
+                    // if parsing
+                    StructureKind.MAP -> TomlMapDecoder(nextProcessingNode)
 
-                        else -> {
-                            val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
-                                "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +
-                                        " in a table <${nextProcessingNode.fullTableKey}>"
-                            )
+                    else -> {
+                        val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
+                            "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +
+                                    " in a table <${nextProcessingNode.fullTableKey}>"
+                        )
 
-                            checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
-                            TomlMainDecoder(firstTableChild, config)
-                        }
+                        checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
+                        TomlMainDecoder(firstTableChild, config)
                     }
                 }
 
