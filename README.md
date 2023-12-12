@@ -287,6 +287,10 @@ gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "ko
     property1 = 100
     property2 = 6
 
+[myMap]
+    a = "b"
+    c = "d"
+
 [table2]
     someNumber = 5
 [table2."akuleshov7.com"]
@@ -312,7 +316,8 @@ data class MyClass(
     val table1: Table1,
     val table2: Table2,
     @SerialName("gradle-libs-like-property")
-    val kotlinJvm: GradlePlugin
+    val kotlinJvm: GradlePlugin,
+    val myMap: Map<String, String>
 )
 
 @Serializable
