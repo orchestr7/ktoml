@@ -14,7 +14,10 @@ import kotlinx.serialization.serializer
 /**
  * TomlFile class can be used for reading files in TOML format
  * that is used to serialize/deserialize TOML file or string
- * @property serializersModule
+ *
+ * @param serializersModule
+ * @param inputConfig
+ * @param outputConfig
  */
 public open class TomlFileReader public constructor(
     inputConfig: TomlInputConfig = TomlInputConfig(),

@@ -8,7 +8,7 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
- * @property rootNode
+ * @param rootNode
  */
 @ExperimentalSerializationApi
 public class TomlPrimitiveDecoder(

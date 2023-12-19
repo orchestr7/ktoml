@@ -18,9 +18,9 @@ import kotlinx.serialization.modules.SerializersModule
  *
  * @param elementIndex The current element index.
  * @param attributes The current attributes.
- * @param inputConfig The input config, used for constructing nodes.
  * @param outputConfig The output config.
- * @property rootNode The root node to add elements to.
+ * @param rootNode The root node to add elements to.
+ * @param serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlMainEncoder(

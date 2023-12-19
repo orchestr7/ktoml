@@ -9,6 +9,9 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * class for parsing and storing simple single value types in AST
+ *
+ * @param comments
+ * @param inlineComment
  * @property lineNo
  * @property key
  * @property value

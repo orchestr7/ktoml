@@ -6,6 +6,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.akuleshov7.buildutils.publishing-configuration")
+    id("com.saveourtool.diktat")
 }
 
 kotlin {

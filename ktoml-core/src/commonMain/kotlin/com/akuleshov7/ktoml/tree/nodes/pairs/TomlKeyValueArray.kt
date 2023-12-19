@@ -10,6 +10,9 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class for parsing and storing Array of Tables in AST.
+ *
+ * @param comments
+ * @param inlineComment
  * @property lineNo
  * @property key
  * @property value

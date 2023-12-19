@@ -14,9 +14,9 @@ import kotlinx.serialization.modules.SerializersModule
  * Sometimes, when you do not know the names of the TOML keys and cannot create a proper class with field names for parsing,
  * it can be useful to read and parse TOML tables to a map. This is exactly what this TomlMapDecoder is used for.
  *
- * @property rootNode toml table that we are trying to decode
- * @property decodingElementIndex for iterating over the TOML table we are currently reading
- * @property kotlinxIndex for iteration inside the kotlinX loop: [decodeElementIndex -> decodeSerializableElement]
+ * @param rootNode toml table that we are trying to decode
+ * @param decodingElementIndex for iterating over the TOML table we are currently reading
+ * @param kotlinxIndex for iteration inside the kotlinX loop: [decodeElementIndex -> decodeSerializableElement]
  */
 @ExperimentalSerializationApi
 public class TomlMapDecoder(

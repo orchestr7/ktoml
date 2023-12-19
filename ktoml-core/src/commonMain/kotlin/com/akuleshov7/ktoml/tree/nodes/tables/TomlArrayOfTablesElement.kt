@@ -9,6 +9,10 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * This class is used to store elements of array of tables (bucket for key-value records)
+ *
+ * @param lineNo
+ * @param comments
+ * @param inlineComment
  */
 public class TomlArrayOfTablesElement(
     lineNo: Int,

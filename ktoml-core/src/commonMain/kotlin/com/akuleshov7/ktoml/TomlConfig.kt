@@ -2,6 +2,11 @@
 
 package com.akuleshov7.ktoml
 
+/**
+ * @param ignoreUnknownNames
+ * @param emptyValuesAllowed
+ * @param escapedQuotesInLiteralStringsAllowed
+ */
 @Deprecated(
     message = "Class name changed for convention.",
     replaceWith = ReplaceWith("TomlConfig", "com.akuleshov7.ktoml.TomlConfig")

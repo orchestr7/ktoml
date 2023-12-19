@@ -4,6 +4,9 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 
 /**
  * A [TomlEmitter] implementation that writes to a [StringBuilder].
+ *
+ * @param stringBuilder
+ * @param config
  */
 internal class TomlStringEmitter(
     private val stringBuilder: StringBuilder,

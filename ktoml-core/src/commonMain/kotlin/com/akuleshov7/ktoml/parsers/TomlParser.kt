@@ -8,7 +8,7 @@ import com.akuleshov7.ktoml.utils.newLineChar
 import kotlin.jvm.JvmInline
 
 /**
- * @property config - object that stores configuration options for a parser
+ * @param config - object that stores configuration options for a parser
  */
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")

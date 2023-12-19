@@ -11,6 +11,10 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Class for parsing and representing of inline tables: inline = { a = 5, b = 6 , c = 7 }
+ *
+ * @param lineNo
+ * @param comments
+ * @param inlineComment
  * @property tomlKeyValues The key-value pairs in the inline table
  * @property key
  */

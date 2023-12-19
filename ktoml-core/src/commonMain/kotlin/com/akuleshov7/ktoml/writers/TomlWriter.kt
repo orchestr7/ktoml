@@ -7,7 +7,7 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import kotlin.jvm.JvmInline
 
 /**
- * @property config - object that stores configuration options for a writer
+ * @param config - object that stores configuration options for a writer
  */
 @JvmInline
 public value class TomlWriter(private val config: TomlOutputConfig) {

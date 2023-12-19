@@ -9,6 +9,9 @@ import okio.Closeable
 
 /**
  * A [TomlEmitter] implementation that writes to a [BufferedSink].
+ *
+ * @param sink
+ * @param config
  */
 internal class TomlSinkEmitter(
     private val sink: BufferedSink,
