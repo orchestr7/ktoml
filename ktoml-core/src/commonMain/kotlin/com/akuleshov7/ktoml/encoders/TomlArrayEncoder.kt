@@ -16,6 +16,13 @@ import kotlinx.serialization.modules.SerializersModule
 
 /**
  * Encodes a TOML array or table array.
+ *
+ * @param rootNode
+ * @param parent
+ * @param elementIndex
+ * @param attributes
+ * @param outputConfig
+ * @param serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlArrayEncoder internal constructor(

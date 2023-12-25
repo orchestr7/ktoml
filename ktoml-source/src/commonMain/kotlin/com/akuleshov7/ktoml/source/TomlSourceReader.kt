@@ -15,6 +15,9 @@ import kotlinx.serialization.serializer
 
 /**
  * This class can be used for reading [Source] in TOML format
+ *
+ * @param inputConfig
+ * @param outputConfig
  * @property serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)

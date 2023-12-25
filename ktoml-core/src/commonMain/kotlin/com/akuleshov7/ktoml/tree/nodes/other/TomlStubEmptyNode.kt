@@ -9,6 +9,8 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * According the spec: "Empty tables are allowed and simply have no key/value pairs within them."
  *
  * Instances of this stub will be added as children to such parsed tables
+ *
+ * @param lineNo
  */
 public class TomlStubEmptyNode(lineNo: Int) : TomlNode(
     lineNo,

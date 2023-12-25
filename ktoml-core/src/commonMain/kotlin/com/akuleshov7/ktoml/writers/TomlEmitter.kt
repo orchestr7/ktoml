@@ -13,6 +13,8 @@ import kotlinx.datetime.LocalTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
+ *
+ * @param config
  */
 public abstract class TomlEmitter(config: TomlOutputConfig) {
     private val indentation = config.indentation.value

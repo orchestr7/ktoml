@@ -14,8 +14,8 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
- * @property rootNode
- * @property config
+ * @param rootNode
+ * @param config
  */
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")

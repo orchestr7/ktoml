@@ -20,6 +20,13 @@ import kotlinx.serialization.modules.SerializersModule
 
 /**
  * Encodes a TOML inline table.
+ *
+ * @param rootNode
+ * @param parent
+ * @param elementIndex
+ * @param attributes
+ * @param outputConfig
+ * @param serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
 public class TomlInlineTableEncoder internal constructor(

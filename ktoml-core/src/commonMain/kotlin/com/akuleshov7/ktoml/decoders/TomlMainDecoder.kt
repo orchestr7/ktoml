@@ -22,8 +22,9 @@ import kotlinx.serialization.modules.SerializersModule
  * Main entry point into the decoding process. It can create less common decoders inside, for example:
  * TomlListDecoder, TomlPrimitiveDecoder, etc.
  *
- * @property rootNode
- * @property config
+ * @param rootNode
+ * @param config
+ * @param elementIndex
  */
 @ExperimentalSerializationApi
 public class TomlMainDecoder(

@@ -17,6 +17,9 @@ import kotlin.jvm.JvmStatic
 
 /**
  * Class to represent all types of tables: primitive/arrays/etc.
+ *
+ * @param comments
+ * @param inlineComment
  * @property fullTableKey
  * @property lineNo - line number
  * @property type The table type
