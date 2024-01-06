@@ -3,7 +3,6 @@ package com.akuleshov7.ktoml.decoders
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
-import com.akuleshov7.ktoml.exceptions.TomlDecodingException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlStubEmptyNode
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
@@ -23,6 +22,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @param rootNode toml table that we are trying to decode
  * @param decodingElementIndex for iterating over the TOML table we are currently reading
  * @param kotlinxIndex for iteration inside the kotlinX loop: [decodeElementIndex -> decodeSerializableElement]
+ * @param config TomlInput config
  */
 @ExperimentalSerializationApi
 public class TomlMapDecoder(
@@ -65,17 +65,13 @@ public class TomlMapDecoder(
         return when (val processedNode = rootNode.children[decodingElementIndex]) {
             // simple decoding for key-value type
             is TomlKeyValue -> ((if (index % 2 == 0) processedNode.key.toString() else processedNode.value.content)) as T
-            is TomlTable -> {
-                if (index % 2 == 0) {
-                    processedNode.name as T
-                } else {
-                    TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
-                }
+            is TomlTable -> if (index % 2 == 0) {
+                processedNode.name as T
+            } else {
+                TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
             }
-            else -> {
-                throw InternalDecodingException("Trying to decode ${processedNode.prettyStr()} with TomlMapDecoder, " +
-                        "but faced an unknown type of Node")
-            }
+            else -> throw InternalDecodingException("Trying to decode ${processedNode.prettyStr()} with TomlMapDecoder, " +
+                    "but faced an unknown type of Node")
         }
     }
 
@@ -88,8 +84,7 @@ public class TomlMapDecoder(
                   a = 2
                   
             should be decoded to Map<String, Map<String, Long>>, but not to Map<String, Long>
-            """
-            , rootNode.lineNo)
+            """, rootNode.lineNo)
     }
 
     /**
