@@ -209,8 +209,8 @@ public class TomlMainDecoder(
     /**
      * A hack that comes from a compiler plugin to process Inline (value) classes
      */
-    override fun decodeInline(inlineDescriptor: SerialDescriptor): Decoder =
-        iterateOverTomlStructure(inlineDescriptor, true)
+    override fun decodeInline(descriptor: SerialDescriptor): Decoder =
+        iterateOverTomlStructure(descriptor, true)
 
     /**
      * this method does all the iteration logic for processing code structures and collections
@@ -247,7 +247,7 @@ public class TomlMainDecoder(
                     // This logic is a special case when user would like to parse key-values from a table to a map.
                     // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
                     // if parsing
-                    StructureKind.MAP -> TomlMapDecoder(nextProcessingNode)
+                    StructureKind.MAP -> TomlMapDecoder(nextProcessingNode, config)
 
                     else -> {
                         val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(

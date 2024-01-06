@@ -1,7 +1,8 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.exceptions.UnsupportedDecoderException
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
+import com.akuleshov7.ktoml.tree.nodes.TomlStubEmptyNode
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -21,6 +22,7 @@ import kotlinx.serialization.modules.SerializersModule
 @ExperimentalSerializationApi
 public class TomlMapDecoder(
     private val rootNode: TomlTable,
+    private val config: TomlInputConfig,
     private var decodingElementIndex: Int = 0,
     private var kotlinxIndex: Int = 0,
 ) : TomlAbstractDecoder() {
@@ -31,9 +33,13 @@ public class TomlMapDecoder(
         // for [map]
         // a = 1
         // b = 2
-        // kotlinxIndex will be 0, 1, 2 ,3
+        // kotlinxIndex will be (0, 1), (2 ,3)
         // and decodingElementIndex will be 0, 1 (as there are only two elements in the table: 'a' and 'b')
-        decodingElementIndex = kotlinxIndex / 2
+        if (rootNode.children[decodingElementIndex] is TomlStubEmptyNode) {
+            skipStubs()
+        } else {
+            decodingElementIndex = kotlinxIndex / 2
+        }
 
         if (decodingElementIndex == rootNode.children.size) {
             return CompositeDecoder.DECODE_DONE
@@ -48,24 +54,30 @@ public class TomlMapDecoder(
         deserializer: DeserializationStrategy<T>,
         previousValue: T?
     ): T {
-        val returnValue = when (val processedNode = rootNode.children[decodingElementIndex]) {
-            // simple decoding for key-value type
-            is TomlKeyValue -> processedNode
-            else -> throw UnsupportedDecoderException(
-                """ Attempting to decode <$rootNode>; however, custom Map decoders do not currently support nested structures.
-                Decoding is limited to plain structures only: 
-                [map]
-                    a = 1 
-                    b = 2
-                    c = "3"
-            """
-            )
-        }
+        skipStubs()
 
-        return ((if (index % 2 == 0) returnValue.key.toString() else returnValue.value.content)) as T
+        return when (val processedNode = rootNode.children[decodingElementIndex]) {
+            // simple decoding for key-value type
+            is TomlKeyValue -> ((if (index % 2 == 0) processedNode.key.toString() else processedNode.value.content)) as T
+            is TomlTable -> {
+                if (index % 2 == 0) processedNode.name as T else {
+                    val newDecoder = TomlMapDecoder(processedNode, config)
+                    newDecoder.decodeSerializableValue(deserializer)
+                }
+            }
+            else -> {
+                throw Exception()
+            }
+        }
     }
 
     override fun decodeKeyValue(): TomlKeyValue {
         TODO("No need to implement decodeKeyValue for TomlMapDecoder as it is not needed for such primitive decoders")
+    }
+
+    private fun skipStubs() {
+        if (rootNode.children[decodingElementIndex] is TomlStubEmptyNode) {
+            ++decodingElementIndex
+        }
     }
 }
