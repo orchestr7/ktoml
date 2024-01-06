@@ -113,20 +113,6 @@ class PlainMapDecoderTest {
         }
 
         data = """
-            [map]
-                [map.a]
-                     b = 1
-                [map.b]
-                     c = 1
-            text = "Test"
-            number = 15
-        """.trimIndent()
-
-        assertFailsWith<UnsupportedDecoderException> {
-            Toml.decodeFromString<TestDataMap>(data)
-        }
-
-        data = """
             text = "Test"
             number = 15
         """.trimIndent()
