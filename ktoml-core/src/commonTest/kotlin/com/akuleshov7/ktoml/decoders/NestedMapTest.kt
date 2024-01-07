@@ -67,4 +67,25 @@ class NestedMapTest {
         val result = Toml.decodeFromString<NestedTable>(data)
         assertEquals(NestedTable(outer = mapOf("inner1" to mapOf("a" to 5, "b" to 5), "inner2" to mapOf("c" to 7, "d" to 12))), result)
     }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun nestedMapFromReadme() {
+        @Serializable
+        data class MyClass(
+            val a: Map<String, Map<String, String>>
+        )
+
+        val data = """
+            [a]
+                b = 42
+                c = "String"
+                [a.innerTable]
+                    d = 5
+                [a.otherInnerTable]
+                    d = "String"
+        """.trimIndent()
+
+        println(Toml.decodeFromString<MyClass>(data))
+    }
 }

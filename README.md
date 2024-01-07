@@ -42,13 +42,12 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 1.8.21
+:globe_with_meridians: ktoml supports Kotlin 1.9.22
 
 ## Current limitations
-:heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc.
-You can check types that are supported in TOML [here](https://toml.io/en/v1.0.0#string).
-We will support all Kotlin primitive types in the future with the non-strict configuration of ktoml, but now
-only String, Long, Double and Boolean are supported from the list of Kotlin primitives.
+:heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc. 
+You can check types that are supported in TOML standard [here](https://toml.io/en/v1.0.0#string).
+However, in Ktoml, our goal is to comprehensively support all primitive types offered by Kotlin.
 
 **General** \
 We are still developing and testing this library, so it has several limitations: \
@@ -73,6 +72,7 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Local Time (to `LocalTime` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Multiline Strings \
 :white_check_mark: Arrays (including multiline arrays) \
+:white_check_mark: Maps (for anonymous key-value pairs) \
 :x: Arrays: nested; of Different Types \
 :x: Nested Inline Tables \
 :x: Array of Tables \
@@ -263,11 +263,6 @@ Toml(
     tomlString
 )
 ```
-
-## Exceptions
-Ktoml will produce different exceptions in case of the invalid input. Please note, that some of strict checks can be enabled or disabled (please see
-`Configuration` section of this readme). We intentionally made only two parental sealed exceptions public:
-`TomlDecodingException` and `TomlEncodingException` - you can catch them in your code. All other exceptions inherit one of these two and will not be public.
 
 ## How ktoml works: examples
 :heavy_exclamation_mark: You can check how below examples work in [decoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt) and [encoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/encoders/ReadMeExampleTest.kt).
@@ -498,4 +493,41 @@ with the following code:
 ```kotlin
 Toml.encodeToString<MyClass>(/* your encoded object */)
 ```
+</details>
+
+## Q&A
+
+<details>
+<summary>I want to catch ktoml-specific exceptions in my code, how can I do it?</summary>
+
+Ktoml may generate various exceptions when encountering invalid input. It's important to note that certain strict checks can be enabled or disabled (refer to the `Configuration` section in this readme). We have intentionally exposed only two top-level exceptions, namely `TomlDecodingException` and `TomlEncodingException`, for public use. You can catch these exceptions in your code, as all other exceptions inherit from one of these two and will not be publicly accessible.
+</details>
+
+<details>
+<summary>What if I do not know the names for keys and tables in my TOML, and therefore cannot specify a strict schema for decoding? Can I still decode it somehow?</summary>
+
+Certainly. In such cases, you can decode all your key-values into a `Map`. However, it's important to be aware that both ktoml and kotlinx will be unable to enforce type control in this scenario. Therefore, you should not expect any "type safety." For instance, even when dealing with a mixture of types like Int, Map, String, etc., such as:
+
+```toml
+[a]
+    b = 42
+    c = "String"
+    [a.innerTable]
+        d = 5
+    [a.otherInnerTable]
+        d = "String"
+```
+
+You can still decode it using `Toml.decodeFromString<MyClass>(data)` where:
+
+```kotlin
+// MyClass(a={b=42, c=String, innerTable={d=5}, otherInnerTable={d=String}})
+@Serializable
+data class MyClass(
+    val a: Map<String, Map<String, String>>
+)
+```
+
+
+However, be aware that this may lead to unintended side effects. Our recommendation is to decode only key-values of the **same** type for a more predictable outcome.
 </details>
