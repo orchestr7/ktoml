@@ -201,14 +201,14 @@ val resultFromList = TomlFileReader.partiallyDecodeFromSource<MyClass>(serialize
 
 ```kotlin
 // add extensions from 'kotlinx' lib to your project:
-import kotlinx.serialization.encodeFromString
+import kotlinx.serialization.encodeToString
 // add com.akuleshov7:ktoml-core to your project:
 import com.akuleshov7.ktoml.Toml
 
 @Serializable
 data class MyClass(/* your fields */)
 
-val toml = Toml.decodeFromString(MyClass(/* ... */))
+val toml = Toml.encodeToString(MyClass(/* ... */))
 ```
 </details>
 
