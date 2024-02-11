@@ -26,8 +26,11 @@ kotlin {
     linuxX64()
     macosX64()
     macosArm64()
-    ios()
+    iosX64()
+    iosArm64()
     iosSimulatorArm64()
+
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         all {
