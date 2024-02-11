@@ -76,17 +76,6 @@ kotlin {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = "com.akuleshov7"
-            artifactId = "ktoml-core"
-            version = version
-            from(components["kotlin"])
-        }
-    }
-}
-
 configureSigning()
 
 tasks.withType<KotlinJvmTest> {

@@ -6,13 +6,20 @@ on:
     branches:
       - 'main'
 
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gradle.welcome=never
+  PGP_SEC: ${{ secrets.PGP_SEC }}
+  PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
+  SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+
 jobs:
   build_and_test_with_code_coverage:
     name: Build and test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ macos-latest ]
 
     steps:
       # actions/checkout v1.* is needed for correct codecov upload, see https://github.com/actions/checkout/issues/237 for details
@@ -56,3 +63,14 @@ jobs:
         with:
           flags: unittests
           fail_ci_if_error: true # optional (default = false)
+      - name: 'Publish a snapshot'
+        id: publish
+        if: ${{ github.event_name == 'push' && github.ref_type == 'branch' && github.ref == 'refs/heads/main' }}
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: wrapper
+          arguments: |
+            publish
+            -Preckon.stage=snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
