@@ -126,4 +126,17 @@ class PrimitiveEncoderTest {
             expectedToml = "wholeNumberDouble = 3.0"
         )
     }
+
+    @Test
+    fun charRegression() {
+        @Serializable
+        data class File(
+            val charVal: Char = 'W'
+        )
+
+        assertEncodedEquals(
+            value = File(),
+            expectedToml = "charVal = \'W\'"
+        )
+    }
 }

@@ -152,7 +152,14 @@ public abstract class TomlAbstractEncoder protected constructor(
     override fun encodeShort(value: Short): Unit = encodeLong(value.toLong())
     override fun encodeInt(value: Int): Unit = encodeLong(value.toLong())
     override fun encodeFloat(value: Float): Unit = encodeDouble(value.toDouble())
-    override fun encodeChar(value: Char): Unit = encodeString(value.toString())
+
+    /**
+     * https://github.com/akuleshov7/ktoml/issues/260
+     * As per the TOML specification, there is no predefined Char type.
+     * However, we've introduced the concept in our TOML implementation to align more closely with Kotlin's syntax.
+     * So we are expecting Chars to have single quote on the decoding. So encoding should be done in a similar way.
+     */
+    override fun encodeChar(value: Char): Unit = appendValue(TomlLiteralString(value.toString()))
 
     // Structure
 
