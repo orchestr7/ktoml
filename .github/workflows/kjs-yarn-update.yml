@@ -25,7 +25,7 @@ jobs:
           # Checkout source branch directly, without merging base into it
           ref: ${{ github.event.push.ref }}
       - name: Generate yarn.lock
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
           arguments: |
