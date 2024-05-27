@@ -29,6 +29,7 @@ kotlin {
 
     mingwX64()
     linuxX64()
+    linuxArm64()
     macosX64()
     macosArm64()
     iosX64()
@@ -45,7 +46,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
             }
         }
