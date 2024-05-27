@@ -1,5 +1,4 @@
 import com.akuleshov7.buildutils.configureSigning
-
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
 plugins {
@@ -24,6 +23,7 @@ kotlin {
 
     mingwX64()
     linuxX64()
+    linuxArm64()
     macosX64()
     macosArm64()
     iosX64()
