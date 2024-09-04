@@ -26,11 +26,11 @@ jobs:
       - uses: actions/checkout@v4
       # ensure that gradle wrapper files in repository are valid by checking checksums
       - uses: gradle/wrapper-validation-action@v2
-      - name: Set up JDK 8
+      - name: Set up JDK 22
         uses: actions/setup-java@v4
         with:
-          java-version: 8
-          distribution: zulu
+          distribution: 'temurin'
+          java-version: 22
       - name: Cache konan
         uses: actions/cache@v4
         with:
