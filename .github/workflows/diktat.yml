@@ -7,7 +7,7 @@ on:
 
 jobs:
   diktat_check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       GRADLE_OPTS: -Dorg.gradle.daemon=false
 

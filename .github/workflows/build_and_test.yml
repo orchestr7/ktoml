@@ -39,7 +39,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-konan
       - name: Gradle build with remote cache
-        uses: burrunan/gradle-cache-action@v1
+        uses: burrunan/gradle-cache-action@v2
         with:
           arguments: |
             build
