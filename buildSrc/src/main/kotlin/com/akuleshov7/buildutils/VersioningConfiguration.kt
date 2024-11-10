@@ -23,13 +23,14 @@ fun Project.configureVersioning() {
 
     val isSnapshot = hasProperty("reckon.stage") && property("reckon.stage") == "snapshot"
     configure<ReckonExtension> {
-        scopeFromProp()
+        setDefaultInferredScope("patch")
         if (isSnapshot) {
-            // we should build snapshots only for snapshot publishing, so it requires explicit parameter
-            snapshotFromProp()
+            snapshots()
         } else {
-            stageFromProp("alpha", "rc", "final")
+            stages("alpha", "rc", "final")
         }
+        setScopeCalc(calcScopeFromProp().or(calcScopeFromCommitMessages()))
+        setStageCalc(calcStageFromProp())
     }
 
     // to activate release, provide `-Prelease` or `-Prelease=true`. To deactivate, either omit the property, or set `-Prelease=false`.
@@ -43,18 +44,5 @@ fun Project.configureVersioning() {
                         "Untracked files: ${status.untracked}, uncommitted changes: ${status.uncommittedChanges}"
             )
         }
-    }
-    if (isSnapshot) {
-        val grgit = project.findProperty("grgit") as Grgit  // grgit property is added by reckon plugin
-        // A terrible hack to remove all pre-release tags. Because in semver `0.1.0-SNAPSHOT` < `0.1.0-alpha`, in snapshot mode
-        // we remove tags like `0.1.0-alpha`, and then reckoned version will still be `0.1.0-SNAPSHOT` and it will be compliant.
-        val preReleaseTagNames = grgit.tag.list()
-            .sortedByDescending { it.commit.dateTime }
-            .takeWhile {
-                // take latest tags that are pre-release
-                !it.name.matches(Regex("""^v\d+\.\d+\.\d+$"""))
-            }
-            .map { it.name }
-        grgit.tag.remove { this.names = preReleaseTagNames }
     }
 }
