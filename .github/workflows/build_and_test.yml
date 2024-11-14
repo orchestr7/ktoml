@@ -39,7 +39,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-konan
       - name: Gradle build with remote cache
-        uses: burrunan/gradle-cache-action@v1
+        uses: burrunan/gradle-cache-action@v2
         with:
           arguments: |
             build
@@ -59,7 +59,7 @@ jobs:
       - name: Code coverage report
         #if: ${{ runner.os == 'Linux' }}
         if: ${{ false }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           flags: unittests
           fail_ci_if_error: true # optional (default = false)
