@@ -7,7 +7,7 @@ on:
 
 jobs:
   detekt_check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       GRADLE_OPTS: -Dorg.gradle.daemon=false
 
@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Gradle build with remote cache
-        uses: burrunan/gradle-cache-action@v1
+        uses: burrunan/gradle-cache-action@v2
         with:
           arguments: detektAll
           properties: |
