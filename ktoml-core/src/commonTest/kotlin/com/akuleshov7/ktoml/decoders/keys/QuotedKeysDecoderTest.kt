@@ -43,8 +43,9 @@ class QuotedKeysDecoderTest {
         val toml2 = """
             'qwe=123' = 'bar'
         """.trimIndent()
+        val expected = EqualSignClass("bar")
 
-        assertEquals(EqualSignClass("bar"), Toml.decodeFromString(toml1))
-        assertEquals(EqualSignClass("bar"), Toml.decodeFromString(toml2))
+        assertEquals(expected, Toml.decodeFromString(toml1))
+        assertEquals(expected, Toml.decodeFromString(toml2))
     }
 }
