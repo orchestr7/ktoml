@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
 import com.akuleshov7.ktoml.parsers.trimQuotes
+import com.akuleshov7.ktoml.parsers.trimSingleQuotes
 import com.akuleshov7.ktoml.writers.TomlEmitter
 import com.akuleshov7.ktoml.writers.TomlStringEmitter
 
@@ -49,7 +50,10 @@ public class TomlKey internal constructor(
      * Gets the last key part, with all whitespace and quotes trimmed, i.e. `c` in
      * `a.b.' c '`
      */
-    public fun last(): String = keyParts.last().trimQuotes().trim()
+    public fun last(): String = keyParts.last()
+        .trimQuotes()
+        .trimSingleQuotes()
+        .trim()
 
     @Deprecated(
         message = "TomlConfig is deprecated. Will be removed in next releases.",
