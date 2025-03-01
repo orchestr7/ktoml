@@ -1,17 +1,20 @@
 package com.akuleshov7.ktoml
 
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
+import com.akuleshov7.ktoml.decoders.TomlMapDecoder
 import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
+
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -44,7 +47,7 @@ public open class Toml(
      */
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parsedToml = tomlParser.parseString(string)
-        return TomlMainDecoder.decode(deserializer, parsedToml, inputConfig)
+        return decode(deserializer, parsedToml)
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
@@ -90,7 +93,7 @@ public open class Toml(
         config: TomlInputConfig = this.inputConfig
     ): T {
         val parsedToml = tomlParser.parseStringsToTomlTree(toml, config)
-        return TomlMainDecoder.decode(deserializer, parsedToml, this.inputConfig)
+        return decode(deserializer, parsedToml)
     }
 
     /**
@@ -169,6 +172,13 @@ public open class Toml(
         )
         return TomlMainDecoder.decode(deserializer, fakeFileNode, this.inputConfig)
     }
+
+    private fun <T> decode(deserializer: DeserializationStrategy<T>, parsedToml: TomlFile): T =
+        if (deserializer.descriptor.kind == StructureKind.MAP) {
+            TomlMapDecoder.decode(deserializer, parsedToml, inputConfig)
+        } else {
+            TomlMainDecoder.decode(deserializer, parsedToml, inputConfig)
+        }
 
     // ================== other ===============
     @Suppress("TYPE_ALIAS")
