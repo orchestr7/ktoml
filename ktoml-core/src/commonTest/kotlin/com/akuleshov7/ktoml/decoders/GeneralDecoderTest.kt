@@ -435,4 +435,16 @@ class GeneralDecoderTest {
             , Toml.decodeFromString(test)
         )
     }
+
+    @Test
+    fun shouldFailOnIgnoreDefaultValue() {
+        @Serializable
+        data class SimpleClass(val a: Int = 1)
+
+        assertFailsWith<MissingRequiredPropertyException> {
+            Toml(
+                TomlInputConfig(ignoreDefaultValues = true)
+            ).decodeFromString<SimpleClass>("")
+        }
+    }
 }
