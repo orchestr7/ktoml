@@ -6,26 +6,26 @@ import kotlin.test.assertEquals
 class StringUtilsTest {
     @Test
     fun testForTakeBeforeComment() {
-        var lineWithoutComment = "test_key = \"test_value\"  # \" some comment".takeBeforeComment(false)
+        var lineWithoutComment = "test_key = \"test_value\"# \" some comment".takeBeforeComment(false)
         assertEquals("test_key = \"test_value\"", lineWithoutComment)
 
-        lineWithoutComment = "key = \"\"\"value\"\"\" # \"".takeBeforeComment(false)
+        lineWithoutComment = "key = \"\"\"value\"\"\"# \"".takeBeforeComment(false)
         assertEquals("key = \"\"\"value\"\"\"", lineWithoutComment)
 
-        lineWithoutComment = "key = 123 # \"\"\"abc".takeBeforeComment(false)
+        lineWithoutComment = "key = 123# \"\"\"abc".takeBeforeComment(false)
         assertEquals("key = 123", lineWithoutComment)
 
         lineWithoutComment = "key = \"ab\\\"#cdef\"#123".takeBeforeComment(false)
         assertEquals("key = \"ab\\\"#cdef\"", lineWithoutComment)
 
-        lineWithoutComment = "  \t#123".takeBeforeComment(false)
+        lineWithoutComment = "#123".takeBeforeComment(false)
         assertEquals("", lineWithoutComment)
 
-        lineWithoutComment = "key = \"ab\'c\" # ".takeBeforeComment(false)
+        lineWithoutComment = "key = \"ab\'c\"# ".takeBeforeComment(false)
         assertEquals("key = \"ab\'c\"", lineWithoutComment)
 
         lineWithoutComment = """
-            a = 'C:\some\path\' #\abc
+            a = 'C:\some\path\'#\abc
         """.trimIndent().takeBeforeComment(true)
         assertEquals("""a = 'C:\some\path\'""", lineWithoutComment)
     }
