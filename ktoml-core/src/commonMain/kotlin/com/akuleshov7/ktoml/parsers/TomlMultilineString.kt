@@ -114,9 +114,6 @@ internal class TomlMultilineString(
      * @return true if string is a last line of multiline value declaration
      */
     private fun isEndOfMultilineValue(multilineType: MultilineType): Boolean {
-        if (multilineType == MultilineType.NOT_A_MULTILINE) {
-            throw ParseException("Internal parse exception", startLineNo)
-        }
         isNested ?: run {
             isNested = hasTwoConsecutiveSymbolsIgnoreWhitespaces(getLine(), multilineType.openSymbols[0])
         }
