@@ -50,7 +50,7 @@ class SetLineNoTest {
                  |      3
                  |
                  |''')[line:13]
-                 |                 - TomlKeyValueArray (mla=[ "a", "b", "c" ])[line:18]
+                 |                 - TomlKeyValueArray (mla=[ "a", "b", "c" ])[line:19]
                  |
             """.trimMargin(),
             parsedToml.prettyStr(true)
