@@ -2,15 +2,12 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
-import com.akuleshov7.ktoml.exceptions.ParseException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.test.Ignore
+import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 @Serializable
 data class SimpleArray(val a: List<Long>)
@@ -23,6 +20,9 @@ data class SimpleStringArray(val a: List<String>)
 
 @Serializable
 data class NestedArray(val a: List<List<Long>>)
+
+@Serializable
+data class NestedArrayOfStrings(val a: List<List<String>>)
 
 @Serializable
 data class ArrayInInlineTable(val table: InlineTable)
@@ -161,11 +161,17 @@ class SimpleArrayDecoderTest {
     }
 
     @Test
-    @Ignore
     fun testNestedArrayDecoder() {
-        // FixMe: nested array decoding causes issues and is not supported yet
         val test = "a = [[1, 2],      [3,  4]]"
-        assertEquals(NestedArray(listOf(listOf(1, 2), listOf(3, 4))), Toml.decodeFromString(test))
+        assertEquals(
+            NestedArray(
+                listOf(
+                    listOf(1, 2),
+                    listOf(3, 4)
+                )
+            ),
+            Toml.decodeFromString(test)
+        )
     }
 
     @Test

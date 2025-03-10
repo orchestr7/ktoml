@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlNull
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
 import kotlinx.serialization.DeserializationStrategy
@@ -26,7 +27,7 @@ public class TomlArrayDecoder(
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
     override val serializersModule: SerializersModule = EmptySerializersModule()
-    private lateinit var currentElementDecoder: TomlPrimitiveDecoder
+    private lateinit var currentElementDecoder: TomlAbstractDecoder
     private lateinit var currentPrimitiveElementOfArray: TomlValue
 
     private fun haveStartedReadingElements() = nextElementIndex > 0
@@ -40,16 +41,29 @@ public class TomlArrayDecoder(
 
         currentPrimitiveElementOfArray = list[nextElementIndex]
 
-        currentElementDecoder = TomlPrimitiveDecoder(
-            // a small hack that creates a PrimitiveKeyValue node that is used in the decoder
-            TomlKeyValuePrimitive(
-                rootNode.key,
-                currentPrimitiveElementOfArray,
-                rootNode.lineNo,
-                comments = emptyList(),
-                inlineComment = "",
+        currentElementDecoder = if (currentPrimitiveElementOfArray is TomlArray) {
+            TomlArrayDecoder(
+                TomlKeyValueArray(
+                    rootNode.key,
+                    currentPrimitiveElementOfArray,
+                    rootNode.lineNo,
+                    comments = emptyList(),
+                    inlineComment = "",
+                ),
+                config
             )
-        )
+        } else {
+            TomlPrimitiveDecoder(
+                // a small hack that creates a PrimitiveKeyValue node that is used in the decoder
+                TomlKeyValuePrimitive(
+                    rootNode.key,
+                    currentPrimitiveElementOfArray,
+                    rootNode.lineNo,
+                    comments = emptyList(),
+                    inlineComment = "",
+                )
+            )
+        }
         return nextElementIndex++
     }
 
