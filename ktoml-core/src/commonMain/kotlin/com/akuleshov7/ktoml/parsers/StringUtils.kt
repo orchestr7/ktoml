@@ -143,16 +143,16 @@ internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
  * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
  * @return The text before a comment, i.e.
  * ```kotlin
- * "a = 0 # Comment".takeBeforeComment() == "a = 0"
+ * "a = 0 # Comment".takeBeforeComment() == "a = 0 "
  * ```
  */
 internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
     val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
 
     return if (commentStartIndex == -1) {
-        this.trim()
+        this
     } else {
-        this.substring(0, commentStartIndex).trim()
+        this.substring(0, commentStartIndex)
     }
 }
 

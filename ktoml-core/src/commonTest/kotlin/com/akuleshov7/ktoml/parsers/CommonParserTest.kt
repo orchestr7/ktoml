@@ -17,10 +17,10 @@ class CommonParserTest {
         (TomlArray("[[\"a\", [\"b\"]], \"c\", \"d\"]", 0, TomlInputConfig()).content as List<Any>).forEach {
             when (it) {
                 is TomlBasicString -> highLevelValues++
-                is List<*> -> it.forEach {
+                is TomlArray -> (it.content as List<Any>).forEach {
                     when (it) {
                         is TomlBasicString -> midLevelValues++
-                        is List<*> -> it.forEach { _ ->
+                        is TomlArray -> (it.content as List<Any>).forEach { _ ->
                             lowLevelValues++
                         }
                     }

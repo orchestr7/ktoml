@@ -22,9 +22,7 @@ public class TomlArray internal constructor(
         rawContent: String,
         lineNo: Int,
         config: TomlInputConfig
-    ) : this(rawContent.parse(lineNo, config)) {
-        validateQuotes(rawContent, lineNo)
-    }
+    ) : this(rawContent.parse(lineNo, config))
 
     @Deprecated(
         message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
@@ -66,8 +64,8 @@ public class TomlArray internal constructor(
         emitter.startArray()
 
         val content = (content as List<Any>).map {
-            if (it is List<*>) {
-                TomlArray(it, multiline)
+            if (it is TomlArray) {
+                TomlArray(it.content, multiline)
             } else {
                 it as TomlValue
             }
@@ -114,15 +112,21 @@ public class TomlArray internal constructor(
          * recursively parse TOML array from the string: [ParsingArray -> Trimming values -> Parsing Nested Arrays]
          */
         private fun String.parse(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): List<Any> =
-            this.parseArray()
+            this.parseArray(lineNo)
                 .map { it.trim() }
-                .map { if (it.startsWith("[")) it.parse(lineNo, config) else it.parseValue(lineNo, config) }
+                .map {
+                    if (it.startsWith("[")) {
+                        TomlArray(it, lineNo, config)
+                    } else {
+                        it.parseValue(lineNo, config)
+                    }
+                }
 
         /**
          * method for splitting the string to the array: "[[a, b], [c], [d]]" to -> [a,b] [c] [d]
          */
         @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
-        private fun String.parseArray(): MutableList<String> {
+        private fun String.parseArray(lineNo: Int): MutableList<String> {
             val trimmed = trimBrackets().trim().removeTrailingComma()
             // covering cases when the array is intentionally blank: myArray = []. It should be empty and not contain null
             if (trimmed.isBlank()) {
@@ -138,11 +142,15 @@ public class TomlArray internal constructor(
             for (i in trimmed.indices) {
                 when (val current = trimmed[i]) {
                     '[' -> {
-                        nbBrackets++
+                        if (!isInBasicString && !isInLiteralString) {
+                            nbBrackets++
+                        }
                         bufferBetweenCommas.append(current)
                     }
                     ']' -> {
-                        nbBrackets--
+                        if (!isInBasicString && !isInLiteralString) {
+                            nbBrackets--
+                        }
                         bufferBetweenCommas.append(current)
                     }
                     '\'' -> {
@@ -172,20 +180,14 @@ public class TomlArray internal constructor(
                     else -> bufferBetweenCommas.append(current)
                 }
             }
-            result.add(bufferBetweenCommas.toString())
-            return result
-        }
-
-        /**
-         * small validation for quotes: each quote should be closed in a key
-         */
-        private fun validateQuotes(rawContent: String, lineNo: Int) {
-            if (rawContent.count { it == '\"' } % 2 != 0 || rawContent.count { it == '\'' } % 2 != 0) {
+            if (isInBasicString || isInLiteralString) {
                 throw ParseException(
-                    "Not able to parse the key: [$rawContent] as it does not have closing quote",
-                    lineNo
+                    "Not able to parse the array: [$this] as it does not have closing quote",
+                    lineNo,
                 )
             }
+            result.add(bufferBetweenCommas.toString())
+            return result
         }
     }
 }
