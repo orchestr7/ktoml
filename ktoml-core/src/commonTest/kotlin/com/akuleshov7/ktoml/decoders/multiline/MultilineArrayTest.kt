@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.decoders.multiline
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.decoders.NestedArray
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -274,5 +275,55 @@ class MultilineArrayTest {
             ]
             """.trimIndent()
         assertEquals(SimpleArrayWithNullableValues(listOf(1, 2, 3)), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun testMultilineNestedArray() {
+        var test = """
+            a = [[
+                1,
+                2,
+            ], [
+                3,
+                4,
+            ]]
+        """.trimIndent()
+
+        assertEquals(
+            NestedArray(
+                listOf(
+                    listOf(1, 2),
+                    listOf(3, 4)
+                )
+            ),
+            Toml.decodeFromString(test)
+        )
+
+        val expected = NestedArray(
+            listOf(
+                listOf(1, 2),
+                listOf(3, 4)
+            )
+        )
+        test = """
+            a = [
+                [1, 2],
+                [3, 4]
+            ]
+        """.trimIndent()
+        assertEquals(expected, Toml.decodeFromString(test))
+
+        test = """
+            a = [
+                # comment
+                [1, 2],
+                # comment
+                [3, 4 # comment
+                ]
+
+            ]
+        """.trimIndent()
+
+        assertEquals(expected, Toml.decodeFromString(test))
     }
 }

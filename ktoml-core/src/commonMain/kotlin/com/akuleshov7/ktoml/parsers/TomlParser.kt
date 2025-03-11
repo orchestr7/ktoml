@@ -2,8 +2,9 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
-import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.enums.MultilineType
 import com.akuleshov7.ktoml.tree.nodes.*
+import com.akuleshov7.ktoml.utils.LinesIteratorWrapper
 import com.akuleshov7.ktoml.utils.newLineChar
 import kotlin.jvm.JvmInline
 
@@ -54,12 +55,11 @@ public value class TomlParser(private val config: TomlInputConfig) {
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
         val comments: MutableList<String> = mutableListOf()
-        var index = 0
-        val linesIterator = trimmedTomlLines.iterator()
+        val linesIterator = LinesIteratorWrapper(trimmedTomlLines.iterator())
         // all lines will be streamed sequentially
         while (linesIterator.hasNext()) {
             val line = linesIterator.next()
-            val lineNo = index + 1
+            val lineNo = linesIterator.lineNo
 
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
             // because we need to calculate and save lineNo
@@ -69,23 +69,11 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 // Parse the inline comment if any
                 val inlineComment = line.trimComment(config.allowEscapedQuotesInLiteralStrings)
 
-                val multilineType = line.getMultilineType()
+                val multilineType = TomlMultilineString.getMultilineType(line, config)
                 val tomlLine = if (multilineType != MultilineType.NOT_A_MULTILINE) {
-                    // first line from multiline is already taken from the sequence and can be processed
-                    val collectedMultiline = StringBuilder()
-                    collectLineWithComments(collectedMultiline, comments, multilineType, line)
-                    collectedMultiline.append(newLineChar())
-
-                    // processing remaining lines from a multiline
-                    val indexAtTheEndOfMultiline = collectMultiline(
-                        linesIterator,
-                        collectedMultiline,
-                        index,
-                        multilineType,
-                        comments
-                    )
-                    index = indexAtTheEndOfMultiline
-                    collectedMultiline.toString()
+                    val tomlMultilineString = TomlMultilineString(config, linesIterator, line)
+                    comments += tomlMultilineString.getComments()
+                    tomlMultilineString.getLine()
                 } else {
                     line
                 }
@@ -140,7 +128,6 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 }
                 comments.clear()
             }
-            index++
         }
         return tomlFileHead
     }
@@ -215,100 +202,6 @@ public value class TomlParser(private val config: TomlInputConfig) {
         }
     }
 
-    /**
-     * @param collectedMultiline append all multi-lines to this argument
-     * @return index at the end of multiline
-     */
-    private fun collectMultiline(
-        linesIterator: Iterator<String>,
-        collectedMultiline: StringBuilder,
-        startIndex: Int,
-        multilineType: MultilineType,
-        comments: MutableList<String>
-    ): Int {
-        var index = startIndex
-        var line: String
-        var hasFoundEnd = false
-
-        // all lines will be streamed sequentially
-        while (linesIterator.hasNext()) {
-            line = linesIterator.next()
-            collectLineWithComments(collectedMultiline, comments, multilineType, line)
-
-            if (line.isEndOfMultilineValue(multilineType, index + 1)) {
-                hasFoundEnd = true
-                break
-            }
-            // append new line to collect string as is
-            collectedMultiline.append(newLineChar())
-            index++
-        }
-
-        if (!hasFoundEnd) {
-            throw ParseException(
-                "Expected (${multilineType.closingSymbols}) in the end of ${multilineType.name}",
-                startIndex + 1
-            )
-        }
-        return index
-    }
-
-    private fun collectLineWithComments(
-        collectTo: StringBuilder,
-        comments: MutableList<String>,
-        multilineType: MultilineType,
-        line: String
-    ) {
-        if (multilineType == MultilineType.ARRAY) {
-            collectTo.append(line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings))
-            comments += line.trimComment(config.allowEscapedQuotesInLiteralStrings)
-        } else {
-            // we can't have comments inside a multi-line basic/literal string
-            collectTo.append(line)
-        }
-    }
-
-    /**
-     * Important! We treat a multi-line that is declared in one line ("""abc""") as a regular not multiline string
-     */
-    private fun String.getMultilineType(): MultilineType {
-        val line = this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
-        val firstEqualsSign = line.indexOfFirst { it == '=' }
-        if (firstEqualsSign == -1) {
-            return MultilineType.NOT_A_MULTILINE
-        }
-        val value = line.substring(firstEqualsSign + 1).trim()
-
-        if (value.startsWith("[") && !value.endsWith("]")) {
-            return MultilineType.ARRAY
-        }
-
-        // If we have more than 1 combination of (""") - it means that
-        // multi-line is declared in one line, and we can handle it as not a multi-line
-        if (value.startsWith("\"\"\"") && value.getCountOfOccurrencesOfSubstring("\"\"\"") == 1) {
-            return MultilineType.BASIC_STRING
-        }
-        if (value.startsWith("'''") && value.getCountOfOccurrencesOfSubstring("\'\'\'") == 1) {
-            return MultilineType.LITERAL_STRING
-        }
-
-        // Otherwise, the string isn't a multi-line declaration
-        return MultilineType.NOT_A_MULTILINE
-    }
-
-    /**
-     * @return true if string is a last line of multiline value declaration
-     */
-    private fun String.isEndOfMultilineValue(multilineType: MultilineType, lineNo: Int): Boolean {
-        if (multilineType == MultilineType.NOT_A_MULTILINE) {
-            throw ParseException("Internal parse exception", lineNo)
-        }
-
-        return this.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
-            .trim()
-            .endsWith(multilineType.closingSymbols)
-    }
-
     private fun TomlNode.insertStub() {
         if (this.hasNoChildren() && this !is TomlFile && this !is TomlArrayOfTablesElement) {
             this.appendChild(TomlStubEmptyNode(this.lineNo))
@@ -339,17 +232,6 @@ public value class TomlParser(private val config: TomlInputConfig) {
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
-
-    /**
-     * @property closingSymbols - symbols indicating that the multi-line is closed
-     */
-    private enum class MultilineType(val closingSymbols: String) {
-        ARRAY("]"),
-        BASIC_STRING("\"\"\""),
-        LITERAL_STRING("'''"),
-        NOT_A_MULTILINE(""),
-        ;
-    }
 }
 
 /**

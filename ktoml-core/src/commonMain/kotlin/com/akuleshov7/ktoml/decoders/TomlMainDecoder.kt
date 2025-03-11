@@ -196,7 +196,7 @@ public class TomlMainDecoder(
         missingPropertyNames.forEach {
             val index = descriptor.getElementIndex(it)
 
-            if (!descriptor.isElementOptional(index)) {
+            if (!descriptor.isElementOptional(index) || config.ignoreDefaultValues) {
                 throw MissingRequiredPropertyException(
                     "Invalid number of key-value arguments provided in the input for deserialization. Missing required property " +
                             "<${descriptor.getElementName(index)}> from class <${descriptor.serialName}> in the input. " +

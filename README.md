@@ -71,9 +71,9 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Local Date (to `LocalDate` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Local Time (to `LocalTime` of [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)) \
 :white_check_mark: Multiline Strings \
-:white_check_mark: Arrays (including multiline arrays) \
+:white_check_mark: Arrays (including multiline and nested arrays) \
 :white_check_mark: Maps (for anonymous key-value pairs) \
-:x: Arrays: nested; of Different Types \
+:x: Arrays: of Different Types \
 :x: Nested Inline Tables \
 :x: Array of Tables \
 :x: Inline Array of Tables
@@ -254,6 +254,8 @@ Toml(
         allowEscapedQuotesInLiteralStrings = true,
         // allow/prohibit processing of empty toml, if false - throws an InternalDecodingException exception, default is true
         allowEmptyToml = true,
+        // allow/prohibit default values during the deserialization, default is false
+        ignoreDefaultValues = false,
     ),
     outputConfig = TomlOutputConfig(
         // indentation symbols for serialization, default 4 spaces
