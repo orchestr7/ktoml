@@ -254,6 +254,8 @@ Toml(
         allowEscapedQuotesInLiteralStrings = true,
         // allow/prohibit processing of empty toml, if false - throws an InternalDecodingException exception, default is true
         allowEmptyToml = true,
+        // allow/prohibit default values during the deserialization, default is false
+        ignoreDefaultValues = false,
     ),
     outputConfig = TomlOutputConfig(
         // indentation symbols for serialization, default 4 spaces
