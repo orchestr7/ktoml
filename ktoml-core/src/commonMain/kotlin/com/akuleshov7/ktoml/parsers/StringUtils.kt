@@ -96,6 +96,25 @@ internal fun String.convertLineEndingBackslash(): String {
 internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
 
 /**
+ * If this string starts and end with quotes("" or '') - will return the string with quotes removed
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimAllQuotes(): String {
+    val doubleQuote = "\""
+    val singleQuote = "'"
+
+    return if (this.startsWith(doubleQuote) && this.endsWith(doubleQuote)) {
+        this.removePrefix(doubleQuote).removeSuffix(doubleQuote)
+    } else if (this.startsWith(singleQuote) && this.endsWith(singleQuote)) {
+        this.removePrefix(singleQuote).removeSuffix(singleQuote)
+    } else {
+        this
+    }
+}
+
+/**
  * If this multiline string starts and end with triple quotes(""") - will return the string with
  * quotes and newline removed.
  * Otherwise, returns this string.
