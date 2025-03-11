@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.keys
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
@@ -246,5 +246,29 @@ class DottedKeysDecoderTest {
             QuotedKey(a = AQ(b = ABCQ(b = BQ(d = 123)))),
             Toml.decodeFromString("a.\"a.b.c\".b.d = 123")
         )
+    }
+
+    @Serializable
+    data class Fruit(
+        val name: FruitName,
+    )
+
+    @Serializable
+    data class FruitName(
+        val value: String,
+    )
+
+    @Test
+    fun testWhitespacesAroundDottedKey() {
+        val toml1 = """
+            name.   value = "banana"
+        """.trimIndent()
+        val toml2 = """
+            name .   value = "banana"
+        """.trimIndent()
+        val expected = Fruit(FruitName("banana"))
+
+        assertEquals(expected, Toml.decodeFromString<Fruit>(toml1))
+        assertEquals(expected, Toml.decodeFromString<Fruit>(toml2))
     }
 }

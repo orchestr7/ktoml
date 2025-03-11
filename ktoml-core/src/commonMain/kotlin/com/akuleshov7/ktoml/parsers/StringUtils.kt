@@ -35,7 +35,7 @@ internal fun String.splitKeyToTokens(lineNo: Int): List<String> {
                 currentPart.append(ch)
             }
             '.' -> if (singleQuoteIsClosed && doubleQuoteIsClosed) {
-                dotSeparatedParts.add(currentPart.toString())
+                dotSeparatedParts.add(currentPart.toString().trim())
                 currentPart = StringBuilder()
             } else {
                 currentPart.append(ch)
@@ -96,6 +96,25 @@ internal fun String.convertLineEndingBackslash(): String {
 internal fun String.trimQuotes(): String = trimSymbols(this, "\"", "\"")
 
 /**
+ * If this string starts and end with quotes("" or '') - will return the string with quotes removed
+ * Otherwise, returns this string.
+ *
+ * @return string with the result
+ */
+internal fun String.trimAllQuotes(): String {
+    val doubleQuote = "\""
+    val singleQuote = "'"
+
+    return if (this.startsWith(doubleQuote) && this.endsWith(doubleQuote)) {
+        this.removePrefix(doubleQuote).removeSuffix(doubleQuote)
+    } else if (this.startsWith(singleQuote) && this.endsWith(singleQuote)) {
+        this.removePrefix(singleQuote).removeSuffix(singleQuote)
+    } else {
+        this
+    }
+}
+
+/**
  * If this multiline string starts and end with triple quotes(""") - will return the string with
  * quotes and newline removed.
  * Otherwise, returns this string.
@@ -147,7 +166,7 @@ internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
  * ```
  */
 internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
-    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
+    val commentStartIndex = indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings, '#')
 
     return if (commentStartIndex == -1) {
         this
@@ -166,7 +185,7 @@ internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolea
  * ```
  */
 internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
-    val commentStartIndex = getCommentStartIndex(allowEscapedQuotesInLiteralStrings)
+    val commentStartIndex = indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings, '#')
 
     return if (commentStartIndex == -1) {
         ""
@@ -180,6 +199,46 @@ internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): St
  * @return count of occurrences of substring in string
  */
 internal fun String.getCountOfOccurrencesOfSubstring(substring: String): Int = this.split(substring).size - 1
+
+/**
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
+ * @param searchChar - the character to search for
+ * @return the index of the first occurrence of the searchChar that is not enclosed in quotation marks
+ */
+internal fun String.indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings: Boolean, searchChar: Char): Int {
+    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
+        // escaping is disabled when the config option is true AND we have a literal string
+        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
+        firstQuoteLetter == '\''
+    } else {
+        false
+    }
+
+    val chars = if (!isEscapingDisabled) {
+        this.replace("\\\"", "__")
+            .replace("\\\'", "__")
+    } else {
+        this
+    }.toCharArray()
+    var currentQuoteChar: Char? = null
+
+    chars.forEachIndexed { idx, symbol ->
+        // take searchChar index if it's not enclosed in quotation marks
+        if (symbol == searchChar && currentQuoteChar == null) {
+            return idx
+        }
+
+        if (symbol == '\"' || symbol == '\'') {
+            if (currentQuoteChar == null) {
+                currentQuoteChar = symbol
+            } else if (currentQuoteChar == symbol) {
+                currentQuoteChar = null
+            }
+        }
+    }
+
+    return -1
+}
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
@@ -209,7 +268,7 @@ private fun String.validateQuotes(lineNo: Int) {
 private fun String.validateSymbols(lineNo: Int) {
     var singleQuoteIsClosed = true
     var doubleQuoteIsClosed = true
-    this.trim().trimQuotes().forEach { ch ->
+    this.trim().forEach { ch ->
         when (ch) {
             '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
             '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
@@ -226,41 +285,6 @@ private fun String.validateSymbols(lineNo: Int) {
             }
         }
     }
-}
-
-private fun String.getCommentStartIndex(allowEscapedQuotesInLiteralStrings: Boolean): Int {
-    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
-        // escaping is disabled when the config option is true AND we have a literal string
-        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
-        firstQuoteLetter == '\''
-    } else {
-        false
-    }
-
-    val chars = if (!isEscapingDisabled) {
-        this.replace("\\\"", "__")
-            .replace("\\\'", "__")
-    } else {
-        this
-    }.toCharArray()
-    var currentQuoteChar: Char? = null
-
-    chars.forEachIndexed { idx, symbol ->
-        // take hash index if it's not enclosed in quotation marks
-        if (symbol == '#' && currentQuoteChar == null) {
-            return idx
-        }
-
-        if (symbol == '\"' || symbol == '\'') {
-            if (currentQuoteChar == null) {
-                currentQuoteChar = symbol
-            } else if (currentQuoteChar == symbol) {
-                currentQuoteChar = null
-            }
-        }
-    }
-
-    return -1
 }
 
 private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||

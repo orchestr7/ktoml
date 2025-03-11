@@ -80,6 +80,7 @@ public open class TomlConfig(
  * @property allowNullValues Whether to allow/prohibit null values: a = null
  * @property allowEmptyToml Whether empty toml can be processed, if false - will throw an exception
  * @property allowEscapedQuotesInLiteralStrings Whether to allow/prohibit escaping of single quotes in literal strings
+ * @property ignoreDefaultValues Whether to ignore default values
  */
 public data class TomlInputConfig(
     public val ignoreUnknownNames: Boolean = false,
@@ -87,6 +88,7 @@ public data class TomlInputConfig(
     public val allowNullValues: Boolean = true,
     public val allowEmptyToml: Boolean = true,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
+    public val ignoreDefaultValues: Boolean = false,
 ) {
     public companion object {
         /**
