@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -87,5 +88,19 @@ class NestedMapTest {
         """.trimIndent()
 
         println(Toml.decodeFromString<MyClass>(data))
+    }
+
+    @Test
+    fun testNestedRootMapDecoder() {
+        val map = mapOf(
+            "first" to mapOf("k1" to "v1"),
+            "second" to mapOf("k2" to "v2"),
+        )
+        val encodedString = Toml.encodeToString(map)
+
+        assertEquals(
+            map,
+            Toml.decodeFromString<Map<String, Map<String, String>>>(encodedString),
+        )
     }
 }
