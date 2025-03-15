@@ -286,7 +286,7 @@ public class TomlMainDecoder(
          */
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
-            rootNode: TomlNode,
+            rootNode: TomlFile,
             config: TomlInputConfig = TomlInputConfig()
         ): T {
             val decoder = TomlMainDecoder(rootNode, config)
