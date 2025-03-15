@@ -99,6 +99,20 @@ class PlainMapDecoderTest {
     }
 
     @Test
+    fun testRootMapDecoder() {
+        val map = mapOf(
+            "my_key_1" to "my_value_1",
+            "my_key_2" to "my_value_2",
+        )
+        val encodedString = Toml.encodeToString(map)
+
+        assertEquals(
+            map,
+            Toml.decodeFromString<Map<String, String>>(encodedString),
+        )
+    }
+
+    @Test
     fun testMapDecoderNegativeCases() {
         var data = """
             a = 1

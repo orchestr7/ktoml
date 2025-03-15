@@ -3,9 +3,9 @@ package com.akuleshov7.ktoml.decoders
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
+import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
-import com.akuleshov7.ktoml.tree.nodes.TomlStubEmptyNode
-import com.akuleshov7.ktoml.tree.nodes.TomlTable
+import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -20,18 +20,45 @@ import kotlinx.serialization.modules.SerializersModule
  * PLEASE NOTE, THAT IT IS EXTREMELY UNSAFE TO USE THIS DECODER, AS IT WILL DECODE EVERYTHING, WITHOUT ANY TYPE-CHECKING
  *
  * @param rootNode toml table that we are trying to decode
+ * @param fullTableKey fullTableKey for the current table
  * @param decodingElementIndex for iterating over the TOML table we are currently reading
  * @param kotlinxIndex for iteration inside the kotlinX loop: [decodeElementIndex -> decodeSerializableElement]
  * @param config TomlInput config
  */
 @ExperimentalSerializationApi
-public class TomlMapDecoder(
-    private val rootNode: TomlTable,
+public class TomlMapDecoder private constructor(
+    private val rootNode: TomlNode,
+    private val fullTableKey: TomlKey,
     private val config: TomlInputConfig,
     private var decodingElementIndex: Int = 0,
     private var kotlinxIndex: Int = 0,
 ) : TomlAbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule()
+    public constructor(
+        rootNode: TomlTable,
+        config: TomlInputConfig,
+        decodingElementIndex: Int = 0,
+        kotlinxIndex: Int = 0,
+    ) : this(
+        rootNode = rootNode,
+        fullTableKey = rootNode.fullTableKey,
+        config = config,
+        decodingElementIndex = decodingElementIndex,
+        kotlinxIndex = kotlinxIndex,
+    )
+
+    public constructor(
+        rootNode: TomlFile,
+        config: TomlInputConfig,
+        decodingElementIndex: Int = 0,
+        kotlinxIndex: Int = 0,
+    ) : this(
+        rootNode = rootNode,
+        fullTableKey = TomlKey(listOf("")),
+        config = config,
+        decodingElementIndex = decodingElementIndex,
+        kotlinxIndex = kotlinxIndex,
+    )
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         // stubs are internal technical nodes that are not needed in this scenario
@@ -77,7 +104,7 @@ public class TomlMapDecoder(
 
     override fun decodeKeyValue(): TomlKeyValue {
         throw IllegalTypeException("""
-            You are trying to decode a nested Table ${rootNode.fullTableKey} with a <Map> type to some primitive type.
+            You are trying to decode a nested Table $fullTableKey with a <Map> type to some primitive type.
             For example: 
             [a]
               [a.b]
@@ -97,6 +124,23 @@ public class TomlMapDecoder(
         if (rootNode.children[decodingElementIndex] is TomlStubEmptyNode) {
             ++decodingElementIndex
             kotlinxIndex += 2
+        }
+    }
+
+    public companion object {
+        /**
+         * @param deserializer - deserializer provided by Kotlin compiler
+         * @param rootNode - root node for decoding (created after parsing)
+         * @param config - decoding configuration for parsing and serialization
+         * @return decoded (deserialized) object of type T
+         */
+        public fun <T> decode(
+            deserializer: DeserializationStrategy<T>,
+            rootNode: TomlFile,
+            config: TomlInputConfig = TomlInputConfig()
+        ): T {
+            val decoder = TomlMapDecoder(rootNode, config)
+            return decoder.decodeSerializableValue(deserializer)
         }
     }
 }
