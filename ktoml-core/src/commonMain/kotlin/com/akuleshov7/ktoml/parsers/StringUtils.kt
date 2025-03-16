@@ -166,7 +166,7 @@ internal fun String.trimDoubleBrackets(): String = trimSymbols(this, "[[", "]]")
  * ```
  */
 internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
-    val commentStartIndex = indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings, '#')
+    val commentStartIndex = indexOfNextOutsideQuotes(allowEscapedQuotesInLiteralStrings, '#')
 
     return if (commentStartIndex == -1) {
         this
@@ -185,7 +185,7 @@ internal fun String.takeBeforeComment(allowEscapedQuotesInLiteralStrings: Boolea
  * ```
  */
 internal fun String.trimComment(allowEscapedQuotesInLiteralStrings: Boolean): String {
-    val commentStartIndex = indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings, '#')
+    val commentStartIndex = indexOfNextOutsideQuotes(allowEscapedQuotesInLiteralStrings, '#')
 
     return if (commentStartIndex == -1) {
         ""
@@ -203,29 +203,21 @@ internal fun String.getCountOfOccurrencesOfSubstring(substring: String): Int = t
 /**
  * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
  * @param searchChar - the character to search for
+ * @param startIndex - the index to start searching from
  * @return the index of the first occurrence of the searchChar that is not enclosed in quotation marks
  */
-internal fun String.indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings: Boolean, searchChar: Char): Int {
-    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
-        // escaping is disabled when the config option is true AND we have a literal string
-        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
-        firstQuoteLetter == '\''
-    } else {
-        false
-    }
-
-    val chars = if (!isEscapingDisabled) {
-        this.replace("\\\"", "__")
-            .replace("\\\'", "__")
-    } else {
-        this
-    }.toCharArray()
+internal fun String.indexOfNextOutsideQuotes(
+    allowEscapedQuotesInLiteralStrings: Boolean,
+    searchChar: Char,
+    startIndex: Int = 0,
+): Int {
+    val chars = this.drop(startIndex).replaceEscaped(allowEscapedQuotesInLiteralStrings)
     var currentQuoteChar: Char? = null
 
     chars.forEachIndexed { idx, symbol ->
         // take searchChar index if it's not enclosed in quotation marks
         if (symbol == searchChar && currentQuoteChar == null) {
-            return idx
+            return idx + startIndex
         }
 
         if (symbol == '\"' || symbol == '\'') {
@@ -238,6 +230,28 @@ internal fun String.indexOfFirstOutsideQuotes(allowEscapedQuotesInLiteralStrings
     }
 
     return -1
+}
+
+/**
+ * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
+ * @param placeholder - the string to replace escaped quotes with
+ * @return the string with escaped quotes replaced with a placeholder
+ */
+internal fun String.replaceEscaped(allowEscapedQuotesInLiteralStrings: Boolean, placeholder: String = "__"): String {
+    val isEscapingDisabled = if (allowEscapedQuotesInLiteralStrings) {
+        // escaping is disabled when the config option is true AND we have a literal string
+        val firstQuoteLetter = this.firstOrNull { it == '\"' || it == '\'' }
+        firstQuoteLetter == '\''
+    } else {
+        false
+    }
+
+    return if (!isEscapingDisabled) {
+        this.replace("\\\"", placeholder)
+            .replace("\\\'", placeholder)
+    } else {
+        this
+    }
 }
 
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {

@@ -75,8 +75,8 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Multiline Strings \
 :white_check_mark: Arrays (including multiline and nested arrays) \
 :white_check_mark: Maps (for anonymous key-value pairs) \
+:white_check_mark: Nested Inline Tables \
 :x: Arrays: of Different Types \
-:x: Nested Inline Tables \
 :x: Array of Tables \
 :x: Inline Array of Tables
 

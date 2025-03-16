@@ -3,7 +3,7 @@ package com.akuleshov7.ktoml.tree.nodes
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.indexOfFirstOutsideQuotes
+import com.akuleshov7.ktoml.parsers.indexOfNextOutsideQuotes
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
@@ -96,7 +96,7 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInput
     val pair = takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
 
     // searching for an equals sign that should be placed main part of the string (not in the comment)
-    val firstEqualsSign = pair.indexOfFirstOutsideQuotes(config.allowEscapedQuotesInLiteralStrings, '=')
+    val firstEqualsSign = pair.indexOfNextOutsideQuotes(config.allowEscapedQuotesInLiteralStrings, '=')
 
     // equals sign not found in the string
     if (firstEqualsSign == -1) {
