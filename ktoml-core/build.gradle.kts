@@ -1,9 +1,11 @@
 import com.akuleshov7.buildutils.configureSigning
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
 plugins {
     kotlin("multiplatform")
+
     kotlin("plugin.serialization")
     id("com.akuleshov7.buildutils.publishing-configuration")
     id("com.saveourtool.diktat")
@@ -35,6 +37,16 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        nodejs()
+        d8()
+    }
 
     applyDefaultHierarchyTemplate()
 
@@ -64,8 +76,19 @@ kotlin {
             }
         }
 
+        val wasmJsTest by getting {
+            dependencies {
+                implementation(kotlin("test-wasm-js"))
+            }
+        }
+
+        val wasmWasiTest by getting {
+            dependencies {
+                implementation(kotlin("test-wasm-wasi"))
+            }
+        }
+
         val jvmTest by getting {
-            dependsOn(commonTest)
             dependencies {
                 implementation(kotlin("test-junit5"))
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.12.1")
@@ -83,8 +106,15 @@ tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()
 }
 
+// it is too time-consuming to support those tests
 tasks.withType<KotlinJsTest> {
-    if (this.name.contains("jsBrowserTest")) {
+    if (this.name.contains("jsBrowserTest") ||
+            this.name.contains("wasmJsBrowserTest") ||
+            this.name.contains("wasmJsNodeTest") ||
+            this.name.contains("wasmJsD8Test") ||
+            this.name.contains("wasmWasiBrowserTest") ||
+            this.name.contains("wasmWasiNodeTest")
+    ) {
         this.enabled = false
     }
 }
