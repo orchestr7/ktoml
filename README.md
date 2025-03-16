@@ -38,7 +38,9 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 - macosArm64 (M1)
 - ios
 - iosSimulatorArm64
-- js (obviously only for ktoml-core!). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
+- js (obviously only for ktoml-core). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
+- wasmJs (obviously only for ktoml-core)
+- wasmWasi (obviously only for ktoml-core)
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
