@@ -109,11 +109,11 @@ tasks.withType<KotlinJvmTest> {
 // it is too time-consuming to support those tests
 tasks.withType<KotlinJsTest> {
     if (this.name.contains("jsBrowserTest") ||
-        this.name.contains("wasmJsBrowserTest") ||
-        this.name.contains("wasmJsNodeTest") ||
-        this.name.contains("wasmJsD8Test") ||
-        this.name.contains("wasmWasiBrowserTest") ||
-        this.name.contains("wasmWasiNodeTest")
+            this.name.contains("wasmJsBrowserTest") ||
+            this.name.contains("wasmJsNodeTest") ||
+            this.name.contains("wasmJsD8Test") ||
+            this.name.contains("wasmWasiBrowserTest") ||
+            this.name.contains("wasmWasiNodeTest")
     ) {
         this.enabled = false
     }
