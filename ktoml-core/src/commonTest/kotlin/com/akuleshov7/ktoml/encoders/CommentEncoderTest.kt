@@ -2,12 +2,10 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlComments
 import kotlinx.serialization.Serializable
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class CommentEncoderTest {
     @Test
-    @Ignore
     fun commentsTest() {
         @Serializable
         data class Table(

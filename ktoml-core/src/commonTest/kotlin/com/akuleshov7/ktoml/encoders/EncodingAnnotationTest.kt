@@ -10,7 +10,6 @@ import kotlin.test.Test
 
 class EncodingAnnotationTest {
     @Test
-    @Ignore
     fun commentedPairTest() {
         @Serializable
         data class File(
@@ -45,7 +44,6 @@ class EncodingAnnotationTest {
     }
 
     @Test
-    @Ignore
     fun commentedTableTest() {
         @Serializable
         data class TableA(val a: String = "")

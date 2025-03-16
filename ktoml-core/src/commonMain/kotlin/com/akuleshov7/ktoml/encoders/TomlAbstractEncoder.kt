@@ -192,6 +192,7 @@ public abstract class TomlAbstractEncoder protected constructor(
         val typeAnnotations = typeDescriptor.annotations
         val elementAnnotations = descriptor.getElementAnnotations(index)
 
+        attributes.resetComments()
         attributes.set(typeAnnotations)
         attributes.set(elementAnnotations)
 
