@@ -30,7 +30,42 @@ class InlineTableDecoderTest {
     data class Version(val ref: String)
 
     @Test
-    @Ignore
+    fun decodeSimpleInlineTable() {
+        @Serializable
+        data class NestedTable(
+            val name: String,
+            @SerialName("configurationList")
+            val overriddenName: List<String?> = listOf()
+        )
+
+        @Serializable
+        data class Table2(
+            @SerialName("akuleshov7.com")
+            val inlineTable: NestedTable,
+        )
+
+        @Serializable
+        data class MyClass(
+            val table2: Table2,
+        )
+
+        val test2 =
+            """
+            |table2 = { table2."akuleshov7.com" = { name = 'this is a "literal" string', configurationList = ["a",  "b",  "c", null] }}
+            |
+            """.trimMargin()
+
+        assertEquals(
+            MyClass(
+                Table2(
+                    NestedTable("this is a \"literal\" string", listOf("a", "b", "c", null))
+                )
+            ),
+            Toml.decodeFromString<MyClass>(test2),
+        )
+    }
+
+    @Test
     fun decodeInlineTable() {
         val test =
             """
@@ -38,12 +73,33 @@ class InlineTableDecoderTest {
             |
             |table1 = { property1 = null, property2 = 6 }
             |table2 = { someNumber = 5, table2."akuleshov7.com" = { name = 'this is a "literal" string', configurationList = ["a",  "b",  "c", null] }}
-            |table2 = { otherNumber = 5.56 }
-            |inlineTable = { inlineValStr = "inline", inlineValInt = -1 }
-            |       
+            |table2 = { otherNumber = 5.56, charFromString = 'a', charFromInteger = 123 }
+            |gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            |
+            |[myMap]
+            |   a = "b"
+            |   c = "d"
             """.trimMargin()
 
         Toml.decodeFromString<ReadMeExampleTest.MyClass>(test)
+    }
+
+    @Test
+    fun arrayInInlineTable() {
+        @Serializable
+        data class TableWithArray(val arr: List<Int>)
+
+        @Serializable
+        data class TableWithArrayWrapper(val table: TableWithArray)
+
+        val test =
+            """
+            |table = { arr = [1, 2, 3] }
+            |
+            """.trimMargin()
+
+        val result = Toml.decodeFromString<TableWithArrayWrapper>(test)
+        println(result)
     }
 
     @Test

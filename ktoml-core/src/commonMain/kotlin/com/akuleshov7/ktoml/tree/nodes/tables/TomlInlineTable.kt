@@ -4,7 +4,9 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.indexOfNextOutsideQuotes
 import com.akuleshov7.ktoml.parsers.parseTomlKeyValue
+import com.akuleshov7.ktoml.parsers.replaceEscaped
 import com.akuleshov7.ktoml.parsers.trimCurlyBraces
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -67,7 +69,7 @@ public class TomlInlineTable internal constructor(
         val tomlTable = TomlTable(
             TomlKey(
                 if (currentParentalNode is TomlTable) {
-                    currentParentalNode.fullTableKey.keyParts + name
+                    currentParentalNode.fullTableKey.keyParts + key.last()
                 } else {
                     listOf(name)
                 }
@@ -131,9 +133,8 @@ public class TomlInlineTable internal constructor(
             lineNo: Int,
             config: TomlInputConfig
         ): List<TomlNode> {
-            val parsedList = this
-                .trimCurlyBraces()
-                .trim()
+            val inlineTableValueString = this.trimCurlyBraces().trim()
+            val parsedList = inlineTableValueString
                 .also {
                     if (it.isEmpty()) {
                         return listOf(TomlStubEmptyNode(lineNo))
@@ -144,10 +145,52 @@ public class TomlInlineTable internal constructor(
                         )
                     }
                 }
-                .split(",")
+                .splitInlineTableToKeyValue(config.allowEscapedQuotesInLiteralStrings)
                 .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
 
             return parsedList
+        }
+
+        private fun String.splitInlineTableToKeyValue(allowEscapedQuotesInLiteralStrings: Boolean): List<String> {
+            val clearedString = this.replaceEscaped(allowEscapedQuotesInLiteralStrings)
+            var currentQuoteChar: Char? = null
+            var isInArray = false
+            val keyValueList = mutableListOf<String>()
+            var prevIdx = 0
+            var curIdx = 0
+
+            while (curIdx < clearedString.length) {
+                val ch = clearedString[curIdx]
+                if (ch == ',' && currentQuoteChar == null && !isInArray) {
+                    keyValueList.add(this.substring(prevIdx, curIdx).trim())
+                    prevIdx = curIdx + 1
+                } else if (ch == '[' && currentQuoteChar == null) {
+                    isInArray = true
+                } else if (ch == ']' && currentQuoteChar == null) {
+                    isInArray = false
+                } else if (ch == '{' && currentQuoteChar == null && !isInArray) {
+                    val closeCurlyIdx = this.indexOfNextOutsideQuotes(
+                        allowEscapedQuotesInLiteralStrings = allowEscapedQuotesInLiteralStrings,
+                        searchChar = '}',
+                        startIndex = curIdx
+                    )
+                    keyValueList.add(this.substring(prevIdx, closeCurlyIdx + 1).trim())
+                    prevIdx = closeCurlyIdx + 1
+                    curIdx = closeCurlyIdx + 1
+                } else if (ch == '\'' || ch == '\"') {
+                    if (currentQuoteChar == null) {
+                        currentQuoteChar = ch
+                    } else if (currentQuoteChar == ch) {
+                        currentQuoteChar = null
+                    }
+                }
+                curIdx++
+            }
+
+            if (prevIdx < this.length) {
+                keyValueList.add(this.substring(prevIdx, this.length).trim())
+            }
+            return keyValueList
         }
     }
 }
