@@ -5,7 +5,9 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class InlineTableDecoderTest {
     @Serializable
@@ -30,20 +32,97 @@ class InlineTableDecoderTest {
     data class Version(val ref: String)
 
     @Test
-    @Ignore
+    fun decodeDottedNestedInlineTable() {
+        @Serializable
+        data class NestedTableWithContent(
+            val name: String,
+            @SerialName("configurationList")
+            val overriddenName: List<String?> = listOf(),
+        )
+
+        @Serializable
+        data class MyTable(
+            @SerialName("akuleshov7.com")
+            val inlineTable: NestedTableWithContent,
+        )
+
+        @Serializable
+        data class NestedTable(
+            val table: MyTable,
+            val i: Int,
+        )
+
+        @Serializable
+        data class MyClass(
+            val table: NestedTable,
+        )
+
+        val toml1 =
+            """
+            |table = { i = 1, table."akuleshov7.com" = { name = 'this is a "literal" string', configurationList = ["a",  "b",  "c", null   ]}}
+            |
+            """.trimMargin()
+        val toml2 = """
+            [table]
+                i = 1
+            [table.table."akuleshov7.com"]
+                name = 'this is a "literal" string'
+                configurationList = ["a",  "b",  "c", null   ]
+        """.trimIndent()
+
+        assertEquals(
+            MyClass(
+                table = NestedTable(
+                    table = MyTable(
+                        NestedTableWithContent("this is a \"literal\" string", listOf("a", "b", "c", null))
+                    ),
+                    i = 1,
+                ),
+            ),
+            Toml.decodeFromString<MyClass>(toml1),
+        )
+
+        assertEquals(
+            Toml.decodeFromString<MyClass>(toml1),
+            Toml.decodeFromString<MyClass>(toml2),
+        )
+    }
+
+    @Test
     fun decodeInlineTable() {
         val test =
             """
             |someBooleanProperty = true
             |
             |table1 = { property1 = null, property2 = 6 }
-            |table2 = { someNumber = 5, table2."akuleshov7.com" = { name = 'this is a "literal" string', configurationList = ["a",  "b",  "c", null] }}
-            |table2 = { otherNumber = 5.56 }
-            |inlineTable = { inlineValStr = "inline", inlineValInt = -1 }
-            |       
+            |table2 = { someNumber = 5, "akuleshov7.com" = { name = 'this is a "literal" string', configurationList = ["a",  "b",  "c", null]   }   , charFromInteger = 123  }
+            |table2 = { otherNumber = 5.56, charFromString = 'a' }
+            |gradle-libs-like-property = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            |
+            |[myMap]
+            |   a = "b"
+            |   c = "d"
             """.trimMargin()
 
         Toml.decodeFromString<ReadMeExampleTest.MyClass>(test)
+    }
+
+    @Test
+    fun arrayInInlineTable() {
+        @Serializable
+        data class TableWithArray(val arr: List<Int>)
+
+        @Serializable
+        data class TableWithArrayWrapper(val table: TableWithArray)
+
+        val test =
+            """
+            |table = { arr = [1, 2, 3,  ]   }
+            |
+            """.trimMargin()
+
+        val result = Toml.decodeFromString<TableWithArrayWrapper>(test)
+        println(result)
     }
 
     @Test
