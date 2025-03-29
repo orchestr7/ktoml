@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
     // this hack prevents the following bug: https://github.com/gradle/gradle/issues/9770
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.10")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
 
     implementation("org.cqfn.diktat:diktat-gradle-plugin:1.2.5")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")
