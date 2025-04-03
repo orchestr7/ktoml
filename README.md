@@ -38,7 +38,9 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 - macosArm64 (M1)
 - ios
 - iosSimulatorArm64
-- js (obviously only for ktoml-core!). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
+- js (obviously only for ktoml-core). Note, that `js(LEGACY)` is [not supported](https://github.com/Kotlin/kotlinx.serialization/issues/1448)
+- wasmJs (obviously only for ktoml-core)
+- wasmWasi (obviously only for ktoml-core)
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
@@ -73,8 +75,8 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Multiline Strings \
 :white_check_mark: Arrays (including multiline and nested arrays) \
 :white_check_mark: Maps (for anonymous key-value pairs) \
+:white_check_mark: Nested Inline Tables \
 :x: Arrays: of Different Types \
-:x: Nested Inline Tables \
 :x: Array of Tables \
 :x: Inline Array of Tables
 
@@ -88,12 +90,12 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.5.2</version>
+  <version>0.6.0</version>
 </dependency>
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-file</artifactId>
-  <version>0.5.2</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 </details>
@@ -102,8 +104,8 @@ To import `ktoml` library you need to add following dependencies to your code:
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.5.2'
-implementation 'com.akuleshov7:ktoml-file:0.5.2'
+implementation 'com.akuleshov7:ktoml-core:0.6.0'
+implementation 'com.akuleshov7:ktoml-file:0.6.0'
 ```
 </details>
 
@@ -111,8 +113,8 @@ implementation 'com.akuleshov7:ktoml-file:0.5.2'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.5.2")
-implementation("com.akuleshov7:ktoml-file:0.5.2")
+implementation("com.akuleshov7:ktoml-core:0.6.0")
+implementation("com.akuleshov7:ktoml-file:0.6.0")
 ```
 </details>
 

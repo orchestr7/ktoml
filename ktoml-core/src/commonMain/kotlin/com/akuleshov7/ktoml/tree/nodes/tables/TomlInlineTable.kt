@@ -4,7 +4,9 @@ import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.indexOfNextOutsideQuotes
 import com.akuleshov7.ktoml.parsers.parseTomlKeyValue
+import com.akuleshov7.ktoml.parsers.replaceEscaped
 import com.akuleshov7.ktoml.parsers.trimCurlyBraces
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -67,7 +69,7 @@ public class TomlInlineTable internal constructor(
         val tomlTable = TomlTable(
             TomlKey(
                 if (currentParentalNode is TomlTable) {
-                    currentParentalNode.fullTableKey.keyParts + name
+                    currentParentalNode.fullTableKey.keyParts + key.keyParts
                 } else {
                     listOf(name)
                 }
@@ -131,9 +133,8 @@ public class TomlInlineTable internal constructor(
             lineNo: Int,
             config: TomlInputConfig
         ): List<TomlNode> {
-            val parsedList = this
-                .trimCurlyBraces()
-                .trim()
+            val inlineTableValueString = this.trimCurlyBraces().trim()
+            val parsedList = inlineTableValueString
                 .also {
                     if (it.isEmpty()) {
                         return listOf(TomlStubEmptyNode(lineNo))
@@ -144,10 +145,73 @@ public class TomlInlineTable internal constructor(
                         )
                     }
                 }
-                .split(",")
+                .splitInlineTableToKeyValue(config.allowEscapedQuotesInLiteralStrings, lineNo)
                 .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
 
             return parsedList
+        }
+
+        /**
+         * That's basically split(",") function, but we ignore all commas inside arrays [ ],
+         * nested tables { } and quotes " "/' '
+         */
+        @Suppress("TOO_LONG_FUNCTION")
+        private fun String.splitInlineTableToKeyValue(
+            allowEscapedQuotesInLiteralStrings: Boolean,
+            lineNo: Int,
+        ): List<String> {
+            val clearedString = this.replaceEscaped(allowEscapedQuotesInLiteralStrings)
+            val keyValueList: MutableList<String> = mutableListOf()
+            var isLastAdded = false
+            var currentQuoteChar: Char? = null
+            var prevIdx = 0
+            var curIdx = 0
+
+            while (curIdx < clearedString.length) {
+                val ch = clearedString[curIdx]
+                if (ch == ',' && currentQuoteChar == null) {
+                    keyValueList.add(this.substring(prevIdx, curIdx).trim())
+                    prevIdx = curIdx + 1
+                } else if (currentQuoteChar == null && (ch == '[' || ch == '{')) {
+                    val closeBracketIdx = this.indexOfNextOutsideQuotes(
+                        allowEscapedQuotesInLiteralStrings = allowEscapedQuotesInLiteralStrings,
+                        searchChar = getCloseBracket(ch, lineNo),
+                        startIndex = curIdx,
+                    )
+                    keyValueList.add(this.substring(prevIdx, closeBracketIdx + 1).trim())
+                    val nextCommaIdx = this.indexOfNextOutsideQuotes(
+                        allowEscapedQuotesInLiteralStrings = allowEscapedQuotesInLiteralStrings,
+                        searchChar = ',',
+                        startIndex = closeBracketIdx,
+                    )
+                    if (nextCommaIdx == -1) {
+                        isLastAdded = true
+                        break
+                    }
+                    prevIdx = nextCommaIdx + 1
+                    curIdx = nextCommaIdx + 1
+                } else if (ch == '\'' || ch == '\"') {
+                    if (currentQuoteChar == null) {
+                        currentQuoteChar = ch
+                    } else if (currentQuoteChar == ch) {
+                        currentQuoteChar = null
+                    }
+                }
+                curIdx++
+            }
+            if (!isLastAdded) {
+                keyValueList.add(this.substring(prevIdx, this.length).trim())
+            }
+
+            return keyValueList
+        }
+
+        private fun getCloseBracket(openBracket: Char, lineNo: Int): Char = if (openBracket == '[') {
+            ']'
+        } else if (openBracket == '{') {
+            '}'
+        } else {
+            throw ParseException("Invalid open bracket: $openBracket, should never happen", lineNo)
         }
     }
 }
