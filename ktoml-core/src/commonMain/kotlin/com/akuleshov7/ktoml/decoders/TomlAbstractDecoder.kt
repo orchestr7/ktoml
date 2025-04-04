@@ -1,15 +1,19 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
+import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlBasicString
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlDouble
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLiteralString
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlUnsignedLong
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum.*
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum
 import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
+import com.akuleshov7.ktoml.utils.UnsignedIntegerLimitsEnum
+import com.akuleshov7.ktoml.utils.UnsignedIntegerLimitsEnum.*
 import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -17,6 +21,8 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.AbstractDecoder
 
 /**
@@ -29,6 +35,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
     private val localTimeSerializer = LocalTime.serializer()
+    private val uByteSerializer = UByte.serializer()
+    private val uShortSerializer = UShort.serializer()
+    private val uIntSerializer = UInt.serializer()
+    private val uLongSerializer = ULong.serializer()
 
     // Invalid Toml primitive types, but we anyway support them with some limitations
     override fun decodeByte(): Byte = decodePrimitiveType()
@@ -85,6 +95,12 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 descriptor == localDateSerializer.descriptor ||
                 descriptor == localTimeSerializer.descriptor
 
+    protected fun DeserializationStrategy<*>.isUnsigned(): Boolean =
+        descriptor == uByteSerializer.descriptor ||
+                descriptor == uShortSerializer.descriptor ||
+                descriptor == uIntSerializer.descriptor ||
+                descriptor == uLongSerializer.descriptor
+
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
@@ -93,6 +109,11 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
             localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
             localTimeSerializer.descriptor -> decodePrimitiveType<LocalTime>() as T
+
+            uByteSerializer.descriptor -> decodeUnsignedPrimitiveType<UByte>() as T
+            uShortSerializer.descriptor -> decodeUnsignedPrimitiveType<UShort>() as T
+            uIntSerializer.descriptor -> decodeUnsignedPrimitiveType<UInt>() as T
+            uLongSerializer.descriptor -> decodeUnsignedPrimitiveType<ULong>() as T
             else -> super.decodeSerializableValue(deserializer)
         }
 
@@ -119,6 +140,26 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
                         " and with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo
+            )
+        }
+    }
+
+    private inline fun <reified T> decodeUnsignedPrimitiveType(): T {
+        val keyValue = decodeKeyValue()
+        try {
+            return when (val value = keyValue.value) {
+                is TomlLong -> decodeUnsignedInteger((value.content as Long).toULong(), keyValue.lineNo)
+                is TomlUnsignedLong -> decodeUnsignedInteger(value.content as ULong, keyValue.lineNo)
+                else -> throw InternalDecodingException(
+                    "decodeUnsignedPrimitiveType must proceed only with TomlLong or TomlUnsignedLong, " +
+                            "but received ${value::class.simpleName} instead",
+                )
+            }
+        } catch (ex: ClassCastException) {
+            throw IllegalTypeException(
+                "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
+                        " and with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
+                keyValue.lineNo,
             )
         }
     }
@@ -176,6 +217,16 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             else -> invalidType(T::class.toString(), "Signed Type")
         }
 
+    private inline fun <reified T> decodeUnsignedInteger(content: ULong, lineNo: Int): T =
+        when (T::class) {
+            UByte::class -> validateAndConvertUnsignedInteger(content, lineNo, U_BYTE) { it.toUByte() as T }
+            UShort::class -> validateAndConvertUnsignedInteger(content, lineNo, U_SHORT) { it.toUShort() as T }
+            UInt::class -> validateAndConvertUnsignedInteger(content, lineNo, U_INT) { it.toUInt() as T }
+            ULong::class -> validateAndConvertUnsignedInteger(content, lineNo, U_LONG) { it as T }
+
+            else -> invalidType(T::class.toString(), "Unsigned Type")
+        }
+
     /**
      * ktoml parser treats all integer literals as Long and all floating-point literals as Double,
      * so here we should be checking that there is no overflow with smaller types like Byte, Short and Int.
@@ -192,6 +243,22 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             "The integer literal, that you have provided is <$content>, " +
                     "but the type for deserialization is <${T::class}>. You will get an overflow, " +
                     "so we advise you to check the data or use other type for deserialization (Long, for example)",
+            lineNo
+        )
+    }
+
+    private inline fun <reified T> validateAndConvertUnsignedInteger(
+        content: ULong,
+        lineNo: Int,
+        limits: UnsignedIntegerLimitsEnum,
+        conversion: (ULong) -> T,
+    ): T = if (content in limits.min..limits.max) {
+        conversion(content)
+    } else {
+        throw IllegalTypeException(
+            "The unsigned integer literal, that you have provided is <$content>, " +
+                    "but the type for deserialization is <${T::class}>. You will get an overflow, " +
+                    "so we advise you to check the data or use other type for deserialization (ULong, for example)",
             lineNo
         )
     }

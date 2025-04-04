@@ -284,6 +284,40 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
     }
 
     /**
+     * Emits an unsigned integer value, optionally changing its representation from decimal.
+     *
+     * @param unsignedInteger
+     * @param representation How the integer will be represented in TOML.
+     * @param groupSize The digit group size, or less than `1` for no grouping. For
+     * example, a group size of `3` emits `1_000_000`, `4` emits `0b1111_1111`, etc.
+     * @return this instance
+     */
+    public fun emitValue(
+        unsignedInteger: ULong,
+        representation: IntegerRepresentation = DECIMAL,
+        groupSize: Int = 0,
+    ): TomlEmitter {
+        if (representation == GROUPED) {
+            return emitValue(unsignedInteger, representation = DECIMAL, groupSize = 3)
+        }
+
+        if (unsignedInteger < 0u) {
+            emit('-')
+        }
+
+        var digits = unsignedInteger.toString(representation.radix).trimStart('-')
+
+        if (groupSize > 0) {
+            digits = (digits as CharSequence).reversed()
+                .chunked(groupSize, CharSequence::reversed)
+                .asReversed()
+                .joinToString(separator = "_")
+        }
+
+        return emit(representation.prefix).emit(digits)
+    }
+
+    /**
      * Emits a floating-point value.
      *
      * @param float

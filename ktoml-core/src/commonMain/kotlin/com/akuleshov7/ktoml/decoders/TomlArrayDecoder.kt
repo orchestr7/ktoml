@@ -89,7 +89,9 @@ public class TomlArrayDecoder(
     override fun decodeBoolean(): Boolean = currentElementDecoder.decodeBoolean()
     override fun decodeChar(): Char = currentElementDecoder.decodeChar()
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = currentElementDecoder.decodeEnum(enumDescriptor)
-    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T = if (deserializer.isDateTime()) {
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T = if (
+        deserializer.isDateTime() || deserializer.isUnsigned()
+    ) {
         currentElementDecoder.decodeSerializableValue(deserializer)
     } else {
         super.decodeSerializableValue(deserializer)
