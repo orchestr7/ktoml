@@ -292,6 +292,7 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * example, a group size of `3` emits `1_000_000`, `4` emits `0b1111_1111`, etc.
      * @return this instance
      */
+    @Suppress("SAY_NO_TO_VAR")
     public fun emitValue(
         unsignedInteger: ULong,
         representation: IntegerRepresentation = DECIMAL,

@@ -22,7 +22,6 @@ import kotlinx.datetime.LocalTime
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.AbstractDecoder
 
 /**
@@ -35,10 +34,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
     private val localTimeSerializer = LocalTime.serializer()
-    private val uByteSerializer = UByte.serializer()
-    private val uShortSerializer = UShort.serializer()
-    private val uIntSerializer = UInt.serializer()
-    private val uLongSerializer = ULong.serializer()
+    private val unsignedByteSerializer = UByte.serializer()
+    private val unsignedShortSerializer = UShort.serializer()
+    private val unsignedIntSerializer = UInt.serializer()
+    private val unsignedLongSerializer = ULong.serializer()
 
     // Invalid Toml primitive types, but we anyway support them with some limitations
     override fun decodeByte(): Byte = decodePrimitiveType()
@@ -96,10 +95,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 descriptor == localTimeSerializer.descriptor
 
     protected fun DeserializationStrategy<*>.isUnsigned(): Boolean =
-        descriptor == uByteSerializer.descriptor ||
-                descriptor == uShortSerializer.descriptor ||
-                descriptor == uIntSerializer.descriptor ||
-                descriptor == uLongSerializer.descriptor
+        descriptor == unsignedByteSerializer.descriptor ||
+                descriptor == unsignedShortSerializer.descriptor ||
+                descriptor == unsignedIntSerializer.descriptor ||
+                descriptor == unsignedLongSerializer.descriptor
 
     // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
@@ -110,10 +109,10 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
             localTimeSerializer.descriptor -> decodePrimitiveType<LocalTime>() as T
 
-            uByteSerializer.descriptor -> decodeUnsignedPrimitiveType<UByte>() as T
-            uShortSerializer.descriptor -> decodeUnsignedPrimitiveType<UShort>() as T
-            uIntSerializer.descriptor -> decodeUnsignedPrimitiveType<UInt>() as T
-            uLongSerializer.descriptor -> decodeUnsignedPrimitiveType<ULong>() as T
+            unsignedByteSerializer.descriptor -> decodeUnsignedPrimitiveType<UByte>() as T
+            unsignedShortSerializer.descriptor -> decodeUnsignedPrimitiveType<UShort>() as T
+            unsignedIntSerializer.descriptor -> decodeUnsignedPrimitiveType<UInt>() as T
+            unsignedLongSerializer.descriptor -> decodeUnsignedPrimitiveType<ULong>() as T
             else -> super.decodeSerializableValue(deserializer)
         }
 

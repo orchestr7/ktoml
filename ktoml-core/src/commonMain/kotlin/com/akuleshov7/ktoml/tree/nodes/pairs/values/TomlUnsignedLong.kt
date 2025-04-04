@@ -19,7 +19,6 @@ public class TomlUnsignedLong internal constructor(
     override var content: Any,
     public var representation: IntegerRepresentation = DECIMAL
 ) : TomlValue() {
-
     public constructor(content: String, lineNo: Int) : this(content.parse(lineNo))
 
     private constructor(pair: Pair<ULong, IntegerRepresentation>) : this(pair.first, pair.second)

@@ -31,6 +31,7 @@ public enum class FloatingPointLimitsEnum(public val min: Double, public val max
  * @property min
  * @property max
  */
+@Suppress("WRONG_DECLARATIONS_ORDER")
 public enum class UnsignedIntegerLimitsEnum(public val min: ULong, public val max: ULong) {
     U_BYTE(UByte.MIN_VALUE.toULong(), UByte.MAX_VALUE.toULong()),
     U_SHORT(UShort.MIN_VALUE.toULong(), UShort.MAX_VALUE.toULong()),
