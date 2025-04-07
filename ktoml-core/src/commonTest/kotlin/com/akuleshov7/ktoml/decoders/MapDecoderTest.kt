@@ -3,14 +3,16 @@ package com.akuleshov7.ktoml.decoders
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.exceptions.TomlDecodingException
-import com.akuleshov7.ktoml.exceptions.UnsupportedDecoderException
-
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.Serializable
-import kotlin.test.*
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
-class PlainMapDecoderTest {
+class MapDecoderTest {
     @Serializable
     private data class TestDataMap(
         val text: String = "Test",
@@ -145,6 +147,50 @@ class PlainMapDecoderTest {
         assertEquals(
             data,
             decoded
+        )
+    }
+
+    @Test
+    fun decodeMapOfObjects() {
+        @Serializable
+        data class Coin(
+            val scale: Long,
+            @SerialName("default_volume")
+            val defaultVolume: Double,
+            @SerialName("skip_in_orderbook")
+            val skipInOrderbook: Double,
+        )
+        @Serializable
+        data class CoinsConf(
+            val coins: Map<String, Coin>
+        )
+
+        val toml = """
+            [coins.bitcoin]
+            scale = 8
+            default_volume = 0.1
+            skip_in_orderbook = 0.00001
+
+            [coins.ethereum]
+            scale = 8
+            default_volume = 0.2
+            skip_in_orderbook = 0.00001
+
+            [coins.tether]
+            scale = 2
+            default_volume = 100.0
+            skip_in_orderbook = 0.0001
+        """.trimIndent()
+
+        assertEquals(
+            CoinsConf(
+                mapOf(
+                    "bitcoin" to Coin(8, 0.1, 0.00001),
+                    "ethereum" to Coin(8, 0.2, 0.00001),
+                    "tether" to Coin(2, 100.0, 0.0001)
+                )
+            ),
+            Toml().decodeFromString(CoinsConf.serializer(), toml),
         )
     }
 }
