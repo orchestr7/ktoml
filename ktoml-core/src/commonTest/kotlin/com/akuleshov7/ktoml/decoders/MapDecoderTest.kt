@@ -193,4 +193,36 @@ class MapDecoderTest {
             Toml().decodeFromString(CoinsConf.serializer(), toml),
         )
     }
+
+    @Test
+    fun decodeMapWithQuotedNames() {
+        @Serializable
+        data class Animal(
+            val name: String,
+            val vocal: String
+        )
+        @Serializable
+        data class Animals(
+            val animals: Map<String, Animal>
+        )
+
+        val tomlString = """
+            [animals."my cat"]
+            name = "maunz"
+            vocal = "miau"
+            
+            [animals."my dog"]
+            name = "bello"
+            vocal = "wuff"
+        """.trimIndent()
+        assertEquals(
+            Animals(
+                mapOf(
+                    "my cat" to Animal("maunz", "miau"),
+                    "my dog" to Animal("bello", "wuff")
+                )
+            ),
+            Toml.decodeFromString<Animals>(tomlString),
+        )
+    }
 }
