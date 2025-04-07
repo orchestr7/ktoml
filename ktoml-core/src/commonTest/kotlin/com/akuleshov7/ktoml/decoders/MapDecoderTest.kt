@@ -165,6 +165,7 @@ class MapDecoderTest {
             val coins: Map<String, Coin>
         )
 
+        //language=toml
         val toml = """
             [coins.bitcoin]
             scale = 8
@@ -206,6 +207,7 @@ class MapDecoderTest {
             val animals: Map<String, Animal>
         )
 
+        //language=toml
         val tomlString = """
             [animals."my cat"]
             name = "maunz"
@@ -223,6 +225,35 @@ class MapDecoderTest {
                 )
             ),
             Toml.decodeFromString<Animals>(tomlString),
+        )
+    }
+
+    @Test
+    fun decodeMapWithInlineTable() {
+        @Serializable
+        data class Table(
+            val item1: String,
+            val item2: Map<String, String>,
+        )
+        @Serializable
+        data class Wrapper(
+            val table: Table,
+        )
+
+        //language=toml
+        val toml = """
+            [table]
+            "item1" = "val1"
+            "item2" = { key1 = "val2", key2 = "val3" }
+        """.trimIndent()
+        assertEquals(
+            Wrapper(
+                Table(
+                    item1 = "val1",
+                    item2 = mapOf("key1" to "val2", "key2" to "val3")
+                )
+            ),
+            Toml.decodeFromString<Wrapper>(toml),
         )
     }
 }
