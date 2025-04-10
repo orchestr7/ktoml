@@ -229,6 +229,34 @@ class EncodingAnnotationTest {
     }
 
     @Test
+    fun unsignedIntegerRepresentationTest() {
+        @Serializable
+        data class File(
+            @TomlInteger(DECIMAL)
+            val dec: ULong = 0u,
+            @TomlInteger(BINARY)
+            val bin: ULong = 2u,
+            @TomlInteger(GROUPED)
+            val gro: ULong = 9_999_099_009u,
+            @TomlInteger(HEX)
+            val hex: ULong = 4u,
+            @TomlInteger(OCTAL)
+            val oct: ULong = 6u,
+        )
+
+        assertEncodedEquals(
+            value = File(),
+            expectedToml = """
+                dec = 0
+                bin = 0b10
+                gro = 9_999_099_009
+                hex = 0x4
+                oct = 0o6
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun literalStringTest() {
         @Serializable
         data class File(

@@ -145,6 +145,7 @@ public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = 
         // ===== basic strings
         '\"' -> TomlBasicString(this, lineNo)
         else -> tryParseValue<NumberFormatException>(lineNo, ::TomlLong)  // ==== integer values
+            ?: tryParseValue<NumberFormatException>(lineNo, ::TomlUnsignedLong)  // ===== unsigned integer values
             ?: tryParseValue<NumberFormatException>(lineNo, ::TomlDouble)  // ===== float values
             ?: tryParseValue<IllegalArgumentException>(lineNo, ::TomlDateTime)  // ===== date-time values
             ?: TomlBasicString(this, lineNo)  // ===== fallback strategy in case of invalid value

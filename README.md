@@ -60,6 +60,7 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Table sections (single and dotted) \
 :white_check_mark: Key-value pairs (single and dotted) \
 :white_check_mark: Long/Integer/Byte/Short types \
+:white_check_mark: Unsigned integer types \
 :white_check_mark: Double/Float types \
 :white_check_mark: Basic Strings \
 :white_check_mark: Literal Strings \

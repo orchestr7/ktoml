@@ -79,6 +79,29 @@ class PrimitiveValueWriteTest {
     }
 
     @Test
+    fun unsignedIntegerWriteTest() {
+        // Decimal
+        testTomlValue(TomlUnsignedLong(1234567UL), "1234567")
+        testTomlValue(TomlLong(Long.MIN_VALUE), "${Long.MIN_VALUE}")
+
+        // Hex
+        testTomlValue(TomlUnsignedLong(0xdeadc0deUL, IntegerRepresentation.HEX), "0xdeadc0de")
+        testTomlValue(TomlUnsignedLong(ULong.MIN_VALUE, IntegerRepresentation.HEX), "0x0")
+
+        // Binary
+        testTomlValue(TomlUnsignedLong(0b10000000UL, IntegerRepresentation.BINARY), "0b10000000")
+        testTomlValue(TomlUnsignedLong(ULong.MIN_VALUE, IntegerRepresentation.BINARY), "0b0")
+
+        // Octal
+        testTomlValue(TomlUnsignedLong(0x1FFUL, IntegerRepresentation.OCTAL), "0o777")
+        testTomlValue(TomlUnsignedLong(ULong.MIN_VALUE, IntegerRepresentation.OCTAL), "0o0")
+
+        // Grouped
+        testTomlValue(TomlUnsignedLong(1234567UL, IntegerRepresentation.GROUPED), "1_234_567")
+        testTomlValue(TomlUnsignedLong(ULong.MAX_VALUE, IntegerRepresentation.GROUPED), "18_446_744_073_709_551_615")
+    }
+
+    @Test
     fun floatWriteTest() {
         testTomlValue(TomlDouble(PI), "$PI")
         testTomlValue(TomlDouble(NaN), "nan")

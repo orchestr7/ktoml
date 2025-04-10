@@ -15,14 +15,6 @@ public enum class IntegerLimitsEnum(public val min: Long, public val max: Long) 
     LONG(Long.MIN_VALUE, Long.MAX_VALUE),
     SHORT(Short.MIN_VALUE.toLong(), Short.MAX_VALUE.toLong()),
     ;
-    // Unsigned values are not supported now, and I think
-    // that will not be supported, because TOML spec says the following:
-    // Arbitrary 64-bit signed integers (from −2^63 to 2^63−1) should be accepted and handled losslessly.
-    // If an integer cannot be represented losslessly, an error must be thrown.
-    // U_BYTE(UByte.MIN_VALUE.toLong(), UByte.MAX_VALUE.toLong()),
-    // U_SHORT(UShort.MIN_VALUE.toLong(), UShort.MAX_VALUE.toLong()),
-    // U_INT(UInt.MIN_VALUE.toLong(), UInt.MAX_VALUE.toLong()),
-    // U_LONG(ULong.MIN_VALUE.toLong(), ULong.MAX_VALUE.toLong()),
 }
 
 /**
@@ -32,5 +24,18 @@ public enum class IntegerLimitsEnum(public val min: Long, public val max: Long) 
 public enum class FloatingPointLimitsEnum(public val min: Double, public val max: Double) {
     DOUBLE(-Double.MAX_VALUE, Double.MAX_VALUE),
     FLOAT(-Float.MAX_VALUE.toDouble(), Float.MAX_VALUE.toDouble()),
+    ;
+}
+
+/**
+ * @property min
+ * @property max
+ */
+@Suppress("WRONG_DECLARATIONS_ORDER")
+public enum class UnsignedIntegerLimitsEnum(public val min: ULong, public val max: ULong) {
+    U_BYTE(UByte.MIN_VALUE.toULong(), UByte.MAX_VALUE.toULong()),
+    U_SHORT(UShort.MIN_VALUE.toULong(), UShort.MAX_VALUE.toULong()),
+    U_INT(UInt.MIN_VALUE.toULong(), UInt.MAX_VALUE.toULong()),
+    U_LONG(ULong.MIN_VALUE, ULong.MAX_VALUE),
     ;
 }
