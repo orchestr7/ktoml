@@ -51,6 +51,11 @@ public data class TomlEncoderAttributes(
         }
     }
 
+    public fun resetComments() {
+        comments = listOf()
+        inlineComment = ""
+    }
+
     public fun reset() {
         key = null
 
