@@ -248,7 +248,7 @@ public class TomlMainDecoder(
                     // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
                     // if parsing
                     StructureKind.MAP -> TomlMapDecoder(nextProcessingNode, config)
-
+                    StructureKind.LIST -> TomlArrayOfTablesDecoder(nextProcessingNode, config)
                     else -> {
                         val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                             "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +
