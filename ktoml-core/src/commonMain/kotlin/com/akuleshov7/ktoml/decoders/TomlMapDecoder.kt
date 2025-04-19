@@ -9,6 +9,7 @@ import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
@@ -95,7 +96,13 @@ public class TomlMapDecoder private constructor(
             is TomlTable -> if (index % 2 == 0) {
                 processedNode.name as T
             } else {
-                TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
+                if (deserializer.descriptor.kind == StructureKind.CLASS) {
+                    var rootNode = TomlFile()
+                    rootNode.children.addAll(processedNode.children)
+                    TomlMainDecoder.decode(deserializer, rootNode, config)
+                } else {
+                    TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
+                }
             }
             else -> throw InternalDecodingException("Trying to decode ${processedNode.prettyStr()} with TomlMapDecoder, " +
                     "but faced an unknown type of Node")
