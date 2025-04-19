@@ -16,7 +16,6 @@ import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.encodeCollection
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class TomlDocsEncoderTest {
