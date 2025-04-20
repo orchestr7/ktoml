@@ -177,4 +177,43 @@ class ArrayOfTablesDecoderTest {
             Toml.decodeFromString<Fruits>(toml),
         )
     }
+
+    @Test
+    fun decodeWithInlineArrayOfTablesInside() {
+        @Serializable
+        data class Option(
+            val name: String,
+            val description: String,
+        )
+        @Serializable
+        data class Command(
+            val name: String,
+            val description: String,
+            val options: List<Option>? = null,
+        )
+        @Serializable
+        data class Commands(
+            val commands: List<Command>,
+        )
+
+        val toml = """
+            [[commands]]
+	            name = "ping"
+	            description = "description"
+	            options = [{ name = "user", description = "descr" }]
+        """.trimIndent()
+
+        assertEquals(
+            Commands(
+                commands = listOf(
+                    Command(
+                        name = "ping",
+                        description = "description",
+                        options = listOf(Option(name = "user", description = "descr"))
+                    )
+                )
+            ),
+            Toml.decodeFromString<Commands>(toml),
+        )
+    }
 }

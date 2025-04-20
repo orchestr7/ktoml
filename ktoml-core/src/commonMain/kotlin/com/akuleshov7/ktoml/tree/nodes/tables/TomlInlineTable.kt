@@ -7,6 +7,7 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.indexOfNextOutsideQuotes
 import com.akuleshov7.ktoml.parsers.parseTomlKeyValue
 import com.akuleshov7.ktoml.parsers.replaceEscaped
+import com.akuleshov7.ktoml.parsers.startsWithIgnoreAllWhitespaces
 import com.akuleshov7.ktoml.parsers.trimCurlyBraces
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -42,7 +43,7 @@ public class TomlInlineTable internal constructor(
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseInlineTableValue(lineNo, config),
+        keyValuePair.second.parseInlineTableValue(keyValuePair, lineNo, config),
         lineNo,
         comments,
         inlineComment
@@ -66,19 +67,7 @@ public class TomlInlineTable internal constructor(
     )
 
     public fun returnTable(tomlFileHead: TomlFile, currentParentalNode: TomlNode): TomlTable {
-        val tomlTable = TomlTable(
-            TomlKey(
-                if (currentParentalNode is TomlTable) {
-                    currentParentalNode.fullTableKey.keyParts + key.keyParts
-                } else {
-                    listOf(name)
-                }
-            ),
-            lineNo,
-            type = TableType.PRIMITIVE,
-            comments,
-            inlineComment
-        )
+        val tomlTable = createTableRoot(currentParentalNode)
 
         // FixMe: this code duplication can be unified with the logic in TomlParser
         tomlKeyValues.forEach { keyValue ->
@@ -97,9 +86,10 @@ public class TomlInlineTable internal constructor(
                     keyValue.returnTable(tomlFileHead, tomlTable)
                 )
 
+                keyValue is TomlArrayOfTablesElement -> tomlTable.appendChild(keyValue)
+
                 // otherwise, it should simply append the keyValue to the parent
                 else -> tomlTable.appendChild(keyValue)
-
             }
         }
         return tomlTable
@@ -128,11 +118,37 @@ public class TomlInlineTable internal constructor(
             .endInlineTable()
     }
 
+    private fun createTableRoot(currentParentalNode: TomlNode): TomlTable = TomlTable(
+        TomlKey(
+            when (currentParentalNode) {
+                is TomlTable -> currentParentalNode.fullTableKey.keyParts + key.keyParts
+                is TomlArrayOfTablesElement -> (currentParentalNode.parent as TomlTable)
+                    .fullTableKey.keyParts + key.keyParts
+                else -> listOf(name)
+            },
+        ),
+        lineNo,
+        type = if (this.isInlineArrayOfTables()) {
+            TableType.ARRAY
+        } else {
+            TableType.PRIMITIVE
+        },
+        comments,
+        inlineComment
+    )
+
+    private fun isInlineArrayOfTables(): Boolean = tomlKeyValues.any { it is TomlArrayOfTablesElement }
+
     public companion object {
         private fun String.parseInlineTableValue(
+            keyValuePair: Pair<String, String>,
             lineNo: Int,
             config: TomlInputConfig
         ): List<TomlNode> {
+            if (this.startsWithIgnoreAllWhitespaces("[{")) {
+                return parseInlineArrayOfTables(keyValuePair, lineNo, config)
+            }
+
             val inlineTableValueString = this.trimCurlyBraces().trim()
             val parsedList = inlineTableValueString
                 .also {
@@ -146,9 +162,88 @@ public class TomlInlineTable internal constructor(
                     }
                 }
                 .splitInlineTableToKeyValue(config.allowEscapedQuotesInLiteralStrings, lineNo)
-                .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
+                .map {
+                    it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config)
+                }
 
             return parsedList
+        }
+
+        private fun String.parseInlineArrayOfTables(
+            keyValuePair: Pair<String, String>,
+            lineNo: Int,
+            config: TomlInputConfig
+        ): List<TomlNode> {
+            val inlineTableValues = this.splitInlineArrayOfTables(config.allowEscapedQuotesInLiteralStrings)
+
+            return inlineTableValues.map { tableValue ->
+                val inlineTableValues = tableValue.parseInlineTableValue(
+                    keyValuePair.first to tableValue.trim(),
+                    lineNo,
+                    config,
+                )
+
+                TomlArrayOfTablesElement(lineNo, emptyList(), "").also { arrayOfTableElement ->
+                    inlineTableValues.forEach { value ->
+                        arrayOfTableElement.appendChild(value)
+                    }
+                }
+            }
+        }
+
+        /**
+         *  Split by "}," - but skip all whitespaces between '}' and ','
+         *  Also ignore characters inside strings and keep closing '}' in each value
+         */
+        @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
+        private fun String.splitInlineArrayOfTables(allowEscapedQuotesInLiteralStrings: Boolean): List<String> {
+            val clearedString = this
+                .replaceEscaped(allowEscapedQuotesInLiteralStrings)
+                .removePrefix("[")
+                .removeSuffix("]")
+
+            val result: MutableList<String> = mutableListOf()
+            val current = StringBuilder()
+            val lastIdx = clearedString.length
+            var i = 0
+
+            while (i < lastIdx) {
+                var currentChar = clearedString[i]
+                if (currentChar == '\"' || currentChar == '\'') {
+                    val closingQuoteChar = currentChar
+                    current.append(currentChar)
+                    i++
+
+                    // save all characters until we find the closing quote
+                    while (i < lastIdx) {
+                        current.append(clearedString[i])
+                        if (clearedString[i] == closingQuoteChar) {
+                            break
+                        }
+                        i++
+                    }
+                } else if (currentChar == '}') {
+                    // skip all whitespace and then try to find ',' after '}'
+                    do {
+                        i++
+                    } while (i < lastIdx && clearedString[i].isWhitespace())
+                    if (i < lastIdx && clearedString[i] == ',') {
+                        current.append("}")
+                        result.add(current.toString().trim())
+                        current.clear()
+                    }
+                } else {
+                    current.append(currentChar)
+                }
+                i++
+            }
+            // 'current' is blank when array has trailing comma
+            if (current.isNotBlank()) {
+                current.append("}")
+                result.add(current.toString().trim())
+            }
+
+            return result
         }
 
         /**

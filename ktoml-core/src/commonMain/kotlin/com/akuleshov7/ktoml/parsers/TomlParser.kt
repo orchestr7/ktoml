@@ -251,8 +251,12 @@ public fun String.parseTomlKeyValue(
 ): TomlNode {
     val keyValuePair = this.splitKeyValue(lineNo, config)
     return when {
-        keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, comments, inlineComment, config)
+        keyValuePair.second.startsWithIgnoreAllWhitespaces("[{") ->
+            TomlInlineTable(
+                keyValuePair, lineNo, comments, inlineComment, config
+            )
         keyValuePair.second.startsWith("{") -> TomlInlineTable(keyValuePair, lineNo, comments, inlineComment, config)
+        keyValuePair.second.startsWith("[") -> TomlKeyValueArray(keyValuePair, lineNo, comments, inlineComment, config)
         else -> TomlKeyValuePrimitive(keyValuePair, lineNo, comments, inlineComment, config)
     }
 }

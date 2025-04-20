@@ -122,7 +122,12 @@ class InlineTableDecoderTest {
             """.trimMargin()
 
         val result = Toml.decodeFromString<TableWithArrayWrapper>(test)
-        println(result)
+        assertEquals(
+            TableWithArrayWrapper(
+                table = TableWithArray(arr = listOf(1, 2, 3))
+            ),
+            result
+        )
     }
 
     @Test

@@ -233,6 +233,15 @@ internal fun String.indexOfNextOutsideQuotes(
 }
 
 /**
+ * @param prefix - the string to check for
+ * @return true if the string starts with the prefix, ignoring all whitespaces
+ */
+@Suppress("FUNCTION_BOOLEAN_PREFIX")
+internal fun String.startsWithIgnoreAllWhitespaces(prefix: String): Boolean = this.filter {
+    !it.isWhitespace()
+}.startsWith(prefix)
+
+/**
  * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
  * @param placeholder - the string to replace escaped quotes with
  * @return the string with escaped quotes replaced with a placeholder
