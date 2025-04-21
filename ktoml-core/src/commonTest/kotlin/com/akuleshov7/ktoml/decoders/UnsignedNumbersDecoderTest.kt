@@ -59,4 +59,21 @@ class UnsignedNumbersDecoderTest {
             Toml.decodeFromString<UnsignedIntegers>(toml)
         }
     }
+
+    @Test
+    fun shouldFailOnNegativeNumber() {
+        var toml = """
+            b = -1
+        """.trimIndent()
+        assertFailsWith<IllegalTypeException> {
+            Toml.decodeFromString<UnsignedIntegers>(toml)
+        }
+
+        toml = """
+            l = -1
+        """.trimIndent()
+        assertFailsWith<IllegalTypeException> {
+            Toml.decodeFromString<UnsignedIntegers>(toml)
+        }
+    }
 }

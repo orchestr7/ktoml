@@ -147,7 +147,11 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
         val keyValue = decodeKeyValue()
         try {
             return when (val value = keyValue.value) {
-                is TomlLong -> decodeUnsignedInteger((value.content as Long).toULong(), keyValue.lineNo)
+                is TomlLong -> {
+                    val long = value.content as Long
+                    throwIfNegative(long, keyValue.lineNo)
+                    decodeUnsignedInteger(long.toULong(), keyValue.lineNo)
+                }
                 is TomlUnsignedLong -> decodeUnsignedInteger(value.content as ULong, keyValue.lineNo)
                 else -> throw InternalDecodingException(
                     "decodeUnsignedPrimitiveType must proceed only with TomlLong or TomlUnsignedLong, " +
@@ -159,6 +163,15 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
                         " and with the provided type [${T::class}]. Please check the type in your Serializable class or it's nullability",
                 keyValue.lineNo,
+            )
+        }
+    }
+
+    private fun throwIfNegative(value: Long, lineNo: Int) {
+        if (value < 0) {
+            throw IllegalTypeException(
+                "Negative number is not allowed for unsigned types, but received [$value]",
+                lineNo,
             )
         }
     }
