@@ -127,8 +127,8 @@ public class TomlMainDecoder(
     }
 
     private fun checkDescriptorHasAllowedType(descriptor: SerialDescriptor) {
-        // LIST and MAP use their own decoders. If we have descriptor of these types in TomlMainDecoder,
-        // original toml is invalid, i.e. toml:
+        // LIST and MAP use their own decoders. If we decode with descriptor of these types in
+        // TomlMainDecoder, original toml is invalid, i.e. toml:
         // a = "abc" # string value
         // But deserializing type is List/Map
         if (descriptor.kind == StructureKind.LIST) {
