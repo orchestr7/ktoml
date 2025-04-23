@@ -102,6 +102,7 @@ public class TomlMainDecoder(
         }
 
         val currentNode = rootNode.getNeighbourNodes().elementAt(elementIndex)
+        checkDescriptorHasAllowedType(descriptor)
         val currentProperty = descriptor.getElementIndex(currentNode.name)
         checkNullability(currentNode, currentProperty, descriptor)
 
@@ -123,6 +124,25 @@ public class TomlMainDecoder(
         // we have found known name and we can continue processing normally
         elementIndex++
         return currentProperty
+    }
+
+    private fun checkDescriptorHasAllowedType(descriptor: SerialDescriptor) {
+        // LIST and MAP use their own decoders. If we have descriptor of these types in TomlMainDecoder,
+        // original toml is invalid, i.e. toml:
+        // a = "abc" # string value
+        // But deserializing type is List/Map
+        if (descriptor.kind == StructureKind.LIST) {
+            throw IllegalTypeException(
+                "Expected type ARRAY for key \"${rootNode.name}\"",
+                rootNode.lineNo,
+            )
+        }
+        if (descriptor.kind == StructureKind.MAP) {
+            throw IllegalTypeException(
+                "Expected type MAP for key \"${rootNode.name}\"",
+                rootNode.lineNo,
+            )
+        }
     }
 
     private fun iterateUntilWillFindAnyKnownName(descriptor: SerialDescriptor): Int {
