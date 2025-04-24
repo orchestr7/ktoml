@@ -77,6 +77,64 @@ class TableWriteTest {
 
         testTable(toml)
     }
+
+    @Test
+    fun emptySuperLevelTest() {
+        val toml = """
+            [a]
+            
+                [a.b]
+                    name = 1
+            
+                [a.c]
+                    name = 2
+        """.trimIndent()
+
+        testTable(toml)
+    }
+
+    @Test
+    fun complexEmptySuperLevelTest() {
+        val toml = """
+            [a]
+                name = 1
+
+                [a.b]
+            
+                    [a.b.c]
+                        name = 2
+            
+            [x]
+
+                [x.y]
+            
+                    [x.y.z]
+                        name = 2
+            
+            [m]
+
+                [m.n]
+            
+                    [m.n.k]
+                        name = 3
+            
+                    [m.n.l]
+                        name = 4
+            
+            [i]
+                name = 5
+
+                [i.j]
+            
+                    [i.j.k]
+                        name = 6
+            
+                    [i.j.l]
+                        name = 7
+        """.trimIndent()
+
+        testTable(toml)
+    }
 }
 
 fun testTable(

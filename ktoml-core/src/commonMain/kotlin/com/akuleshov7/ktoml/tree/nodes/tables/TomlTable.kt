@@ -170,11 +170,14 @@ public class TomlTable(
             indent()
         }
 
-        if (child !is TomlTable ||
+        if (child !is TomlStubEmptyNode) {
+            if (child !is TomlTable ||
                 (child.type == TableType.PRIMITIVE &&
                         !child.isSynthetic &&
-                        child.getFirstChild() !is TomlTable)) {
-            emitIndent()
+                        child.getFirstChild() !is TomlTable)
+            ) {
+                emitIndent()
+            }
         }
 
         child.write(emitter = this, config)
@@ -199,8 +202,10 @@ public class TomlTable(
                 children.forEachIndexed { i, child ->
                     writeArrayChild(i, child, children, config)
                 }
+
             TableType.PRIMITIVE -> {
-                if (children.first() is TomlStubEmptyNode) {
+                // "children.count() == 1" condition relies on the behavior of the AST result
+                if (children.count() == 1 && children.first() is TomlStubEmptyNode) {
                     return
                 }
 
