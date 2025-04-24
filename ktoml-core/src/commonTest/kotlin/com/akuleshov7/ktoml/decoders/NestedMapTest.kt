@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
+import com.akuleshov7.ktoml.exceptions.TomlDecodingException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -87,7 +88,9 @@ class NestedMapTest {
                     d = "String"
         """.trimIndent()
 
-        println(Toml.decodeFromString<MyClass>(data))
+        assertFailsWith<TomlDecodingException> {
+            Toml.decodeFromString<MyClass>(data)
+        }
     }
 
     @Test
