@@ -147,6 +147,13 @@ public class TomlTable(
         }
     }
 
+    private fun shouldEmitIndentBeforeTomlTable(
+        child: TomlNode,
+    ): Boolean = child !is TomlTable ||
+            (child.type == TableType.PRIMITIVE &&
+                    !child.isSynthetic &&
+                    child.getFirstChild() !is TomlTable)
+
     private fun TomlEmitter.writePrimitiveChild(
         index: Int,
         prevChild: TomlNode?,
@@ -170,10 +177,7 @@ public class TomlTable(
             indent()
         }
 
-        if (child !is TomlTable ||
-                (child.type == TableType.PRIMITIVE &&
-                        !child.isSynthetic &&
-                        child.getFirstChild() !is TomlTable)) {
+        if (child !is TomlStubEmptyNode && shouldEmitIndentBeforeTomlTable(child)) {
             emitIndent()
         }
 
@@ -200,7 +204,8 @@ public class TomlTable(
                     writeArrayChild(i, child, children, config)
                 }
             TableType.PRIMITIVE -> {
-                if (children.first() is TomlStubEmptyNode) {
+                // "children.count() == 1" condition relies on the behavior of the AST result
+                if (children.count() == 1 && children.first() is TomlStubEmptyNode) {
                     return
                 }
 
@@ -230,6 +235,7 @@ public class TomlTable(
             is TomlStubEmptyNode -> true
             is TomlKeyValue,
             is TomlInlineTable -> children.size > 1
+
             else -> false
         }
     }
@@ -269,9 +275,11 @@ public class TomlTable(
                 .trim()
 
             if (sectionFromContent.isBlank()) {
-                throw ParseException("Incorrect blank name for ${
-                    if (type == TableType.ARRAY) "array of tables" else "table"
-                }: $content", lineNo)
+                throw ParseException(
+                    "Incorrect blank name for ${
+                        if (type == TableType.ARRAY) "array of tables" else "table"
+                    }: $content", lineNo
+                )
             }
 
             return TomlKey(sectionFromContent, lineNo)
