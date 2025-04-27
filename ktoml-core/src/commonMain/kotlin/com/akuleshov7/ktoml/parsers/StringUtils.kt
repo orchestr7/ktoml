@@ -237,8 +237,8 @@ internal fun String.indexOfNextOutsideQuotes(
  * @return true if the string starts with the prefix, ignoring all whitespaces
  */
 @Suppress("FUNCTION_BOOLEAN_PREFIX")
-internal fun String.startsWithIgnoreAllWhitespaces(prefix: String): Boolean = this.filter {
-    !it.isWhitespace()
+internal fun String.startsWithIgnoreAllWhitespaces(prefix: String): Boolean = this.filterNot {
+    it.isWhitespace()
 }.startsWith(prefix)
 
 /**

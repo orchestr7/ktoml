@@ -174,7 +174,7 @@ public class TomlInlineTable internal constructor(
             lineNo: Int,
             config: TomlInputConfig
         ): List<TomlNode> {
-            val inlineTableValues = this.splitInlineArrayOfTables(config.allowEscapedQuotesInLiteralStrings)
+            val inlineTableValues = this.splitInlineArrayOfTables()
 
             return inlineTableValues.map { tableValue ->
                 val inlineTableValues = tableValue.parseInlineTableValue(
@@ -196,53 +196,59 @@ public class TomlInlineTable internal constructor(
          *  Also ignore characters inside strings and keep closing '}' in each value
          */
         @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
-        private fun String.splitInlineArrayOfTables(allowEscapedQuotesInLiteralStrings: Boolean): List<String> {
+        private fun String.splitInlineArrayOfTables(): List<String> {
             val clearedString = this
-                .replaceEscaped(allowEscapedQuotesInLiteralStrings)
                 .removePrefix("[")
                 .removeSuffix("]")
-
             val result: MutableList<String> = mutableListOf()
             val current = StringBuilder()
-            val lastIdx = clearedString.length
-            var i = 0
+            var openQuoteChar: Char? = null
+            var isCurlyBracesFound = false
 
-            while (i < lastIdx) {
-                var currentChar = clearedString[i]
-                if (currentChar == '\"' || currentChar == '\'') {
-                    val closingQuoteChar = currentChar
+            clearedString.forEach { currentChar ->
+                // currentChar is inside quotes, so just add it
+                if (openQuoteChar != null && currentChar != openQuoteChar) {
                     current.append(currentChar)
-                    i++
+                    return@forEach
+                }
 
-                    // save all characters until we find the closing quote
-                    while (i < lastIdx) {
-                        current.append(clearedString[i])
-                        if (clearedString[i] == closingQuoteChar) {
-                            break
-                        }
-                        i++
+                when (currentChar) {
+                    openQuoteChar -> {
+                        openQuoteChar = null
+                        current.append(currentChar)
+                        return@forEach
                     }
-                } else if (currentChar == '}') {
-                    // skip all whitespace and then try to find ',' after '}'
-                    do {
-                        i++
-                    } while (i < lastIdx && clearedString[i].isWhitespace())
-                    if (i < lastIdx && clearedString[i] == ',') {
-                        current.append("}")
+
+                    '\"', '\'' -> {
+                        openQuoteChar = currentChar
+                        current.append(currentChar)
+                    }
+
+                    '}' -> {
+                        isCurlyBracesFound = true
+                        current.append(currentChar)
+                    }
+
+                    ',' -> if (isCurlyBracesFound) {
+                        // comma between inline tables
+                        isCurlyBracesFound = false
                         result.add(current.toString().trim())
                         current.clear()
+                    } else {
+                        // comma between inline table values
+                        current.append(currentChar)
                     }
-                } else {
-                    current.append(currentChar)
+
+                    else -> if (!isCurlyBracesFound) {
+                        current.append(currentChar)
+                    }
                 }
-                i++
-            }
-            // 'current' is blank when array has trailing comma
-            if (current.isNotBlank()) {
-                current.append("}")
-                result.add(current.toString().trim())
             }
 
+            // 'current' is blank when array has trailing comma
+            if (current.isNotBlank()) {
+                result.add(current.toString().trim())
+            }
             return result
         }
 
