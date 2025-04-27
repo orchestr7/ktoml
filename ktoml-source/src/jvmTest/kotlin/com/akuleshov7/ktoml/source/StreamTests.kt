@@ -112,7 +112,7 @@ class StreamTests {
             test.table1,
             Toml.partiallyDecodeFromStream(
                 getTestDataStream("partial_decoder.toml"),
-                ""
+                "table1"
             )
         )
     }
