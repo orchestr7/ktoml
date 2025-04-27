@@ -191,7 +191,7 @@ public class TomlInlineTable internal constructor(
          *  Split by "}," - but skip all whitespaces between '}' and ','
          *  Also ignore characters inside strings and keep closing '}' in each value
          */
-        @Suppress("NESTED_BLOCK", "TOO_LONG_FUNCTION")
+        @Suppress("TOO_LONG_FUNCTION")
         private fun String.splitInlineArrayOfTables(): List<String> {
             val clearedString = this
                 .removePrefix("[")
