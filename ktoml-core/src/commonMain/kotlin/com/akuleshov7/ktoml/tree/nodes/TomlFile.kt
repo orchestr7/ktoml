@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.tree.nodes
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -15,11 +14,6 @@ public class TomlFile() : TomlNode(
     inlineComment = ""
 ) {
     override val name: String = "rootNode"
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(config: TomlConfig) : this()
 
     override fun getNeighbourNodes(): MutableList<TomlNode> =
         throw InternalAstException("Invalid call to getNeighbourNodes() for TomlFile node")

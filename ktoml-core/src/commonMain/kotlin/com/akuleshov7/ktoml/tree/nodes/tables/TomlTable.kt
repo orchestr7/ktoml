@@ -39,17 +39,6 @@ public class TomlTable(
     comments,
     inlineComment
 ) {
-    @Deprecated(
-        message = "fullTableName was replaced with fullTableKey; will be removed in future releases.",
-        replaceWith = ReplaceWith("fullTableKey.toString()")
-    )
-    @Suppress("NO_CORRESPONDING_PROPERTY", "CUSTOM_GETTERS_SETTERS")
-    public var fullTableName: String
-        get() = fullTableKey.toString()
-        set(value) {
-            fullTableKey = TomlKey(value, lineNo)
-        }
-
     // list of tables (including sub-tables) that are included in this table  (e.g.: {a, a.b, a.b.c} in a.b.c)
     public var tablesList: List<String> = fullTableKey.keyParts.runningReduce { prev, cur -> "$prev.$cur" }
 

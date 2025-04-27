@@ -21,15 +21,6 @@ internal interface TomlKeyValue {
     val comments: List<String>
     val inlineComment: String
 
-    @Deprecated(
-        message = "The config parameter was removed. Will be removed in future releases.",
-        replaceWith = ReplaceWith("createTomlTableFromDottedKey(parentNode)")
-    )
-    fun createTomlTableFromDottedKey(
-        parentNode: TomlNode,
-        config: TomlInputConfig = TomlInputConfig()
-    ): TomlTable = createTomlTableFromDottedKey(parentNode)
-
     /**
      * this is a small hack to support dotted keys
      * in case we have the following key: a.b.c = "val" we will simply create a new table:
@@ -133,7 +124,7 @@ public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = 
     "-nan", "+nan", "nan", "-NaN", "+NaN", "NaN" -> TomlDouble(Double.NaN)
     // ===== null values
     "null", "nil", "NULL", "NIL", "" -> if (config.allowNullValues) {
-        TomlNull(lineNo)
+        TomlNull()
     } else {
         throw ParseException("Null values are not allowed", lineNo)
     }

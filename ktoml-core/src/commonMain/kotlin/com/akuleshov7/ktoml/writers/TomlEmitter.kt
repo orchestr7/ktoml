@@ -5,7 +5,8 @@ import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.utils.isBareKey
 import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import com.akuleshov7.ktoml.utils.newLineChar
-import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
+import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -154,69 +155,6 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @return this instance
      */
     public fun endTableHeader(tableType: TableType): TomlEmitter = emit(tableType.close)
-
-    /**
-     * Emits the table header start character.
-     *
-     * @return this instance
-     */
-    @Deprecated(
-        message = "startTableHeader and startTableArrayHeader were merged; use " +
-                "startTableHeader(TableType.PRIMITIVE). Will be removed in next" +
-                " releases.",
-        replaceWith = ReplaceWith(
-            "startTableHeader(TableType.PRIMITIVE)",
-            "com.akuleshov7.ktoml.tree.nodes.TableType"
-        )
-    )
-    @Suppress("WRONG_OVERLOADING_FUNCTION_ARGUMENTS")
-    public fun startTableHeader(): TomlEmitter = startTableHeader(TableType.PRIMITIVE)
-
-    /**
-     * Emits the table header end character.
-     *
-     * @return this instance
-     */
-    @Deprecated(
-        message = "endTableHeader and endTableArrayHeader were merged; use end" +
-                "TableHeader(TableType.PRIMITIVE). Will be removed in next releases.",
-        replaceWith = ReplaceWith(
-            "endTableHeader(TableType.PRIMITIVE)",
-            "com.akuleshov7.ktoml.tree.nodes.TableType"
-        )
-    )
-    @Suppress("WRONG_OVERLOADING_FUNCTION_ARGUMENTS")
-    public fun endTableHeader(): TomlEmitter = endTableHeader(TableType.PRIMITIVE)
-
-    /**
-     * Emits the table array header start characters.
-     *
-     * @return this instance
-     */
-    @Deprecated(
-        message = "startTableHeader and startTableArrayHeader were merged; use " +
-                "startTableHeader(TableType.ARRAY). Will be removed in next releases.",
-        replaceWith = ReplaceWith(
-            "startTableHeader(TableType.ARRAY)",
-            "import com.akuleshov7.ktoml.tree.nodes.TableType"
-        )
-    )
-    public fun startTableArrayHeader(): TomlEmitter = startTableHeader(TableType.ARRAY)
-
-    /**
-     * Emits the table array header end characters.
-     *
-     * @return this instance
-     */
-    @Deprecated(
-        message = "endTableHeader and endTableArrayHeader were merged; use end" +
-                "TableHeader(TableType.ARRAY). Will be removed in next releases.",
-        replaceWith = ReplaceWith(
-            "endTableHeader(TableType.PRIMITIVE)",
-            "import com.akuleshov7.ktoml.tree.nodes.TableType"
-        )
-    )
-    public fun endTableArrayHeader(): TomlEmitter = endTableHeader(TableType.ARRAY)
 
     /**
      * Emit a string value, optionally making it literal and/or multiline.

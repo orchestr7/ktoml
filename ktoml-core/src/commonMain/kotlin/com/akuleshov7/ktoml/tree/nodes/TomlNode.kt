@@ -5,7 +5,6 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException

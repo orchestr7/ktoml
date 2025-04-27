@@ -5,15 +5,12 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
-
-import okio.source
-import org.junit.jupiter.api.Test
-
-import java.io.InputStream
-
-import kotlin.test.assertEquals
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import okio.source
+import org.junit.jupiter.api.Test
+import java.io.InputStream
+import kotlin.test.assertEquals
 
 class StreamTests {
     @Test
@@ -51,7 +48,7 @@ class StreamTests {
                 }
         assertEquals(
             listOf("a", "a.b.c", "a.d", "d", "d.a"),
-            parsedResult.getRealTomlTables().map { it.fullTableName })
+            parsedResult.getRealTomlTables().map { it.fullTableKey.toString() })
     }
 
     @ExperimentalSerializationApi
@@ -115,7 +112,7 @@ class StreamTests {
             test.table1,
             Toml.partiallyDecodeFromStream(
                 getTestDataStream("partial_decoder.toml"),
-                "table1"
+                ""
             )
         )
     }
@@ -130,7 +127,7 @@ class StreamTests {
                     .children
                     .filterIsInstance<TomlTable>()
                     .filter { it.type == TableType.PRIMITIVE && !it.isSynthetic }
-                    .map { it.fullTableName }
+                    .map { it.fullTableKey.toString() }
             }
         )
     }

@@ -8,7 +8,6 @@ import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
-import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
@@ -16,6 +15,7 @@ import kotlinx.serialization.StringFormat
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Toml class - is a general entry point in the core,
@@ -55,28 +55,6 @@ public open class Toml(
     }
 
     // ================== custom decoding methods ===============
-
-    /**
-     * simple deserializer of a list of strings in a toml format
-     *
-     * @param toml list with strings in toml format
-     * @param deserializer deserialization strategy
-     * @param config
-     * @return deserialized object of type T
-     */
-    @Deprecated(
-        message = "List of strings as an input was replaced with a sequence, " +
-                "to avoid extra conversion use sequence instead",
-        replaceWith = ReplaceWith(
-            "decodeFromString",
-            "com.akuleshov7.ktoml.decodeFromString"
-        )
-    )
-    public fun <T> decodeFromString(
-        deserializer: DeserializationStrategy<T>,
-        toml: List<String>,
-        config: TomlInputConfig = this.inputConfig
-    ): T = decodeFromString(deserializer, toml.asSequence(), config)
 
     /**
      * simple deserializer of a sequence of strings in a toml format

@@ -2,7 +2,6 @@
 
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.*
 import com.akuleshov7.ktoml.tree.nodes.*
@@ -33,19 +32,6 @@ public class TomlMainDecoder(
     private var elementIndex: Int = 0
 ) : TomlAbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule()
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(
-        rootNode: TomlNode,
-        config: TomlConfig,
-        elementIndex: Int = 0
-    ) : this(
-        rootNode,
-        config.input,
-        elementIndex
-    )
 
     override fun decodeValue(): Any = decodeKeyValue().value.content
 
