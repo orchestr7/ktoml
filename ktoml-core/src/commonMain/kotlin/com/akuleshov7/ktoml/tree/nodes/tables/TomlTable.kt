@@ -127,6 +127,7 @@ public class TomlTable(
 
                 // Primitive pairs have a single newline after, except when a
                 // table follows.
+                // FixMe: need to clarify why this check for instance is always 'true'
                 if (child !is TomlKeyValuePrimitive || children[index + 1] is TomlTable) {
                     emitNewLine()
                 }
