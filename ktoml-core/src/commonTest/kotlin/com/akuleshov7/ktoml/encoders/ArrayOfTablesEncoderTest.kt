@@ -107,6 +107,137 @@ class ArrayOfTablesEncoderTest {
     }
 
     @Test
+    fun encodeSubSubTablesWithMultipleValues() {
+        @Serializable
+        data class SubSubElement(
+            val name: String,
+            val description: String,
+        )
+        @Serializable
+        data class SubElement(
+            val name: String,
+            val description: String,
+            val subSubElements: List<SubSubElement>,
+        )
+        @Serializable
+        data class Element(
+            val name: String,
+            val subElements: List<SubElement>
+        )
+        @Serializable
+        data class Wrapper(
+            val elements: List<Element>
+        )
+
+
+        val data = Wrapper(
+            elements = listOf(
+                Element(
+                    name = "element 1",
+                    subElements = listOf(
+                        SubElement(
+                            "1.1", "d1.1",
+                            subSubElements =
+                                listOf(
+                                    SubSubElement("1.1.1", "d1.1.1"),
+                                    SubSubElement("1.1.2", "d1.1.2")
+                                )
+                        ),
+                        SubElement(
+                            "1.2", "d1.2",
+                            subSubElements =
+                                listOf(
+                                    SubSubElement("1.2.1", "d1.2.1"),
+                                    SubSubElement("1.2.2", "d1.2.2"),
+                                )
+                        ),
+                    )
+                ),
+                Element(
+                    name = "element 2",
+                    subElements = listOf(
+                        SubElement(
+                            "2.1", "d2.1",
+                            subSubElements =
+                                listOf(
+                                    SubSubElement("2.1.1", "d2.1.1"),
+                                    SubSubElement("2.1.2", "d2.1.2"),
+                                )
+                        ),
+                        SubElement(
+                            "2.2", "d2.2",
+                            subSubElements =
+                                listOf(
+                                    SubSubElement("2.2.1", "d2.2.1"),
+                                    SubSubElement("2.2.2", "d2.2.2"),
+                                )
+                        ),
+                    )
+                ),
+            )
+        )
+
+        assertEncodedEquals(
+            value = data,
+            expectedToml = """
+                [[elements]]
+                    name = "element 1"
+                
+                    [[elements.subElements]]
+                        name = "1.1"
+                        description = "d1.1"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "1.1.1"
+                            description = "d1.1.1"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "1.1.2"
+                            description = "d1.1.2"
+                
+                    [[elements.subElements]]
+                        name = "1.2"
+                        description = "d1.2"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "1.2.1"
+                            description = "d1.2.1"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "1.2.2"
+                            description = "d1.2.2"
+                
+                [[elements]]
+                    name = "element 2"
+                
+                    [[elements.subElements]]
+                        name = "2.1"
+                        description = "d2.1"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "2.1.1"
+                            description = "d2.1.1"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "2.1.2"
+                            description = "d2.1.2"
+                
+                    [[elements.subElements]]
+                        name = "2.2"
+                        description = "d2.2"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "2.2.1"
+                            description = "d2.2.1"
+                
+                        [[elements.subElements.subSubElements]]
+                            name = "2.2.2"
+                            description = "d2.2.2"
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun tableArrayWithNestedTableTest() {
         @Serializable
         data class InnerTable(val name: String = "granny smith")
