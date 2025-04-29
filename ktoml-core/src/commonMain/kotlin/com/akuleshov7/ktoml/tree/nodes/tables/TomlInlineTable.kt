@@ -3,10 +3,7 @@ package com.akuleshov7.ktoml.tree.nodes
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import com.akuleshov7.ktoml.parsers.indexOfNextOutsideQuotes
-import com.akuleshov7.ktoml.parsers.parseTomlKeyValue
-import com.akuleshov7.ktoml.parsers.replaceEscaped
-import com.akuleshov7.ktoml.parsers.trimCurlyBraces
+import com.akuleshov7.ktoml.parsers.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -41,26 +38,14 @@ public class TomlInlineTable internal constructor(
         config: TomlInputConfig = TomlInputConfig()
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
-        keyValuePair.second.parseInlineTableValue(lineNo, config),
+        keyValuePair.second.parseInlineTableValue(keyValuePair, lineNo, config),
         lineNo,
         comments,
         inlineComment
     )
 
     public fun returnTable(tomlFileHead: TomlFile, currentParentalNode: TomlNode): TomlTable {
-        val tomlTable = TomlTable(
-            TomlKey(
-                if (currentParentalNode is TomlTable) {
-                    currentParentalNode.fullTableKey.keyParts + key.keyParts
-                } else {
-                    listOf(name)
-                }
-            ),
-            lineNo,
-            type = TableType.PRIMITIVE,
-            comments,
-            inlineComment
-        )
+        val tomlTable = createTableRoot(currentParentalNode)
 
         // FixMe: this code duplication can be unified with the logic in TomlParser
         tomlKeyValues.forEach { keyValue ->
@@ -79,9 +64,10 @@ public class TomlInlineTable internal constructor(
                     keyValue.returnTable(tomlFileHead, tomlTable)
                 )
 
+                keyValue is TomlArrayOfTablesElement -> tomlTable.appendChild(keyValue)
+
                 // otherwise, it should simply append the keyValue to the parent
                 else -> tomlTable.appendChild(keyValue)
-
             }
         }
         return tomlTable
@@ -110,11 +96,37 @@ public class TomlInlineTable internal constructor(
             .endInlineTable()
     }
 
+    private fun createTableRoot(currentParentalNode: TomlNode): TomlTable = TomlTable(
+        TomlKey(
+            when (currentParentalNode) {
+                is TomlTable -> currentParentalNode.fullTableKey.keyParts + key.keyParts
+                is TomlArrayOfTablesElement -> (currentParentalNode.parent as TomlTable)
+                    .fullTableKey.keyParts + key.keyParts
+                else -> listOf(name)
+            },
+        ),
+        lineNo,
+        type = if (this.isInlineArrayOfTables()) {
+            TableType.ARRAY
+        } else {
+            TableType.PRIMITIVE
+        },
+        comments,
+        inlineComment
+    )
+
+    private fun isInlineArrayOfTables(): Boolean = tomlKeyValues.any { it is TomlArrayOfTablesElement }
+
     public companion object {
         private fun String.parseInlineTableValue(
+            keyValuePair: Pair<String, String>,
             lineNo: Int,
             config: TomlInputConfig
         ): List<TomlNode> {
+            if (this.startsWithIgnoreAllWhitespaces("[{")) {
+                return parseInlineArrayOfTables(keyValuePair, lineNo, config)
+            }
+
             val inlineTableValueString = this.trimCurlyBraces().trim()
             val parsedList = inlineTableValueString
                 .also {
@@ -128,9 +140,93 @@ public class TomlInlineTable internal constructor(
                     }
                 }
                 .splitInlineTableToKeyValue(config.allowEscapedQuotesInLiteralStrings, lineNo)
-                .map { it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config) }
+                .map {
+                    it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config)
+                }
 
             return parsedList
+        }
+
+        private fun String.parseInlineArrayOfTables(
+            keyValuePair: Pair<String, String>,
+            lineNo: Int,
+            config: TomlInputConfig
+        ): List<TomlNode> {
+            val inlineTableValues = this.splitInlineArrayOfTables()
+
+            return inlineTableValues.map { tableValue ->
+                val inlineTableValues = tableValue.parseInlineTableValue(
+                    keyValuePair.first to tableValue.trim(),
+                    lineNo,
+                    config,
+                )
+
+                TomlArrayOfTablesElement(lineNo, emptyList(), "").also { arrayOfTableElement ->
+                    inlineTableValues.forEach { value ->
+                        arrayOfTableElement.appendChild(value)
+                    }
+                }
+            }
+        }
+
+        /**
+         *  Split by "}," - but skip all whitespaces between '}' and ','
+         *  Also ignore characters inside strings and keep closing '}' in each value
+         */
+        @Suppress("TOO_LONG_FUNCTION")
+        private fun String.splitInlineArrayOfTables(): List<String> {
+            val clearedString = this
+                .removePrefix("[")
+                .removeSuffix("]")
+            val result: MutableList<String> = mutableListOf()
+            val current = StringBuilder()
+            var openQuoteChar: Char? = null
+            var isCurlyBracesFound = false
+
+            clearedString.forEach { currentChar ->
+                // currentChar is inside quotes, so just add it
+                if (openQuoteChar != null && currentChar != openQuoteChar) {
+                    current.append(currentChar)
+                    return@forEach
+                }
+
+                when (currentChar) {
+                    openQuoteChar -> {
+                        openQuoteChar = null
+                        current.append(currentChar)
+                    }
+
+                    '\"', '\'' -> {
+                        openQuoteChar = currentChar
+                        current.append(currentChar)
+                    }
+
+                    '}' -> {
+                        isCurlyBracesFound = true
+                        current.append(currentChar)
+                    }
+
+                    ',' -> if (isCurlyBracesFound) {
+                        // comma between inline tables
+                        isCurlyBracesFound = false
+                        result.add(current.toString().trim())
+                        current.clear()
+                    } else {
+                        // comma between inline table values
+                        current.append(currentChar)
+                    }
+
+                    else -> if (!isCurlyBracesFound) {
+                        current.append(currentChar)
+                    }
+                }
+            }
+
+            // 'current' is blank when array has trailing comma
+            if (current.isNotBlank()) {
+                result.add(current.toString().trim())
+            }
+            return result
         }
 
         /**
