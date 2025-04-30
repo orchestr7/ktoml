@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.tree.nodes
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
@@ -42,41 +41,6 @@ public class TomlKeyValuePrimitive(
         lineNo,
         comments,
         inlineComment
-    )
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(
-        key: TomlKey,
-        value: TomlValue,
-        lineNo: Int,
-        comments: List<String> = emptyList(),
-        inlineComment: String = "",
-        config: TomlConfig
-    ) : this(
-        key,
-        value,
-        lineNo,
-        comments,
-        inlineComment
-    )
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(
-        keyValuePair: Pair<String, String>,
-        lineNo: Int,
-        comments: List<String> = emptyList(),
-        inlineComment: String = "",
-        config: TomlConfig
-    ) : this(
-        keyValuePair,
-        lineNo,
-        comments,
-        inlineComment,
-        config.input
     )
 
     public override fun write(

@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.tree.nodes
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -18,11 +17,6 @@ public class TomlStubEmptyNode(lineNo: Int) : TomlNode(
     inlineComment = ""
 ) {
     override val name: String = EMPTY_TECHNICAL_NODE
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(lineNo: Int, config: TomlConfig) : this(lineNo)
 
     override fun write(
         emitter: TomlEmitter,

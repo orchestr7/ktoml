@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
@@ -30,19 +29,6 @@ public class TomlLiteralString internal constructor(
         lineNo: Int,
         config: TomlInputConfig = TomlInputConfig()
     ) : this(content.verifyAndTrimQuotes(lineNo, config), content.contains(newLineChar()))
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(
-        content: String,
-        lineNo: Int,
-        config: TomlConfig
-    ) : this(
-        content,
-        lineNo,
-        config.input
-    )
 
     override fun write(
         emitter: TomlEmitter,

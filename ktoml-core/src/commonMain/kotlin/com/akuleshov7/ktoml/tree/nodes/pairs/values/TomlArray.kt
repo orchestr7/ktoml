@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
@@ -24,35 +23,6 @@ public class TomlArray internal constructor(
         config: TomlInputConfig
     ) : this(rawContent.parse(lineNo, config))
 
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases."
-    )
-    public constructor(
-        rawContent: String,
-        lineNo: Int,
-        config: TomlConfig
-    ) : this(rawContent)
-
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlInputConfig instead. Will be removed in next releases.",
-        replaceWith = ReplaceWith(
-            "parse(config)",
-            "com.akuleshov7.ktoml.TomlInputConfig"
-        )
-    )
-    public fun parse(config: TomlConfig): List<Any> = parse(config.input)
-
-    /**
-     * small adaptor to make proper testing of parsing
-     *
-     * @param config
-     * @return converted array to a list
-     */
-    @Deprecated(
-        message = "parse(TomlInputConfig) is deprecated. Will be removed in next releases.",
-        replaceWith = ReplaceWith("content as List<Any>"),
-
-    )
     @Suppress("UNCHECKED_CAST")
     public fun parse(config: TomlInputConfig = TomlInputConfig()): List<Any> = content as List<Any>
 
