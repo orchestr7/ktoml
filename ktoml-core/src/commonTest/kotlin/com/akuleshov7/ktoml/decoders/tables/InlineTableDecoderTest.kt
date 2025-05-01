@@ -1,6 +1,7 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.tables
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.decoders.ReadMeExampleTest
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -154,10 +155,12 @@ class InlineTableDecoderTest {
         val decoded = Toml.decodeFromString<GradleExample>(test)
 
         assertEquals(
-            GradleExample(ListOfInlines(
-                Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
-                Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
-                Plugin("org.jetbrains.kotlin.plugin.serialization", Version("kotlin")))
+            GradleExample(
+                ListOfInlines(
+                    Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
+                    Plugin("org.jetbrains.kotlin.jvm", Version("kotlin")),
+                    Plugin("org.jetbrains.kotlin.plugin.serialization", Version("kotlin"))
+                )
             ),
             decoded
         )

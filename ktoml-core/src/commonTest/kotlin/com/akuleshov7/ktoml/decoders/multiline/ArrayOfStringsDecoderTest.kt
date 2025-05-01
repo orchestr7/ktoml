@@ -1,8 +1,8 @@
 package com.akuleshov7.ktoml.decoders.multiline
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.decoders.NestedArrayOfStrings
-import com.akuleshov7.ktoml.decoders.SimpleStringArray
+import com.akuleshov7.ktoml.decoders.structures.NestedArrayOfStrings
+import com.akuleshov7.ktoml.decoders.structures.SimpleStringArray
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.primitives
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig

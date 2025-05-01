@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.primitives
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
@@ -39,7 +39,7 @@ class CharDecoderTest {
             """
 
             val decoded = Toml.decodeFromString<MyClass>(test)
-            assertEquals(decoded, MyClass('\r', '\n', '\t'))
+        assertEquals(decoded, MyClass('\r', '\n', '\t'))
     }
 
     @Test
@@ -52,7 +52,7 @@ class CharDecoderTest {
             """
 
             val decoded = Toml.decodeFromString<MyClass>(test)
-            assertEquals(decoded, MyClass('H', 'e', 'l'))
+        assertEquals(decoded, MyClass('H', 'e', 'l'))
     }
 
     @Test

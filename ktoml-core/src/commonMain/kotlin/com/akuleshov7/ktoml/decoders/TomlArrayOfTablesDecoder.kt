@@ -33,7 +33,7 @@ public class TomlArrayOfTablesDecoder(
             return CompositeDecoder.DECODE_DONE
         }
 
-        var rootNode: TomlNode = TomlFile()
+        val rootNode: TomlNode = TomlFile()
         rootNode.children.addAll(list[nextElementIndex].children)
         currentElementDecoder = TomlMainDecoder(
             rootNode = rootNode,
