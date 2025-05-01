@@ -1,14 +1,12 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.primitives
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
-import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-
 
 class PrimitivesDecoderTest {
     @Test

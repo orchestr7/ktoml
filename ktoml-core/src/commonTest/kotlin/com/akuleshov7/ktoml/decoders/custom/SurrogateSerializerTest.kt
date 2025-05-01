@@ -1,11 +1,10 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.custom
 
 import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,7 +35,7 @@ class SurrogateTest {
     class Color(val rgb: Int)
 
     @Test
-    fun testDecodingWithCustomSerializer() {
+    fun decodingWithSurrogateSerializer() {
         val test = Toml.decodeFromString<Color>(
             """
                 r = 5
@@ -45,5 +44,29 @@ class SurrogateTest {
             """.trimIndent()
         )
         assertEquals(Color(329223).rgb, test.rgb)
+    }
+
+    @Test
+    fun decodingWithSurrogateSerializerInsideTable() {
+        @Serializable
+        data class WrapperTable(
+            val table1: Color,
+            val table2: Color,
+        )
+
+        val toml = """
+            [table1]
+                r = 1
+                g = 2
+                b = 3
+            [table2]
+                r = 4
+                g = 5
+                b = 6
+        """.trimIndent()
+
+        val result = Toml.decodeFromString<WrapperTable>(toml)
+        assertEquals(Color(66051).rgb, result.table1.rgb)
+        assertEquals(Color(263430).rgb, result.table2.rgb)
     }
 }

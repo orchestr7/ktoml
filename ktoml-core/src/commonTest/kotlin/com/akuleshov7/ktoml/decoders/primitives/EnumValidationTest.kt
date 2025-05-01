@@ -1,7 +1,6 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.primitives
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.InvalidEnumValueException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString

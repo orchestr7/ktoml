@@ -83,8 +83,14 @@ public class TomlMainDecoder(
             rootNode = getFirstChild(rootNode)
             elementIndex = 1
         }
+        // this is also a workaround for custom serializers
+        val node = if (rootNode is TomlTable) {
+            getFirstChild(getCurrentNode())
+        } else {
+            getCurrentNode()
+        }
 
-        return when (val node = getCurrentNode()) {
+        return when (node) {
             is TomlKeyValuePrimitive -> node
             is TomlKeyValueArray -> node
             // empty nodes will be filtered by iterateUntilWillFindAnyKnownName() method, but in case we came into this
@@ -234,7 +240,13 @@ public class TomlMainDecoder(
                     // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
                     // if parsing
                     StructureKind.MAP -> TomlMapDecoder(nextProcessingNode, config)
-                    StructureKind.LIST -> TomlArrayOfTablesDecoder(nextProcessingNode, config)
+                    StructureKind.LIST -> when (nextProcessingNode.type) {
+                        TableType.ARRAY -> TomlArrayOfTablesDecoder(nextProcessingNode, config)
+                        // Primitive TomlTable + StructureKind.LIST means either custom serializer or
+                        // invalid toml structure; If second, exception will be thrown later
+                        TableType.PRIMITIVE ->
+                            TomlArrayDecoder(getFirstChild(getCurrentNode()) as TomlKeyValueArray, config)
+                    }
                     else -> {
                         val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
                             "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +

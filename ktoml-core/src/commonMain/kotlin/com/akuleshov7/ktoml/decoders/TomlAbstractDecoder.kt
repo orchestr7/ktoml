@@ -100,7 +100,6 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 descriptor == unsignedIntSerializer.descriptor ||
                 descriptor == unsignedLongSerializer.descriptor
 
-    // Cases for date-time types
     @Suppress("UNCHECKED_CAST")
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
         when (deserializer.descriptor) {

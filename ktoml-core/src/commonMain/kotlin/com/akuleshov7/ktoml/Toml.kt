@@ -1,11 +1,13 @@
 package com.akuleshov7.ktoml
 
+import com.akuleshov7.ktoml.decoders.TomlArrayDecoder
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.decoders.TomlMapDecoder
 import com.akuleshov7.ktoml.encoders.TomlMainEncoder
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
 import com.akuleshov7.ktoml.writers.TomlWriter
 
@@ -152,10 +154,10 @@ public open class Toml(
     }
 
     private fun <T> decode(deserializer: DeserializationStrategy<T>, parsedToml: TomlFile): T =
-        if (deserializer.descriptor.kind == StructureKind.MAP) {
-            TomlMapDecoder.decode(deserializer, parsedToml, inputConfig)
-        } else {
-            TomlMainDecoder.decode(deserializer, parsedToml, inputConfig)
+        when (deserializer.descriptor.kind) {
+            StructureKind.LIST -> TomlArrayDecoder.decode(deserializer, parsedToml.getFirstChild() as TomlKeyValueArray, inputConfig)
+            StructureKind.MAP -> TomlMapDecoder.decode(deserializer, parsedToml, inputConfig)
+            else -> TomlMainDecoder.decode(deserializer, parsedToml, inputConfig)
         }
 
     // ================== other ===============
