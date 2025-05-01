@@ -78,7 +78,7 @@ class CustomSerializerTest {
         )
     }
 
-    class ColorIntArraySerializer : KSerializer<ColorIntArray> {
+    object ColorIntArraySerializer : KSerializer<ColorIntArray> {
         private val delegateSerializer = IntArraySerializer()
 
         // Serial names of descriptors should be unique, this is why we advise including app package in the name.
