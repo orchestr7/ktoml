@@ -131,17 +131,16 @@ public class TomlMainDecoder(
         // TomlMainDecoder, original toml is invalid, i.e. toml:
         // a = "abc" # string value
         // But deserializing type is List/Map
-        if (descriptor.kind == StructureKind.LIST) {
-            throw IllegalTypeException(
+        when (descriptor.kind) {
+            StructureKind.LIST -> throw IllegalTypeException(
                 "Expected type ARRAY for key \"${rootNode.name}\"",
                 rootNode.lineNo,
             )
-        }
-        if (descriptor.kind == StructureKind.MAP) {
-            throw IllegalTypeException(
+            StructureKind.MAP -> throw IllegalTypeException(
                 "Expected type MAP for key \"${rootNode.name}\"",
                 rootNode.lineNo,
             )
+            else -> {}
         }
     }
 
