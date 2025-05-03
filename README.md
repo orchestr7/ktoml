@@ -78,9 +78,8 @@ We are still developing and testing this library, so it has several limitations:
 :white_check_mark: Maps (for anonymous key-value pairs) \
 :white_check_mark: Nested Inline Tables \
 :white_check_mark: Array of Tables \
-:white_check_mark: Inline Array of Tables (decoding) \
-:x: Arrays: of Different Types \
-:x: Inline Array of Tables (encoding)
+:white_check_mark: Inline Array of Tables \
+:x: Arrays: of Different Types
 
 ## Dependency
 The library is hosted on the [Maven Central](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).

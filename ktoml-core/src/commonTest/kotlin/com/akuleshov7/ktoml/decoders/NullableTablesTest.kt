@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString

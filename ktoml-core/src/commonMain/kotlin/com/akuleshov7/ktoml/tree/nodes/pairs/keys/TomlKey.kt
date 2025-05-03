@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.keys
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
@@ -22,20 +21,6 @@ public class TomlKey internal constructor(
      */
     internal val isDotted: Boolean = keyParts.size > 1
 
-    @Deprecated(
-        message = "rawContent is deprecated; use toString for a lazily formatted version. Will be removed in future releases.",
-        replaceWith = ReplaceWith("toString()")
-    )
-    @Suppress("CUSTOM_GETTERS_SETTERS")
-    public val rawContent: String get() = toString()
-
-    @Deprecated(
-        message = "content was replaced with last. Will be removed in future releases.",
-        replaceWith = ReplaceWith("last()")
-    )
-    @Suppress("CUSTOM_GETTERS_SETTERS")
-    public val content: String get() = last()
-
     /**
      * @param rawContent
      * @param lineNo
@@ -50,12 +35,6 @@ public class TomlKey internal constructor(
      * `a.b.' c '`
      */
     public fun last(): String = keyParts.last().trimAllQuotes().trim()
-
-    @Deprecated(
-        message = "TomlConfig is deprecated. Will be removed in next releases.",
-        replaceWith = ReplaceWith("write(emitter)")
-    )
-    public fun write(emitter: TomlEmitter, config: TomlConfig): Unit = write(emitter)
 
     public fun write(emitter: TomlEmitter) {
         val keys = keyParts

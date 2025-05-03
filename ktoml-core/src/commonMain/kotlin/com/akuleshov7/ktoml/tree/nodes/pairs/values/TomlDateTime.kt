@@ -3,7 +3,10 @@ package com.akuleshov7.ktoml.tree.nodes.pairs.values
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.writers.TomlEmitter
-import kotlinx.datetime.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 
 /**
  * Toml AST Node for a representation of date-time types (offset date-time, local date-time, local date, local time)
@@ -35,18 +38,18 @@ internal constructor(
         private fun String.parseToDateTime(): Any = try {
             // Offset date-time
             // TOML spec allows a space instead of the T, try replacing the first space by a T
-            replaceFirst(' ', 'T').toInstant()
+            Instant.parse(replaceFirst(' ', 'T'))
         } catch (e: IllegalArgumentException) {
             try {
                 // Local date-time
-                toLocalDateTime()
+                LocalDateTime.parse(this)
             } catch (e: IllegalArgumentException) {
                 try {
                     // Local date
-                    toLocalDate()
+                    LocalDate.parse(this)
                 } catch (e: IllegalArgumentException) {
                     // Local time
-                    toLocalTime()
+                    LocalTime.parse(this)
                 }
             }
         }

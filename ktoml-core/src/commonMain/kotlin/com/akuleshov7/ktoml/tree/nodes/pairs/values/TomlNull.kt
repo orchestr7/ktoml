@@ -11,11 +11,6 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
 public class TomlNull() : TomlValue() {
     override var content: Any = "null"
 
-    @Deprecated(
-        message = "lineNo parameter is deprecated, should be removed. Will be removed in next releases."
-    )
-    public constructor(lineNo: Int) : this()
-
     override fun write(
         emitter: TomlEmitter,
         config: TomlOutputConfig

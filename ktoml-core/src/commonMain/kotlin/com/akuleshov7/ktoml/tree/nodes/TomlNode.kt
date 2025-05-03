@@ -5,7 +5,6 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalAstException
@@ -43,6 +42,7 @@ public sealed class TomlNode(
 
     // this constructor is used by TomlKeyValueList and TomlKeyValuePrimitive and we concatenate keyValuePair to the content
     // only for logging, debug information and unification of the code
+    // FixMe: need to clarify why this code became unused
     protected constructor(
         key: TomlKey,
         value: TomlValue,

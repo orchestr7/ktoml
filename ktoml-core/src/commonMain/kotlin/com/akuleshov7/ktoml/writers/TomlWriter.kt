@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.writers
 
-import com.akuleshov7.ktoml.TomlConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
@@ -11,12 +10,6 @@ import kotlin.jvm.JvmInline
  */
 @JvmInline
 public value class TomlWriter(private val config: TomlOutputConfig) {
-    @Deprecated(
-        message = "TomlConfig is deprecated; use TomlOutputConfig instead. Will be removed in next releases."
-    )
-    @Suppress("DEPRECATION")
-    public constructor(config: TomlConfig) : this(config.output)
-
     public fun writeToString(
         file: TomlFile,
         stringBuilder: StringBuilder = StringBuilder()
