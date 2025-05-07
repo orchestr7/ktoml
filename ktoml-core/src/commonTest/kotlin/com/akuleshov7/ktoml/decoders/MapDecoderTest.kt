@@ -8,7 +8,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -22,7 +21,6 @@ class MapDecoderTest {
     )
 
     @Test
-    @Ignore
     fun typeErrorsInDecoding() {
         val data = """
             text = "Test"

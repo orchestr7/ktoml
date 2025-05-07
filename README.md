@@ -505,13 +505,18 @@ Toml.encodeToString<MyClass>(/* your encoded object */)
 <details>
 <summary>I want to catch ktoml-specific exceptions in my code, how can I do it?</summary>
 
-Ktoml may generate various exceptions when encountering invalid input. It's important to note that certain strict checks can be enabled or disabled (refer to the `Configuration` section in this readme). We have intentionally exposed only two top-level exceptions, namely `TomlDecodingException` and `TomlEncodingException`, for public use. You can catch these exceptions in your code, as all other exceptions inherit from one of these two and will not be publicly accessible.
+Ktoml may generate various exceptions when encountering invalid input. It's important to note that certain strict checks
+can be enabled or disabled (refer to the `Configuration` section in this readme). We have intentionally exposed only
+two top-level exceptions, namely `TomlDecodingException` and `TomlEncodingException`, for public use. You can catch 
+these exceptions in your code, as all other exceptions inherit from one of these two and will not be publicly accessible.
 </details>
 
 <details>
-<summary>What if I do not know the names for keys and tables in my TOML, and therefore cannot specify a strict schema for decoding? Can I still decode it somehow?</summary>
+<summary>What if I do not know the names for keys and tables in my TOML, and therefore cannot specify a strict schema 
+for decoding? Can I still decode it somehow?</summary>
 
-Certainly. In such cases, you can decode all your key-values into a `Map`. However, it's important to be aware that both ktoml and kotlinx will be unable to enforce type control in this scenario. Therefore, you should not expect any "type safety." For instance, even when dealing with a mixture of types like Int, Map, String, etc., such as:
+Certainly. In such cases, you can decode all your key-values into a `Map`. Even though your schema isn't strictly 
+defined, you need to provide type-safe structure, for example:
 
 ```toml
 [a]
@@ -523,16 +528,49 @@ Certainly. In such cases, you can decode all your key-values into a `Map`. Howev
         d = "String"
 ```
 
-You can still decode it using `Toml.decodeFromString<MyClass>(data)` where:
+If you try to decode it using `Toml.decodeFromString<MyClass>(data)`:
 
 ```kotlin
-// MyClass(a={b=42, c=String, innerTable={d=5}, otherInnerTable={d=String}})
 @Serializable
 data class MyClass(
     val a: Map<String, Map<String, String>>
 )
 ```
+This will result in a `TomlDecodingException` because types of `b` and `innerTable.d` are not a `String`.
+
+Also, it's possible to have a map of objects:
+```toml
+[coins.bitcoin]
+    scale = 8
+    default_volume = 0.1
+    skip_in_orderbook = 0.00001
+
+[coins.ethereum]
+    scale = 8
+    default_volume = 0.2
+    skip_in_orderbook = 0.00001
+
+[coins.tether]
+    scale = 2
+    default_volume = 100.0
+    skip_in_orderbook = 0.0001
+```
+You can decode this structure using `Toml.decodeFromString<CoinsConfiguration>(data)` where:
+
+```kotlin
+@Serializable
+data class Coin(
+    val scale: Long,
+    @SerialName("default_volume")
+    val defaultVolume: Double,
+    @SerialName("skip_in_orderbook")
+    val skipInOrderbook: Double,
+)
+@Serializable
+data class CoinsConfiguration(
+    val coins: Map<String, Coin>
+)
+```
 
 
-However, be aware that this may lead to unintended side effects. Our recommendation is to decode only key-values of the **same** type for a more predictable outcome.
 </details>
