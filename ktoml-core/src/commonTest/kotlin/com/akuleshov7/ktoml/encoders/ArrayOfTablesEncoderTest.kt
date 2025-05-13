@@ -1,7 +1,13 @@
 package com.akuleshov7.ktoml.encoders
 
+import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
+import kotlinx.serialization.encodeToString
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ArrayOfTablesEncoderTest {
     @Test
@@ -12,11 +18,11 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class SimpleTableArray(
             val fruits: List<Table> =
-                    listOf(
-                        Table("apple"),
-                        Table("banana"),
-                        Table("plantain")
-                    )
+                listOf(
+                    Table("apple"),
+                    Table("banana"),
+                    Table("plantain")
+                )
         )
 
         assertEncodedEquals(
@@ -38,6 +44,65 @@ class ArrayOfTablesEncoderTest {
     }
 
     @Test
+    // reported in #321
+    fun encodeArrayOfTablesNegative1() {
+        @Serializable
+        data class Reproducer(val foo: String, val bar: String)
+
+        val list = listOf(
+            Reproducer("foo", "bar"),
+            Reproducer("bar", "baz")
+        )
+
+        assertFailsWith<TomlWritingException> {
+            Toml.encodeToString(list)
+        }
+    }
+
+    @Test
+    // reported in #321
+    fun encodeArrayOfTablesNegative2() {
+        val str = "Hello world"
+        assertFailsWith<TomlWritingException> {
+            Toml.encodeToString(str)
+        }
+    }
+
+    @Test
+    // reported in #321
+    fun encodeArrayOfTablesPositive() {
+        @Serializable
+        data class Reproducer(val foo: String, val bar: String)
+
+        @Serializable
+        data class Result(val list: List<Reproducer>)
+
+        val result = Result(
+            listOf(
+                Reproducer("foo", "bar"),
+                Reproducer("foo", "bar")
+            )
+        )
+
+        val encoded = Toml.encodeToString(result)
+        assertEncodedEquals(
+            result,
+            """
+                [[list]]
+                    foo = "foo"
+                    bar = "bar"
+
+                [[list]]
+                    foo = "foo"
+                    bar = "bar"
+            """.trimIndent(),
+        )
+
+        val decoded = Toml.decodeFromString<Result>(encoded)
+        assertEquals(Result(listOf(Reproducer("foo","bar"), Reproducer("foo", "bar"))), decoded)
+    }
+
+    @Test
     fun simpleTableArrayWithEmptyTest() {
         @Serializable
         data class Table(
@@ -49,11 +114,11 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class SimpleTableArrayWithEmpty(
             val products: List<Table> =
-                    listOf(
-                        Table("Hammer", 738594937),
-                        Table(),
-                        Table("Nail", 284758393, "gray")
-                    )
+                listOf(
+                    Table("Hammer", 738594937),
+                    Table(),
+                    Table("Nail", 284758393, "gray")
+                )
         )
 
         assertEncodedEquals(
@@ -113,17 +178,20 @@ class ArrayOfTablesEncoderTest {
             val name: String,
             val description: String,
         )
+
         @Serializable
         data class SubElement(
             val name: String,
             val description: String,
             val subSubElements: List<SubSubElement>,
         )
+
         @Serializable
         data class Element(
             val name: String,
             val subElements: List<SubElement>
         )
+
         @Serializable
         data class Wrapper(
             val elements: List<Element>
@@ -138,18 +206,18 @@ class ArrayOfTablesEncoderTest {
                         SubElement(
                             "1.1", "d1.1",
                             subSubElements =
-                                listOf(
-                                    SubSubElement("1.1.1", "d1.1.1"),
-                                    SubSubElement("1.1.2", "d1.1.2")
-                                )
+                            listOf(
+                                SubSubElement("1.1.1", "d1.1.1"),
+                                SubSubElement("1.1.2", "d1.1.2")
+                            )
                         ),
                         SubElement(
                             "1.2", "d1.2",
                             subSubElements =
-                                listOf(
-                                    SubSubElement("1.2.1", "d1.2.1"),
-                                    SubSubElement("1.2.2", "d1.2.2"),
-                                )
+                            listOf(
+                                SubSubElement("1.2.1", "d1.2.1"),
+                                SubSubElement("1.2.2", "d1.2.2"),
+                            )
                         ),
                     )
                 ),
@@ -159,18 +227,18 @@ class ArrayOfTablesEncoderTest {
                         SubElement(
                             "2.1", "d2.1",
                             subSubElements =
-                                listOf(
-                                    SubSubElement("2.1.1", "d2.1.1"),
-                                    SubSubElement("2.1.2", "d2.1.2"),
-                                )
+                            listOf(
+                                SubSubElement("2.1.1", "d2.1.1"),
+                                SubSubElement("2.1.2", "d2.1.2"),
+                            )
                         ),
                         SubElement(
                             "2.2", "d2.2",
                             subSubElements =
-                                listOf(
-                                    SubSubElement("2.2.1", "d2.2.1"),
-                                    SubSubElement("2.2.2", "d2.2.2"),
-                                )
+                            listOf(
+                                SubSubElement("2.2.1", "d2.2.1"),
+                                SubSubElement("2.2.2", "d2.2.2"),
+                            )
                         ),
                     )
                 ),
@@ -282,10 +350,10 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class TableArrayWithNestedTable(
             val fruit: List<Table> =
-                    listOf(
-                        Table(),
-                        Table()
-                    )
+                listOf(
+                    Table(),
+                    Table()
+                )
         )
 
         assertEncodedEquals(
@@ -312,11 +380,11 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class Table1(
             val varieties: List<Table2> =
-                    listOf(
-                        Table2("red delicious"),
-                        Table2("granny smith"),
-                        Table2("granny smith"),
-                    )
+                listOf(
+                    Table2("red delicious"),
+                    Table2("granny smith"),
+                    Table2("granny smith"),
+                )
         )
 
         @Serializable
@@ -354,10 +422,10 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class Table1(
             val b: List<Table2> =
-                    listOf(
-                        Table2(1, InnerTable(2)),
-                        Table2(3, InnerTable(4)),
-                    )
+                listOf(
+                    Table2(1, InnerTable(2)),
+                    Table2(3, InnerTable(4)),
+                )
         )
 
         @Serializable
@@ -395,10 +463,10 @@ class ArrayOfTablesEncoderTest {
         @Serializable
         data class Table2(
             val c: List<InnerTable> =
-                    listOf(
-                        InnerTable(2),
-                        InnerTable(4)
-                    )
+                listOf(
+                    InnerTable(2),
+                    InnerTable(4)
+                )
         )
 
         @Serializable
