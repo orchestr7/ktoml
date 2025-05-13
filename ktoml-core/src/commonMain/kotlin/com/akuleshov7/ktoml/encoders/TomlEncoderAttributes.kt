@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.*
-import com.akuleshov7.ktoml.exceptions.InternalEncodingException
+import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.writers.IntegerRepresentation
 
 /**
@@ -32,7 +32,13 @@ public data class TomlEncoderAttributes(
     public var inlineComment: String = "",
     public var isImplicit: Boolean = false,
 ) {
-    public fun keyOrThrow(): String = key ?: throw InternalEncodingException("Key is not set")
+    public fun keyOrThrow(): String = key
+        ?: throw TomlWritingException(
+            "According to the TOML specification, all structures must have an associated key and name. " +
+                    "For example, you cannot serialize a plain string or other primitive-like value without wrapping it " +
+                    "in an object field, such as: data class A(val myStr: String). " +
+                    "Please ensure your value is wrapped and given a proper name."
+        )
 
     public fun child(): TomlEncoderAttributes = copy(parent = copy(), isImplicit = false)
 

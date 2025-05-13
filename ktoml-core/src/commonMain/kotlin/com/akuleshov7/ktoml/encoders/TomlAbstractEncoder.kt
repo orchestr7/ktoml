@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
+import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
@@ -245,6 +246,13 @@ public abstract class TomlAbstractEncoder protected constructor(
                     return true
                 }
             }
+            StructureKind.LIST -> throw TomlWritingException(
+                "It looks like you're trying to encode a list of objects. " +
+                        "In TOML notation, this corresponds to an [[array of tables]]. " +
+                        "However, ktoml cannot serialize this structure without a proper name — it cannot infer or construct one automatically. " +
+                        "Please wrap your list in a serializable class, for example: data class A(val list: List<MyObject>). " +
+                        "This will produce the expected TOML representation: [[list]]."
+            )
             else -> throw InternalEncodingException("Unknown parent kind: $kind.")
         }
 

@@ -30,6 +30,47 @@ class ArrayOfTablesDecoderTest {
     }
 
     @Test
+    // found in #321
+    fun decodeRegrssionExample() {
+
+        @Serializable
+        data class Snippet(
+            val id: String,
+            val dependsOn: List<String>,
+            val content: String
+        )
+
+        @Serializable
+        data class MyToml(
+            val snippet: List<Snippet>
+        )
+
+        val toml = """
+            [[snippet]]
+              id = "test"
+              dependsOn = [ "/a#", "/b#", "/c#" ]
+              content = '''
+                Lorem ipsum dolor sit amet
+              '''
+
+            [[snippet]]
+              id = "test2"
+              dependsOn = [ "/c#" ]
+              content = '''
+                Lorem ipsum dolor sit amet
+              '''
+        """.trimIndent()
+
+        // If you're concerned about a trailing \n in the string, don't worry — it's correct according to the TOML specification.
+        // In raw strings, the first newline is trimmed, and all subsequent whitespace is preserved.
+        assertEquals(
+            MyToml(listOf(Snippet("test", listOf("/a#", "/b#", "/c#"), "    Lorem ipsum dolor sit amet\n"),
+                Snippet("test2", listOf("/c#"), "    Lorem ipsum dolor sit amet\n"))),
+            Toml.decodeFromString<MyToml>(toml)
+        )
+    }
+
+    @Test
     fun decodeArrayOfTables() {
         @Serializable
         data class Product(
