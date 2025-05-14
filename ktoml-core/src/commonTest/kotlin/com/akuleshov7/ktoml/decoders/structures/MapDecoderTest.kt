@@ -1,13 +1,13 @@
 package com.akuleshov7.ktoml.decoders.structures
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.exceptions.TomlDecodingException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -21,7 +21,6 @@ class MapDecoderTest {
     )
 
     @Test
-    @Ignore
     fun typeErrorsInDecoding() {
         val data = """
             text = "Test"
@@ -255,5 +254,20 @@ class MapDecoderTest {
             ),
             Toml.decodeFromString<Wrapper>(toml),
         )
+    }
+
+    @Test
+    fun shouldThrowIllegalTypeExceptionOnWrongMapType() {
+        @Serializable
+        data class MapWrapper(
+            val a: Map<Int, Int>,
+        )
+        val toml = """
+            a = "abc"
+        """.trimIndent()
+
+        assertFailsWith<IllegalTypeException> {
+            Toml.decodeFromString<MapWrapper>(toml)
+        }
     }
 }

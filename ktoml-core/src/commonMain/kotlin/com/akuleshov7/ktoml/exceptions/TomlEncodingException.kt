@@ -22,12 +22,5 @@ internal class InternalEncodingException(message: String) : TomlEncodingExceptio
 
 /**
  * @param message
- * @param lineNo
- */
-// Todo: This needs a better name
-internal class IllegalEncodingTypeException(message: String, lineNo: Int) : TomlEncodingException("Line $lineNo: $message")
-
-/**
- * @param message
  */
 internal class UnsupportedEncodingFeatureException(message: String) : TomlEncodingException(message)

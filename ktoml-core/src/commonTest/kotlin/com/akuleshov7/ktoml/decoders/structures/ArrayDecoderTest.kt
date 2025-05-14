@@ -185,4 +185,19 @@ class SimpleArrayDecoderTest {
         val testSingleWithInternalQuote = "a = ['yes, \"indeed\"', 'hmm, \"hmm\"']"
         assertEquals(SimpleStringArray(listOf("yes, \"indeed\"", "hmm, \"hmm\"")), Toml.decodeFromString(testSingleWithInternalQuote))
     }
+
+    @Test
+    fun shouldThrowIllegalTypeExceptionOnWrongArrayType() {
+        @Serializable
+        data class ArrayWrapper(
+            val a: List<Int>,
+        )
+        val toml = """
+            a = "abc"
+        """.trimIndent()
+
+        assertFailsWith<IllegalTypeException> {
+            Toml.decodeFromString<ArrayWrapper>(toml)
+        }
+    }
 }

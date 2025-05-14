@@ -71,6 +71,7 @@ public class TomlTable(
         val firstChild = children.firstOrNull() ?: return
 
         if (isExplicit(firstChild) && type == TableType.PRIMITIVE) {
+            emitter.emitIndent()
             emitter.writeHeader()
 
             if (inlineComment.isNotEmpty()) {
@@ -104,9 +105,7 @@ public class TomlTable(
         config: TomlOutputConfig
     ) {
         if (child is TomlArrayOfTablesElement) {
-            if (parent !is TomlArrayOfTablesElement) {
-                emitIndent()
-            }
+            emitIndent()
 
             writeChildComments(child)
             writeHeader()
@@ -137,13 +136,6 @@ public class TomlTable(
         }
     }
 
-    private fun shouldEmitIndentBeforeTomlTable(
-        child: TomlNode,
-    ): Boolean = child !is TomlTable ||
-            (child.type == TableType.PRIMITIVE &&
-                    !child.isSynthetic &&
-                    child.getFirstChild() !is TomlTable)
-
     private fun TomlEmitter.writePrimitiveChild(
         index: Int,
         prevChild: TomlNode?,
@@ -167,7 +159,8 @@ public class TomlTable(
             indent()
         }
 
-        if (child !is TomlStubEmptyNode && shouldEmitIndentBeforeTomlTable(child)) {
+        // Prevent double indentation on dotted table elements (when child is TomlTable)
+        if (child !is TomlStubEmptyNode && child !is TomlTable) {
             emitIndent()
         }
 

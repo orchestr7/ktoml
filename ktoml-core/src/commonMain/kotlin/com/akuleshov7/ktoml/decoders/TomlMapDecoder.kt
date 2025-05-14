@@ -91,18 +91,15 @@ public class TomlMapDecoder private constructor(
         // stubs are internal technical nodes that are not needed in this scenario
         skipStubs()
         return when (val processedNode = rootNode.children[decodingElementIndex]) {
-            // simple decoding for key-value type
-            is TomlKeyValue -> ((if (index % 2 == 0) processedNode.key.toString() else processedNode.value.content)) as T
+            is TomlKeyValue -> if (index % 2 == 0) {
+                processedNode.key.toString() as T
+            } else {
+                decodeTomlKeyValue(processedNode, deserializer)
+            }
             is TomlTable -> if (index % 2 == 0) {
                 processedNode.name as T
             } else {
-                if (deserializer.descriptor.kind == StructureKind.CLASS) {
-                    var rootNode = TomlFile()
-                    rootNode.children.addAll(processedNode.children)
-                    TomlMainDecoder.decode(deserializer, rootNode, config)
-                } else {
-                    TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
-                }
+                decodeTomlTable(processedNode, deserializer)
             }
             else -> throw InternalDecodingException("Trying to decode ${processedNode.prettyStr()} with TomlMapDecoder, " +
                     "but faced an unknown type of Node")
@@ -132,6 +129,29 @@ public class TomlMapDecoder private constructor(
             ++decodingElementIndex
             kotlinxIndex += 2
         }
+    }
+
+    private fun <T> decodeTomlKeyValue(
+        processedNode: TomlNode,
+        deserializer: DeserializationStrategy<T>
+    ): T = if (deserializer.descriptor.kind == StructureKind.MAP) {
+        decodeSerializableValue(deserializer)
+    } else {
+        // To have a type check, delegate decoding to TomlMainDecoder
+        var rootNode = TomlFile()
+        rootNode.appendChild(processedNode)
+        TomlMainDecoder.decode(deserializer, rootNode, config)
+    }
+
+    private fun <T> decodeTomlTable(
+        processedNode: TomlTable,
+        deserializer: DeserializationStrategy<T>
+    ): T = if (deserializer.descriptor.kind == StructureKind.CLASS) {
+        var rootNode = TomlFile()
+        rootNode.children.addAll(processedNode.children)
+        TomlMainDecoder.decode(deserializer, rootNode, config)
+    } else {
+        TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
     }
 
     public companion object {
