@@ -91,12 +91,12 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.6.0</version>
+  <version>0.7.0</version>
 </dependency>
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-file</artifactId>
-  <version>0.6.0</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 </details>
@@ -105,8 +105,8 @@ To import `ktoml` library you need to add following dependencies to your code:
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.6.0'
-implementation 'com.akuleshov7:ktoml-file:0.6.0'
+implementation 'com.akuleshov7:ktoml-core:0.7.0'
+implementation 'com.akuleshov7:ktoml-file:0.7.0'
 ```
 </details>
 
@@ -114,8 +114,8 @@ implementation 'com.akuleshov7:ktoml-file:0.6.0'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.6.0")
-implementation("com.akuleshov7:ktoml-file:0.6.0")
+implementation("com.akuleshov7:ktoml-core:0.7.0")
+implementation("com.akuleshov7:ktoml-file:0.7.0")
 ```
 </details>
 
