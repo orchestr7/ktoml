@@ -99,4 +99,21 @@ public class TomlArrayDecoder(
 
     // this should be applied to [currentPrimitiveElementOfArray] and not to the [rootNode]
     override fun decodeNotNullMark(): Boolean = currentPrimitiveElementOfArray !is TomlNull
+
+    public companion object {
+        /**
+         * @param deserializer - deserializer provided by Kotlin compiler
+         * @param tomlKeyValueArray - TomlKeyValueArray node for decoding
+         * @param config - decoding configuration for parsing and serialization
+         * @return decoded (deserialized) object of type T
+         */
+        public fun <T> decode(
+            deserializer: DeserializationStrategy<T>,
+            tomlKeyValueArray: TomlKeyValueArray,
+            config: TomlInputConfig = TomlInputConfig()
+        ): T {
+            val decoder = TomlArrayDecoder(tomlKeyValueArray, config)
+            return decoder.decodeSerializableValue(deserializer)
+        }
+    }
 }

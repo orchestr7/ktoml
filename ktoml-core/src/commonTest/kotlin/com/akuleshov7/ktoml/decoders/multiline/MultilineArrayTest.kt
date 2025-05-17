@@ -1,7 +1,7 @@
 package com.akuleshov7.ktoml.decoders.multiline
 
 import com.akuleshov7.ktoml.Toml
-import com.akuleshov7.ktoml.decoders.NestedArray
+import com.akuleshov7.ktoml.decoders.structures.NestedArray
 import com.akuleshov7.ktoml.exceptions.ParseException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString

@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.structures
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
@@ -67,7 +67,14 @@ class NestedMapTest {
         """.trimIndent()
 
         val result = Toml.decodeFromString<NestedTable>(data)
-        assertEquals(NestedTable(outer = mapOf("inner1" to mapOf("a" to 5, "b" to 5), "inner2" to mapOf("c" to 7, "d" to 12))), result)
+        assertEquals(
+            NestedTable(
+                outer = mapOf(
+                    "inner1" to mapOf("a" to 5, "b" to 5),
+                    "inner2" to mapOf("c" to 7, "d" to 12)
+                )
+            ), result
+        )
     }
 
     @ExperimentalSerializationApi

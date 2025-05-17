@@ -1,4 +1,4 @@
-package com.akuleshov7.ktoml.decoders
+package com.akuleshov7.ktoml.decoders.tables
 
 import com.akuleshov7.ktoml.Toml
 import kotlinx.serialization.ExperimentalSerializationApi
