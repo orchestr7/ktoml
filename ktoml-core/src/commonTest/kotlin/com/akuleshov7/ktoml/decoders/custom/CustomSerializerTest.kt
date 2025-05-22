@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.decoders.custom
 
 import com.akuleshov7.ktoml.Toml
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.IntArraySerializer
@@ -11,6 +12,8 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -330,6 +333,33 @@ class CustomSerializerTest {
         assertEquals(
             ProjectInsideTable(Box(Project("Kotlin")), Box(Project("Java"))),
             Toml.decodeFromString<ProjectInsideTable>(toml),
+        )
+    }
+
+    private val module = SerializersModule {
+        contextual(DateAsLongSerializer)
+    }
+
+    @Test
+    fun contextualSerializer() {
+        @Serializable
+        data class ProgrammingLanguage(
+            val name: String,
+            @Contextual
+            val stableReleaseDate: Date
+        )
+
+        val toml = """
+            name = "Kotlin"
+            stableReleaseDate = 2025
+        """.trimIndent()
+
+        assertEquals(
+            ProgrammingLanguage(
+                "Kotlin",
+                Date(LocalDate(2025, 1, 1))
+            ),
+            Toml(serializersModule = module).decodeFromString<ProgrammingLanguage>(toml),
         )
     }
 }
