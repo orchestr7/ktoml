@@ -326,4 +326,30 @@ class MultilineArrayTest {
 
         assertEquals(expected, Toml.decodeFromString(test))
     }
+
+    @Test
+    fun trailingCommaInMultilineNestedArray() {
+        var toml = """
+            a = [
+                [1, 2],
+                [3, 4],
+            ]
+        """.trimIndent()
+        val expected = NestedArray(
+                listOf(
+                    listOf(1, 2),
+                    listOf(3, 4)
+                )
+            )
+
+        assertEquals(expected, Toml.decodeFromString(toml))
+
+        toml = """
+            a = [
+                [1, 2],
+                [3, 4] ,
+            ]
+        """.trimIndent()
+        assertEquals(expected, Toml.decodeFromString(toml))
+    }
 }

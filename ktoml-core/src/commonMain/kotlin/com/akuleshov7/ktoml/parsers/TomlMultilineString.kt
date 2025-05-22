@@ -119,9 +119,15 @@ internal class TomlMultilineString(
         }
 
         return if (isNested == true) {
-            lines.joinToString("")
-                .trim()
-                .endsWith(multilineType.closingSymbols + multilineType.closingSymbols)
+            val clearedString = lines.joinToString("")
+                .filter { !it.isWhitespace() }
+
+            if (multilineType == MultilineType.ARRAY) {
+                clearedString.endsWith(multilineType.closingSymbols + multilineType.closingSymbols) ||
+                        clearedString.endsWith(multilineType.closingSymbols + "," + multilineType.closingSymbols)
+            } else {
+                clearedString.endsWith(multilineType.closingSymbols + multilineType.closingSymbols)
+            }
         } else {
             lines.last()
                 .trim()
