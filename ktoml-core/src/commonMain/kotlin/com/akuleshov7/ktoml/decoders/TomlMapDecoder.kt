@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
+import com.akuleshov7.ktoml.Toml.Default.serializersModule
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
@@ -11,7 +12,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
@@ -25,6 +25,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @param decodingElementIndex for iterating over the TOML table we are currently reading
  * @param kotlinxIndex for iteration inside the kotlinX loop: [decodeElementIndex -> decodeSerializableElement]
  * @param config TomlInput config
+ * @property serializersModule
  */
 @ExperimentalSerializationApi
 public class TomlMapDecoder private constructor(
@@ -33,19 +34,21 @@ public class TomlMapDecoder private constructor(
     private val config: TomlInputConfig,
     private var decodingElementIndex: Int = 0,
     private var kotlinxIndex: Int = 0,
+    override val serializersModule: SerializersModule,
 ) : TomlAbstractDecoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule()
     public constructor(
         rootNode: TomlTable,
         config: TomlInputConfig,
         decodingElementIndex: Int = 0,
         kotlinxIndex: Int = 0,
+        serializersModule: SerializersModule,
     ) : this(
         rootNode = rootNode,
         fullTableKey = rootNode.fullTableKey,
         config = config,
         decodingElementIndex = decodingElementIndex,
         kotlinxIndex = kotlinxIndex,
+        serializersModule = serializersModule,
     )
 
     public constructor(
@@ -53,12 +56,14 @@ public class TomlMapDecoder private constructor(
         config: TomlInputConfig,
         decodingElementIndex: Int = 0,
         kotlinxIndex: Int = 0,
+        serializersModule: SerializersModule,
     ) : this(
         rootNode = rootNode,
         fullTableKey = TomlKey(listOf("")),
         config = config,
         decodingElementIndex = decodingElementIndex,
         kotlinxIndex = kotlinxIndex,
+        serializersModule = serializersModule,
     )
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
@@ -151,7 +156,11 @@ public class TomlMapDecoder private constructor(
         rootNode.children.addAll(processedNode.children)
         TomlMainDecoder.decode(deserializer, rootNode, config)
     } else {
-        TomlMapDecoder(processedNode, config).decodeSerializableValue(deserializer)
+        TomlMapDecoder(
+            processedNode,
+            config,
+            serializersModule = serializersModule,
+        ).decodeSerializableValue(deserializer)
     }
 
     public companion object {
@@ -166,7 +175,11 @@ public class TomlMapDecoder private constructor(
             rootNode: TomlFile,
             config: TomlInputConfig = TomlInputConfig()
         ): T {
-            val decoder = TomlMapDecoder(rootNode, config)
+            val decoder = TomlMapDecoder(
+                rootNode,
+                config,
+                serializersModule = serializersModule,
+            )
             return decoder.decodeSerializableValue(deserializer)
         }
     }

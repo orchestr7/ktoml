@@ -10,22 +10,22 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
  * @param rootNode
  * @param config
+ * @property serializersModule
  */
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
 public class TomlArrayOfTablesDecoder(
     private val rootNode: TomlTable,
     private val config: TomlInputConfig,
+    override val serializersModule: SerializersModule,
 ) : TomlAbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.children as List<TomlArrayOfTablesElement>
-    override val serializersModule: SerializersModule = EmptySerializersModule()
     private lateinit var currentElementDecoder: TomlMainDecoder
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
@@ -38,6 +38,7 @@ public class TomlArrayOfTablesDecoder(
         currentElementDecoder = TomlMainDecoder(
             rootNode = rootNode,
             config = config,
+            serializersModule = serializersModule,
         )
 
         return nextElementIndex++

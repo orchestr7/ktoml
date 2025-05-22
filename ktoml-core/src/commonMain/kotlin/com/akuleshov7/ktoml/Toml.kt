@@ -157,7 +157,7 @@ public open class Toml(
         when (deserializer.descriptor.kind) {
             StructureKind.LIST -> TomlArrayDecoder.decode(deserializer, parsedToml.getFirstChild() as TomlKeyValueArray, inputConfig)
             StructureKind.MAP -> TomlMapDecoder.decode(deserializer, parsedToml, inputConfig)
-            else -> TomlMainDecoder.decode(deserializer, parsedToml, inputConfig)
+            else -> TomlMainDecoder.decode(deserializer, parsedToml, inputConfig, serializersModule)
         }
 
     // ================== other ===============

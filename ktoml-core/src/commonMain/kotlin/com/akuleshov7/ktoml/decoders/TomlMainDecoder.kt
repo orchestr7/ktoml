@@ -24,15 +24,15 @@ import kotlinx.serialization.modules.SerializersModule
  * @param rootNode
  * @param config
  * @param elementIndex
+ * @property serializersModule
  */
 @ExperimentalSerializationApi
 public class TomlMainDecoder(
     private var rootNode: TomlNode,
     private val config: TomlInputConfig,
-    private var elementIndex: Int = 0
+    private var elementIndex: Int = 0,
+    override val serializersModule: SerializersModule,
 ) : TomlAbstractDecoder() {
-    override val serializersModule: SerializersModule = EmptySerializersModule()
-
     override fun decodeValue(): Any = decodeKeyValue().value.content
 
     override fun decodeNotNullMark(): Boolean {
@@ -142,10 +142,12 @@ public class TomlMainDecoder(
                 "Expected type ARRAY for key \"${rootNode.name}\"",
                 rootNode.lineNo,
             )
+
             StructureKind.MAP -> throw IllegalTypeException(
                 "Expected type MAP for key \"${rootNode.name}\"",
                 rootNode.lineNo,
             )
+
             else -> {}
         }
     }
@@ -242,7 +244,11 @@ public class TomlMainDecoder(
             // inline structures has a very specific logic for decoding. Kotlinx.serialization plugin generates specific code:
             // 'decoder.decodeInline(this.getDescriptor()).decodeLong())'. So we need simply to increment
             // our element index by 1 (0 is the default value), because value/inline classes are always a wrapper over some SINGLE value.
-            if (inlineFunc) TomlMainDecoder(firstFileChild, config, 1) else TomlMainDecoder(firstFileChild, config, 0)
+            if (inlineFunc) {
+                TomlMainDecoder(firstFileChild, config, 1, serializersModule)
+            } else {
+                TomlMainDecoder(firstFileChild, config, 0, serializersModule)
+            }
         } else {
             // this is a tricky index calculation, suggest not to change. We are using the previous node to get all neighbour nodes:
             // | (parentNode)
@@ -252,37 +258,59 @@ public class TomlMainDecoder(
                 .elementAt(elementIndex - 1)
 
             when (nextProcessingNode) {
-                is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config)
-                is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(nextProcessingNode, config)
-                is TomlTable -> when (descriptor.kind) {
-                    // This logic is a special case when user would like to parse key-values from a table to a map.
-                    // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
-                    // if parsing
-                    StructureKind.MAP -> TomlMapDecoder(nextProcessingNode, config)
-                    StructureKind.LIST -> when (nextProcessingNode.type) {
-                        TableType.ARRAY -> TomlArrayOfTablesDecoder(nextProcessingNode, config)
-                        // Primitive TomlTable + StructureKind.LIST means either custom serializer or
-                        // invalid toml structure; If second, exception will be thrown later
-                        TableType.PRIMITIVE ->
-                            TomlArrayDecoder(getFirstChild(getCurrentNode()) as TomlKeyValueArray, config)
-                    }
-                    else -> {
-                        val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
-                            "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +
-                                    " in a table <${nextProcessingNode.fullTableKey}>"
-                        )
+                is TomlKeyValueArray -> TomlArrayDecoder(nextProcessingNode, config, serializersModule)
+                is TomlKeyValuePrimitive, is TomlStubEmptyNode -> TomlMainDecoder(
+                    rootNode = nextProcessingNode,
+                    config = config,
+                    serializersModule = serializersModule,
+                )
 
-                        checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
-                        TomlMainDecoder(firstTableChild, config)
-                    }
-                }
-
+                is TomlTable -> getDecoderForNextNodeTomlTable(nextProcessingNode, descriptor)
                 else -> throw InternalDecodingException(
                     "Incorrect decoding state in the beginStructure()" +
                             " with $nextProcessingNode ($nextProcessingNode)[${nextProcessingNode.name}]"
                 )
             }
         }
+
+    private fun getDecoderForNextNodeTomlTable(
+        nextProcessingNode: TomlTable,
+        descriptor: SerialDescriptor,
+    ): TomlAbstractDecoder = when (descriptor.kind) {
+        // This logic is a special case when user would like to parse key-values from a table to a map.
+        // It can be useful, when the user does not know key names of TOML key-value pairs, for example:
+        // if parsing
+        StructureKind.MAP -> TomlMapDecoder(
+            nextProcessingNode,
+            config,
+            serializersModule = serializersModule,
+        )
+
+        StructureKind.LIST -> when (nextProcessingNode.type) {
+            TableType.ARRAY -> TomlArrayOfTablesDecoder(nextProcessingNode, config, serializersModule)
+            // Primitive TomlTable + StructureKind.LIST means either custom serializer or
+            // invalid toml structure; If second, exception will be thrown later
+            TableType.PRIMITIVE ->
+                TomlArrayDecoder(
+                    getFirstChild(getCurrentNode()) as TomlKeyValueArray,
+                    config,
+                    serializersModule,
+                )
+        }
+
+        else -> {
+            val firstTableChild = nextProcessingNode.getFirstChild() ?: throw InternalDecodingException(
+                "Decoding process has failed due to invalid structure of parsed AST tree: missing children" +
+                        " in a table <${nextProcessingNode.fullTableKey}>"
+            )
+            checkMissingRequiredProperties(firstTableChild.getNeighbourNodes(), descriptor)
+            TomlMainDecoder(
+                rootNode = firstTableChild,
+                config = config,
+                serializersModule = serializersModule,
+            )
+        }
+    }
 
     private fun getFirstChild(node: TomlNode) =
         node.getFirstChild() ?: if (!config.allowEmptyToml) {
@@ -299,14 +327,16 @@ public class TomlMainDecoder(
          * @param deserializer - deserializer provided by Kotlin compiler
          * @param rootNode - root node for decoding (created after parsing)
          * @param config - decoding configuration for parsing and serialization
+         * @param serializersModule
          * @return decoded (deserialized) object of type T
          */
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlFile,
-            config: TomlInputConfig = TomlInputConfig()
+            config: TomlInputConfig = TomlInputConfig(),
+            serializersModule: SerializersModule = EmptySerializersModule(),
         ): T {
-            val decoder = TomlMainDecoder(rootNode, config)
+            val decoder = TomlMainDecoder(rootNode, config, serializersModule = serializersModule)
             return decoder.decodeSerializableValue(deserializer)
         }
     }

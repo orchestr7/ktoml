@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
+import com.akuleshov7.ktoml.Toml.Default.serializersModule
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
@@ -11,22 +12,22 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 /**
  * @param rootNode
  * @param config
+ * @property serializersModule
  */
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
 public class TomlArrayDecoder(
     private val rootNode: TomlKeyValueArray,
     private val config: TomlInputConfig,
+    override val serializersModule: SerializersModule,
 ) : TomlAbstractDecoder() {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
-    override val serializersModule: SerializersModule = EmptySerializersModule()
     private lateinit var currentElementDecoder: TomlAbstractDecoder
     private lateinit var currentPrimitiveElementOfArray: TomlValue
 
@@ -50,7 +51,8 @@ public class TomlArrayDecoder(
                     comments = emptyList(),
                     inlineComment = "",
                 ),
-                config
+                config,
+                serializersModule,
             )
         } else {
             TomlPrimitiveDecoder(
@@ -61,7 +63,8 @@ public class TomlArrayDecoder(
                     rootNode.lineNo,
                     comments = emptyList(),
                     inlineComment = "",
-                )
+                ),
+                serializersModule,
             )
         }
         return nextElementIndex++
@@ -112,7 +115,7 @@ public class TomlArrayDecoder(
             tomlKeyValueArray: TomlKeyValueArray,
             config: TomlInputConfig = TomlInputConfig()
         ): T {
-            val decoder = TomlArrayDecoder(tomlKeyValueArray, config)
+            val decoder = TomlArrayDecoder(tomlKeyValueArray, config, serializersModule)
             return decoder.decodeSerializableValue(deserializer)
         }
     }
