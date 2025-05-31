@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Gradle build with remote cache
-        uses: burrunan/gradle-cache-action@v2
+        uses: burrunan/gradle-cache-action@v3
         with:
           arguments: detektAll
           properties: |
