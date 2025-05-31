@@ -22,6 +22,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.encoding.AbstractDecoder
 
 /**
@@ -112,7 +113,11 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
             unsignedShortSerializer.descriptor -> decodeUnsignedPrimitiveType<UShort>() as T
             unsignedIntSerializer.descriptor -> decodeUnsignedPrimitiveType<UInt>() as T
             unsignedLongSerializer.descriptor -> decodeUnsignedPrimitiveType<ULong>() as T
-            else -> super.decodeSerializableValue(deserializer)
+            else -> if (deserializer.descriptor.kind == SerialKind.CONTEXTUAL) {
+                deserializer.deserialize(this)
+            } else {
+                super.decodeSerializableValue(deserializer)
+            }
         }
 
     internal abstract fun decodeKeyValue(): TomlKeyValue
