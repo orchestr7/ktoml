@@ -14,5 +14,5 @@ dependencies {
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")
     implementation("io.github.gradle-nexus:publish-plugin:2.0.0")
     implementation("org.ajoberstar.reckon:reckon-gradle:0.19.2")
-    implementation("org.ajoberstar.grgit:grgit-core:5.3.0")
+    implementation("org.ajoberstar.grgit:grgit-core:5.3.2")
 }
