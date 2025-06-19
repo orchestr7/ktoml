@@ -286,4 +286,42 @@ class BasicMultilineStringDecoderTest {
             Toml.decodeFromString(test)
         )
     }
+
+    @Test
+    fun mixedQuotesWithHashSymbols() {
+        val test = """
+        a = $tripleQuotes
+        # Markdown Heading
+        
+        This is an example containing "a quote, where I've used an apostrophe inside." Later, I've
+        used another apostrophe.
+        
+        # Previously, this header was dropped by the parser.
+        $tripleQuotes
+        """.trimIndent()
+        assertEquals(
+            """
+            # Markdown Heading
+            
+            This is an example containing "a quote, where I've used an apostrophe inside." Later, I've
+            used another apostrophe.
+            
+            # Previously, this header was dropped by the parser.
+            """.trimIndent(),
+            Toml.decodeFromString<SimpleString>(test).a.trim()
+        )
+    }
+
+    @Test
+    fun commentAfterClosingQuotes() {
+        val test = """
+        a = $tripleQuotes
+        This failed the parser previously.
+        $tripleQuotes # A comment here previously threw an exception
+        """.trimIndent()
+        assertEquals(
+            "This failed the parser previously.\n",
+            Toml.decodeFromString<SimpleString>(test).a
+        )
+    }
 }
