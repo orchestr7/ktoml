@@ -598,6 +598,51 @@ class ArraysOfTablesTest {
                 |                 - TomlKeyValuePrimitive (shape="round")
                 |
                """.trimMargin(),
-            parsedToml.prettyStr())
+            parsedToml.prettyStr()
+        )
+    }
+
+    @Test
+    fun dottedKeysInsideTable() {
+        val string = """
+            [[table]]
+            simple = 1
+            item.simple = 2
+            
+            [[table]]
+            item.complex = { a = 3, b = 4 }
+
+            [[table]]
+            simple = 5
+            item.simple = 6
+            item.complex = { a = 7, b = 8 }
+        """.trimIndent()
+        val parsedToml = tomlParser.parseString(string)
+
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlTable ([[table]])
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (simple=1)
+                |             - TomlTable ([table.item])
+                |                 - TomlKeyValuePrimitive (simple=2)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlTable ([table.item])
+                |                 - TomlTable ([table.item.complex])
+                |                     - TomlKeyValuePrimitive (a=3)
+                |                     - TomlKeyValuePrimitive (b=4)
+                |         - TomlArrayOfTablesElement (technical_node)
+                |             - TomlKeyValuePrimitive (simple=5)
+                |             - TomlTable ([table.item])
+                |                 - TomlKeyValuePrimitive (simple=6)
+                |             - TomlTable ([table.item])
+                |                 - TomlTable ([table.item.complex])
+                |                     - TomlKeyValuePrimitive (a=7)
+                |                     - TomlKeyValuePrimitive (b=8)
+                |
+               """.trimMargin(),
+            parsedToml.prettyStr()
+        )
     }
 }
