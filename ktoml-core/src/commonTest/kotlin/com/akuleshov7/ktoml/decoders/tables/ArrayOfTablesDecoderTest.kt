@@ -257,4 +257,26 @@ class ArrayOfTablesDecoderTest {
             Toml.decodeFromString<Commands>(toml),
         )
     }
+
+    @Test
+    fun decodeWithDottedKeyValuesInside() {
+        @Serializable
+        data class Foo(val bar: Int)
+
+        @Serializable
+        data class Sample(val foo: Foo)
+
+        @Serializable
+        data class File(val samples: List<Sample>)
+
+        val toml = """
+        [[samples]]
+        foo.bar = 1
+        """.trimIndent()
+
+        assertEquals(
+            File(listOf(Sample(Foo(bar = 1)))),
+            Toml.decodeFromString<File>(toml),
+        )
+    }
 }
