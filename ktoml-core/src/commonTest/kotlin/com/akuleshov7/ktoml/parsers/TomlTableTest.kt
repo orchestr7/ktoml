@@ -118,4 +118,25 @@ class TomlTableTest {
         val table = TomlTable("[abcd]", 0, TableType.PRIMITIVE)
         assertEquals(table.fullTableKey.toString(), "abcd")
     }
+
+    @Test
+    fun dottedKeysInsideTable() {
+        val string = """
+            [table]
+            simple = 1
+            item.simple = 2
+        """.trimIndent()
+        val parsedToml = Toml.tomlParser.parseString(string)
+        assertEquals(
+            """
+                | - TomlFile (rootNode)
+                |     - TomlTable ([table])
+                |         - TomlKeyValuePrimitive (simple=1)
+                |         - TomlTable ([table.item])
+                |             - TomlKeyValuePrimitive (simple=2)
+                |
+               """.trimMargin(),
+            parsedToml.prettyStr()
+        )
+    }
 }
