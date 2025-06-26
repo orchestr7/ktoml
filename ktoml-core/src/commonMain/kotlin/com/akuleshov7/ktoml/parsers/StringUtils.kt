@@ -7,6 +7,8 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.utils.newLineChar
 
+private const val MULTILINE_STRING_QUOTE_LENGTH = 3
+
 /**
  * Splitting dot-separated string to the list of tokens:
  * a.b.c -> [a, b, c]; a."b.c".d -> [a, "b.c", d];
@@ -212,21 +214,37 @@ internal fun String.indexOfNextOutsideQuotes(
     startIndex: Int = 0,
 ): Int {
     val chars = this.drop(startIndex).replaceEscaped(allowEscapedQuotesInLiteralStrings)
-    var currentQuoteChar: Char? = null
+    var currentQuoteStr: String? = null
 
-    chars.forEachIndexed { idx, symbol ->
+    var idx = 0
+    while (idx < chars.length) {
+        val symbol = chars[idx]
         // take searchChar index if it's not enclosed in quotation marks
-        if (symbol == searchChar && currentQuoteChar == null) {
+        if (symbol == searchChar && currentQuoteStr == null) {
             return idx + startIndex
+        } else if (symbol != '\"' && symbol != '\'') {
+            idx += 1
+            continue
         }
 
-        if (symbol == '\"' || symbol == '\'') {
-            if (currentQuoteChar == null) {
-                currentQuoteChar = symbol
-            } else if (currentQuoteChar == symbol) {
-                currentQuoteChar = null
+        val quoteStr = currentQuoteStr
+        if (quoteStr == null) {
+            if (idx + 2 < chars.length && chars[idx + 1] == symbol && chars[idx + 2] == symbol) {
+                currentQuoteStr = "$symbol$symbol$symbol"
+                idx += MULTILINE_STRING_QUOTE_LENGTH
+                continue  // Skip the default increment
+            } else {
+                currentQuoteStr = symbol.toString()
+            }
+        } else if (quoteStr[0] == symbol && (idx + quoteStr.length) <= chars.length) {
+            val candidate = chars.substring(idx, idx + quoteStr.length)
+            if (candidate == quoteStr) {
+                currentQuoteStr = null
+                idx += candidate.length
+                continue  // Skip the default increment
             }
         }
+        idx += 1
     }
 
     return -1
