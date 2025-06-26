@@ -129,9 +129,18 @@ internal class TomlMultilineString(
                 clearedString.endsWith(multilineType.closingSymbols + multilineType.closingSymbols)
             }
         } else {
+            // Checks if this line ends with closing symbols, allowing for whitespace or a comment after those
+            // symbols. Note that we're not using [indexOfNextOutsideOfQuotes] here because the last line of a
+            // multiline string (eg `""" # this`) would consider the comment inside the quote.
+            val closingSymbolsIdx = lines.last().lastIndexOf(multilineType.closingSymbols)
+            if (closingSymbolsIdx < 0) {
+                return false
+            }
             lines.last()
+                .substring(closingSymbolsIdx + multilineType.closingSymbols.length)
+                .takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
                 .trim()
-                .endsWith(multilineType.closingSymbols)
+                .isEmpty()
         }
     }
 
