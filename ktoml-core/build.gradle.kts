@@ -59,7 +59,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
             }
         }
@@ -92,7 +92,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.13.4")
             }
         }
         all {
