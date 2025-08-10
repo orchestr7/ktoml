@@ -15,7 +15,7 @@ import com.akuleshov7.ktoml.utils.IntegerLimitsEnum.*
 import com.akuleshov7.ktoml.utils.UnsignedIntegerLimitsEnum
 import com.akuleshov7.ktoml.utils.UnsignedIntegerLimitsEnum.*
 import com.akuleshov7.ktoml.utils.convertSpecialCharacters
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -24,6 +24,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.encoding.AbstractDecoder
+import kotlin.time.ExperimentalTime
 
 /**
  * Abstract Decoder for TOML format that is inherited by each and every decoder in this project.
@@ -31,6 +32,7 @@ import kotlinx.serialization.encoding.AbstractDecoder
  */
 @ExperimentalSerializationApi
 public abstract class TomlAbstractDecoder : AbstractDecoder() {
+    @OptIn(ExperimentalTime::class)
     private val instantSerializer = Instant.serializer()
     private val localDateTimeSerializer = LocalDateTime.serializer()
     private val localDateSerializer = LocalDate.serializer()
@@ -89,6 +91,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     override fun decodeDouble(): Double = decodePrimitiveType()
     override fun decodeString(): String = decodePrimitiveType()
 
+    @OptIn(ExperimentalTime::class)
     protected fun DeserializationStrategy<*>.isDateTime(): Boolean =
         descriptor == instantSerializer.descriptor ||
                 descriptor == localDateTimeSerializer.descriptor ||
@@ -101,6 +104,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
                 descriptor == unsignedIntSerializer.descriptor ||
                 descriptor == unsignedLongSerializer.descriptor
 
+    @OptIn(ExperimentalTime::class)
     @Suppress("UNCHECKED_CAST")
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
         when (deserializer.descriptor) {

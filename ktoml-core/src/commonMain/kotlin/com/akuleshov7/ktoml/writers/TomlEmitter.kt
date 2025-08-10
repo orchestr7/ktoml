@@ -7,10 +7,11 @@ import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import com.akuleshov7.ktoml.utils.newLineChar
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlin.time.ExperimentalTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
@@ -286,6 +287,7 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
      * @param instant
      * @return this instance
      */
+    @OptIn(ExperimentalTime::class)
     public fun emitValue(instant: Instant): TomlEmitter = emit(instant.toString())
 
     /**
