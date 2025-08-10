@@ -8,6 +8,8 @@ import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.utils.isBareKey
 import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
+
+import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -19,7 +21,6 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
-import kotlin.time.ExperimentalTime
 
 /**
  * An abstract Encoder for the TOML format.
@@ -37,6 +38,7 @@ public abstract class TomlAbstractEncoder protected constructor(
     override val serializersModule: SerializersModule,
 ) : AbstractEncoder() {
     private var isNextElementKey = false
+
     @OptIn(ExperimentalTime::class)
     private val instantDescriptor = Instant.serializer().descriptor
     private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor

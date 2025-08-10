@@ -7,11 +7,12 @@ import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import com.akuleshov7.ktoml.utils.newLineChar
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
+
+import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import kotlin.time.ExperimentalTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
