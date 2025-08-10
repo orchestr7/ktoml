@@ -15,6 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+@kotlin.time.ExperimentalTime
 class PrimitiveValueWriteTest {
     @Test
     fun literalStringWriteTest() {
@@ -127,7 +128,7 @@ class PrimitiveValueWriteTest {
         val localD = "1979-05-27"
         val localT = "07:32:32"
 
-        testTomlValue(TomlDateTime(Instant.parse(instant)), instant)
+        testTomlValue(TomlDateTime(kotlin.time.Instant.parse(instant)), instant)
         testTomlValue(TomlDateTime(LocalDateTime.parse(localDt)), localDt)
         testTomlValue(TomlDateTime(LocalDate.parse(localD)), localD)
         testTomlValue(TomlDateTime(LocalTime.parse(localT)), localT)
