@@ -2,23 +2,19 @@ package com.akuleshov7.ktoml.decoders.primitives
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.exceptions.ParseException
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
+import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+@kotlin.time.ExperimentalTime
 class DateTimeDecoderTest {
 
     @Serializable
     data class TimeTable(
-        val instants: List<Instant>,
+        val instants: List<kotlin.time.Instant>,
         val localDateTimes: List<LocalDateTime>,
         val localDate: LocalDate,
         val localTime: LocalTime,
@@ -26,6 +22,7 @@ class DateTimeDecoderTest {
     )
 
     @Test
+    @kotlin.time.ExperimentalTime
     fun testDateParsing() {
         val toml = """
             instants = [1979-05-27T07:32:00Z, 1979-05-27T00:32:00-07:00, 1979-05-27T00:32:00.999999-07:00, 1979-05-27 07:32:00Z]

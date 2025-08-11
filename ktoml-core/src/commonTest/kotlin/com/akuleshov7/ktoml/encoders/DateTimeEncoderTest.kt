@@ -3,11 +3,13 @@ package com.akuleshov7.ktoml.encoders
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
+import kotlin.time.Instant
 
+@kotlin.time.ExperimentalTime
 class DateTimeEncoderTest {
     @Serializable
     data class DateTimes(
-        val instant: Instant = default.toInstant(TimeZone.UTC),
+        val instant: kotlin.time.Instant = default.toInstant(TimeZone.UTC),
         val instantWithNanos: Instant = defaultWithNanos.toInstant(TimeZone.UTC),
         val localDateTime: LocalDateTime = default,
         val localDateTimeWithNanos: LocalDateTime = defaultWithNanos,

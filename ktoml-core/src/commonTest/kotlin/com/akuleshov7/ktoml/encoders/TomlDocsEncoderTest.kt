@@ -18,6 +18,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.encodeCollection
 import kotlin.test.Test
 
+@kotlin.time.ExperimentalTime
 class TomlDocsEncoderTest {
     @Serializable
     data class ReadMe(
@@ -30,7 +31,7 @@ class TomlDocsEncoderTest {
     @Serializable
     data class Owner(
         val name: String = "Tom Preston-Werner",
-        val dob: Instant =
+        val dob: kotlin.time.Instant =
                 LocalDateTime(1979, 5, 27, 15, 32, 0)
                     .toInstant(TimeZone.UTC)
     )

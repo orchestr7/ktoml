@@ -3,7 +3,9 @@ package com.akuleshov7.ktoml.tree.nodes.pairs.values
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.writers.TomlEmitter
-import kotlinx.datetime.Instant
+
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -22,6 +24,7 @@ internal constructor(
         emitter: TomlEmitter,
         config: TomlOutputConfig
     ) {
+        @OptIn(ExperimentalTime::class)
         when (val content = content) {
             is Instant -> emitter.emitValue(content)
             is LocalDateTime -> emitter.emitValue(content)
@@ -35,6 +38,7 @@ internal constructor(
     }
 
     public companion object {
+        @OptIn(ExperimentalTime::class)
         private fun String.parseToDateTime(): Any = try {
             // Offset date-time
             // TOML spec allows a space instead of the T, try replacing the first space by a T
