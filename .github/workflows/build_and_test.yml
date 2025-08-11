@@ -23,7 +23,7 @@ jobs:
 
     steps:
       # actions/checkout v1.* is needed for correct codecov upload, see https://github.com/actions/checkout/issues/237 for details
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # ensure that gradle wrapper files in repository are valid by checking checksums
       - uses: gradle/actions/wrapper-validation@v4
       - name: Set up JDK 21
@@ -39,7 +39,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-konan
       - name: Gradle build with remote cache
-        uses: burrunan/gradle-cache-action@v2
+        uses: burrunan/gradle-cache-action@v3
         with:
           arguments: |
             build
