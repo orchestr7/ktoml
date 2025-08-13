@@ -10,6 +10,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -92,6 +93,10 @@ public class TomlMainEncoder(
 
             tableEncoder(table)
         }
+    }
+
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
+        return super.beginStructure(descriptor)
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
