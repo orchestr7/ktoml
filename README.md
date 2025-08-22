@@ -1,4 +1,4 @@
-## <img src="/ktoml.png" width="300px"/>
+ ## <img src="/ktoml.png" width="300px"/>
 
 [![Releases](https://img.shields.io/github/v/release/akuleshov7/ktoml)](https://github.com/orchestr7/ktoml/releases)
 [![Maven Central](https://img.shields.io/maven-central/v/com.akuleshov7/ktoml-core)](https://search.maven.org/artifact/com.akuleshov7/ktoml-core/)
@@ -44,7 +44,7 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 1.9.22
+:globe_with_meridians: ktoml supports Kotlin 2.2.0
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc. 
@@ -91,12 +91,12 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.7.0</version>
+  <version>0.7.1</version>
 </dependency>
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-file</artifactId>
-  <version>0.7.0</version>
+  <version>0.7.1</version>
 </dependency>
 ```
 </details>
@@ -105,8 +105,8 @@ To import `ktoml` library you need to add following dependencies to your code:
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.7.0'
-implementation 'com.akuleshov7:ktoml-file:0.7.0'
+implementation 'com.akuleshov7:ktoml-core:0.7.1'
+implementation 'com.akuleshov7:ktoml-file:0.7.1'
 ```
 </details>
 
@@ -114,8 +114,8 @@ implementation 'com.akuleshov7:ktoml-file:0.7.0'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.7.0")
-implementation("com.akuleshov7:ktoml-file:0.7.0")
+implementation("com.akuleshov7:ktoml-core:0.7.1")
+implementation("com.akuleshov7:ktoml-file:0.7.1")
 ```
 </details>
 
