@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.decoders
 
 import com.akuleshov7.ktoml.Toml.Default.serializersModule
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
@@ -42,32 +43,45 @@ public class TomlArrayDecoder(
 
         currentPrimitiveElementOfArray = list[nextElementIndex]
 
-        currentElementDecoder = if (currentPrimitiveElementOfArray is TomlArray) {
-            TomlArrayDecoder(
-                TomlKeyValueArray(
-                    rootNode.key,
-                    currentPrimitiveElementOfArray,
-                    rootNode.lineNo,
-                    comments = emptyList(),
-                    inlineComment = "",
-                ),
-                config,
-                serializersModule,
-            )
+        if (currentPrimitiveElementOfArray is TomlArray) {
+            setArrayDecoder()
         } else {
-            TomlPrimitiveDecoder(
-                // a small hack that creates a PrimitiveKeyValue node that is used in the decoder
+            setPrimitiveDecoder()
+        }
+        return nextElementIndex++
+    }
+
+    private fun setArrayDecoder() {
+        currentElementDecoder = TomlArrayDecoder(
+            TomlKeyValueArray(
+                rootNode.key,
+                currentPrimitiveElementOfArray,
+                rootNode.lineNo,
+                comments = emptyList(),
+                inlineComment = "",
+            ),
+            config,
+            serializersModule,
+        )
+    }
+
+    private fun setPrimitiveDecoder() {
+        val primitiveRoot = TomlFile().also { root ->
+            root.appendChild(
                 TomlKeyValuePrimitive(
                     rootNode.key,
                     currentPrimitiveElementOfArray,
                     rootNode.lineNo,
                     comments = emptyList(),
                     inlineComment = "",
-                ),
-                serializersModule,
+                )
             )
         }
-        return nextElementIndex++
+        currentElementDecoder = TomlMainDecoder(
+            rootNode = primitiveRoot,
+            config = config,
+            serializersModule = serializersModule,
+        )
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {

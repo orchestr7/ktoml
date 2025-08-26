@@ -200,4 +200,26 @@ class SimpleArrayDecoderTest {
             Toml.decodeFromString<ArrayWrapper>(toml)
         }
     }
+
+    enum class Enum {
+        A,
+        B,
+        C
+    }
+
+    @Serializable
+    data class Enums(
+        val enums: List<Enum>
+    )
+
+    @Test
+    fun decodeEnumList() {
+        val enums = Enums(listOf(Enum.A, Enum.B, Enum.C))
+        val test = """
+            enums = ["A", "B", "C"]
+        """.trimIndent()
+
+        val decoded = Toml.decodeFromString<Enums>(test)
+        assertEquals(enums, decoded)
+    }
 }
