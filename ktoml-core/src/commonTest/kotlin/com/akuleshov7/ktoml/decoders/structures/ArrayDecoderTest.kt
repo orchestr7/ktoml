@@ -214,12 +214,11 @@ class SimpleArrayDecoderTest {
 
     @Test
     fun decodeEnumList() {
-        val enums = Enums(listOf(Enum.A, Enum.B, Enum.C))
         val test = """
             enums = ["A", "B", "C"]
         """.trimIndent()
 
         val decoded = Toml.decodeFromString<Enums>(test)
-        assertEquals(enums, decoded)
+        assertEquals(Enums(listOf(Enum.A, Enum.B, Enum.C)), decoded)
     }
 }
