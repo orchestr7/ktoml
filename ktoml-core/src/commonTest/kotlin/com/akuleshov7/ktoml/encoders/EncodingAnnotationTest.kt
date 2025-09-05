@@ -4,6 +4,8 @@ import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.*
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -313,6 +315,39 @@ class EncodingAnnotationTest {
                 
                 '''
             """.trimIndent()
+        )
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun encodeDefaultAnnotation() {
+        @Serializable
+        data class Foo(
+            @EncodeDefault(EncodeDefault.Mode.ALWAYS)
+            val a: Int = 1,
+            @EncodeDefault(EncodeDefault.Mode.NEVER)
+            val b: Int = 2,
+            val c: Int = 3
+        )
+
+        assertEncodedEquals(
+            value = Foo(),
+            expectedToml = """
+                a = 1
+                c = 3
+            """.trimIndent(),
+        )
+
+        assertEncodedEquals(
+            value = Foo(),
+            expectedToml = """
+                a = 1
+            """.trimIndent(),
+            tomlInstance = Toml(
+                outputConfig = TomlOutputConfig(
+                    ignoreDefaultValues = true,
+                )
+            )
         )
     }
 }
