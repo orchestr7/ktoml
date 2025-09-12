@@ -2,11 +2,11 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
-import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
+import com.akuleshov7.ktoml.tree.nodes.tables.InlineTableType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -95,10 +95,16 @@ public class TomlArrayEncoder internal constructor(
             is PolymorphicKind ->
                 // Nested primitive array
                 arrayEncoder(rootNode, attributes)
-            else ->
-                throw UnsupportedEncodingFeatureException(
-                    "Inline tables are not yet supported as array elements."
+            else -> {
+                val element = TomlArrayOfTablesElement(
+                    elementIndex,
+                    attributes.comments,
+                    attributes.inlineComment
                 )
+
+                tables += element
+                inlineTableEncoder(element)
+            }
         }
     } else {
         val element = TomlArrayOfTablesElement(
@@ -163,14 +169,31 @@ public class TomlArrayEncoder internal constructor(
             }
         }
 
-        val tableArray = TomlTable(
-            TomlKey(attributes.parent!!.getFullKey(), elementIndex),
-            elementIndex,
-            type = TableType.ARRAY,
-            isSynthetic = isSynthetic
-        )
+        appendParentalTable(isSynthetic)
+    }
 
-        tables.forEach(tableArray::appendChild)
+    private fun appendParentalTable(isSynthetic: Boolean) {
+        val allChildren = tables.flatMap { it.children }
+        val tableArray = if (allChildren.any { it is TomlInlineTable && it.key == null }) {
+            TomlInlineTable(
+                key = TomlKey(attributes.parent!!.key!!, elementIndex),
+                tomlKeyValues = tables,
+                inlineTableType = InlineTableType.ARRAY,
+                lineNo = elementIndex,
+                comments = emptyList(),
+                inlineComment = "",
+                multiline = attributes.isMultiline,
+            )
+        } else {
+            TomlTable(
+                TomlKey(attributes.parent!!.getFullKey(), elementIndex),
+                elementIndex,
+                type = TableType.ARRAY,
+                isSynthetic = isSynthetic
+            ).apply {
+                tables.forEach(this::appendChild)
+            }
+        }
 
         rootNode.appendChild(tableArray)
     }

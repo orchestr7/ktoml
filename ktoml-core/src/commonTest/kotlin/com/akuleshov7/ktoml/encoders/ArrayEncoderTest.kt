@@ -2,9 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
-import com.akuleshov7.ktoml.annotations.TomlMultiline
 import kotlinx.serialization.Serializable
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class ArrayEncoderTest {
@@ -50,32 +48,6 @@ class ArrayEncoderTest {
                 doubles = [ 3.14 ]
                 basicStrings = [ "a", "b", "c" ]
                 literalStrings = [ '"string"' ]
-            """.trimIndent()
-        )
-    }
-
-    @Test
-    @Ignore
-    fun inlineTableArrayTest() {
-        @Serializable
-        @TomlInlineTable
-        data class InlineTable(val index: Long)
-
-        @Serializable
-        data class InlineTableArray(
-            @TomlMultiline
-            val inlineTables: List<InlineTable> =
-                    (0L..2L).map(::InlineTable)
-        )
-
-        assertEncodedEquals(
-            value = InlineTableArray(),
-            expectedToml = """
-                inlineTables = [
-                    { index = 0 },
-                    { index = 1 },
-                    { index = 2 }
-                ]
             """.trimIndent()
         )
     }

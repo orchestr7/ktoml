@@ -2,13 +2,11 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
-import com.akuleshov7.ktoml.tree.nodes.TomlInlineTable
-import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
-import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
-import com.akuleshov7.ktoml.tree.nodes.TomlNode
+import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
+import com.akuleshov7.ktoml.tree.nodes.tables.InlineTableType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
@@ -102,21 +100,25 @@ public class TomlInlineTableEncoder internal constructor(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         val (_, _, _, _, _, _, comments, inlineComment) = attributes
-        val name = attributes.keyOrThrow()
+
+        val tomlKey = if (parent !is TomlArrayEncoder) {
+            TomlKey(attributes.keyOrThrow(), elementIndex)
+        } else {
+            null
+        }
 
         val inlineTable = TomlInlineTable(
-            TomlKey(name, elementIndex),
-            pairs,
-            elementIndex,
-            comments,
-            inlineComment
+            key = tomlKey,
+            tomlKeyValues = pairs,
+            inlineTableType = InlineTableType.PRIMITIVE,
+            lineNo = elementIndex,
+            comments = comments,
+            inlineComment = inlineComment,
         )
 
         when (parent) {
             is TomlInlineTableEncoder -> parent.pairs += inlineTable
-            is TomlArrayEncoder -> {
-                // Todo: Implement this when inline table arrays are supported.
-            }
+            is TomlArrayEncoder -> rootNode.appendChild(inlineTable)
             else -> rootNode.appendChild(inlineTable)
         }
 
@@ -143,21 +145,23 @@ public class TomlInlineTableEncoder internal constructor(
                 child.value,
                 child.lineNo,
                 child.comments,
-                child.inlineComment
+                child.inlineComment,
             )
             is TomlKeyValueArray -> TomlKeyValueArray(
                 TomlKey(name, child.lineNo),
                 child.value,
                 child.lineNo,
                 child.comments,
-                child.inlineComment
+                child.inlineComment,
             )
             is TomlInlineTable -> TomlInlineTable(
-                TomlKey(name, elementIndex),
-                child.tomlKeyValues,
-                child.lineNo,
-                child.comments,
-                child.inlineComment
+                key = TomlKey(name, elementIndex),
+                tomlKeyValues = child.tomlKeyValues,
+                inlineTableType = InlineTableType.PRIMITIVE,
+                lineNo = child.lineNo,
+                comments = child.comments,
+                inlineComment = child.inlineComment,
+                multiline = child.multiline,
             )
             else -> throw InternalEncodingException("Tried to encode $child as a pair, but it has unknown type.")
         }
