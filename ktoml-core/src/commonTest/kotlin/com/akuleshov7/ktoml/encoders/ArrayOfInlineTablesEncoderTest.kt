@@ -105,6 +105,26 @@ class ArrayOfInlineTablesEncoderTest {
     }
 
     @Test
+    fun withAnnotationTargetOnProperty() {
+        @Serializable
+        data class InlineTable(val value: Long)
+
+        @Serializable
+        data class File(
+            @TomlInlineTable
+            val inlineTablesA: List<InlineTable> =
+                (0L..2L).map(::InlineTable),
+        )
+
+        assertEncodedEquals(
+            value = File(),
+            expectedToml = """
+                inlineTablesA = [ { value = 0 }, { value = 1 }, { value = 2 } ]
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun emptyInlineTableArrayTest() {
         assertEncodedEquals(
             value = InlineTableArray(inlineTables = emptyList()),

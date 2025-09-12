@@ -1,6 +1,5 @@
 package com.akuleshov7.ktoml.annotations
 
-import kotlin.annotation.AnnotationTarget.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
@@ -12,7 +11,8 @@ import kotlinx.serialization.SerialInfo
  * data class Data(
  *     @TomlInlineTable
  *     val inlineTable: Table,
- *     val tableArray: List<@TomlInlineTable Table>,
+ *     @TomlInlineTable
+ *     val tableArray: List<Table>,
  *     val inlineTable2: Table2
  * )
  *
@@ -44,9 +44,7 @@ import kotlinx.serialization.SerialInfo
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
 @Target(
-    PROPERTY,
-    TYPE_PARAMETER,
-    CLASS,
-    TYPE
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.CLASS,
 )
 public annotation class TomlInlineTable
