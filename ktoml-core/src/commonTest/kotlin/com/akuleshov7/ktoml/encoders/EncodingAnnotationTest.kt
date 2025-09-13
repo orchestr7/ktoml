@@ -7,7 +7,6 @@ import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class EncodingAnnotationTest {
@@ -128,33 +127,6 @@ class EncodingAnnotationTest {
             tomlInstance = Toml(
                 outputConfig = TomlOutputConfig(explicitTables = true)
             )
-        )
-    }
-
-    @Test
-    @Ignore
-    fun arrayOfInlineTablesText() {
-        @Serializable
-        data class InlineTable(val value: Long)
-
-        @Serializable
-        data class File(
-            @TomlInlineTable
-            val inlineTablesA: List<InlineTable> =
-                    (0L..2L).map(::InlineTable),
-            val inlineTablesB: @TomlInlineTable List<InlineTable> =
-                    (3L..5L).map(::InlineTable),
-            val inlineTablesC: List<@TomlInlineTable InlineTable> =
-                    (6L..8L).map(::InlineTable)
-        )
-
-        assertEncodedEquals(
-            value = File(),
-            expectedToml = """
-                inlineTablesA = [ { value = 0 }, { value = 1 }, { value = 2 } ]
-                inlineTablesB = [ { value = 3 }, { value = 4 }, { value = 5 } ]
-                inlineTablesC = [ { value = 6 }, { value = 7 }, { value = 8 } ]
-            """.trimIndent()
         )
     }
 

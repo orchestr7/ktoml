@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
+import com.akuleshov7.ktoml.tree.nodes.tables.InlineTableType
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -13,12 +14,16 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @param lineNo
  * @param comments
  * @param inlineComment
+ * @param inlineTableType type of inline table (primitive or array)
  * @property tomlKeyValues The key-value pairs in the inline table
- * @property key
+ * @property multiline whether the inline table should be written in multiple lines
+ * @property key null when this inline table is part of array of tables
  */
 public class TomlInlineTable internal constructor(
-    public val key: TomlKey,
+    public val key: TomlKey?,
     internal val tomlKeyValues: List<TomlNode>,
+    private val inlineTableType: InlineTableType,
+    public val multiline: Boolean = false,
     lineNo: Int,
     comments: List<String> = emptyList(),
     inlineComment: String = ""
@@ -35,13 +40,17 @@ public class TomlInlineTable internal constructor(
         lineNo: Int,
         comments: List<String> = emptyList(),
         inlineComment: String = "",
-        config: TomlInputConfig = TomlInputConfig()
+        config: TomlInputConfig = TomlInputConfig(),
+        inlineTableType: InlineTableType = InlineTableType.PRIMITIVE,
+        multiline: Boolean = false,
     ) : this(
         TomlKey(keyValuePair.first, lineNo),
         keyValuePair.second.parseInlineTableValue(keyValuePair, lineNo, config),
+        inlineTableType,
+        multiline,
         lineNo,
         comments,
-        inlineComment
+        inlineComment,
     )
 
     public fun returnTable(tomlFileHead: TomlFile, currentParentalNode: TomlNode): TomlTable {
@@ -77,31 +86,62 @@ public class TomlInlineTable internal constructor(
         emitter: TomlEmitter,
         config: TomlOutputConfig
     ) {
-        key.write(emitter)
+        key?.let {
+            it.write(emitter)
+            emitter.emitPairDelimiter()
+        }
 
-        emitter.emitPairDelimiter()
-            .startInlineTable()
+        when (inlineTableType) {
+            InlineTableType.PRIMITIVE -> emitter.startInlineTable()
+            InlineTableType.ARRAY -> emitter.startArray()
+        }
 
+        val isMultiline = multiline && inlineTableType == InlineTableType.ARRAY
+        if (isMultiline) {
+            emitter.indent()
+        }
         tomlKeyValues.forEachIndexed { i, pair ->
             if (i > 0) {
                 emitter.emitElementDelimiter()
             }
-
-            emitter.emitWhitespace()
+            if (isMultiline) {
+                emitter.emitNewLine()
+            } else {
+                emitter.emitWhitespace()
+            }
 
             pair.write(emitter, config)
         }
+        if (isMultiline) {
+            emitter.dedent()
+        }
 
-        emitter.emitWhitespace()
-            .endInlineTable()
+        if (!isMultiline) {
+            emitter.emitWhitespace()
+        }
+
+        writeEnding(emitter, isMultiline)
+    }
+
+    private fun writeEnding(emitter: TomlEmitter, isMultiline: Boolean) {
+        when (inlineTableType) {
+            InlineTableType.PRIMITIVE -> emitter.endInlineTable()
+            InlineTableType.ARRAY -> {
+                if (isMultiline) {
+                    emitter.emitNewLine()
+                }
+                emitter.emitIndent()
+                    .endArray()
+            }
+        }
     }
 
     private fun createTableRoot(currentParentalNode: TomlNode): TomlTable = TomlTable(
         TomlKey(
             when (currentParentalNode) {
-                is TomlTable -> currentParentalNode.fullTableKey.keyParts + key.keyParts
+                is TomlTable -> currentParentalNode.fullTableKey.keyParts + key!!.keyParts
                 is TomlArrayOfTablesElement -> (currentParentalNode.parent as TomlTable)
-                    .fullTableKey.keyParts + key.keyParts
+                    .fullTableKey.keyParts + key!!.keyParts
                 else -> listOf(name)
             },
         ),
