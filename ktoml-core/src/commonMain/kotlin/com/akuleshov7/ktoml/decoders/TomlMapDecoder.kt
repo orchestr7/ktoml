@@ -96,6 +96,11 @@ public class TomlMapDecoder private constructor(
         // stubs are internal technical nodes that are not needed in this scenario
         skipStubs()
         return when (val processedNode = rootNode.children[decodingElementIndex]) {
+            is TomlKeyValueArray -> if (index % 2 == 0) {
+                processedNode.key.toString() as T
+            } else {
+                decodeTomlKeyValueArray(processedNode, deserializer)
+            }
             is TomlKeyValue -> if (index % 2 == 0) {
                 processedNode.key.toString() as T
             } else {
@@ -147,6 +152,11 @@ public class TomlMapDecoder private constructor(
         rootNode.appendChild(processedNode)
         TomlMainDecoder.decode(deserializer, rootNode, config)
     }
+
+    private fun <T> decodeTomlKeyValueArray(
+        processedNode: TomlKeyValueArray,
+        deserializer: DeserializationStrategy<T>
+    ): T = TomlArrayDecoder.decode(deserializer, processedNode, config)
 
     private fun <T> decodeTomlTable(
         processedNode: TomlTable,

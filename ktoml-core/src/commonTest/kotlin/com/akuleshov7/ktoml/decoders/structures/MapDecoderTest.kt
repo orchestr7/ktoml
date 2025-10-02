@@ -1,9 +1,11 @@
 package com.akuleshov7.ktoml.decoders.structures
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.exceptions.TomlDecodingException
+import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -146,6 +148,64 @@ class MapDecoderTest {
         assertEquals(
             data,
             decoded
+        )
+    }
+
+    @Test
+    fun testMapWithArray() {
+        @Serializable
+        data class VersionCatalog(
+            val bundles: Map<String, List<String>> = emptyMap(),
+        )
+
+        val toml = """
+            [bundles]
+            koin = [
+                "koin-core",
+                "koin-compose",
+                "koin-compose-viewmodel"
+            ]
+
+            ktor-common = [
+                "ktor-client-core",
+                "ktor-client-content-negotiation",
+                "ktor-serialization-kotlinx-json",
+                "ktor-client-auth",
+                "ktor-client-logging"
+            ]
+
+            ktor-commond = [
+                "ktor-client-core",
+                "ktor-client-content-negotiation",
+                "ktor-serialization-kotlinx-json",
+                "ktor-client-auth",
+                "ktor-client-loggqing"
+            ]
+        """.trimIndent()
+
+        val expected = VersionCatalog(
+            mapOf(
+                "koin" to listOf("koin-core", "koin-compose", "koin-compose-viewmodel"),
+                "ktor-common" to listOf(
+                    "ktor-client-core",
+                    "ktor-client-content-negotiation",
+                    "ktor-serialization-kotlinx-json",
+                    "ktor-client-auth",
+                    "ktor-client-logging"
+                ),
+                "ktor-commond" to listOf(
+                    "ktor-client-core",
+                    "ktor-client-content-negotiation",
+                    "ktor-serialization-kotlinx-json",
+                    "ktor-client-auth",
+                    "ktor-client-loggqing"
+                )
+            )
+        )
+        val result = Toml.decodeFromString<VersionCatalog>(toml)
+        assertEquals(
+            expected,
+            result
         )
     }
 
