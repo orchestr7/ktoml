@@ -3,7 +3,6 @@ package com.akuleshov7.ktoml.writers
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -46,9 +45,17 @@ class PrimitiveValueWriteTest {
 
         // Backslash escaping
         testTomlValue(TomlBasicString("""hello\world""" as Any), """"hello\\world"""")
-        testTomlValue(TomlBasicString("""hello\\\ world""" as Any), """"hello\\\\ world"""")
-        testTomlValue(TomlBasicString("""hello\b\t\n\\\f\r world""" as Any), """"hello\b\t\n\\\f\r world"""")
-        testTomlValue(TomlBasicString("""hello\u0000\\\Uffffffff world""" as Any), """"hello\u0000\\\Uffffffff world"""")
+        testTomlValue(TomlBasicString("""hello\\\ world""" as Any), """"hello\\\\\\ world"""")
+        testTomlValue(TomlBasicString("hello\b\\t\n\\\\f\r world" as Any), """"hello\b\\t\n\\\\f\r world"""")
+        testTomlValue(TomlBasicString("hello\u0000\\\u0011 world" as Any), """"hello\u0000\\\u0011 world"""")
+    }
+
+    @Test
+    fun backslashEscapingWriteTest() {
+        testTomlValue(TomlBasicString("""\""" as Any), """"\\"""", TomlOutputConfig())
+        testTomlValue(TomlBasicString("""\a""" as Any), """"\\a"""", TomlOutputConfig())
+        testTomlValue(TomlBasicString("""\\\""" as Any), """"\\\\\\"""", TomlOutputConfig())
+        testTomlValue(TomlBasicString("""a\\b""" as Any), """"a\\\\b"""", TomlOutputConfig())
     }
 
     @Test

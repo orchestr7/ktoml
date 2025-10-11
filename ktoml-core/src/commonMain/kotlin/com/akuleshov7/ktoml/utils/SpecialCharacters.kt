@@ -10,6 +10,7 @@
 package com.akuleshov7.ktoml.utils
 
 import com.akuleshov7.ktoml.exceptions.UnknownEscapeSymbolsException
+import com.akuleshov7.ktoml.parsers.isLineEndingBackslash
 
 internal const val COMPLEX_UNICODE_LENGTH = 8
 internal const val COMPLEX_UNICODE_PREFIX = 'U'
@@ -103,13 +104,11 @@ public fun StringBuilder.appendEscapedUnicode(
  */
 public fun String.escapeSpecialCharacters(multiline: Boolean = false): String =
     if (multiline) {
-        escapeControlChars(Char::isMultilineControlChar)
+        escapeControlChars(isMultiline = true)
             .replace("\"\"\"", "\"\"\\\"")
-            .escapeBackslashes("btnfruU\"\r\n")
     } else {
-        escapeControlChars(Char::isControlChar)
+        escapeControlChars(isMultiline = false)
             .replace("\"", "\\\"")
-            .escapeBackslashes("btnfruU\"")
     }
 
 /**
@@ -133,22 +132,58 @@ internal fun Char.isControlChar() = this in CharCategory.CONTROL && this != '\t'
  */
 internal fun Char.isMultilineControlChar() = isControlChar() && this !in "\n\r"
 
-private inline fun String.escapeControlChars(predicate: (Char) -> Boolean): String {
+private fun String.escapeControlChars(isMultiline: Boolean): String {
+    val isControlChar = if (isMultiline) {
+        Char::isMultilineControlChar
+    } else {
+        Char::isControlChar
+    }
+
     val sb = StringBuilder(length)
-    var last = 0
+    var slashCount = 0
     for ((i, char) in withIndex()) {
-        if (predicate(char)) {
-            sb.append(this, last, i)
-                .append(char.escapeControlChar())
-            last = i + 1
+        if (char == '\\') {
+            slashCount++
+            continue
+        }
+
+        if (slashCount > 0) {
+            sb.append(
+                escapeBackslashes(lastBackslashIndex = i - 1, slashCount = slashCount, isMultiline = isMultiline)
+            )
+            slashCount = 0
+        }
+
+        if (isControlChar(char)) {
+            sb.append(char.escapeControlChar())
+        } else {
+            sb.append(char)
         }
     }
 
-    if (last < length) {
-        sb.append(this, last, length)
+    if (isNotEmpty() && slashCount > 0) {
+        sb.append(
+            escapeBackslashes(lastBackslashIndex = length - 1, slashCount = slashCount, isMultiline = isMultiline)
+        )
     }
 
     return sb.toString()
+}
+
+private fun String.escapeBackslashes(
+    lastBackslashIndex: Int,
+    slashCount: Int,
+    isMultiline: Boolean,
+): String {
+    val isLineEndingBackslash = slashCount % 2 != 0 &&
+            isMultiline &&
+            isLineEndingBackslash(lastBackslashIndex)
+
+    return if (isLineEndingBackslash) {
+        "\\".repeat(slashCount * 2 - 1)
+    } else {
+        "\\".repeat(slashCount * 2)
+    }
 }
 
 private fun Char.escapeControlChar() = when (this) {
@@ -164,31 +199,6 @@ private fun Char.escapeControlChar() = when (this) {
             hexDigits.padStart(SIMPLE_UNICODE_LENGTH, '0')
         }"
     }
-}
-
-private fun String.escapeBackslashes(escapes: String): String {
-    val sb = StringBuilder(length)
-    var slashCount = 0
-    var last = 0
-    for ((i, char) in withIndex()) {
-        if (char == '\\') {
-            slashCount++
-        } else {
-            if (slashCount > 0 && char !in escapes && slashCount % 2 != 0) {
-                sb.append(this, last, i - 1)
-                    .append("\\\\$char")
-                last = i + 1
-            }
-
-            slashCount = 0
-        }
-    }
-
-    if (last < length) {
-        sb.append(this, last, length)
-    }
-
-    return sb.toString()
 }
 
 /**
