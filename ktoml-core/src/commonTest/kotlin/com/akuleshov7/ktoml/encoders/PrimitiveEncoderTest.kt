@@ -73,7 +73,7 @@ class PrimitiveEncoderTest {
 
         assertEncodedEquals(
             value = File("""hello \Uffffffff world"""),
-            expectedToml = """escapeString = "hello \Uffffffff world""""
+            expectedToml = """escapeString = "hello \\Uffffffff world""""
         )
 
         assertEncodedEquals(

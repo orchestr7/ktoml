@@ -33,7 +33,7 @@ jobs:
           i=0
           find . -path "*/build/reports/diktat/*.sarif" | while read -r f; do echo "$f -> diktat-$i.sarif" && cp $f build/diktat-sarif-reports/diktat-$i.sarif || echo Cannot copy && echo Copied && i=$((i+1)); done
       - name: Upload SARIF report to Github
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: ${{ failure() }}
         with:
           sarif_file: build/diktat-sarif-reports
