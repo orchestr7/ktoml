@@ -90,6 +90,23 @@ internal fun String.convertLineEndingBackslash(): String {
 }
 
 /**
+ * Checks if the backslash at the given index is a line-ending backslash
+ * A line-ending backslash is defined as a backslash that is followed only by
+ * whitespace characters and then a newline character or the end of the string
+ *
+ * @param backslashIndex The index of the backslash to check
+ * @return `true` if the backslash is a line-ending backslash, `false` otherwise
+ */
+internal fun String.isLineEndingBackslash(backslashIndex: Int): Boolean {
+    var j = backslashIndex + 1
+    while (j < length && this[j] != newLineChar() && this[j].isWhitespace()) {
+        j++
+    }
+
+    return j == length || this[j] == newLineChar() || j == length
+}
+
+/**
  * If this string starts and end with quotes("") - will return the string with quotes removed
  * Otherwise, returns this string.
  *

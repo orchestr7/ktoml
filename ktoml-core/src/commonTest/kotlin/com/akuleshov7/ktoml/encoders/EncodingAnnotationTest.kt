@@ -3,10 +3,13 @@ package com.akuleshov7.ktoml.encoders
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.*
+import com.akuleshov7.ktoml.utils.isControlChar
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlin.test.Test
 
 class EncodingAnnotationTest {
@@ -252,17 +255,11 @@ class EncodingAnnotationTest {
             @TomlMultiline
             val mlTextA: String = "\n\\tMultiline\ntext!\n",
             @TomlMultiline
-            val mlTextB: String = """
-                
-                Text with escaped quotes ""\"\
-                and line break
-                
-            """.trimIndent(),
+            val mlTextB: String = "\nText with escaped quotes \"\"\"\\\nand line break\n",
             @TomlLiteral
             @TomlMultiline
             val mlTextC: String = "\n\"Multiline\ntext!\"\n"
         )
-
         val tripleQuotes = "\"\"\""
 
         assertEncodedEquals(
@@ -270,7 +267,7 @@ class EncodingAnnotationTest {
             expectedToml = """
                 mlTextA = $tripleQuotes
                 
-                \tMultiline
+                \\tMultiline
                 text!
                 
                 $tripleQuotes
@@ -286,6 +283,25 @@ class EncodingAnnotationTest {
                 text!"
                 
                 '''
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun encodeBackslashesInMultiline() {
+        @Serializable
+        data class Reproducer(
+            @TomlMultiline
+            val foo: String
+        )
+        val tripleQuotes = "\"\"\""
+
+        assertEncodedEquals(
+            Reproducer("\\\\, \\\""),
+            """
+                foo = $tripleQuotes
+                \\\\, \\"
+                $tripleQuotes
             """.trimIndent()
         )
     }
