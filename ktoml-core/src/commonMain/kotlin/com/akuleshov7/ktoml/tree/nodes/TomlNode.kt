@@ -57,9 +57,9 @@ public sealed class TomlNode(
     )
 
     /**
-     * @return true if has no children
+     * @return true if node has no children
      */
-    public fun hasNoChildren(): Boolean = children.size == 0
+    public fun hasNoChildren(): Boolean = children.isEmpty()
 
     /**
      * @return first child or null
