@@ -13,7 +13,9 @@ configureVersioning()
 
 allprojects {
     repositories {
-        mavenCentral()
+        maven {
+            url = uri("https://repo1.maven.org/maven2/")
+        }
     }
 
     apply<DiktatGradlePlugin>()
@@ -42,3 +44,10 @@ allprojects {
 
 createDetektTask()
 installGitHooks()
+
+// Create a convenient 'test' task alias for 'allTests'
+tasks.register("test") {
+    group = "verification"
+    description = "Runs all tests (alias for allTests)"
+    dependsOn("allTests")
+}
