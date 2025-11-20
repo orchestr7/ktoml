@@ -23,7 +23,7 @@ jobs:
 
     steps:
       # actions/checkout v1.* is needed for correct codecov upload, see https://github.com/actions/checkout/issues/237 for details
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # ensure that gradle wrapper files in repository are valid by checking checksums
       - uses: gradle/actions/wrapper-validation@v5
       - name: Set up JDK 21
@@ -52,7 +52,7 @@ jobs:
             buildSrc/**/Versions.kt
       - name: Upload gradle reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gradle-reports-${{ matrix.os }}
           path: '**/build/reports/'
