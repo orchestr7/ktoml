@@ -32,7 +32,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Cache konan
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.konan
           key: ${{ runner.os }}-gradle-konan
@@ -52,7 +52,7 @@ jobs:
             buildSrc/**/Versions.kt
       - name: Upload gradle reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: gradle-reports-${{ matrix.os }}
           path: '**/build/reports/'
