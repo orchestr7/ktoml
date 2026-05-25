@@ -12,6 +12,9 @@ plugins {
 configureVersioning()
 
 allprojects {
+    repositories {
+        mavenCentral()
+    }
 
     apply<DiktatGradlePlugin>()
 
