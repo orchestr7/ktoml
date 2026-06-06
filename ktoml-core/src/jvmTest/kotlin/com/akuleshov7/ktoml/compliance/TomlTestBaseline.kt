@@ -14,7 +14,6 @@ package com.akuleshov7.ktoml.compliance
  * | Datetime offset normalized to UTC | [#375](https://github.com/orchestr7/ktoml/issues/375) |
  * | Float representation lost | [#376](https://github.com/orchestr7/ktoml/issues/376) |
  * | Dotted key expansion incorrect | [#377](https://github.com/orchestr7/ktoml/issues/377) |
- * | Array-of-tables structure | [#378](https://github.com/orchestr7/ktoml/issues/378) |
  * | Key names not unquoted | [#379](https://github.com/orchestr7/ktoml/issues/379) |
  * | Parser rejects valid TOML | [#380](https://github.com/orchestr7/ktoml/issues/380) |
  * | Stack overflow on deep nesting | [#381](https://github.com/orchestr7/ktoml/issues/381) |
@@ -68,18 +67,6 @@ data object DottedKeyExpansion : KnownFailure {
         "valid/key/dotted-04.toml",
         "valid/key/dotted-empty.toml",
         "valid/key/quoted-dots.toml",
-    )
-}
-
-/** Array-of-tables produces wrong AST structure in edge cases */
-data object ArrayOfTablesStructure : KnownFailure {
-    override val issue = 378
-    override val tests = listOf(
-        "valid/array/open-parent-table.toml",
-        "valid/table/array-empty-name.toml",
-        "valid/table/array-implicit.toml",
-        "valid/table/array-implicit-and-explicit-after.toml",
-        "valid/table/array-table-array.toml",
     )
 }
 
@@ -405,7 +392,6 @@ val allKnownFailures: List<KnownFailure> = listOf(
     DatetimeOffsetLoss,
     FloatRepresentationLoss,
     DottedKeyExpansion,
-    ArrayOfTablesStructure,
     KeyNameQuoting,
     ValidTomlRejected,
     StackOverflowOnNesting,
