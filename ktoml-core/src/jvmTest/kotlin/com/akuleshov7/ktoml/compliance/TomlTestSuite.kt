@@ -16,7 +16,7 @@ import kotlin.test.fail
 
 /**
  * Runs the [toml-lang/toml-test](https://github.com/toml-lang/toml-test) compliance suite
- * against ktoml's parser (TOML 1.0 file list).
+ * against ktoml's parser (TOML 1.1 file list — matching the project goal).
  *
  * - **Valid tests:** parse TOML → convert AST to tagged JSON via [TomlTestConverter] → compare
  *   with expected JSON from the test suite.
@@ -39,7 +39,7 @@ import kotlin.test.fail
 class TomlTestSuite {
     private val testDir = File("../toml-test/tests")
 
-    private fun loadFileList(version: String = "1.0.0"): List<String> {
+    private fun loadFileList(version: String = "1.1.0"): List<String> {
         val listFile = testDir.resolve("files-toml-$version")
         require(listFile.exists()) {
             "toml-test file list not found at ${listFile.absolutePath}. " +

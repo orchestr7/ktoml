@@ -21,6 +21,9 @@ package com.akuleshov7.ktoml.compliance
  * | Multiline string escape handling | [#382](https://github.com/orchestr7/ktoml/issues/382) |
  * | Multiline inline table crash | [#374](https://github.com/orchestr7/ktoml/issues/374) |
  * | Missing validation (accepts invalid) | [#383](https://github.com/orchestr7/ktoml/issues/383) |
+ * | TOML 1.1 valid features unsupported | [#373](https://github.com/orchestr7/ktoml/issues/373) |
+ *
+ * The suite runs against the **TOML 1.1** file list (`files-toml-1.1.0`), matching the project goal.
  *
  * Related: [#32](https://github.com/orchestr7/ktoml/issues/32) (toml-test integration),
  * [#373](https://github.com/orchestr7/ktoml/issues/373) (TOML 1.1 umbrella)
@@ -146,6 +149,8 @@ data object MultilineInlineTableCrash : KnownFailure {
         "valid/inline-table/array-03.toml",
         "valid/inline-table/key-dotted-07.toml",
         "valid/inline-table/multiline.toml",
+        "valid/inline-table/newline.toml",
+        "valid/inline-table/newline-comment.toml",
     )
 }
 
@@ -160,12 +165,14 @@ data object MissingValidationControlChars : KnownFailure {
         "invalid/control/comment-lf.toml",
         "invalid/control/comment-null.toml",
         "invalid/control/comment-us.toml",
+        "invalid/control/multi-cr.toml",
         "invalid/control/multi-del.toml",
         "invalid/control/multi-lf.toml",
         "invalid/control/multi-null.toml",
         "invalid/control/multi-us.toml",
         "invalid/control/only-ff.toml",
         "invalid/control/only-vt.toml",
+        "invalid/control/rawmulti-cr.toml",
         "invalid/control/rawmulti-del.toml",
         "invalid/control/rawmulti-lf.toml",
         "invalid/control/rawmulti-null.toml",
@@ -371,6 +378,40 @@ data object MissingValidationArrays : KnownFailure {
 }
 
 /**
+ * TOML 1.1 valid features ktoml does not yet support (parser rejects or mis-represents them).
+ * Tracked under the TOML 1.1 umbrella [#373](https://github.com/orchestr7/ktoml/issues/373):
+ * `\x` / `\e` string escapes, seconds-less datetimes, and assorted 1.1 spec examples.
+ */
+data object TomlOneOneValidFeatures : KnownFailure {
+    override val issue = 373
+    override val tests = listOf(
+        "valid/string/hex-escape.toml",
+        "valid/string/escape-esc.toml",
+        "valid/datetime/no-seconds.toml",
+        "valid/spec-1.1.0/common-4.toml",
+        "valid/spec-1.1.0/common-12.toml",
+        "valid/spec-1.1.0/common-23.toml",
+        "valid/spec-1.1.0/common-24.toml",
+        "valid/spec-1.1.0/common-27.toml",
+        "valid/spec-1.1.0/common-29.toml",
+        "valid/spec-1.1.0/common-35.toml",
+        "valid/spec-1.1.0/common-40.toml",
+        "valid/spec-1.1.0/common-47.toml",
+    )
+}
+
+/** Missing validation — TOML 1.1 invalid spec examples that ktoml accepts. Tracked under #373/#383. */
+data object TomlOneOneMissingValidation : KnownFailure {
+    override val issue = 373
+    override val tests = listOf(
+        "invalid/spec-1.1.0/common-46-0.toml",
+        "invalid/spec-1.1.0/common-46-1.toml",
+        "invalid/spec-1.1.0/common-49-0.toml",
+        "invalid/spec-1.1.0/common-50-0.toml",
+    )
+}
+
+/**
  * All known failure groups. Used by [TomlTestSuite] to build the lookup map.
  */
 val allKnownFailures: List<KnownFailure> = listOf(
@@ -393,6 +434,8 @@ val allKnownFailures: List<KnownFailure> = listOf(
     MissingValidationStringEscape,
     MissingValidationDatetime,
     MissingValidationArrays,
+    TomlOneOneValidFeatures,
+    TomlOneOneMissingValidation,
 )
 
 /**
