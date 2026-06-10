@@ -119,8 +119,16 @@ public value class TomlParser(private val config: TomlInputConfig) {
 
                         keyValue is TomlInlineTable ->
                             // in case of inline tables (a = { b = "c" }) we need to create a new parental table and
-                            // recursively process all inner nested tables (including inline and dotted)
-                            tomlFileHead.insertTableToTree(keyValue.returnTable(tomlFileHead, currentParentalNode))
+                            // recursively process all inner nested tables (including inline and dotted).
+                            // latestCreatedBucket must be threaded through here exactly like for an
+                            // explicit [[array.of.tables]] section above: an inline array of tables
+                            // (children = [{ .. }]) expands to an [[array.children]] fragment, and without
+                            // the bucket the tree builder would re-use the first element's fragment for every
+                            // element instead of creating a fresh one under the current element - see #31.
+                            tomlFileHead.insertTableToTree(
+                                keyValue.returnTable(tomlFileHead, currentParentalNode),
+                                latestCreatedBucket
+                            )
 
                         // otherwise, it should simply append the keyValue to the parent
                         else -> currentParentalNode.appendChild(keyValue)
