@@ -103,7 +103,6 @@ data object ValidTomlRejected : KnownFailure {
     override val issue = 380
     override val tests = listOf(
         "valid/array/mixed-string-table.toml",
-        "valid/array/table-array-string-backslash.toml",
         "valid/datetime/edge.toml",
         "valid/datetime/leap-year.toml",
         "valid/datetime/local.toml",
