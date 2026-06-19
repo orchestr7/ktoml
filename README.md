@@ -198,6 +198,33 @@ val resultFromList = TomlFileReader.partiallyDecodeFromSource<MyClass>(serialize
 ```
 </details>
 
+<details>
+<summary>Decoding a real-world config file (e.g. Gradle <code>libs.versions.toml</code>)</summary>
+
+Any existing TOML config is just a TOML file, so ktoml can decode it straight into your own
+`@Serializable` classes — no special support needed. A Gradle version catalog is a good example:
+it uses maps of version / library / plugin declarations, `[bundles]`, inline `version = { ... }`
+objects, and the dotted `version.ref` key.
+
+```kotlin
+@Serializable
+data class GradleVersionCatalog(
+    val versions: Map<String, VersionDeclaration> = emptyMap(),
+    val libraries: Map<String, LibraryDeclaration> = emptyMap(),
+    val bundles: Map<String, List<String>> = emptyMap(),
+    val plugins: Map<String, PluginDeclaration> = emptyMap(),
+)
+// LibraryDeclaration has e.g. `module`, an inline `@SerialName("version")` object,
+// and the dotted `@SerialName("version.ref")` key.
+
+val catalog = Toml(inputConfig = TomlInputConfig(ignoreUnknownNames = true))
+    .decodeFromString<GradleVersionCatalog>(/* contents of libs.versions.toml */)
+```
+
+See [`GradleVersionCatalogTest`](ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/structures/GradleVersionCatalogTest.kt)
+for a complete, runnable example (including the `version.ref` and inline-table cases).
+</details>
+
 **Serialization:**
 <details>
 <summary>Straight-forward serialization</summary>
