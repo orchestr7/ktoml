@@ -269,6 +269,16 @@ Toml(
 )
 ```
 
+## Samples
+
+### Gradle version catalog (`libs.versions.toml`)
+
+A Gradle version catalog is just a TOML file, so ktoml can decode one straight into your own
+`@Serializable` classes — maps of version / library / plugin declarations, `[bundles]`, inline
+`version = { ... }` objects, and the dotted `version.ref` key. See
+[`GradleVersionCatalogTest`](ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/structures/GradleVersionCatalogTest.kt)
+for a complete, runnable example.
+
 ## How ktoml works: examples
 :heavy_exclamation_mark: You can check how below examples work in [decoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/decoders/ReadMeExampleTest.kt) and [encoding ReadMeExampleTest](https://github.com/akuleshov7/ktoml/blob/main/ktoml-core/src/commonTest/kotlin/com/akuleshov7/ktoml/encoders/ReadMeExampleTest.kt).
 
