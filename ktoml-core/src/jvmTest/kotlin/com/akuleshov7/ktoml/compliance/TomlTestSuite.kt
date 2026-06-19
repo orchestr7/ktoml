@@ -4,6 +4,7 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -12,6 +13,7 @@ import java.io.File
 import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /**
@@ -65,8 +67,12 @@ class TomlTestSuite {
     fun `valid TOML parses correctly`(testPath: String) {
         val tomlFile = testDir.resolve(testPath)
         val jsonFile = testDir.resolve(testPath.replace(".toml", ".json"))
-        assumeTrue(tomlFile.exists(), "TOML file missing: $testPath")
-        assumeTrue(jsonFile.exists(), "Expected JSON missing for: $testPath")
+        assertTrue(tomlFile.exists(), missingFileMessage(testPath))
+        assertTrue(
+            jsonFile.exists(),
+            "Misconfiguration: expected JSON is listed but missing on disk: " +
+                testPath.replace(".toml", ".json"),
+        )
 
         val issueUrl = knownFailuresMap[testPath]
 
@@ -92,7 +98,7 @@ class TomlTestSuite {
     @MethodSource("invalidTestCases")
     fun `invalid TOML is rejected`(testPath: String) {
         val tomlFile = testDir.resolve(testPath)
-        assumeTrue(tomlFile.exists(), "TOML file missing: $testPath")
+        assertTrue(tomlFile.exists(), missingFileMessage(testPath))
 
         val issueUrl = knownFailuresMap[testPath]
 
@@ -112,5 +118,25 @@ class TomlTestSuite {
                 result.getOrThrow()
         }
     }
+
+    /**
+     * Guards against stale baseline entries: a path listed in [knownFailuresMap] but absent from the
+     * loaded toml-test file list is never executed, so it can neither XPASS nor fail — it just lingers
+     * silently and gives a false sense of coverage. Fail loudly so it gets removed.
+     */
+    @Test
+    fun `baseline references only tests present in the file list`() {
+        val listed = loadFileList().toSet()
+        val stale = knownFailuresMap.keys.filterNot { it in listed }
+        assertTrue(
+            stale.isEmpty(),
+            "Stale baseline entries — listed in TomlTestBaseline.kt but not in the loaded toml-test " +
+                "file list, so they never run. Remove them: $stale",
+        )
+    }
+
+    private fun missingFileMessage(testPath: String) =
+        "Misconfiguration: '$testPath' is in the toml-test file list but missing on disk. " +
+            "The toml-test submodule is incomplete — run: git submodule update --init --recursive"
 }
 
