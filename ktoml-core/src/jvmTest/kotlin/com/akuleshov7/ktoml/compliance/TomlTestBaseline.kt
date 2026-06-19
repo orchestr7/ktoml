@@ -42,7 +42,6 @@ data object DatetimeOffsetLoss : KnownFailure {
         "valid/comment/everywhere.toml",
         "valid/datetime/milliseconds.toml",
         "valid/datetime/timezone.toml",
-        "valid/spec-1.0.0/offset-date-time-0.toml",
         "valid/spec-example-1.toml",
         "valid/spec-example-1-compact.toml",
     )
@@ -53,7 +52,6 @@ data object FloatRepresentationLoss : KnownFailure {
     override val issue = 376
     override val tests = listOf(
         "valid/float/exponent.toml",
-        "valid/spec-1.0.0/float-0.toml",
     )
 }
 
@@ -91,7 +89,6 @@ data object KeyNameQuoting : KnownFailure {
     override val tests = listOf(
         "valid/key/space.toml",
         "valid/multibyte.toml",
-        "valid/spec-1.0.0/table-3.toml",
         "valid/table/empty-name.toml",
         "valid/table/with-literal-string.toml",
         "valid/table/with-single-quotes.toml",
@@ -113,9 +110,6 @@ data object ValidTomlRejected : KnownFailure {
         "valid/key/escapes.toml",
         "valid/key/quoted-unicode.toml",
         "valid/key/special-chars.toml",
-        "valid/spec-1.0.0/array-0.toml",
-        "valid/spec-1.0.0/float-1.toml",
-        "valid/spec-1.0.0/keys-1.toml",
         "valid/table/names.toml",
         "valid/table/names-with-values.toml",
     )
@@ -333,10 +327,6 @@ data object MissingValidationInlineTable : KnownFailure {
         "invalid/inline-table/overwrite-08.toml",
         "invalid/inline-table/overwrite-09.toml",
         "invalid/inline-table/overwrite-10.toml",
-        "invalid/spec-1.0.0/inline-table-2-0.toml",
-        "invalid/spec-1.0.0/inline-table-3-0.toml",
-        "invalid/spec-1.0.0/table-9-0.toml",
-        "invalid/spec-1.0.0/table-9-1.toml",
     )
 }
 
@@ -358,9 +348,7 @@ data object MissingValidationDatetime : KnownFailure {
         "invalid/datetime/offset-minus-no-minute.toml",
         "invalid/datetime/offset-plus-no-minute.toml",
         "invalid/datetime/second-trailing-dot.toml",
-        "invalid/local-time/no-secs.toml",
         "invalid/local-time/trailing-dot.toml",
-        "invalid/local-datetime/no-secs.toml",
     )
 }
 
