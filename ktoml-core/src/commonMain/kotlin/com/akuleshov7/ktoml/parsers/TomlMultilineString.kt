@@ -114,6 +114,9 @@ internal class TomlMultilineString(
      * @return true if string is a last line of multiline value declaration
      */
     private fun isEndOfMultilineValue(multilineType: MultilineType): Boolean {
+        if (multilineType == MultilineType.ARRAY) {
+            return hasClosedMultilineArray()
+        }
         isNested ?: run {
             isNested = hasTwoConsecutiveSymbolsIgnoreWhitespaces(getLine(), multilineType.openSymbols[0])
         }
@@ -122,12 +125,7 @@ internal class TomlMultilineString(
             val clearedString = lines.joinToString("")
                 .filter { !it.isWhitespace() }
 
-            if (multilineType == MultilineType.ARRAY) {
-                clearedString.endsWith(multilineType.closingSymbols + multilineType.closingSymbols) ||
-                        clearedString.endsWith(multilineType.closingSymbols + "," + multilineType.closingSymbols)
-            } else {
-                clearedString.endsWith(multilineType.closingSymbols + multilineType.closingSymbols)
-            }
+            clearedString.endsWith(multilineType.closingSymbols + multilineType.closingSymbols)
         } else {
             // Checks if this line ends with closing symbols, allowing for whitespace or a comment after those
             // symbols. Note that we're not using [indexOfNextOutsideOfQuotes] here because the last line of a
@@ -142,6 +140,50 @@ internal class TomlMultilineString(
                 .trim()
                 .isEmpty()
         }
+    }
+
+    @Suppress("TOO_LONG_FUNCTION", "NESTED_BLOCK")
+    private fun hasClosedMultilineArray(): Boolean {
+        val value = getLine()
+            .substringAfter('=')
+            .replaceEscaped(config.allowEscapedQuotesInLiteralStrings)
+
+        var bracketBalance = 0
+        var currentQuoteStr: String? = null
+        var idx = 0
+
+        while (idx < value.length) {
+            val symbol = value[idx]
+            val quoteStr = currentQuoteStr
+
+            if (quoteStr == null) {
+                when (symbol) {
+                    '[' -> bracketBalance++
+                    ']' -> bracketBalance--
+                    '"', '\'' -> {
+                        currentQuoteStr = if (idx + 2 < value.length && value[idx + 1] == symbol && value[idx + 2] == symbol) {
+                            "$symbol$symbol$symbol"
+                        } else {
+                            symbol.toString()
+                        }
+                        idx += currentQuoteStr!!.length
+                        continue
+                    }
+                    else -> Unit
+                }
+            } else if (quoteStr[0] == symbol && idx + quoteStr.length <= value.length) {
+                val candidate = value.substring(idx, idx + quoteStr.length)
+                if (candidate == quoteStr) {
+                    currentQuoteStr = null
+                    idx += candidate.length
+                    continue
+                }
+            }
+
+            idx += 1
+        }
+
+        return bracketBalance == 0
     }
 
     private fun hasTwoConsecutiveSymbolsIgnoreWhitespaces(value: String, searchSymbol: Char): Boolean? {
