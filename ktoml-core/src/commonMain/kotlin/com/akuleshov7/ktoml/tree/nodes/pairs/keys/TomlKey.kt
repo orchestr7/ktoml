@@ -2,8 +2,8 @@ package com.akuleshov7.ktoml.tree.nodes.pairs.keys
 
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
+import com.akuleshov7.ktoml.parsers.parseKeyName
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
-import com.akuleshov7.ktoml.parsers.trimAllQuotes
 import com.akuleshov7.ktoml.writers.TomlEmitter
 import com.akuleshov7.ktoml.writers.TomlStringEmitter
 
@@ -31,10 +31,10 @@ public class TomlKey internal constructor(
     ) : this(rawContent.splitKeyToTokens(lineNo))
 
     /**
-     * Gets the last key part, with all whitespace and quotes trimmed, i.e. `c` in
-     * `a.b.' c '`
+     * Gets the last key part in AST form, with quotes removed and escapes resolved
+     * for basic keys.
      */
-    public fun last(): String = keyParts.last().trimAllQuotes().trim()
+    public fun last(): String = keyParts.last().parseKeyName(lineNo = 0)
 
     public fun write(emitter: TomlEmitter) {
         val keys = keyParts

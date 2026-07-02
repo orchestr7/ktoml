@@ -6,8 +6,8 @@ package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.parseKeyName
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
-import com.akuleshov7.ktoml.parsers.trimAllQuotes
 import com.akuleshov7.ktoml.parsers.trimBrackets
 import com.akuleshov7.ktoml.parsers.trimDoubleBrackets
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
@@ -43,7 +43,7 @@ public class TomlTable(
     public var tablesList: List<String> = fullTableKey.keyParts.runningReduce { prev, cur -> "$prev.$cur" }
 
     // short table name (only the name without parental prefix, like a - it is used in decoder and encoder)
-    public override val name: String = fullTableKey.keyParts.last().trimAllQuotes()
+    public override val name: String = fullTableKey.keyParts.last().parseKeyName(lineNo)
 
     public constructor(
         content: String,

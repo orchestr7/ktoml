@@ -80,9 +80,12 @@ public sealed class TomlNode(
      */
     public fun findTableInAstByName(tableName: String): TomlTable? {
         val tableKey = TomlKey(tableName, lineNo)
+        val tableKeyName = tableKey.last()
 
         // getting all child-tables (and arrays of tables) that have the same name as we are trying to find
-        val simpleTable = this.children.filterIsInstance<TomlTable>().filter { it.fullTableKey == tableKey }
+        val simpleTable = this.children.filterIsInstance<TomlTable>().filter {
+            it.fullTableKey == tableKey || it.name == tableKeyName
+        }
         // there cannot be more than 1 table node with the same name on the same level in the tree
         if (simpleTable.size > 1) {
             throw InternalAstException(
@@ -97,7 +100,7 @@ public sealed class TomlNode(
             .map { it.children }
             .flatten()
             .filterIsInstance<TomlTable>()
-            .filter { it.fullTableKey == tableKey }
+            .filter { it.fullTableKey == tableKey || it.name == tableKeyName }
             .toList()
         // return the table that we found among the list of child tables or in the array of tables
         return simpleTable.lastOrNull() ?: tableFromElements.lastOrNull()

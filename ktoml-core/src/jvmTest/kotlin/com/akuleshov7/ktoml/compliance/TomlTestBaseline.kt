@@ -14,7 +14,6 @@ package com.akuleshov7.ktoml.compliance
  * | Datetime offset normalized to UTC | [#375](https://github.com/orchestr7/ktoml/issues/375) |
  * | Float representation lost | [#376](https://github.com/orchestr7/ktoml/issues/376) |
  * | Dotted key expansion incorrect | [#377](https://github.com/orchestr7/ktoml/issues/377) |
- * | Key names not unquoted | [#379](https://github.com/orchestr7/ktoml/issues/379) |
  * | Parser rejects valid TOML | [#380](https://github.com/orchestr7/ktoml/issues/380) |
  * | Stack overflow on deep nesting | [#381](https://github.com/orchestr7/ktoml/issues/381) |
  * | Multiline string escape handling | [#382](https://github.com/orchestr7/ktoml/issues/382) |
@@ -67,18 +66,6 @@ data object DottedKeyExpansion : KnownFailure {
         "valid/key/dotted-04.toml",
         "valid/key/dotted-empty.toml",
         "valid/key/quoted-dots.toml",
-    )
-}
-
-/** Key names retain quote characters in AST name property */
-data object KeyNameQuoting : KnownFailure {
-    override val issue = 379
-    override val tests = listOf(
-        "valid/key/space.toml",
-        "valid/multibyte.toml",
-        "valid/table/empty-name.toml",
-        "valid/table/with-literal-string.toml",
-        "valid/table/with-single-quotes.toml",
     )
 }
 
@@ -392,7 +379,6 @@ val allKnownFailures: List<KnownFailure> = listOf(
     DatetimeOffsetLoss,
     FloatRepresentationLoss,
     DottedKeyExpansion,
-    KeyNameQuoting,
     ValidTomlRejected,
     StackOverflowOnNesting,
     MultilineStringEscape,
