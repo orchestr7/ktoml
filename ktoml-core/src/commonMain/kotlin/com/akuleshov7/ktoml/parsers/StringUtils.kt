@@ -5,6 +5,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import com.akuleshov7.ktoml.utils.newLineChar
 
 private const val MULTILINE_STRING_QUOTE_LENGTH = 3
@@ -131,6 +132,21 @@ internal fun String.trimAllQuotes(): String {
     } else {
         this
     }
+}
+
+/**
+ * Parses a TOML key part into the AST form.
+ *
+ * Double-quoted keys use basic-string escaping, single-quoted keys are literal,
+ * and bare keys are returned as-is.
+ *
+ * @param lineNo the line number for error reporting
+ * @return the unquoted and unescaped key name
+ */
+internal fun String.parseKeyName(lineNo: Int): String = when {
+    startsWith('"') && endsWith('"') -> trimQuotes().convertSpecialCharacters(lineNo)
+    startsWith('\'') && endsWith('\'') -> trimSingleQuotes()
+    else -> this
 }
 
 /**
