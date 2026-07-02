@@ -57,15 +57,9 @@ data object FloatRepresentationLoss : KnownFailure {
 data object DottedKeyExpansion : KnownFailure {
     override val issue = 377
     override val tests = listOf(
-        "valid/inline-table/key-dotted-01.toml",
+        // most dotted-key cases are fixed by the table-tree change; these two still fail
         "valid/inline-table/key-dotted-02.toml",
-        "valid/inline-table/key-dotted-04.toml",
         "valid/inline-table/key-dotted-06.toml",
-        "valid/key/dotted-01.toml",
-        "valid/key/dotted-02.toml",
-        "valid/key/dotted-04.toml",
-        "valid/key/dotted-empty.toml",
-        "valid/key/quoted-dots.toml",
     )
 }
 
@@ -356,7 +350,6 @@ data object TomlOneOneValidFeatures : KnownFailure {
         "valid/spec-1.1.0/common-27.toml",
         "valid/spec-1.1.0/common-29.toml",
         "valid/spec-1.1.0/common-35.toml",
-        "valid/spec-1.1.0/common-40.toml",
         "valid/spec-1.1.0/common-47.toml",
     )
 }
