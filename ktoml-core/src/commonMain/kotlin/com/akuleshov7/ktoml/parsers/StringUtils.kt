@@ -139,6 +139,9 @@ internal fun String.trimAllQuotes(): String {
  *
  * Double-quoted keys use basic-string escaping, single-quoted keys are literal,
  * and bare keys are returned as-is.
+ *
+ * @param lineNo the line number for error reporting
+ * @return the unquoted and unescaped key name
  */
 internal fun String.parseKeyName(lineNo: Int): String = when {
     startsWith('"') && endsWith('"') -> trimQuotes().convertSpecialCharacters(lineNo)
