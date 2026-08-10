@@ -17,6 +17,7 @@ internal const val COMPLEX_UNICODE_PREFIX = 'U'
 internal const val BIN_RADIX = 2
 internal const val OCT_RADIX = 8
 internal const val HEX_RADIX = 16
+internal const val MAX_CODE_POINT = 0x10_FF_FF
 internal const val SIMPLE_UNICODE_LENGTH = 4
 internal const val SIMPLE_UNICODE_PREFIX = 'u'
 
@@ -87,12 +88,15 @@ public fun StringBuilder.appendEscapedUnicode(
         throw UnknownEscapeSymbolsException("\\$invalid", lineNo)
     }
     val hexCode = fullString.substring(codeStartIndex, codeStartIndex + nbUnicodeChars)
-    val codePoint = hexCode.toInt(HEX_RADIX)
-    try {
-        appendCodePointCompat(codePoint)
-    } catch (e: IllegalArgumentException) {
-        throw UnknownEscapeSymbolsException("\\$marker$hexCode", lineNo)
-    }
+    // toLong rather than toInt because eight hex digits overflow an Int, and the digits are
+    // checked one by one first because both parsers accept a leading sign: "+041" would
+    // otherwise be read as U+0041 instead of being rejected
+    val codePoint = hexCode
+        .takeIf { code -> code.all { it.digitToIntOrNull(HEX_RADIX) != null } }
+        ?.toLong(HEX_RADIX)
+        ?.takeIf { it <= MAX_CODE_POINT }
+        ?: throw UnknownEscapeSymbolsException("\\$marker$hexCode", lineNo)
+    appendCodePointCompat(codePoint.toInt())
     return nbUnicodeChars
 }
 
