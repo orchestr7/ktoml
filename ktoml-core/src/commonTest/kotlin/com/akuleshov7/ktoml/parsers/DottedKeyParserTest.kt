@@ -27,7 +27,11 @@ class DottedKeyParserTest {
         assertEquals(true, test.isDotted)
 
         test = TomlKey("\"  a  \"", 0)
-        assertEquals("a", test.last())
+        assertEquals("  a  ", test.last())
+        assertEquals(false, test.isDotted)
+
+        test = TomlKey("\"\\ttab\\ttab\\t\"", 0)
+        assertEquals("\ttab\ttab\t", test.last())
         assertEquals(false, test.isDotted)
 
         test = TomlKey("a.b.c", 0)
@@ -35,7 +39,7 @@ class DottedKeyParserTest {
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a.\"  b  .c \"", 0)
-        assertEquals("b  .c", test.last())
+        assertEquals("  b  .c ", test.last())
         assertEquals(true, test.isDotted)
 
         test = TomlKey("a  .  b .  c ", 0)
