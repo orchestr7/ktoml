@@ -80,9 +80,12 @@ public sealed class TomlNode(
      */
     public fun findTableInAstByName(tableName: String): TomlTable? {
         val tableKey = TomlKey(tableName, lineNo)
+        val tableKeyName = tableKey.last()
 
         // getting all child-tables (and arrays of tables) that have the same name as we are trying to find
-        val simpleTable = this.children.filterIsInstance<TomlTable>().filter { it.fullTableKey == tableKey }
+        val simpleTable = this.children.filterIsInstance<TomlTable>().filter {
+            it.fullTableKey == tableKey || it.name == tableKeyName
+        }
         // there cannot be more than 1 table node with the same name on the same level in the tree
         if (simpleTable.size > 1) {
             throw InternalAstException(
@@ -97,7 +100,7 @@ public sealed class TomlNode(
             .map { it.children }
             .flatten()
             .filterIsInstance<TomlTable>()
-            .filter { it.fullTableKey == tableKey }
+            .filter { it.fullTableKey == tableKey || it.name == tableKeyName }
             .toList()
         // return the table that we found among the list of child tables or in the array of tables
         return simpleTable.lastOrNull() ?: tableFromElements.lastOrNull()
@@ -108,49 +111,32 @@ public sealed class TomlNode(
      * @param latestCreatedBucket the bucket of the latest created array of tables
      * @return link to the inserted table inside the tree
      */
-    @Suppress("TOO_LONG_FUNCTION")
+    @Suppress("UNUSED_PARAMETER")
     public fun insertTableToTree(tomlTable: TomlTable, latestCreatedBucket: TomlArrayOfTablesElement? = null): TomlNode {
-        // important to save and update parental node
-        var previousParent = this
-        // going through parts of the table to create new tables in the tree in case some fragments are missing
-        tomlTable.tablesList.forEachIndexed { level, subTable ->
-            val foundTable = previousParent.findTableInAstByName(subTable)
-            // flag that will be used to check if we need to create a copy of the table in the tree or not
-            var constructNewBucket = false
-            // if the part of the table was found and it is inside the array - we need to determine if we need to create a copy or not
-            if (foundTable != null && foundTable.parent is TomlArrayOfTablesElement) {
-                val freeBucket = (foundTable.parent?.parent as TomlTable).children.last()
-                // need to create a new array of tables in the tree only
-                // if there was an array before:
-                // [[a]]                                                                      [[a]]
-                // [[a.b]]   in case of the nested array we should not create a copy:      [[a.b]]
-                // [[a]]                                                                       [[a.b]]
-                // [[a.b]]                                                                 [[a.b]]
-                if (tomlTable.type == TableType.PRIMITIVE || freeBucket == latestCreatedBucket) {
-                    previousParent = freeBucket
-                    constructNewBucket = true
-                }
-            }
+        var previousParent: TomlNode = this
 
-            previousParent = if (foundTable != null && !constructNewBucket) {
-                // in case of inline tables we generate a structure that already has key-values inserted to it,
-                // so we need to copy these children to the TOML AST
-                if (level == tomlTable.tablesList.lastIndex) {
-                    tomlTable.children.forEach {
-                        foundTable.appendChild(it)
-                    }
+        tomlTable.tablesList.forEachIndexed { level, subTable ->
+            val isLastLevel = level == tomlTable.tablesList.lastIndex
+            val foundTable = previousParent.findTableInAstByName(subTable)
+
+            previousParent = when {
+                foundTable != null && isLastLevel && foundTable.type == tomlTable.type -> {
+                    tomlTable.children.forEach(foundTable::appendChild)
+                    foundTable
                 }
-                foundTable
-            } else {
-                if (level == tomlTable.tablesList.lastIndex) {
+
+                foundTable != null -> foundTable.resolveInsertionParent()
+
+                isLastLevel -> {
                     previousParent.determineParentAndInsertFragmentOfTable(tomlTable)
                     tomlTable
-                } else {
-                    // creating a synthetic (technical) fragment of the table
+                }
+
+                else -> {
                     val newChildTableName = TomlTable(
                         TomlKey(subTable, lineNo),
                         lineNo,
-                        tomlTable.type,
+                        TableType.PRIMITIVE,
                         tomlTable.comments,
                         tomlTable.inlineComment,
                         isSynthetic = true
@@ -223,6 +209,13 @@ public sealed class TomlNode(
             this.appendChild(childTable)
         }
     }
+
+    private fun TomlTable.resolveInsertionParent(): TomlNode =
+        if (type == TableType.ARRAY) {
+            children.lastOrNull() as? TomlArrayOfTablesElement ?: this
+        } else {
+            this
+        }
 
     /**
      * Writes this node as text to [emitter].
