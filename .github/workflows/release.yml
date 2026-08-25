@@ -20,12 +20,12 @@ jobs:
         os: [ macos-latest ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # release workflow should have access to all tags
           fetch-depth: 0
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: 21
