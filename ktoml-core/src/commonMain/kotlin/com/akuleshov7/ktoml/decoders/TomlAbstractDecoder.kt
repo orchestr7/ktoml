@@ -7,6 +7,7 @@ import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlBasicString
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlDouble
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLiteralString
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLong
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlOffsetDateTime
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlUnsignedLong
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum
 import com.akuleshov7.ktoml.utils.FloatingPointLimitsEnum.*
@@ -109,7 +110,7 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
     @Suppress("UNCHECKED_CAST")
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T =
         when (deserializer.descriptor) {
-            instantSerializer.descriptor -> decodePrimitiveType<Instant>() as T
+            instantSerializer.descriptor -> decodeInstant() as T
             localDateTimeSerializer.descriptor -> decodePrimitiveType<LocalDateTime>() as T
             localDateSerializer.descriptor -> decodePrimitiveType<LocalDate>() as T
             localTimeSerializer.descriptor -> decodePrimitiveType<LocalTime>() as T
@@ -135,6 +136,24 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
      * >>> expected by user: data class A(val a: Int)
      * >>> TomlString cannot be cast to Int, user made a mistake -> IllegalTypeException
      */
+    @OptIn(ExperimentalTime::class)
+    private fun decodeInstant(): Instant {
+        val keyValue = decodeKeyValue()
+        return try {
+            when (val content = keyValue.value.content) {
+                is Instant -> content
+                is TomlOffsetDateTime -> content.instant
+                else -> throw ClassCastException()
+            }
+        } catch (e: ClassCastException) {
+            throw IllegalTypeException(
+                "Cannot decode the key [${keyValue.key.last()}] with the value [${keyValue.value.content}]" +
+                        " and with the provided type [${Instant::class}]. Please check the type in your Serializable class or it's nullability",
+                keyValue.lineNo
+            )
+        }
+    }
+
     private inline fun <reified T> decodePrimitiveType(): T {
         val keyValue = decodeKeyValue()
         try {
