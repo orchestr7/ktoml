@@ -42,3 +42,10 @@ allprojects {
 
 createDetektTask()
 installGitHooks()
+
+// Create a convenient 'test' task alias for 'allTests'
+tasks.register("test") {
+    group = "verification"
+    description = "Runs all tests (alias for allTests)"
+    dependsOn("allTests")
+}
