@@ -18,12 +18,12 @@ jobs:
     # cannot be checked out from this origin and the push-back step would have no write access.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: github.event_name == 'pull_request'
         with:
           # Checkout source branch directly, without merging base into it
           ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: github.event_name == 'push'
         with:
           # Checkout source branch directly, without merging base into it
