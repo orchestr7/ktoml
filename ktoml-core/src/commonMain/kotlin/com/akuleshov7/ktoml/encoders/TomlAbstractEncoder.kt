@@ -9,7 +9,6 @@ import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.utils.isBareKey
 import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -30,7 +29,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @property outputConfig The output config.
  * @property serializersModule
  */
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, kotlin.time.ExperimentalTime::class)
 public abstract class TomlAbstractEncoder protected constructor(
     protected var elementIndex: Int,
     protected val attributes: TomlEncoderAttributes,
@@ -39,7 +38,6 @@ public abstract class TomlAbstractEncoder protected constructor(
 ) : AbstractEncoder() {
     private var isNextElementKey = false
 
-    @OptIn(ExperimentalTime::class)
     private val instantDescriptor = Instant.serializer().descriptor
     private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor
     private val localDateDescriptor = LocalDate.serializer().descriptor
