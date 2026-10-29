@@ -73,13 +73,35 @@ public class TomlInlineTable internal constructor(
                     keyValue.returnTable(tomlFileHead, tomlTable)
                 )
 
-                keyValue is TomlArrayOfTablesElement -> tomlTable.appendChild(keyValue)
+                keyValue is TomlArrayOfTablesElement -> {
+                    tomlTable.appendChild(keyValue)
+                    keyValue.expandNestedInlineArraysOfTables(tomlFileHead)
+                }
 
                 // otherwise, it should simply append the keyValue to the parent
                 else -> tomlTable.appendChild(keyValue)
             }
         }
         return tomlTable
+    }
+
+    /**
+     * Expand inline arrays of tables nested inside this array-of-tables element (e.g. the
+     * `children = [{ ... }]` in `kids = [{ name = "x", children = [{ ... }] }]`) into proper
+     * `[[parent.child]]` tables nested under the element. Otherwise they would be left as raw
+     * inline nodes and fail to decode as lists - see issues #360 and #29.
+     */
+    private fun TomlArrayOfTablesElement.expandNestedInlineArraysOfTables(tomlFileHead: TomlFile) {
+        children
+            .filterIsInstance<TomlInlineTable>()
+            .filter { it.isInlineArrayOfTables() }
+            .toList()
+            .forEach { nested ->
+                children.remove(nested)
+                // the parent table is not in the file tree yet, so we attach the expanded
+                // table directly to the element instead of going through insertTableToTree
+                appendChild(nested.returnTable(tomlFileHead, this))
+            }
     }
 
     public override fun write(
@@ -179,7 +201,7 @@ public class TomlInlineTable internal constructor(
                         )
                     }
                 }
-                .splitInlineTableToKeyValue(config.allowEscapedQuotesInLiteralStrings, lineNo)
+                .splitInlineTableToKeyValue(config.allowEscapedQuotesInLiteralStrings)
                 .map {
                     it.parseTomlKeyValue(lineNo, comments = emptyList(), inlineComment = "", config)
                 }
@@ -210,8 +232,9 @@ public class TomlInlineTable internal constructor(
         }
 
         /**
-         *  Split by "}," - but skip all whitespaces between '}' and ','
-         *  Also ignore characters inside strings and keep closing '}' in each value
+         *  Split an array of inline tables ([ {..}, {..} ]) into the strings of its
+         *  table elements. Splitting happens only on top-level commas: commas nested
+         *  inside tables { }, arrays [ ] or quotes " "/' ' are kept as part of the element.
          */
         @Suppress("TOO_LONG_FUNCTION")
         private fun String.splitInlineArrayOfTables(): List<String> {
@@ -221,44 +244,37 @@ public class TomlInlineTable internal constructor(
             val result: MutableList<String> = mutableListOf()
             val current = StringBuilder()
             var openQuoteChar: Char? = null
-            var isCurlyBracesFound = false
+            var bracketDepth = 0
 
             clearedString.forEach { currentChar ->
-                // currentChar is inside quotes, so just add it
-                if (openQuoteChar != null && currentChar != openQuoteChar) {
-                    current.append(currentChar)
-                    return@forEach
-                }
-
-                when (currentChar) {
-                    openQuoteChar -> {
-                        openQuoteChar = null
+                when {
+                    // currentChar is inside quotes, so just add it
+                    openQuoteChar != null -> {
+                        if (currentChar == openQuoteChar) {
+                            openQuoteChar = null
+                        }
                         current.append(currentChar)
                     }
-
-                    '\"', '\'' -> {
+                    currentChar == '\"' || currentChar == '\'' -> {
                         openQuoteChar = currentChar
                         current.append(currentChar)
                     }
-
-                    '}' -> {
-                        isCurlyBracesFound = true
+                    currentChar == '{' || currentChar == '[' -> {
+                        bracketDepth++
                         current.append(currentChar)
                     }
-
-                    ',' -> if (isCurlyBracesFound) {
-                        // comma between inline tables
-                        isCurlyBracesFound = false
-                        result.add(current.toString().trim())
+                    currentChar == '}' || currentChar == ']' -> {
+                        bracketDepth--
+                        current.append(currentChar)
+                    }
+                    // a top-level comma separates two inline tables in the array
+                    currentChar == ',' && bracketDepth == 0 -> {
+                        if (current.isNotBlank()) {
+                            result.add(current.toString().trim())
+                        }
                         current.clear()
-                    } else {
-                        // comma between inline table values
-                        current.append(currentChar)
                     }
-
-                    else -> if (!isCurlyBracesFound) {
-                        current.append(currentChar)
-                    }
+                    else -> current.append(currentChar)
                 }
             }
 
@@ -271,65 +287,38 @@ public class TomlInlineTable internal constructor(
 
         /**
          * That's basically split(",") function, but we ignore all commas inside arrays [ ],
-         * nested tables { } and quotes " "/' '
+         * nested tables { } and quotes " "/' '. The bracket depth is tracked so that inline
+         * tables nested to any depth are split correctly (see issues #29 and #360).
          */
         @Suppress("TOO_LONG_FUNCTION")
         private fun String.splitInlineTableToKeyValue(
             allowEscapedQuotesInLiteralStrings: Boolean,
-            lineNo: Int,
         ): List<String> {
             val clearedString = this.replaceEscaped(allowEscapedQuotesInLiteralStrings)
             val keyValueList: MutableList<String> = mutableListOf()
-            var isLastAdded = false
             var currentQuoteChar: Char? = null
+            var bracketDepth = 0
             var prevIdx = 0
-            var curIdx = 0
 
-            while (curIdx < clearedString.length) {
-                val ch = clearedString[curIdx]
-                if (ch == ',' && currentQuoteChar == null) {
-                    keyValueList.add(this.substring(prevIdx, curIdx).trim())
-                    prevIdx = curIdx + 1
-                } else if (currentQuoteChar == null && (ch == '[' || ch == '{')) {
-                    val closeBracketIdx = this.indexOfNextOutsideQuotes(
-                        allowEscapedQuotesInLiteralStrings = allowEscapedQuotesInLiteralStrings,
-                        searchChar = getCloseBracket(ch, lineNo),
-                        startIndex = curIdx,
-                    )
-                    keyValueList.add(this.substring(prevIdx, closeBracketIdx + 1).trim())
-                    val nextCommaIdx = this.indexOfNextOutsideQuotes(
-                        allowEscapedQuotesInLiteralStrings = allowEscapedQuotesInLiteralStrings,
-                        searchChar = ',',
-                        startIndex = closeBracketIdx,
-                    )
-                    if (nextCommaIdx == -1) {
-                        isLastAdded = true
-                        break
-                    }
-                    prevIdx = nextCommaIdx + 1
-                    curIdx = nextCommaIdx + 1
-                } else if (ch == '\'' || ch == '\"') {
-                    if (currentQuoteChar == null) {
-                        currentQuoteChar = ch
-                    } else if (currentQuoteChar == ch) {
+            clearedString.forEachIndexed { idx, ch ->
+                when {
+                    // inside a quoted string only the matching closing quote is meaningful
+                    currentQuoteChar != null -> if (ch == currentQuoteChar) {
                         currentQuoteChar = null
                     }
+                    ch == '\'' || ch == '\"' -> currentQuoteChar = ch
+                    ch == '[' || ch == '{' -> bracketDepth++
+                    ch == ']' || ch == '}' -> bracketDepth--
+                    // only a top-level comma (not nested inside [] or {}) separates key-value pairs
+                    ch == ',' && bracketDepth == 0 -> {
+                        keyValueList.add(this.substring(prevIdx, idx).trim())
+                        prevIdx = idx + 1
+                    }
                 }
-                curIdx++
             }
-            if (!isLastAdded) {
-                keyValueList.add(this.substring(prevIdx, this.length).trim())
-            }
+            keyValueList.add(this.substring(prevIdx).trim())
 
             return keyValueList
-        }
-
-        private fun getCloseBracket(openBracket: Char, lineNo: Int): Char = if (openBracket == '[') {
-            ']'
-        } else if (openBracket == '{') {
-            '}'
-        } else {
-            throw ParseException("Invalid open bracket: $openBracket, should never happen", lineNo)
         }
     }
 }

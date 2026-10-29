@@ -24,6 +24,9 @@ jobs:
     steps:
       # actions/checkout v1.* is needed for correct codecov upload, see https://github.com/actions/checkout/issues/237 for details
       - uses: actions/checkout@v6
+        with:
+          # toml-test compliance suite lives in a git submodule; fetch it so the tests can run
+          submodules: recursive
       # ensure that gradle wrapper files in repository are valid by checking checksums
       - uses: gradle/actions/wrapper-validation@v5
       - name: Set up JDK 21
