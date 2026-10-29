@@ -303,8 +303,6 @@ data object MissingValidationStringEscape : KnownFailure {
     override val issue = 383
     override val tests = listOf(
         "invalid/string/bad-escape-03.toml",
-        "invalid/string/bad-uni-esc-06.toml",
-        "invalid/string/bad-uni-esc-ml-06.toml",
         "invalid/string/multiline-bad-escape-04.toml",
     )
 }
