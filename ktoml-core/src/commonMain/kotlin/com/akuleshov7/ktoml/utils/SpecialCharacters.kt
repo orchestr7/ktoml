@@ -17,9 +17,13 @@ internal const val COMPLEX_UNICODE_PREFIX = 'U'
 internal const val BIN_RADIX = 2
 internal const val OCT_RADIX = 8
 internal const val HEX_RADIX = 16
-internal const val MAX_CODE_POINT = 0x10_FF_FF
 internal const val SIMPLE_UNICODE_LENGTH = 4
 internal const val SIMPLE_UNICODE_PREFIX = 'u'
+
+private const val MIN_UNICODE_CODE_POINT = 0x0000
+private const val MIN_SURROGATE_CODE_POINT = 0xD800
+private const val MAX_SURROGATE_CODE_POINT = 0xDFFF
+private const val MAX_UNICODE_CODE_POINT = 0x10_FF_FF
 
 /**
  * Converting special escaped symbols like newlines, tabs and unicode symbols to proper characters for decoding
@@ -94,7 +98,7 @@ public fun StringBuilder.appendEscapedUnicode(
     val codePoint = hexCode
         .takeIf { code -> code.all { it.digitToIntOrNull(HEX_RADIX) != null } }
         ?.toLong(HEX_RADIX)
-        ?.takeIf { it <= MAX_CODE_POINT }
+        ?.takeIf { it <= MAX_UNICODE_CODE_POINT && it.toInt().isUnicodeScalarValue() }
         ?: throw UnknownEscapeSymbolsException("\\$marker$hexCode", lineNo)
     appendCodePointCompat(codePoint.toInt())
     return nbUnicodeChars
@@ -204,6 +208,9 @@ private fun Char.escapeControlChar() = when (this) {
         }"
     }
 }
+
+private fun Int.isUnicodeScalarValue(): Boolean = this in MIN_UNICODE_CODE_POINT..MAX_UNICODE_CODE_POINT &&
+        this !in MIN_SURROGATE_CODE_POINT..MAX_SURROGATE_CODE_POINT
 
 /**
  * just a newline character on different platforms/targets

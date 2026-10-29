@@ -83,11 +83,13 @@ data object ValidTomlRejected : KnownFailure {
     )
 }
 
-/** Stack overflow on deeply nested structures */
+/**
+ * Deeply nested arrays no longer overflow (fixed here). `comment/tricky.toml` still fails on unrelated
+ * value/comment handling, so it stays baselined.
+ */
 data object StackOverflowOnNesting : KnownFailure {
     override val issue = 381
     override val tests = listOf(
-        "valid/array/nested-double.toml",
         "valid/comment/tricky.toml",
     )
 }
@@ -303,8 +305,6 @@ data object MissingValidationStringEscape : KnownFailure {
     override val issue = 383
     override val tests = listOf(
         "invalid/string/bad-escape-03.toml",
-        "invalid/string/bad-uni-esc-06.toml",
-        "invalid/string/bad-uni-esc-ml-06.toml",
         "invalid/string/multiline-bad-escape-04.toml",
     )
 }
