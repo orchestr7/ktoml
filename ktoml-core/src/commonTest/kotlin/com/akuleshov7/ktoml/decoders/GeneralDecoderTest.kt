@@ -82,7 +82,7 @@ class GeneralDecoderTest {
     @Test
     fun testForSimpleTomlCaseWithIssueInParsing() {
         val test = "[table1]\n b = 6 = 7  \n a = 5 "
-        assertFailsWith<ParseException> { Toml.decodeFromString(test) }
+        assertFailsWith<ParseException> { Toml.decodeFromString<SimpleTomlCase>(test) }
     }
 
     @Test
