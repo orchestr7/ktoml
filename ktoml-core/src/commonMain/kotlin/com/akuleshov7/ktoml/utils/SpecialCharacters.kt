@@ -92,15 +92,15 @@ public fun StringBuilder.appendEscapedUnicode(
         throw UnknownEscapeSymbolsException("\\$invalid", lineNo)
     }
     val hexCode = fullString.substring(codeStartIndex, codeStartIndex + nbUnicodeChars)
-    val codePoint = hexCode.toInt(HEX_RADIX)
-    if (!codePoint.isUnicodeScalarValue()) {
-        throw UnknownEscapeSymbolsException("\\$marker$hexCode", lineNo)
-    }
-    try {
-        appendCodePointCompat(codePoint)
-    } catch (e: IllegalArgumentException) {
-        throw UnknownEscapeSymbolsException("\\$marker$hexCode", lineNo)
-    }
+    // toLong rather than toInt because eight hex digits overflow an Int, and the digits are
+    // checked one by one first because both parsers accept a leading sign: "+041" would
+    // otherwise be read as U+0041 instead of being rejected
+    val codePoint = hexCode
+        .takeIf { code -> code.all { it.digitToIntOrNull(HEX_RADIX) != null } }
+        ?.toLong(HEX_RADIX)
+        ?.takeIf { it <= MAX_UNICODE_CODE_POINT && it.toInt().isUnicodeScalarValue() }
+        ?: throw UnknownEscapeSymbolsException("\\$marker$hexCode", lineNo)
+    appendCodePointCompat(codePoint.toInt())
     return nbUnicodeChars
 }
 
