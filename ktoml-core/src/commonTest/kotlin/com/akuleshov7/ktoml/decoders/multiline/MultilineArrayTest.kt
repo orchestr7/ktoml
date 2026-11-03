@@ -165,7 +165,7 @@ class MultilineArrayTest {
 
     @Test
     fun testIncorrectMultilineArray() {
-        var exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+        var exception = assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -175,7 +175,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+        exception = assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -186,7 +186,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        exception = assertFailsWith<ParseException> { Toml.decodeFromString(
+        exception = assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -199,7 +199,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        assertFailsWith<ParseException> { Toml.decodeFromString(
+        assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -212,7 +212,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        assertFailsWith<ParseException> { Toml.decodeFromString(
+        assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -225,7 +225,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        assertFailsWith<ParseException> { Toml.decodeFromString(
+        assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -239,7 +239,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        assertFailsWith<ParseException> { Toml.decodeFromString(
+        assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
@@ -252,7 +252,7 @@ class MultilineArrayTest {
         ) }
         assertTrue(exception.message!!.contains("Line 2"))
 
-        assertFailsWith<ParseException> { Toml.decodeFromString(
+        assertFailsWith<ParseException> { Toml.decodeFromString<ClassWithImmutableList>(
             """
                 field = [
                     1,
