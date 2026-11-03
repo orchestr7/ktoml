@@ -129,16 +129,16 @@ class ValueParserTest {
             )
         }
         assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "val\\ue", 0)
+            TomlKeyValuePrimitive("a" to "\"val\\ue\"", 0)
         }
         assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "\\x33", 0)
+            TomlKeyValuePrimitive("a" to "\"\\x33\"", 0)
         }
         assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "\\UFFFFFFFF", 0)
+            TomlKeyValuePrimitive("a" to "\"\\UFFFFFFFF\"", 0)
         }
         assertFailsWith<ParseException> {
-            TomlKeyValuePrimitive("a" to "\\U00D80000", 0)
+            TomlKeyValuePrimitive("a" to "\"\\U00D80000\"", 0)
         }
     }
 }
