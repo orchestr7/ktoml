@@ -3,12 +3,13 @@ plugins {
 }
 
 repositories {
+    mavenCentral()
     gradlePluginPortal()
 }
 
 dependencies {
     // this hack prevents the following bug: https://github.com/gradle/gradle/issues/9770
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21")
 
     implementation("org.cqfn.diktat:diktat-gradle-plugin:1.2.5")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")

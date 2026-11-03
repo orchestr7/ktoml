@@ -37,7 +37,6 @@ public abstract class TomlAbstractEncoder protected constructor(
     override val serializersModule: SerializersModule,
 ) : AbstractEncoder() {
     private var isNextElementKey = false
-
     private val instantDescriptor = Instant.serializer().descriptor
     private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor
     private val localDateDescriptor = LocalDate.serializer().descriptor

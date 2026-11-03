@@ -47,5 +47,5 @@ installGitHooks()
 tasks.register("test") {
     group = "verification"
     description = "Runs all tests (alias for allTests)"
-    dependsOn("allTests")
+    dependsOn(subprojects.map { "${it.path}:allTests" })
 }
