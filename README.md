@@ -42,7 +42,7 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 2.2.0
+:globe_with_meridians: ktoml supports Kotlin 2.4.21
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc. 
