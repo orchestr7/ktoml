@@ -5,8 +5,8 @@
 )
 
 object Versions {
-    const val KOTLIN = "2.3.21"
+    const val KOTLIN = "2.4.21"
     const val JUNIT = "5.7.1"
     const val OKIO = "3.16.4"
-    const val SERIALIZATION = "1.9.0"
+    const val SERIALIZATION = "1.12.0"
 }
