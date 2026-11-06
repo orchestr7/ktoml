@@ -131,11 +131,13 @@ class PrimitiveValueWriteTest {
     @Test
     fun dateTimeWriteTest() {
         val instant = "1979-05-27T07:32:00Z"
+        val offsetInstant = "1979-05-27T00:32:00-07:00"
         val localDt = "1979-05-27T07:32"
         val localD = "1979-05-27"
         val localT = "07:32:32"
 
         testTomlValue(TomlDateTime(kotlin.time.Instant.parse(instant)), instant)
+        testTomlValue(TomlDateTime(offsetInstant, 1), offsetInstant)
         testTomlValue(TomlDateTime(LocalDateTime.parse(localDt)), localDt)
         testTomlValue(TomlDateTime(LocalDate.parse(localD)), localD)
         testTomlValue(TomlDateTime(LocalTime.parse(localT)), localT)

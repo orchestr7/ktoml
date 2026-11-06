@@ -11,7 +11,6 @@ package com.akuleshov7.ktoml.compliance
  *
  * | Category | Issue |
  * |----------|-------|
- * | Datetime offset normalized to UTC | [#375](https://github.com/orchestr7/ktoml/issues/375) |
  * | Float representation lost | [#376](https://github.com/orchestr7/ktoml/issues/376) |
  * | Dotted key expansion incorrect | [#377](https://github.com/orchestr7/ktoml/issues/377) |
  * | Parser rejects valid TOML | [#380](https://github.com/orchestr7/ktoml/issues/380) |
@@ -31,18 +30,6 @@ sealed interface KnownFailure {
     val tests: List<String>
 
     val issueUrl: String get() = "https://github.com/orchestr7/ktoml/issues/$issue"
-}
-
-/** Offset datetimes normalized to UTC, losing original timezone */
-data object DatetimeOffsetLoss : KnownFailure {
-    override val issue = 375
-    override val tests = listOf(
-        "valid/comment/everywhere.toml",
-        "valid/datetime/milliseconds.toml",
-        "valid/datetime/timezone.toml",
-        "valid/spec-example-1.toml",
-        "valid/spec-example-1-compact.toml",
-    )
 }
 
 /** Scientific notation lost after parsing to Double */
@@ -369,7 +356,6 @@ data object TomlOneOneMissingValidation : KnownFailure {
  * All known failure groups. Used by [TomlTestSuite] to build the lookup map.
  */
 val allKnownFailures: List<KnownFailure> = listOf(
-    DatetimeOffsetLoss,
     FloatRepresentationLoss,
     DottedKeyExpansion,
     ValidTomlRejected,
