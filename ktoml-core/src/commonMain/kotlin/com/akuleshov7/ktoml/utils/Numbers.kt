@@ -7,8 +7,8 @@ package com.akuleshov7.ktoml.utils
 import com.akuleshov7.ktoml.exceptions.ParseException
 
 private val integerPattern = (
-        "[+-]?(?:0|[1-9](?:_?[0-9])*)|" +
-                "0b[01](?:_?[01])*|0o[0-7](?:_?[0-7])*|0x[0-9a-fA-F](?:_?[0-9a-fA-F])*"
+        "^(?:[+-]?(?:0|[1-9](?:_?[0-9])*)|" +
+                "0b[01](?:_?[01])*|0o[0-7](?:_?[0-7])*|0x[0-9a-fA-F](?:_?[0-9a-fA-F])*)$"
 ).toRegex()
 
 /**
