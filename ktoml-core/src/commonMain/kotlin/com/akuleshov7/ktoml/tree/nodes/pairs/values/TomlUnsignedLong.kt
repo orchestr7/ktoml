@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.isValidTomlIntegerLiteral
@@ -18,6 +19,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  * @property representation The representation of the integer.
  */
+@InternalKtomlApi
 public class TomlUnsignedLong internal constructor(
     override var content: Any,
     public var representation: IntegerRepresentation = DECIMAL

@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
@@ -25,6 +26,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @param serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
+@InternalKtomlApi
 public class TomlArrayEncoder internal constructor(
     private val rootNode: TomlNode,
     private val parent: TomlAbstractEncoder?,
@@ -125,7 +127,7 @@ public class TomlArrayEncoder internal constructor(
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        if (attributes.isInline && tables.isEmpty()) {
+        if (tables.isEmpty()) {
             val array = TomlArray(values, attributes.isMultiline)
 
             parent?.let {

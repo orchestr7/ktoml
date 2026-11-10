@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import kotlin.jvm.JvmInline
@@ -9,6 +10,7 @@ import kotlin.jvm.JvmInline
  * @param config - object that stores configuration options for a writer
  */
 @JvmInline
+@InternalKtomlApi
 public value class TomlWriter(private val config: TomlOutputConfig) {
     public fun writeToString(
         file: TomlFile,

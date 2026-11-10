@@ -3,9 +3,6 @@ package com.akuleshov7.ktoml.writers
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlin.Double.Companion.NEGATIVE_INFINITY
 import kotlin.Double.Companion.NaN
 import kotlin.Double.Companion.POSITIVE_INFINITY
@@ -132,15 +129,20 @@ class PrimitiveValueWriteTest {
     fun dateTimeWriteTest() {
         val instant = "1979-05-27T07:32:00Z"
         val offsetInstant = "1979-05-27T00:32:00-07:00"
-        val localDt = "1979-05-27T07:32"
+        val localDt = "1979-05-27T07:32:00"
         val localD = "1979-05-27"
         val localT = "07:32:32"
 
-        testTomlValue(TomlDateTime(kotlin.time.Instant.parse(instant)), instant)
+        // Date-times are kept as raw (normalized) text in the AST and emitted verbatim.
+        testTomlValue(TomlDateTime(TomlOffsetDateTime(instant)), instant)
         testTomlValue(TomlDateTime(offsetInstant, 1), offsetInstant)
-        testTomlValue(TomlDateTime(LocalDateTime.parse(localDt)), localDt)
-        testTomlValue(TomlDateTime(LocalDate.parse(localD)), localD)
-        testTomlValue(TomlDateTime(LocalTime.parse(localT)), localT)
+        testTomlValue(TomlDateTime(TomlLocalDateTime(localDt)), localDt)
+        testTomlValue(TomlDateTime(TomlLocalDate(localD)), localD)
+        testTomlValue(TomlDateTime(TomlLocalTime(localT)), localT)
+
+        // The parsing constructor normalizes: the separator becomes `T` and omitted seconds are padded.
+        testTomlValue(TomlDateTime("1979-05-27 07:32", 1), "1979-05-27T07:32:00")
+        testTomlValue(TomlDateTime("07:32", 1), "07:32:00")
     }
 
     @Test

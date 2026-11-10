@@ -1,24 +1,24 @@
 package com.akuleshov7.ktoml.writers
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.TableType
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLocalDate
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLocalDateTime
+import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLocalTime
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlOffsetDateTime
 import com.akuleshov7.ktoml.utils.isBareKey
 import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 import com.akuleshov7.ktoml.utils.newLineChar
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.DECIMAL
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.GROUPED
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 
 /**
  * Abstracts the specifics of writing TOML files into "emit" operations.
  *
  * @param config
  */
+@InternalKtomlApi
 public abstract class TomlEmitter(config: TomlOutputConfig) {
     private val indentation = config.indentation.value
 
@@ -283,45 +283,36 @@ public abstract class TomlEmitter(config: TomlOutputConfig) {
     public fun emitValue(boolean: Boolean): TomlEmitter = emit(boolean.toString())
 
     /**
-     * Emits an [Instant] value.
-     *
-     * @param instant
-     * @return this instance
-     */
-    @OptIn(ExperimentalTime::class)
-    public fun emitValue(instant: Instant): TomlEmitter = emit(instant.toString())
-
-    /**
-     * Emits an offset date-time value while preserving its original offset.
+     * Emits an offset date-time value, preserving its original (normalized) text.
      *
      * @param offsetDateTime
      * @return this instance
      */
-    public fun emitValue(offsetDateTime: TomlOffsetDateTime): TomlEmitter = emit(offsetDateTime.toString())
+    public fun emitValue(offsetDateTime: TomlOffsetDateTime): TomlEmitter = emit(offsetDateTime.raw)
 
     /**
-     * Emits a [LocalDateTime] value.
+     * Emits a local date-time value, preserving its original (normalized) text.
      *
      * @param dateTime
      * @return this instance
      */
-    public fun emitValue(dateTime: LocalDateTime): TomlEmitter = emit(dateTime.toString())
+    public fun emitValue(dateTime: TomlLocalDateTime): TomlEmitter = emit(dateTime.raw)
 
     /**
-     * Emits a [LocalDate] value.
+     * Emits a local date value, preserving its original text.
      *
      * @param date
      * @return this instance
      */
-    public fun emitValue(date: LocalDate): TomlEmitter = emit(date.toString())
+    public fun emitValue(date: TomlLocalDate): TomlEmitter = emit(date.raw)
 
     /**
-     * Emits a [LocalTime] value.
+     * Emits a local time value, preserving its original (normalized) text.
      *
      * @param time
      * @return this instance
      */
-    public fun emitValue(time: LocalTime): TomlEmitter = emit(time.toString())
+    public fun emitValue(time: TomlLocalTime): TomlEmitter = emit(time.raw)
 
     /**
      * Emits a null value.

@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.parsers.isValidTomlFloatLiteral
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -10,6 +11,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * so it should be Kotlin Double (64 bits)
  * @property content
  */
+@InternalKtomlApi
 public class TomlDouble
 internal constructor(
     override var content: Any

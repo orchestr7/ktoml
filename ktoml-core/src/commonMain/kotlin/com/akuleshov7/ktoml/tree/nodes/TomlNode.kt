@@ -7,12 +7,14 @@ package com.akuleshov7.ktoml.tree.nodes
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
+@InternalKtomlApi
 public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
 
 /**
@@ -24,6 +26,7 @@ public const val EMPTY_TECHNICAL_NODE: String = "technical_node"
  * @property lineNo - the number of a line from TOML that is linked to the current node
  * @property inlineComment A comment appended to the end of the line
  */
+@InternalKtomlApi
 public sealed class TomlNode(
     public open val lineNo: Int,
     comments: List<String>,
@@ -125,6 +128,7 @@ public sealed class TomlNode(
         "TOO_MANY_LINES_IN_LAMBDA",
         "CyclomaticComplexMethod"
     )
+    @InternalKtomlApi
     public fun insertTableToTree(
         tomlTable: TomlTable,
         latestCreatedBucket: TomlArrayOfTablesElement? = null,
@@ -565,6 +569,7 @@ public sealed class TomlNode(
  * @property INLINE_TABLE a table created from an inline-table value (`a = { b = 1 }`), including the
  *   synthetic tables for any dotted keys written inside it
  */
+@InternalKtomlApi
 public enum class TableInsertionType {
     DOTTED_KEY,
     HEADER,

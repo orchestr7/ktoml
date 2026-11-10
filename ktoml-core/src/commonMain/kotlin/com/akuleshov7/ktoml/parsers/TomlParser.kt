@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.enums.MultilineType
@@ -18,6 +19,7 @@ private const val TRIPLE_QUOTE_LENGTH = 3
  */
 @JvmInline
 @Suppress("WRONG_MULTIPLE_MODIFIERS_ORDER")
+@InternalKtomlApi
 public value class TomlParser(private val config: TomlInputConfig) {
     /**
      * Method for parsing of TOML string (this string should be split with newlines \n or \r\n)
@@ -315,6 +317,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
  * @param config
  * @return parsed toml node
  */
+@InternalKtomlApi
 public fun String.parseTomlKeyValue(
     lineNo: Int,
     comments: List<String>,

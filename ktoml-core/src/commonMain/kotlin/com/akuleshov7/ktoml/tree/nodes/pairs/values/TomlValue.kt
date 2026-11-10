@@ -5,11 +5,13 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Base class for all nodes that represent values
  */
+@InternalKtomlApi
 public sealed class TomlValue {
     public abstract var content: Any
 
