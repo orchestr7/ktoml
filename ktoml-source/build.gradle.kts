@@ -44,9 +44,10 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.SERIALIZATION}")
-                implementation("com.squareup.okio:okio:${Versions.OKIO}")
+                api("com.squareup.okio:okio:${Versions.OKIO}")
+                api(project(":ktoml-core"))
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN}")
-                implementation(project(":ktoml-core"))
+                implementation(project(":ktoml-okio"))
             }
         }
 
