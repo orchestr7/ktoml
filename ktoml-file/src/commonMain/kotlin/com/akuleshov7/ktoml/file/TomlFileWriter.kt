@@ -3,7 +3,7 @@ package com.akuleshov7.ktoml.file
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
-import com.akuleshov7.ktoml.encoders.TomlMainEncoder
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 
 import okio.use
 
@@ -15,7 +15,12 @@ import kotlinx.serialization.modules.SerializersModule
  * Writes to a file in the TOML format.
  * @property serializersModule
  */
+@Deprecated(
+    "Open a sink with your chosen filesystem and use the ktoml-okio or " +
+            "ktoml-kotlinx-io extension APIs. This class remains available for compatibility."
+)
 @Suppress("SINGLE_CONSTRUCTOR_SHOULD_BE_PRIMARY")
+@SubclassOptInRequired(InternalKtomlApi::class)
 public open class TomlFileWriter : Toml {
     public constructor(
         inputConfig: TomlInputConfig = TomlInputConfig(),
@@ -32,13 +37,9 @@ public open class TomlFileWriter : Toml {
         value: T,
         tomlFilePath: String
     ) {
-        val fileTree = TomlMainEncoder.encode(serializer, value)
-
-        TomlSinkEmitter(
-            openFileForWrite(tomlFilePath),
-            outputConfig
-        ).use {
-            tomlWriter.write(fileTree, it)
+        val content = encodeToString(serializer, value)
+        openFileForWrite(tomlFilePath).use {
+            it.writeUtf8(content)
         }
     }
 }

@@ -4,6 +4,8 @@
 
 package com.akuleshov7.ktoml.source
 
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
+
 import okio.Source
 import okio.buffer
 import okio.use
@@ -14,6 +16,11 @@ import okio.use
  * @param decoder
  * @return decoded lines
  */
+@Deprecated(
+    "Use a BufferedSource with the ktoml-okio extensions. " +
+            "This compatibility helper closes the source after decoding."
+)
+@InternalKtomlApi
 public inline fun <T> Source.useLines(decoder: (Sequence<String>) -> T): T = buffer().use { source ->
     decoder(generateSequence { source.readUtf8Line() })
 }
