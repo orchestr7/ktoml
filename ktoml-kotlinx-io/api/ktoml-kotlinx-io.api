@@ -1,0 +1,6 @@
+public final class com/akuleshov7/ktoml/io/IoStreamsKt {
+	public static final fun decodeFromSource (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lkotlinx/io/Source;)Ljava/lang/Object;
+	public static final fun encodeToSink (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;Lkotlinx/io/Sink;)V
+	public static final fun partiallyDecodeFromSource (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lkotlinx/io/Source;Ljava/lang/String;)Ljava/lang/Object;
+}
+

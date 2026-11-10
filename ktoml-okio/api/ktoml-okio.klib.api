@@ -1,0 +1,14 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.akuleshov7:ktoml-okio>
+final fun <#A: kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.okio/decodeFromBufferedSource(kotlinx.serialization/DeserializationStrategy<#A>, okio/BufferedSource): #A // com.akuleshov7.ktoml.okio/decodeFromBufferedSource|decodeFromBufferedSource@com.akuleshov7.ktoml.Toml(kotlinx.serialization.DeserializationStrategy<0:0>;okio.BufferedSource){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.okio/encodeToBufferedSink(kotlinx.serialization/SerializationStrategy<#A>, #A, okio/BufferedSink) // com.akuleshov7.ktoml.okio/encodeToBufferedSink|encodeToBufferedSink@com.akuleshov7.ktoml.Toml(kotlinx.serialization.SerializationStrategy<0:0>;0:0;okio.BufferedSink){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.okio/partiallyDecodeFromBufferedSource(kotlinx.serialization/DeserializationStrategy<#A>, okio/BufferedSource, kotlin/String): #A // com.akuleshov7.ktoml.okio/partiallyDecodeFromBufferedSource|partiallyDecodeFromBufferedSource@com.akuleshov7.ktoml.Toml(kotlinx.serialization.DeserializationStrategy<0:0>;okio.BufferedSource;kotlin.String){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.okio/decodeFromBufferedSource(okio/BufferedSource): #A // com.akuleshov7.ktoml.okio/decodeFromBufferedSource|decodeFromBufferedSource@com.akuleshov7.ktoml.Toml(okio.BufferedSource){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.okio/encodeToBufferedSink(#A, okio/BufferedSink) // com.akuleshov7.ktoml.okio/encodeToBufferedSink|encodeToBufferedSink@com.akuleshov7.ktoml.Toml(0:0;okio.BufferedSink){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.okio/partiallyDecodeFromBufferedSource(okio/BufferedSource, kotlin/String): #A // com.akuleshov7.ktoml.okio/partiallyDecodeFromBufferedSource|partiallyDecodeFromBufferedSource@com.akuleshov7.ktoml.Toml(okio.BufferedSource;kotlin.String){0§<kotlin.Any?>}[0]

@@ -41,6 +41,8 @@ jobs:
           key: ${{ runner.os }}-gradle-konan
           restore-keys: |
             ${{ runner.os }}-gradle-konan
+      - name: Verify JVM and KLib API baseline
+        run: ./gradlew apiCheck -PapiStrictKlibValidation=true -Pkotlin.native.enableKlibsCrossCompilation=true
       - name: Gradle build with remote cache
         uses: burrunan/gradle-cache-action@v3
         with:

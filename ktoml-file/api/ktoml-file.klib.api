@@ -1,0 +1,23 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.akuleshov7:ktoml-file>
+open class com.akuleshov7.ktoml.file/TomlFileReader : com.akuleshov7.ktoml.source/TomlSourceReader { // com.akuleshov7.ktoml.file/TomlFileReader|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlInputConfig = ..., com.akuleshov7.ktoml/TomlOutputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...) // com.akuleshov7.ktoml.file/TomlFileReader.<init>|<init>(com.akuleshov7.ktoml.TomlInputConfig;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final fun <#A1: kotlin/Any?> decodeFromFile(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin/String): #A1 // com.akuleshov7.ktoml.file/TomlFileReader.decodeFromFile|decodeFromFile(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.String){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> partiallyDecodeFromFile(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin/String, kotlin/String): #A1 // com.akuleshov7.ktoml.file/TomlFileReader.partiallyDecodeFromFile|partiallyDecodeFromFile(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.String;kotlin.String){0§<kotlin.Any?>}[0]
+    final inline fun <#A1: reified kotlin/Any?> partiallyDecodeFromFile(kotlin/String, kotlin/String): #A1 // com.akuleshov7.ktoml.file/TomlFileReader.partiallyDecodeFromFile|partiallyDecodeFromFile(kotlin.String;kotlin.String){0§<kotlin.Any?>}[0]
+
+    final object Default : com.akuleshov7.ktoml.file/TomlFileReader // com.akuleshov7.ktoml.file/TomlFileReader.Default|null[0]
+}
+
+open class com.akuleshov7.ktoml.file/TomlFileWriter : com.akuleshov7.ktoml/Toml { // com.akuleshov7.ktoml.file/TomlFileWriter|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlInputConfig = ..., com.akuleshov7.ktoml/TomlOutputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...) // com.akuleshov7.ktoml.file/TomlFileWriter.<init>|<init>(com.akuleshov7.ktoml.TomlInputConfig;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final fun <#A1: kotlin/Any?> encodeToFile(kotlinx.serialization/SerializationStrategy<#A1>, #A1, kotlin/String) // com.akuleshov7.ktoml.file/TomlFileWriter.encodeToFile|encodeToFile(kotlinx.serialization.SerializationStrategy<0:0>;0:0;kotlin.String){0§<kotlin.Any?>}[0]
+}
