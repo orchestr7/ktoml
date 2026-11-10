@@ -36,6 +36,8 @@ jobs:
         with:
           gradle-version: wrapper
       # Until https://github.com/burrunan/gradle-cache-action/issues/42 is addressed, gradle should be run as a separate step
+      - name: Verify JVM and KLib API baseline
+        run: ./gradlew apiCheck -PapiStrictKlibValidation=true -Pkotlin.native.enableKlibsCrossCompilation=true
       - name: gradle release from tag
         # if workflow is triggered after push of a tag, deploy full release
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
