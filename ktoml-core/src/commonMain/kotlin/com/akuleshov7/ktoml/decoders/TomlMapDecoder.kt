@@ -1,7 +1,10 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml.Default.serializersModule
+import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlDecoder
+import com.akuleshov7.ktoml.TomlElement
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.tree.nodes.*
@@ -26,8 +29,10 @@ import kotlinx.serialization.modules.SerializersModule
  * @param kotlinxIndex for iteration inside the kotlinX loop: [decodeElementIndex -> decodeSerializableElement]
  * @param config TomlInput config
  * @property serializersModule
+ * @property toml active TOML format
  */
 @ExperimentalSerializationApi
+@InternalKtomlApi
 public class TomlMapDecoder private constructor(
     private val rootNode: TomlNode,
     private val fullTableKey: TomlKey,
@@ -35,7 +40,8 @@ public class TomlMapDecoder private constructor(
     private var decodingElementIndex: Int = 0,
     private var kotlinxIndex: Int = 0,
     override val serializersModule: SerializersModule,
-) : TomlAbstractDecoder() {
+    final override val toml: Toml,
+) : TomlAbstractDecoder(), TomlDecoder {
     public constructor(
         rootNode: TomlTable,
         config: TomlInputConfig,
@@ -43,12 +49,29 @@ public class TomlMapDecoder private constructor(
         kotlinxIndex: Int = 0,
         serializersModule: SerializersModule,
     ) : this(
+        rootNode,
+        config,
+        decodingElementIndex,
+        kotlinxIndex,
+        serializersModule,
+        Toml(inputConfig = config, serializersModule = serializersModule),
+    )
+
+    internal constructor(
+        rootNode: TomlTable,
+        config: TomlInputConfig,
+        decodingElementIndex: Int = 0,
+        kotlinxIndex: Int = 0,
+        serializersModule: SerializersModule,
+        toml: Toml,
+    ) : this(
         rootNode = rootNode,
         fullTableKey = rootNode.fullTableKey,
         config = config,
         decodingElementIndex = decodingElementIndex,
         kotlinxIndex = kotlinxIndex,
         serializersModule = serializersModule,
+        toml = toml,
     )
 
     public constructor(
@@ -58,13 +81,32 @@ public class TomlMapDecoder private constructor(
         kotlinxIndex: Int = 0,
         serializersModule: SerializersModule,
     ) : this(
+        rootNode,
+        config,
+        decodingElementIndex,
+        kotlinxIndex,
+        serializersModule,
+        Toml(inputConfig = config, serializersModule = serializersModule),
+    )
+
+    internal constructor(
+        rootNode: TomlFile,
+        config: TomlInputConfig,
+        decodingElementIndex: Int = 0,
+        kotlinxIndex: Int = 0,
+        serializersModule: SerializersModule,
+        toml: Toml,
+    ) : this(
         rootNode = rootNode,
         fullTableKey = TomlKey(listOf("")),
         config = config,
         decodingElementIndex = decodingElementIndex,
         kotlinxIndex = kotlinxIndex,
         serializersModule = serializersModule,
+        toml = toml,
     )
+
+    override fun decodeTomlElement(): TomlElement = TomlElement(rootNode)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         // stubs are internal technical nodes that are not needed in this scenario
@@ -148,15 +190,14 @@ public class TomlMapDecoder private constructor(
         decodeSerializableValue(deserializer)
     } else {
         // To have a type check, delegate decoding to TomlMainDecoder
-        var rootNode = TomlFile()
-        rootNode.appendChild(processedNode)
-        TomlMainDecoder.decode(deserializer, rootNode, config)
+        val rootNode = TomlElement(processedNode).asFileNode()
+        TomlMainDecoder.decode(deserializer, rootNode, config, toml, processedNode)
     }
 
     private fun <T> decodeTomlKeyValueArray(
         processedNode: TomlKeyValueArray,
         deserializer: DeserializationStrategy<T>
-    ): T = TomlArrayDecoder.decode(deserializer, processedNode, config)
+    ): T = TomlArrayDecoder.decode(deserializer, processedNode, config, toml)
 
     private fun <T> decodeTomlTable(
         processedNode: TomlTable,
@@ -164,12 +205,13 @@ public class TomlMapDecoder private constructor(
     ): T = if (deserializer.descriptor.kind == StructureKind.CLASS) {
         var rootNode = TomlFile()
         rootNode.children.addAll(processedNode.children)
-        TomlMainDecoder.decode(deserializer, rootNode, config)
+        TomlMainDecoder.decode(deserializer, rootNode, config, toml, processedNode)
     } else {
         TomlMapDecoder(
             processedNode,
             config,
             serializersModule = serializersModule,
+            toml = toml,
         ).decodeSerializableValue(deserializer)
     }
 
@@ -183,12 +225,20 @@ public class TomlMapDecoder private constructor(
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             rootNode: TomlFile,
-            config: TomlInputConfig = TomlInputConfig()
+            config: TomlInputConfig = TomlInputConfig(),
+        ): T = decode(deserializer, rootNode, config, Toml(inputConfig = config))
+
+        internal fun <T> decode(
+            deserializer: DeserializationStrategy<T>,
+            rootNode: TomlFile,
+            config: TomlInputConfig,
+            toml: Toml,
         ): T {
             val decoder = TomlMapDecoder(
                 rootNode,
                 config,
-                serializersModule = serializersModule,
+                serializersModule = toml.serializersModule,
+                toml = toml,
             )
             return decoder.decodeSerializableValue(deserializer)
         }

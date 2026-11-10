@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml.decoders
 
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
@@ -29,8 +30,11 @@ import kotlinx.serialization.encoding.AbstractDecoder
 /**
  * Abstract Decoder for TOML format that is inherited by each and every decoder in this project.
  * It serves one aim: to define decoders for primitive types that are allowed in TOML.
+ *
+ * @property toml active TOML format
  */
 @ExperimentalSerializationApi
+@InternalKtomlApi
 public abstract class TomlAbstractDecoder : AbstractDecoder() {
     private val unsignedByteSerializer = UByte.serializer()
     private val unsignedShortSerializer = UShort.serializer()
