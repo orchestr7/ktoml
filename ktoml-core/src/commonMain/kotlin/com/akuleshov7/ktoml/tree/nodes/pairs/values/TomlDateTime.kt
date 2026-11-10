@@ -96,7 +96,6 @@ internal constructor(
     }
 
     public companion object {
-        private val dateTimeLikeRegex = Regex("""^(?:\d{4}-\d{2}-\d{2}.*|\d{2}:\d{2}.*)$""")
         private val localDateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
         private val localTimeRegex = Regex("""^\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$""")
         private val localDateTimeRegex = Regex(
@@ -108,7 +107,8 @@ internal constructor(
 
         @OptIn(ExperimentalTime::class)
         private fun String.parseToDateTime(lineNo: Int): Any {
-            if (isDateTimeLike() && !hasValidDateTimeSyntax()) {
+            // Date libraries also accept ISO extensions outside TOML's four-digit year syntax.
+            if (!hasValidDateTimeSyntax()) {
                 throw ParseException("Invalid TOML date-time literal: <$this>", lineNo)
             }
 
@@ -157,8 +157,6 @@ internal constructor(
             }
             return indexOfAny(charArrayOf('+', '-'), startIndex = timeStart + 1) != -1
         }
-
-        private fun String.isDateTimeLike(): Boolean = dateTimeLikeRegex.matches(this)
 
         private fun String.hasValidDateTimeSyntax(): Boolean = offsetDateTimeRegex.matches(this) ||
                 localDateTimeRegex.matches(this) ||

@@ -93,8 +93,7 @@ class ValueParserTest {
         testTomlValue("a" to "1979-05-27", NodeType.DATE_TIME)
     }
 
-    // Guards the regex-free structural classifier (issue #35) against the old regexes: every shape
-    // and separator variant must still be recognised as a date-time.
+    // Every TOML date-time shape and separator variant must be recognized.
     @Test
     fun dateTimeClassifierAcceptsAllValidShapes() {
         listOf(
@@ -140,6 +139,30 @@ class ValueParserTest {
             assertFailsWith<ParseException>(literal) {
                 TomlKeyValuePrimitive("a" to literal, 1)
             }
+        }
+    }
+
+    @Test
+    fun signedAndExtendedDateYearsAreRejected() {
+        val parser = TomlParser(TomlInputConfig.compliant())
+        listOf(
+            "-0001-01-01",
+            "+10000-01-01",
+            "-0001-01-01T00:00:00Z",
+            "+10000-01-01T00:00:00Z",
+        ).forEach { literal ->
+            assertFailsWith<ParseException>(literal) {
+                parser.parseString("value = $literal")
+            }
+        }
+    }
+
+    @Test
+    fun fourDigitDateYearBoundariesAreAccepted() {
+        val parser = TomlParser(TomlInputConfig.compliant())
+        listOf("0000-01-01", "9999-12-31", "0000-01-01T00:00Z", "9999-12-31T23:59Z").forEach { literal ->
+            val pair = parser.parseString("value = $literal").children.single() as TomlKeyValuePrimitive
+            assertEquals(NodeType.DATE_TIME, getNodeType(pair.value), literal)
         }
     }
 
