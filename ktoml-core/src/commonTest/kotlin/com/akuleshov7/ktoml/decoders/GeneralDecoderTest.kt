@@ -447,4 +447,32 @@ class GeneralDecoderTest {
             ).decodeFromString<SimpleClass>("")
         }
     }
+
+    @Serializable
+    data class NestedValueWrapper(val s: Short, val bool: NestedBool)
+
+    @Serializable
+    data class NestedBool(val a: Boolean)
+
+    @Serializable
+    data class SameNameNestedValueWrapper(val bool: SameNameNestedBool)
+
+    @Serializable
+    data class SameNameNestedBool(val bool: Boolean)
+
+    @Test
+    fun primitiveValueForNestedObjectShouldFailAsMissingProperty() {
+        assertFailsWith<MissingRequiredPropertyException> {
+            Toml.decodeFromString<NestedValueWrapper>(
+                """
+                    s = 5
+                    bool = true
+                """.trimIndent()
+            )
+        }
+
+        assertFailsWith<MissingRequiredPropertyException> {
+            Toml.decodeFromString<SameNameNestedValueWrapper>("bool = true")
+        }
+    }
 }

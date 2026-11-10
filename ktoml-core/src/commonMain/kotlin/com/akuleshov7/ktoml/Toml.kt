@@ -1,5 +1,6 @@
 package com.akuleshov7.ktoml
 
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.decoders.TomlArrayDecoder
 import com.akuleshov7.ktoml.decoders.TomlMainDecoder
 import com.akuleshov7.ktoml.decoders.TomlMapDecoder
@@ -29,14 +30,20 @@ import kotlinx.serialization.modules.SerializersModule
  * @property serializersModule - default overridden
  */
 @OptIn(ExperimentalSerializationApi::class)
+@SubclassOptInRequired(InternalKtomlApi::class)
 public open class Toml(
+    @InternalKtomlApi
     protected val inputConfig: TomlInputConfig = TomlInputConfig(),
+    @InternalKtomlApi
     protected val outputConfig: TomlOutputConfig = TomlOutputConfig(),
     override val serializersModule: SerializersModule = EmptySerializersModule(),
 ) : StringFormat {
     // parser and writer are created once after the creation of the class, to reduce
     // the number of created parsers and writers for each toml
+    @InternalKtomlApi
     public val tomlParser: TomlParser = TomlParser(inputConfig)
+
+    @InternalKtomlApi
     public val tomlWriter: TomlWriter = TomlWriter(outputConfig)
 
     // ================== basic overrides ===============

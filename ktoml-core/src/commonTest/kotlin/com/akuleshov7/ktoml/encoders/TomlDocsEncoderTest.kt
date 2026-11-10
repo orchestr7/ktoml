@@ -5,10 +5,6 @@ import com.akuleshov7.ktoml.TomlIndentation
 import com.akuleshov7.ktoml.TomlOutputConfig
 import com.akuleshov7.ktoml.annotations.TomlInlineTable
 import com.akuleshov7.ktoml.annotations.TomlLiteral
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.buildSerialDescriptor
@@ -31,9 +27,7 @@ class TomlDocsEncoderTest {
     @Serializable
     data class Owner(
         val name: String = "Tom Preston-Werner",
-        val dob: kotlin.time.Instant =
-                LocalDateTime(1979, 5, 27, 15, 32, 0)
-                    .toInstant(TimeZone.UTC)
+        val dob: kotlin.time.Instant = kotlin.time.Instant.parse("1979-05-27T15:32:00Z")
     )
 
     @Serializable

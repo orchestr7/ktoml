@@ -41,6 +41,8 @@ import kotlin.test.assertIs
  *  1. **Read the parsed AST directly** ([heterogeneousScalarArrayKeepsPerElementTypes],
  *     [nestedMixedArrayKeepsStructure], [convertMixedArrayToKotlinValues]). Every element is a typed
  *     [TomlValue]; you branch on its subtype. Flexible, no custom serializer, handles *arbitrary* mixes.
+ *     Note: the AST types are `@InternalKtomlApi`, so an external caller must
+ *     `@OptIn(InternalKtomlApi::class)` (this module opts in globally, so the test below needs no marker).
  *
  *  2. **A custom `KSerializer` that dispatches on a discriminator carried in the data**
  *     ([decodeTaggedHeterogeneousArrayWithCustomSerializer]). This is the decoder counterpart to

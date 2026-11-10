@@ -5,6 +5,7 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.parseKeyName
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
@@ -27,6 +28,7 @@ import kotlin.jvm.JvmStatic
  * there is no such table in the input
  */
 @Suppress("COMMENT_WHITE_SPACE")
+@InternalKtomlApi
 public class TomlTable(
     public var fullTableKey: TomlKey,
     override val lineNo: Int,
@@ -283,6 +285,7 @@ public class TomlTable(
  * @property open The header opening sequence.
  * @property close The header closing sequence.
  */
+@InternalKtomlApi
 public enum class TableType(
     internal val open: String,
     internal val close: String
