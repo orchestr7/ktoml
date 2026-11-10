@@ -14,6 +14,7 @@ import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
+import com.akuleshov7.ktoml.writers.TomlCallbackEmitter
 import com.akuleshov7.ktoml.writers.TomlWriter
 
 import kotlin.native.concurrent.ThreadLocal
@@ -66,6 +67,29 @@ public open class Toml(
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
         val toml = TomlMainEncoder.encode(serializer, value, outputConfig, serializersModule)
         return tomlWriter.writeToString(file = toml)
+    }
+
+    /**
+     * Encodes [value] through callbacks used by optional I/O adapter modules.
+     *
+     * This is public only because Kotlin module boundaries prevent the adapters from using an internal
+     * declaration. Applications should use a supported `encodeTo*` API instead.
+     *
+     * @param serializer serialization strategy
+     * @param value value to encode
+     * @param emitString callback for a string fragment
+     * @param emitChar callback for a character fragment
+     */
+    @InternalKtomlApi
+    public fun <T> encodeToEmitter(
+        serializer: SerializationStrategy<T>,
+        value: T,
+        emitString: (String) -> Unit,
+        emitChar: (Char) -> Unit,
+    ) {
+        val toml = TomlMainEncoder.encode(serializer, value, outputConfig, serializersModule)
+        val emitter = TomlCallbackEmitter(outputConfig, emitString, emitChar)
+        tomlWriter.write(toml, emitter)
     }
 
     // ================== custom decoding methods ===============
