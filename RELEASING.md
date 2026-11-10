@@ -14,3 +14,14 @@ a new github release is created with fat jar.
 
 * We are using both maven central and github to publish releases. 
 To prevent invalid files reaching Nexus you should manually promote releases in [staging](https://s01.oss.sonatype.org/#stagingRepositories)
+
+Before requesting a release, run the full tests, lint and API checks:
+
+```sh
+./gradlew build -x detekt -PapiStrictKlibValidation=true -Pkotlin.native.enableKlibsCrossCompilation=true
+./gradlew detektAll diktatCheck
+```
+
+See [BINARY_COMPATIBILITY.md](BINARY_COMPATIBILITY.md) for the distinction between the source API
+baseline and published-artifact compatibility. Release authorization and Maven staging promotion
+remain separate from PR approval.

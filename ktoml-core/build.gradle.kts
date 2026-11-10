@@ -1,8 +1,12 @@
 import com.akuleshov7.buildutils.configureSigning
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
+import kotlinx.validation.KotlinApiBuildTask
+import kotlinx.validation.KotlinApiCompareTask
+import kotlinx.validation.KotlinKlibAbiBuildTask
 
 plugins {
     kotlin("multiplatform")
@@ -129,4 +133,66 @@ tasks.withType<KotlinJsTest> {
     ) {
         this.enabled = false
     }
+}
+
+// This optional audit uses a published jar, independently of the committed fork baseline.
+// It is deliberately not attached to check: upstream 0.7.1 has known ABI differences.
+val referenceJvmApi by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+
+dependencies {
+    referenceJvmApi(
+        providers.gradleProperty("referenceApiCoordinate")
+            .getOrElse("com.akuleshov7:ktoml-core-jvm:0.7.1")
+    )
+}
+
+val referenceJvmApiDump by tasks.registering(KotlinApiBuildTask::class) {
+    group = "verification"
+    description = "Dumps a published core JVM jar for an independent ABI audit."
+    inputJar.set(layout.file(referenceJvmApi.elements.map { it.single().asFile }))
+    outputApiFile.set(layout.buildDirectory.file("api/reference/ktoml-core.api"))
+    runtimeClasspath.from(tasks.named<KotlinApiBuildTask>("jvmApiBuild").map { it.runtimeClasspath })
+}
+
+tasks.register<KotlinApiCompareTask>("referenceJvmApiDiff") {
+    group = "verification"
+    description = "Reports all API differences against a published jar; known differences fail this audit."
+    projectApiFile.set(referenceJvmApiDump.flatMap { it.outputApiFile })
+    generatedApiFile.set(tasks.named<KotlinApiBuildTask>("jvmApiBuild").flatMap { it.outputApiFile })
+}
+
+val referenceJsApi by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+
+dependencies {
+    referenceJsApi(
+        providers.gradleProperty("referenceJsApiCoordinate")
+            .getOrElse("com.akuleshov7:ktoml-core-js:0.7.1@klib")
+    )
+}
+
+@OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+val referenceJsApiDump by tasks.registering(KotlinKlibAbiBuildTask::class) {
+    group = "verification"
+    description = "Dumps a published core JS KLib for an independent ABI audit."
+    klibFile.from(referenceJsApi)
+    val currentJsApi: TaskProvider<KotlinKlibAbiBuildTask> = tasks.named("jsApiBuild", KotlinKlibAbiBuildTask::class.java)
+    target.set(currentJsApi.flatMap { it.target })
+    signatureVersion.set(currentJsApi.flatMap { it.signatureVersion })
+    runtimeClasspath.from(currentJsApi.map { it.runtimeClasspath })
+    outputAbiFile.set(layout.buildDirectory.file("api/reference/ktoml-core-js.klib.api"))
+}
+
+tasks.register<KotlinApiCompareTask>("referenceJsApiDiff") {
+    group = "verification"
+    description = "Reports all KLib API differences against a published JS KLib."
+    projectApiFile.set(referenceJsApiDump.flatMap { it.outputAbiFile })
+    generatedApiFile.set(tasks.named<KotlinKlibAbiBuildTask>("jsApiBuild").flatMap { it.outputAbiFile })
 }

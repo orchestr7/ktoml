@@ -1,0 +1,22 @@
+public final class com/akuleshov7/ktoml/source/JvmStreamsKt {
+	public static final fun decodeFromStream (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Ljava/io/InputStream;)Ljava/lang/Object;
+	public static final fun partiallyDecodeFromStream (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Ljava/io/InputStream;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/source/SourceUtilsKt {
+	public static final fun useLines (Lokio/Source;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+}
+
+public class com/akuleshov7/ktoml/source/TomlSourceReader : com/akuleshov7/ktoml/Toml {
+	public static final field Default Lcom/akuleshov7/ktoml/source/TomlSourceReader$Default;
+	public fun <init> ()V
+	public fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun decodeFromSource (Lkotlinx/serialization/DeserializationStrategy;Lokio/Source;)Ljava/lang/Object;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	public final fun partiallyDecodeFromSource (Lkotlinx/serialization/DeserializationStrategy;Lokio/Source;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/source/TomlSourceReader$Default : com/akuleshov7/ktoml/source/TomlSourceReader {
+}
+
