@@ -20,6 +20,17 @@ internal enum class MultilineType(
         "\"\"\"",
         false
     ),
+
+    /**
+     * TOML 1.1 multiline inline table: `{` ... `}` spanning several lines. Newlines may appear
+     * between key/value pairs, after a trailing comma, or within a nested value (array / multiline
+     * string). Termination is decided by brace balance, so nesting needs no special heuristic.
+     */
+    INLINE_TABLE(
+        "{",
+        "}",
+        false
+    ),
     LITERAL_STRING(
         "'''",
         "'''",
