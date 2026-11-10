@@ -1,8 +1,9 @@
 package com.akuleshov7.ktoml.decoders.primitives
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
-import kotlin.time.Instant
+import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -86,5 +87,30 @@ class DateTimeDecoderTest {
         assertFailsWith<ParseException> {
             Toml.decodeFromString<InvalidTime>("time=07/35/12")
         }
+    }
+
+    @Test
+    fun invalidDatetimeLiteralsAreRejectedDuringParse() {
+        listOf(
+            "1997-09-09T09:09:09.09+09",
+            "1997-09-09T09:09:09.09-09",
+            "1997-09-09T09:09:09.",
+            "12:13:14.",
+        ).forEach { literal ->
+            assertFailsWith<ParseException> {
+                TomlParser(TomlInputConfig.compliant()).parseString("value = $literal")
+            }
+        }
+    }
+
+    @Test
+    fun secondsOmittedToml11TimeLiteralsStillParse() {
+        TomlParser(TomlInputConfig.compliant()).parseString(
+            """
+            localTime = 17:45
+            localDateTime = 1987-07-05T17:45
+            offsetDateTime = 1987-07-05T17:45-07:00
+            """.trimIndent()
+        )
     }
 }
