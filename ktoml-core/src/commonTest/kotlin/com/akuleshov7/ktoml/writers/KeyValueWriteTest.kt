@@ -45,8 +45,9 @@ class KeyValueWriteTest {
         testTomlPrimitivePair(bareKey to "1979-05-27T07:32:00Z")
         testTomlPrimitivePair(dottedKey to "1979-05-27T07:32:00Z")
 
-        testTomlPrimitivePair(bareKey to "1979-05-27T07:32")
-        testTomlPrimitivePair(dottedKey to "1979-05-27T07:32")
+        // omitted seconds are normalized to the canonical `:00` form on round-trip
+        testTomlPrimitivePair(bareKey to "1979-05-27T07:32:00")
+        testTomlPrimitivePair(dottedKey to "1979-05-27T07:32:00")
 
         testTomlPrimitivePair(bareKey to "1979-05-27")
         testTomlPrimitivePair(dottedKey to "1979-05-27")

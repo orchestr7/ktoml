@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlComments
-
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 

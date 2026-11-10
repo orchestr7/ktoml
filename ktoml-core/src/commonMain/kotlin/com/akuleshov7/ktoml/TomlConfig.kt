@@ -2,6 +2,8 @@
 
 package com.akuleshov7.ktoml
 
+import com.akuleshov7.ktoml.annotations.ExperimentalKtomlApi
+
 /**
  * A config to change parsing behavior.
  * @property ignoreUnknownNames Whether to allow/prohibit unknown names during the deserialization
@@ -22,6 +24,7 @@ public data class TomlInputConfig(
     public val allowEmptyToml: Boolean = true,
     public val allowEscapedQuotesInLiteralStrings: Boolean = true,
     public val ignoreDefaultValues: Boolean = false,
+    @property:ExperimentalKtomlApi
     public val allowTableRedefinition: Boolean = true,
 ) {
     /**

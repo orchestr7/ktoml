@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -15,6 +16,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property key
  * @property value
  */
+@InternalKtomlApi
 public class TomlKeyValuePrimitive(
     override var key: TomlKey,
     override val value: TomlValue,

@@ -128,7 +128,10 @@ class ArrayOfInlineTablesEncoderTest {
     fun emptyInlineTableArrayTest() {
         assertEncodedEquals(
             value = InlineTableArray(inlineTables = emptyList()),
-            expectedToml = "",
+            expectedToml = """
+                inlineTables = [
+                ]
+            """.trimIndent(),
         )
     }
 }

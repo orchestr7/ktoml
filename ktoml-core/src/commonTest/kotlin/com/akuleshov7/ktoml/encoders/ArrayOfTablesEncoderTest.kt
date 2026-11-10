@@ -492,4 +492,23 @@ class ArrayOfTablesEncoderTest {
             """.trimIndent()
         )
     }
+
+    @Test
+    fun encodeEmptyArrayOfTablesAsEmptyArray() {
+        @Serializable
+        data class Entry(val name: String)
+
+        @Serializable
+        data class Wrapper(val entries: List<Entry> = emptyList())
+
+        assertEncodedEquals(
+            value = Wrapper(),
+            expectedToml = "entries = [ ]",
+        )
+
+        assertEquals(
+            Wrapper(),
+            Toml.decodeFromString<Wrapper>("entries = []")
+        )
+    }
 }

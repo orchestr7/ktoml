@@ -1,7 +1,6 @@
 package com.akuleshov7.ktoml.decoders.custom
 
 import com.akuleshov7.ktoml.Toml
-import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -222,12 +221,12 @@ class CustomSerializerTest {
         }
 
         override fun deserialize(decoder: Decoder): Date {
-            return Date(LocalDate(decoder.decodeInt(), 1, 1))
+            return Date(decoder.decodeInt())
         }
     }
 
     // For instance, we don't control this class code and don't have a serializer for it
-    data class Date(val date: LocalDate)
+    data class Date(val year: Int)
 
     @Test
     fun thirdPartyClass() {
@@ -236,7 +235,7 @@ class CustomSerializerTest {
         """.trimIndent()
 
         assertEquals(
-            Date(LocalDate(2025, 1, 1)),
+            Date(2025),
             Toml.decodeFromString(DateAsLongSerializer, toml),
         )
     }
@@ -256,7 +255,7 @@ class CustomSerializerTest {
         """.trimIndent()
 
         assertEquals(
-            ProgrammingLanguage("Kotlin", Date(LocalDate(2025, 1, 1))),
+            ProgrammingLanguage("Kotlin", Date(2025)),
             Toml.decodeFromString<ProgrammingLanguage>(toml),
         )
     }
@@ -279,8 +278,8 @@ class CustomSerializerTest {
             ProgrammingLanguages(
                 "Kotlin",
                 listOf(
-                    Date(LocalDate(2025, 1, 1)),
-                    Date(LocalDate(2026, 1, 1))
+                    Date(2025),
+                    Date(2026)
                 ),
             ),
             Toml.decodeFromString<ProgrammingLanguages>(toml),
@@ -357,7 +356,7 @@ class CustomSerializerTest {
         assertEquals(
             ProgrammingLanguage(
                 "Kotlin",
-                Date(LocalDate(2025, 1, 1))
+                Date(2025)
             ),
             Toml(serializersModule = module).decodeFromString<ProgrammingLanguage>(toml),
         )

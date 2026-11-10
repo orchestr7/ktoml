@@ -2,7 +2,6 @@ package com.akuleshov7.ktoml.encoders.custom
 
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.encoders.assertEncodedEquals
-import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -42,7 +41,7 @@ class CustomSerializerTest {
     }
 
     // For instance, we don't control this class code and don't have a serializer for it
-    data class Date(val date: LocalDate)
+    data class Date(val year: Int)
 
     object DateAsLongSerializer : KSerializer<Date> {
         override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
@@ -51,11 +50,11 @@ class CustomSerializerTest {
         )
 
         override fun serialize(encoder: Encoder, value: Date) {
-            encoder.encodeLong(value.date.year.toLong())
+            encoder.encodeLong(value.year.toLong())
         }
 
         override fun deserialize(decoder: Decoder): Date {
-            return Date(LocalDate(decoder.decodeInt(), 1, 1))
+            return Date(decoder.decodeInt())
         }
     }
 
@@ -80,7 +79,7 @@ class CustomSerializerTest {
         assertEncodedEquals(
             value = ProgrammingLanguage(
                 name = "Kotlin",
-                stableReleaseDate = Date(LocalDate(2025, 1, 1))
+                stableReleaseDate = Date(2025)
             ),
             expectedToml = toml,
             tomlInstance = Toml(serializersModule = module),
