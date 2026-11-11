@@ -1,7 +1,10 @@
 package com.akuleshov7.ktoml.decoders
 
-import com.akuleshov7.ktoml.Toml.Default.serializersModule
+import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlDecoder
+import com.akuleshov7.ktoml.TomlElement
 import com.akuleshov7.ktoml.TomlInputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
@@ -19,18 +22,33 @@ import kotlinx.serialization.modules.SerializersModule
  * @param rootNode
  * @param config
  * @property serializersModule
+ * @property toml active TOML format
  */
 @ExperimentalSerializationApi
 @Suppress("UNCHECKED_CAST")
-public class TomlArrayDecoder(
+@InternalKtomlApi
+public class TomlArrayDecoder internal constructor(
     private val rootNode: TomlKeyValueArray,
     private val config: TomlInputConfig,
     override val serializersModule: SerializersModule,
-) : TomlAbstractDecoder() {
+    final override val toml: Toml,
+) : TomlAbstractDecoder(), TomlDecoder {
     private var nextElementIndex = 0
     private val list = rootNode.value.content as List<TomlValue>
     private lateinit var currentElementDecoder: TomlAbstractDecoder
+    private lateinit var currentElement: TomlElement
     private lateinit var currentPrimitiveElementOfArray: TomlValue
+
+    public constructor(
+        rootNode: TomlKeyValueArray,
+        config: TomlInputConfig,
+        serializersModule: SerializersModule,
+    ) : this(
+        rootNode,
+        config,
+        serializersModule,
+        Toml(inputConfig = config, serializersModule = serializersModule),
+    )
 
     private fun haveStartedReadingElements() = nextElementIndex > 0
 
@@ -52,37 +70,45 @@ public class TomlArrayDecoder(
     }
 
     private fun setArrayDecoder() {
+        val arrayNode = TomlKeyValueArray(
+            rootNode.key,
+            currentPrimitiveElementOfArray,
+            rootNode.lineNo,
+            comments = emptyList(),
+            inlineComment = "",
+        )
         currentElementDecoder = TomlArrayDecoder(
-            TomlKeyValueArray(
-                rootNode.key,
-                currentPrimitiveElementOfArray,
-                rootNode.lineNo,
-                comments = emptyList(),
-                inlineComment = "",
-            ),
+            arrayNode,
             config,
             serializersModule,
+            toml,
         )
+        currentElement = TomlElement(arrayNode)
     }
 
     private fun setPrimitiveDecoder() {
+        val primitiveNode = TomlKeyValuePrimitive(
+            rootNode.key,
+            currentPrimitiveElementOfArray,
+            rootNode.lineNo,
+            comments = emptyList(),
+            inlineComment = "",
+        )
         val primitiveRoot = TomlFile().also { root ->
-            root.appendChild(
-                TomlKeyValuePrimitive(
-                    rootNode.key,
-                    currentPrimitiveElementOfArray,
-                    rootNode.lineNo,
-                    comments = emptyList(),
-                    inlineComment = "",
-                )
-            )
+            root.appendChild(primitiveNode)
         }
         currentElementDecoder = TomlMainDecoder(
             rootNode = primitiveRoot,
             config = config,
             serializersModule = serializersModule,
+            toml = toml,
+            exposedRootNode = primitiveNode,
         )
+        currentElement = TomlElement(primitiveNode)
     }
+
+    override fun decodeTomlElement(): TomlElement =
+        if (haveStartedReadingElements()) currentElement else TomlElement(rootNode)
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         if (haveStartedReadingElements()) {
@@ -111,7 +137,7 @@ public class TomlArrayDecoder(
     ) {
         currentElementDecoder.decodeSerializableValue(deserializer)
     } else {
-        super.decodeSerializableValue(deserializer)
+        super<TomlAbstractDecoder>.decodeSerializableValue(deserializer)
     }
 
     // this should be applied to [currentPrimitiveElementOfArray] and not to the [rootNode]
@@ -127,9 +153,16 @@ public class TomlArrayDecoder(
         public fun <T> decode(
             deserializer: DeserializationStrategy<T>,
             tomlKeyValueArray: TomlKeyValueArray,
-            config: TomlInputConfig = TomlInputConfig()
+            config: TomlInputConfig = TomlInputConfig(),
+        ): T = decode(deserializer, tomlKeyValueArray, config, Toml(inputConfig = config))
+
+        internal fun <T> decode(
+            deserializer: DeserializationStrategy<T>,
+            tomlKeyValueArray: TomlKeyValueArray,
+            config: TomlInputConfig,
+            toml: Toml,
         ): T {
-            val decoder = TomlArrayDecoder(tomlKeyValueArray, config, serializersModule)
+            val decoder = TomlArrayDecoder(tomlKeyValueArray, config, toml.serializersModule, toml)
             return decoder.decodeSerializableValue(deserializer)
         }
     }
