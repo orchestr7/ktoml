@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.parsers.isValidTomlFloatLiteral
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -13,7 +14,7 @@ public class TomlDouble
 internal constructor(
     override var content: Any
 ) : TomlValue() {
-    public constructor(content: String, lineNo: Int) : this(content.toDouble())
+    public constructor(content: String, lineNo: Int) : this(content.parse())
 
     public constructor(content: Double, lineNo: Int) : this(content)
 
@@ -22,5 +23,21 @@ internal constructor(
         config: TomlOutputConfig
     ) {
         emitter.emitValue(content as Double)
+    }
+
+    private companion object {
+        /**
+         * Parses a TOML float literal into a [Double].
+         *
+         * Floats must have a decimal integer part without leading zeroes and either a fractional
+         * part with digits on both sides of `.` or an exponent part. Underscores are allowed only
+         * between digits in the integer, fractional, or exponent part.
+         */
+        private fun String.parse(): Double {
+            if (!isValidTomlFloatLiteral()) {
+                throw NumberFormatException("Invalid TOML float literal <$this>")
+            }
+            return replace("_", "").toDouble()
+        }
     }
 }

@@ -7,8 +7,25 @@ package com.akuleshov7.ktoml.parsers
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import com.akuleshov7.ktoml.utils.newLineChar
+import com.akuleshov7.ktoml.utils.validateIntegerSyntax
 
 private const val MULTILINE_STRING_QUOTE_LENGTH = 3
+private const val TOML_DECIMAL_INTEGER_PATTERN = "(?:0|[1-9](?:_?[0-9])*)"
+private const val TOML_DIGITS_PATTERN = "[0-9](?:_?[0-9])*"
+private const val TOML_EXPONENT_PATTERN = "[eE][+-]?$TOML_DIGITS_PATTERN"
+
+private val tomlFloatRegex = Regex(
+    "[+-]?(?:" +
+            "$TOML_DECIMAL_INTEGER_PATTERN\\.$TOML_DIGITS_PATTERN(?:$TOML_EXPONENT_PATTERN)?|" +
+            "$TOML_DECIMAL_INTEGER_PATTERN$TOML_EXPONENT_PATTERN" +
+            ")"
+)
+
+/**
+ * Callback invoked for every character while scanning a key string: receives the character and
+ * whether it lies inside a quoted segment.
+ */
+private typealias KeyCharAction = (ch: Char, insideQuotes: Boolean) -> Unit
 
 /**
  * Splitting dot-separated string to the list of tokens:
@@ -21,36 +38,22 @@ internal fun String.splitKeyToTokens(lineNo: Int): List<String> {
     this.validateQuotes(lineNo)
     this.validateSymbols(lineNo)
 
-    var singleQuoteIsClosed = true
-    var doubleQuoteIsClosed = true
-    val dotSeparatedParts: MutableList<String> = mutableListOf()
-    var currentPart = StringBuilder()
     // simple split() method won't work here, because in such case we could break following keys:
     // a."b.c.d".e (here only three tables: a/"b.c.d"/and e)
-    this.forEach { ch ->
-        when (ch) {
-            '\'' -> {
-                singleQuoteIsClosed = !singleQuoteIsClosed
-                currentPart.append(ch)
-            }
-            '\"' -> {
-                doubleQuoteIsClosed = !doubleQuoteIsClosed
-                currentPart.append(ch)
-            }
-            '.' -> if (singleQuoteIsClosed && doubleQuoteIsClosed) {
-                dotSeparatedParts.add(currentPart.toString().trim())
-                currentPart = StringBuilder()
-            } else {
-                currentPart.append(ch)
-            }
-            else -> currentPart.append(ch)
+    val dotSeparatedParts: MutableList<String> = mutableListOf()
+    var currentPart = StringBuilder()
+    scanKeyChars { ch, insideQuotes ->
+        if (ch == '.' && !insideQuotes) {
+            dotSeparatedParts.add(currentPart.toString().trim())
+            currentPart = StringBuilder()
+        } else {
+            currentPart.append(ch)
         }
     }
 
     val keyPart = currentPart.toString().trim()
-    keyPart.validateSpaces(lineNo, this)
-
     dotSeparatedParts.add(keyPart)
+    dotSeparatedParts.forEach { it.validateKeyPart(lineNo, this) }
     return dotSeparatedParts
 }
 
@@ -79,32 +82,75 @@ internal fun String.trimMultilineLiteralQuotes(): String = trimMultilineQuotes("
  *
  * @return string with the result
  */
+@Suppress("TOO_LONG_FUNCTION")
 internal fun String.convertLineEndingBackslash(): String {
-    // We shouldn't trim if the size of the split array == 1
-    // It means there is no ending backslash, and we should keep all spaces
-    val splitEndingBackslash = this.split("\\\n")
-    return if (splitEndingBackslash.size == 1) {
-        this
-    } else {
-        splitEndingBackslash.joinToString("") { it.trimStart() }
+    val result = StringBuilder(length)
+    var i = 0
+
+    while (i < length) {
+        if (this[i] != '\\') {
+            result.append(this[i])
+            i++
+            continue
+        }
+
+        val slashStart = i
+        while (i < length && this[i] == '\\') {
+            i++
+        }
+        val slashCount = i - slashStart
+
+        if (slashCount % 2 == 1) {
+            val continuationStart = i
+            var j = continuationStart
+            while (j < length && this[j].isWhitespace() && lineBreakLengthAt(j) == 0) {
+                j++
+            }
+
+            val lineBreakLength = lineBreakLengthAt(j)
+            if (lineBreakLength > 0) {
+                repeat(slashCount - 1) {
+                    result.append('\\')
+                }
+
+                j += lineBreakLength
+                while (j < length && this[j].isWhitespace()) {
+                    j++
+                }
+
+                i = j
+                continue
+            }
+        }
+
+        repeat(slashCount) {
+            result.append('\\')
+        }
     }
+
+    return result.toString()
 }
 
 /**
- * Checks if the backslash at the given index is a line-ending backslash
- * A line-ending backslash is defined as a backslash that is followed only by
- * whitespace characters and then a newline character or the end of the string
+ * Checks if the backslash at the given index is a line-ending backslash.
+ * A line-ending backslash is followed only by whitespace characters and then
+ * a newline character.
  *
  * @param backslashIndex The index of the backslash to check
  * @return `true` if the backslash is a line-ending backslash, `false` otherwise
  */
 internal fun String.isLineEndingBackslash(backslashIndex: Int): Boolean {
-    var j = backslashIndex + 1
-    while (j < length && this[j] != newLineChar() && this[j].isWhitespace()) {
+    if (backslashIndex !in indices || this[backslashIndex] != '\\') {
+        return false
+    }
+
+    val continuationStart = backslashIndex + 1
+    var j = continuationStart
+    while (j < length && this[j].isWhitespace() && lineBreakLengthAt(j) == 0) {
         j++
     }
 
-    return j == length || this[j] == newLineChar() || j == length
+    return lineBreakLengthAt(j) > 0
 }
 
 /**
@@ -182,6 +228,25 @@ internal fun String.trimBrackets(): String = trimSymbols(this, "[", "]")
  * @return string with the result
  */
 internal fun String.removeTrailingComma(): String = this.removeSuffix(",")
+
+/**
+ * Classifies integer candidates without preventing fallback to other TOML primitive types.
+ *
+ * @return true when the shared integer syntax validator accepts this value
+ */
+internal fun String.isValidTomlIntegerLiteral(): Boolean = try {
+    validateIntegerSyntax(0)
+    true
+} catch (ex: ParseException) {
+    false
+}
+
+/**
+ * Checks whether this string is a TOML float literal.
+ *
+ * @return true for valid decimal float literals, excluding special values handled separately
+ */
+internal fun String.isValidTomlFloatLiteral(): Boolean = tomlFloatRegex.matches(this)
 
 /**
  * If this string starts and end with a pair brackets([[]]) - will return the string with brackets removed
@@ -314,6 +379,18 @@ internal fun String.replaceEscaped(allowEscapedQuotesInLiteralStrings: Boolean, 
     }
 }
 
+private fun String.validateKeyPart(lineNo: Int, fullKey: String) {
+    if (isEmpty()) {
+        throw ParseException(
+            "Not able to parse the key: [$fullKey] as it contains an empty key part.",
+            lineNo
+        )
+    }
+
+    validateSpaces(lineNo, fullKey)
+    validateQuoteBoundaries(lineNo, fullKey)
+}
+
 private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     if (this.trim().count { it == ' ' } > 0 && this.isNotQuoted()) {
         throw ParseException(
@@ -323,11 +400,55 @@ private fun String.validateSpaces(lineNo: Int, fullKey: String) {
     }
 }
 
+private fun String.validateQuoteBoundaries(lineNo: Int, fullKey: String) {
+    if (startsWith("\"\"\"") || startsWith("'''")) {
+        throw ParseException(
+            "Not able to parse the key: [$fullKey] as multiline strings cannot be used as keys.",
+            lineNo
+        )
+    }
+
+    val first = first()
+    val isQuoted = first == '"' || first == '\''
+    if (isQuoted) {
+        if (last() != first || !isSingleQuotedKeyToken(first)) {
+            throw ParseException(
+                "Not able to parse the key: [$fullKey] as quoted key parts must be fully quoted.",
+                lineNo
+            )
+        }
+    } else if (any { it == '"' || it == '\'' }) {
+        throw ParseException(
+            "Not able to parse the key: [$fullKey] as quoted key parts must be fully quoted.",
+            lineNo
+        )
+    }
+}
+
+private fun String.isSingleQuotedKeyToken(quote: Char): Boolean {
+    var index = 1
+    while (index < lastIndex) {
+        val ch = this[index]
+        if (quote == '"' && ch == '\\' && index + 1 < lastIndex) {
+            index += 2
+            continue
+        }
+        if (ch == quote) {
+            return false
+        }
+        index++
+    }
+    return true
+}
+
 /**
- * small validation for quotes: each quote should be closed in a key
+ * Validation for quotes: every opening quote in a key must be closed. The scan is quote-aware,
+ * so a single quote that appears inside a basic-quoted key (and vice versa) is treated as content
+ * rather than a delimiter, and an escaped quote (`\"`) inside a basic-quoted key does not count.
  */
 private fun String.validateQuotes(lineNo: Int) {
-    if (this.count { it == '\"' } % 2 != 0 || this.count { it == '\'' } % 2 != 0) {
+    val allQuotesClosed = scanKeyChars { _, _ -> }
+    if (!allQuotesClosed) {
         throw ParseException(
             "Not able to parse the key: [$this] as it does not have closing quote." +
                     " Please note, that you cannot use even escaped quotes in the bare keys.",
@@ -338,34 +459,80 @@ private fun String.validateQuotes(lineNo: Int) {
 
 /**
  * validate that bare key parts (not quoted) contain only valid symbols A..Z, a..z, 0..9, -, _
+ *
+ * The scan is quote-aware: characters inside basic (`"`) or literal (`'`) quoted parts are not
+ * validated, and a backslash escape (e.g. `\"`) inside a basic-quoted part is skipped so the
+ * escaped quote is not mistaken for a closing delimiter.
  */
 private fun String.validateSymbols(lineNo: Int) {
-    var singleQuoteIsClosed = true
-    var doubleQuoteIsClosed = true
-    this.trim().forEach { ch ->
-        when (ch) {
-            '\'' -> singleQuoteIsClosed = !singleQuoteIsClosed
-            '\"' -> doubleQuoteIsClosed = !doubleQuoteIsClosed
-            else -> if (doubleQuoteIsClosed && singleQuoteIsClosed &&
-                    // FixMe: isLetterOrDigit is not supported in Kotlin 1.4, but 1.5 is not compiling right now
-                    !setOf('_', '-', '.', '"', '\'', ' ', '\t').contains(ch) && !ch.isLetterOrDigit()
-            ) {
-                throw ParseException(
-                    "Not able to parse the key: [$this] as it contains invalid symbols." +
-                            " In case you would like to use special symbols - use quotes as" +
-                            " it is required by TOML standard: \"My key with special (%, ±) symbols\" = \"value\"",
-                    lineNo
-                )
-            }
+    this.trim().scanKeyChars { ch, insideQuotes ->
+        if (!insideQuotes &&
+                // FixMe: isLetterOrDigit is not supported in Kotlin 1.4, but 1.5 is not compiling right now
+                !setOf('_', '-', '.', ' ', '\t').contains(ch) && !ch.isLetterOrDigit()
+        ) {
+            throw ParseException(
+                "Not able to parse the key: [$this] as it contains invalid symbols." +
+                        " In case you would like to use special symbols - use quotes as" +
+                        " it is required by TOML standard: \"My key with special (%, ±) symbols\" = \"value\"",
+                lineNo
+            )
         }
     }
+}
+
+/**
+ * Walks a (possibly dotted) key string left to right, calling [action] for every character with a
+ * flag telling whether it is currently inside a quoted segment.
+ *
+ * The scan is quote-aware: a literal string (`'...'`) is taken verbatim while a basic string (`"..."`)
+ * honors `\` escapes, so an escaped quote (`\"`) inside a basic string is reported as quoted content
+ * and never mistaken for a closing delimiter. Quote characters themselves and the escaped pair are
+ * reported with `insideQuotes = true`; only bare characters outside any quotes get `false`.
+ *
+ * @param action receives each character and whether it lies inside a quoted segment
+ * @return `true` if every opened quote was closed, `false` if a quote was left open
+ */
+@Suppress("FUNCTION_BOOLEAN_PREFIX")
+private inline fun String.scanKeyChars(action: KeyCharAction): Boolean {
+    var inBasic = false
+    var inLiteral = false
+    var index = 0
+    while (index < length) {
+        val ch = this[index]
+        when {
+            inBasic && ch == '\\' && index + 1 < length -> {
+                action(ch, true)
+                action(this[index + 1], true)
+                index++
+            }
+            ch == '\'' && !inBasic -> {
+                inLiteral = !inLiteral
+                action(ch, true)
+            }
+            ch == '\"' && !inLiteral -> {
+                inBasic = !inBasic
+                action(ch, true)
+            }
+            else -> action(ch, inBasic || inLiteral)
+        }
+        index++
+    }
+    return !inBasic && !inLiteral
 }
 
 private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||
         CharRange('a', 'z').contains(this) ||
         CharRange('0', '9').contains(this)
 
-private fun String.isNotQuoted() = !(this.startsWith("\"") && this.endsWith("\""))
+private fun String.isNotQuoted() = !(this.startsWith("\"") && this.endsWith("\"")) &&
+        !(this.startsWith("'") && this.endsWith("'"))
+
+private fun String.lineBreakLengthAt(index: Int): Int = when {
+    index >= length -> 0
+    this[index] == '\r' && index + 1 < length && this[index + 1] == '\n' -> 2
+    this[index] == '\r' || this[index] == '\n' -> 1
+    else -> 0
+}
 
 private fun String.trimMultilineQuotes(quotes: String): String {
     // if a suffix is a separator on a separate string, we need to trim whitespaces for a better user experience

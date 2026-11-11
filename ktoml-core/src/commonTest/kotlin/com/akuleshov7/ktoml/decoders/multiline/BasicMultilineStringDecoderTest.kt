@@ -125,6 +125,42 @@ class BasicMultilineStringDecoderTest {
     }
 
     @Test
+    fun lineEndingBackslashWithTrailingWhitespace() {
+        // whitespace between the backslash and the newline is still a line ending, and the trimming
+        // runs through the blank lines up to the closing delimiter
+        var test = "a = \"\"\"\nheeee\ngeeee\\  \n\n\n      \"\"\""
+        assertEquals(SimpleString("heeee\ngeeee"), Toml.decodeFromString(test))
+
+        // a tab counts as whitespace too, and whitespace *before* the backslash is kept
+        test = "a = \"\"\"x   \t\\\n   b\"\"\""
+        assertEquals(SimpleString("x   \tb"), Toml.decodeFromString(test))
+
+        // CRLF line endings behave like LF
+        test = "a = \"\"\"x \\\r\nb\"\"\""
+        assertEquals(SimpleString("x b"), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun escapedBackslashIsNotALineEnding() {
+        // `\\` is an escaped backslash, so the newline after it stays
+        var test = "a = \"\"\"x \\\\\nb\"\"\""
+        assertEquals(SimpleString("x \\\nb"), Toml.decodeFromString(test))
+
+        // an escaped backslash followed by a third, unescaped one: that third one ends the line
+        test = "a = \"\"\"x \\\\\\\nb\"\"\""
+        assertEquals(SimpleString("x \\b"), Toml.decodeFromString(test))
+    }
+
+    @Test
+    fun backslashBeforeClosingDelimiterIsNotALineEnding() {
+        // the backslash never reaches a newline, so it stays an invalid escape
+        val test = "a = \"\"\"t\\   \"\"\""
+        assertFailsWith<ParseException> {
+            Toml.decodeFromString<SimpleString>(test)
+        }
+    }
+
+    @Test
     fun testWithHashSymbol() {
         val test = """
             a = $tripleQuotes

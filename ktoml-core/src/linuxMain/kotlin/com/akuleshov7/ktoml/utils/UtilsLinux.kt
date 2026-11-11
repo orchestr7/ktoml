@@ -16,5 +16,4 @@ internal actual fun StringBuilder.appendCodePointCompat(codePoint: Int): StringB
     }
     else -> throw IllegalArgumentException()
 }
-
 public actual fun newLineChar(): Char = '\n'

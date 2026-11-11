@@ -132,14 +132,21 @@ class InlineTableDecoderTest {
     }
 
     @Test
-    fun trailingCommaIsNotPermitted() {
-        val test =
-            """
-            |inlineTable = { inlineValStr = "inline", inlineValInt = -1, }
-            |       
-            """.trimMargin()
+    fun trailingCommaIsPermitted() {
+        // TOML 1.1 permits a single trailing comma after the last key/value pair
+        val withComma = "point = { x = 1, y = 2, }"
+        val withoutComma = "point = { x = 1, y = 2 }"
 
-        assertFailsWith<ParseException> { Toml.decodeFromString<ReadMeExampleTest.MyClass>(test) }
+        assertEquals(Position(Point(1, 2)), Toml.decodeFromString<Position>(withComma))
+        assertEquals(
+            Toml.decodeFromString<Position>(withoutComma),
+            Toml.decodeFromString<Position>(withComma),
+        )
+    }
+
+    @Test
+    fun loneCommaIsStillRejected() {
+        assertFailsWith<ParseException> { Toml.decodeFromString<Position>("point = {,}") }
     }
 
     @Test
@@ -204,5 +211,92 @@ class InlineTableDecoderTest {
         """.trimIndent()
 
         Toml.decodeFromString<PositionWrapper>(test)
+    }
+
+    @Test
+    fun decodeMultilineInlineTable() {
+        // TOML 1.1: newlines between pairs plus a trailing comma (the multi-line config use case)
+        val multiline = """
+            |point = {
+            |  x = 1,
+            |  y = 2,
+            |}
+            |
+        """.trimMargin()
+        val singleLine = "point = { x = 1, y = 2 }"
+
+        assertEquals(Position(Point(1, 2)), Toml.decodeFromString<Position>(multiline))
+        assertEquals(
+            Toml.decodeFromString<Position>(singleLine),
+            Toml.decodeFromString<Position>(multiline),
+        )
+    }
+
+    @Test
+    fun decodeMultilineInlineTableWithComments() {
+        val test = """
+            |point = { # opening
+            |  x = 1, # the x value
+            |  y = 2, # the y value
+            |} # closing
+        """.trimMargin()
+
+        assertEquals(Position(Point(1, 2)), Toml.decodeFromString<Position>(test))
+    }
+
+    @Test
+    fun decodeEmptyMultilineInlineTable() {
+        val test = """
+            |point = {
+            |}
+        """.trimMargin()
+
+        assertEquals(Position(Point()), Toml.decodeFromString<Position>(test))
+    }
+
+    @Test
+    fun decodeMultilineInlineTableWithMultilineArray() {
+        @Serializable
+        data class TableWithArray(val arr: List<Int>)
+
+        @Serializable
+        data class TableWithArrayWrapper(val table: TableWithArray)
+
+        val test = """
+            |table = {
+            |  arr = [
+            |    1,
+            |    2,
+            |    3,
+            |  ],
+            |}
+        """.trimMargin()
+
+        assertEquals(
+            TableWithArrayWrapper(TableWithArray(listOf(1, 2, 3))),
+            Toml.decodeFromString<TableWithArrayWrapper>(test),
+        )
+    }
+
+    @Test
+    fun decodeNestedMultilineInlineTable() {
+        @Serializable
+        data class Inner(val k: Int)
+
+        @Serializable
+        data class Outer(val tbl: Inner)
+
+        @Serializable
+        data class Root(val outer: Outer)
+
+        val test = """
+            |outer = {
+            |  tbl = {
+            |    k = 1,
+            |  },
+            |}
+        """.trimMargin()
+
+        assertEquals(Root(Outer(Inner(1))), Toml.decodeFromString<Root>(test))
     }
 }
