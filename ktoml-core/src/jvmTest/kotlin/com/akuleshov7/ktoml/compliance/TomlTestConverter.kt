@@ -4,12 +4,7 @@ import com.akuleshov7.ktoml.parsers.parseKeyName
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.*
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 /**
  * Converts a ktoml AST (rooted at [TomlFile]) into the toml-test "tagged JSON" format.
@@ -82,31 +77,17 @@ object TomlTestConverter {
 
     // -- datetime --
 
-    @OptIn(ExperimentalTime::class)
+    // ktoml keeps date-times as raw (normalized) text, so the tagged value is just that text.
+    // Offset values are compared semantically by the suite (Instant-based), so a `.5` vs `.500`
+    // fractional difference is tolerated; local values are already canonical (seconds padded, `T`
+    // separator) and match the expected JSON verbatim.
     private fun datetimeToJson(content: Any): JsonElement = when (content) {
-        is Instant -> tagged("datetime", content.toString())
-        is TomlOffsetDateTime -> tagged("datetime", content.toRfc3339String())
-        is LocalDateTime -> tagged("datetime-local", formatLocalDateTime(content))
-        is LocalDate -> tagged("date-local", content.toString())
-        is LocalTime -> tagged("time-local", formatLocalTime(content))
+        is TomlOffsetDateTime -> tagged("datetime", content.raw)
+        is TomlLocalDateTime -> tagged("datetime-local", content.raw)
+        is TomlLocalDate -> tagged("date-local", content.raw)
+        is TomlLocalTime -> tagged("time-local", content.raw)
         else -> error("Unknown datetime type: ${content::class.simpleName}")
     }
-
-    // LocalTime.toString() drops seconds when they are 0 (e.g. "17:45" instead of "17:45:00").
-    // toml-test always expects seconds.
-    private fun formatLocalTime(t: LocalTime): String {
-        val base = "%02d:%02d:%02d".format(t.hour, t.minute, t.second)
-        return if (t.nanosecond != 0) {
-            // Strip trailing zeros from fractional seconds
-            val frac = "%09d".format(t.nanosecond).trimEnd('0')
-            "$base.$frac"
-        } else {
-            base
-        }
-    }
-
-    private fun formatLocalDateTime(dt: LocalDateTime): String =
-        "${dt.date}T${formatLocalTime(dt.time)}"
 
     // -- helpers --
 

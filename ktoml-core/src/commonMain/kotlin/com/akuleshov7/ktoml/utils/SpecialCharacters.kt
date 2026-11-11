@@ -9,6 +9,7 @@
 
 package com.akuleshov7.ktoml.utils
 
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.exceptions.UnknownEscapeSymbolsException
 import com.akuleshov7.ktoml.parsers.isLineEndingBackslash
@@ -42,6 +43,7 @@ internal const val ESCAPE_CHAR = '\u001B'
  * @throws ParseException if unknown escaped symbols were used
  * @throws UnknownEscapeSymbolsException
  */
+@InternalKtomlApi
 public fun String.convertSpecialCharacters(lineNo: Int): String {
     val resultString = StringBuilder()
     var i = 0
@@ -89,6 +91,7 @@ public fun String.convertSpecialCharacters(lineNo: Int): String {
  * @throws ParseException
  * @throws UnknownEscapeSymbolsException
  */
+@InternalKtomlApi
 public fun StringBuilder.appendEscapedUnicode(
     fullString: String,
     marker: Char,
@@ -126,6 +129,7 @@ public fun StringBuilder.appendEscapedUnicode(
  * @param multiline
  * @return converted string with escaped special symbols
  */
+@InternalKtomlApi
 public fun String.escapeSpecialCharacters(multiline: Boolean = false): String =
     if (multiline) {
         escapeControlChars(isMultiline = true)
@@ -288,4 +292,5 @@ private fun Int.isUnicodeScalarValue(): Boolean = this in MIN_UNICODE_CODE_POINT
  *
  * @return newline
  */
+@InternalKtomlApi
 public expect fun newLineChar(): Char

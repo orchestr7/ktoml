@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -8,6 +9,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * null, nil, NULL, NIL or empty (key = )
  */
 @Suppress("EMPTY_PRIMARY_CONSTRUCTOR")  // Will be corrected after removal of the deprecated constructor.
+@InternalKtomlApi
 public class TomlNull() : TomlValue() {
     override var content: Any = "null"
 

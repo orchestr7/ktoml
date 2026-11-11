@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
@@ -23,6 +24,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @param serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
+@InternalKtomlApi
 public class TomlMainEncoder(
     private val rootNode: TomlNode,
     elementIndex: Int = -1,

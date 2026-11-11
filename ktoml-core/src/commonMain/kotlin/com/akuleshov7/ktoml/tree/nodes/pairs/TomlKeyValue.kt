@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.indexOfNextOutsideQuotes
 import com.akuleshov7.ktoml.parsers.takeBeforeComment
@@ -79,6 +80,7 @@ internal interface TomlKeyValue {
  * @param config
  * @return an object of type Array that was parsed from string
  */
+@InternalKtomlApi
 public fun String.parseList(lineNo: Int, config: TomlInputConfig): TomlArray = TomlArray(this, lineNo, config)
 
 /**
@@ -89,6 +91,7 @@ public fun String.parseList(lineNo: Int, config: TomlInputConfig): TomlArray = T
  * @return a resulted key-value pair
  * @throws ParseException
  */
+@InternalKtomlApi
 public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInputConfig()): Pair<String, String> {
     val pair = takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
 
@@ -123,6 +126,7 @@ public fun String.splitKeyValue(lineNo: Int, config: TomlInputConfig = TomlInput
  * @param config
  * @return parsed TomlNode value
  */
+@InternalKtomlApi
 public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = when (this) {
     // ===== special values
     "+inf", "inf" -> TomlDouble(Double.POSITIVE_INFINITY)

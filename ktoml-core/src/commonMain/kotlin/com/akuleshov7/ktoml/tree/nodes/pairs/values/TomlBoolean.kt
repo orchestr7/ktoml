@@ -1,12 +1,14 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
  * Toml AST Node for a representation of boolean types: key = true | false
  * @property content
  */
+@InternalKtomlApi
 public class TomlBoolean internal constructor(
     override var content: Any
 ) : TomlValue() {

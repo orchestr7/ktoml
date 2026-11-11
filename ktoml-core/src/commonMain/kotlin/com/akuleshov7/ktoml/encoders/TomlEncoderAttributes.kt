@@ -21,6 +21,7 @@ import com.akuleshov7.ktoml.writers.IntegerRepresentation
  * @property isImplicit Whether the current property is implicitly defined in
  * its child, i.e. the table `[a]` in `[a.b]`.
  */
+@InternalKtomlApi
 public data class TomlEncoderAttributes(
     public val parent: TomlEncoderAttributes? = null,
     public var key: String? = null,
