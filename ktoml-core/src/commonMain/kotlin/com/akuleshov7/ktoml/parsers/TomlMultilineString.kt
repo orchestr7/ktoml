@@ -6,8 +6,6 @@ import com.akuleshov7.ktoml.parsers.enums.MultilineType
 import com.akuleshov7.ktoml.utils.LinesIteratorWrapper
 import com.akuleshov7.ktoml.utils.newLineChar
 
-private const val TRIPLE_QUOTE_LENGTH = 3
-
 /**
  * @param config
  * @param linesIteratorWrapper - iterator with the rest of the toml data
@@ -330,34 +328,18 @@ internal class TomlMultilineString(
  * @param allowEscapedQuotesInLiteralStrings value from TomlInputConfig
  * @return the net brace depth
  */
-@Suppress("NESTED_BLOCK")
 private fun String.inlineTableBraceDepth(allowEscapedQuotesInLiteralStrings: Boolean): Int {
-    val chars = this.replaceEscaped(allowEscapedQuotesInLiteralStrings)
     var depth = 0
-    var quote: String? = null
-    var idx = 0
-    while (idx < chars.length) {
-        val symbol = chars[idx]
+    var inComment = false
+    indicesOutsideQuotes(allowEscapedQuotesInLiteralStrings).forEach { index ->
         when {
-            quote != null -> if (chars.startsWith(quote, idx)) {
-                idx += quote.lastIndex
-                quote = null
-            }
-            symbol == '#' -> idx = (chars.indexOf(newLineChar(), idx).takeIf { it != -1 } ?: chars.length) - 1
-            symbol == '\"' || symbol == '\'' -> quote = chars.openingQuoteAt(idx, symbol)
-            symbol == '{' -> depth += 1
-            symbol == '}' -> depth -= 1
-            else -> {}
+            this[index] == '\n' -> inComment = false
+            inComment -> Unit
+            this[index] == '#' -> inComment = true
+            this[index] == '{' -> depth++
+            this[index] == '}' -> depth--
+            else -> Unit
         }
-        idx += 1
     }
     return depth
 }
-
-/** The quote token opening at [idx]: a triple quote if three [symbol]s appear, otherwise a single one. */
-private fun String.openingQuoteAt(idx: Int, symbol: Char): String =
-    if (idx + 2 < length && this[idx + 1] == symbol && this[idx + 2] == symbol) {
-        symbol.toString().repeat(TRIPLE_QUOTE_LENGTH)
-    } else {
-        symbol.toString()
-    }

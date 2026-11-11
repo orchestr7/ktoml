@@ -63,7 +63,7 @@ public class TomlMainDecoder internal constructor(
 
     override fun decodeNotNullMark(): Boolean {
         // we have a special node type in the tree to check nullability (TomlNull). It is one of the implementations of TomlValue
-        return when (val node = getCurrentNode()) {
+        return when (val node = if (elementIndex == 0) exposedRootNode else getCurrentNode()) {
             is TomlKeyValuePrimitive -> node.value !is TomlNull
             is TomlKeyValueArray -> node.value !is TomlNull
             else -> true
@@ -259,8 +259,12 @@ public class TomlMainDecoder internal constructor(
      * this method does all the iteration logic for processing code structures and collections
      * treat it as an !entry point! and the orchestrator of the decoding
      */
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
-        iterateOverTomlStructure(descriptor, false)
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
+        if (elementIndex == 0 && exposedRootNode is TomlKeyValuePrimitive) {
+            rejectPrimitiveStructure(exposedRootNode, descriptor)
+        }
+        return iterateOverTomlStructure(descriptor, false)
+    }
 
     /**
      * Entry Point into the logic, core logic of the structure traversal and linking the data from TOML AST

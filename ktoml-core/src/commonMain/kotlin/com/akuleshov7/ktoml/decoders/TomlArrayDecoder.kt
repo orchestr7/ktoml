@@ -3,18 +3,22 @@ package com.akuleshov7.ktoml.decoders
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlDecoder
 import com.akuleshov7.ktoml.TomlElement
+import com.akuleshov7.ktoml.TomlElementKind
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
+import com.akuleshov7.ktoml.tree.nodes.TomlInlineTable
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValue
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
+import com.akuleshov7.ktoml.tree.nodes.TomlTable
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlArray
-import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlNull
 import com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue
+
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
@@ -34,7 +38,7 @@ public class TomlArrayDecoder internal constructor(
     final override val toml: Toml,
 ) : TomlAbstractDecoder(), TomlDecoder {
     private var nextElementIndex = 0
-    private val list = rootNode.value.content as List<TomlValue>
+    private val list = rootNode.value.content as List<*>
     private lateinit var currentElementDecoder: TomlAbstractDecoder
     private lateinit var currentElement: TomlElement
     private lateinit var currentPrimitiveElementOfArray: TomlValue
@@ -59,14 +63,32 @@ public class TomlArrayDecoder internal constructor(
             return CompositeDecoder.DECODE_DONE
         }
 
-        currentPrimitiveElementOfArray = list[nextElementIndex]
-
-        if (currentPrimitiveElementOfArray is TomlArray) {
-            setArrayDecoder()
-        } else {
-            setPrimitiveDecoder()
+        when (val element = list[nextElementIndex]) {
+            is TomlInlineTable -> setTableDecoder(element)
+            is TomlValue -> {
+                currentPrimitiveElementOfArray = element
+                if (element is TomlArray) {
+                    setArrayDecoder()
+                } else {
+                    setPrimitiveDecoder()
+                }
+            }
+            else -> error("Unsupported TOML array element: $element")
         }
         return nextElementIndex++
+    }
+
+    private fun setTableDecoder(element: TomlInlineTable) {
+        val table = element.returnTable(TomlFile(), TomlFile(), !config.allowTableRedefinition)
+        val file = TomlFile().also { it.children.addAll(table.children) }
+        currentElement = TomlElement(table)
+        currentElementDecoder = TomlMainDecoder(
+            rootNode = file,
+            config = config,
+            serializersModule = serializersModule,
+            toml = toml,
+            exposedRootNode = table,
+        )
     }
 
     private fun setArrayDecoder() {
@@ -112,6 +134,13 @@ public class TomlArrayDecoder internal constructor(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         if (haveStartedReadingElements()) {
+            if (currentElement.kind == TomlElementKind.TABLE) {
+                return if (descriptor.kind == StructureKind.MAP) {
+                    TomlMapDecoder(currentElement.node as TomlTable, config, serializersModule = serializersModule, toml = toml)
+                } else {
+                    currentElementDecoder.beginStructure(descriptor)
+                }
+            }
             return currentElementDecoder
         }
         return super.beginStructure(descriptor)
@@ -140,8 +169,9 @@ public class TomlArrayDecoder internal constructor(
         super<TomlAbstractDecoder>.decodeSerializableValue(deserializer)
     }
 
-    // this should be applied to [currentPrimitiveElementOfArray] and not to the [rootNode]
-    override fun decodeNotNullMark(): Boolean = currentPrimitiveElementOfArray !is TomlNull
+    // The array itself is non-null; once iteration starts, inspect the selected element.
+    override fun decodeNotNullMark(): Boolean =
+        !haveStartedReadingElements() || currentElementDecoder.decodeNotNullMark()
 
     public companion object {
         /**

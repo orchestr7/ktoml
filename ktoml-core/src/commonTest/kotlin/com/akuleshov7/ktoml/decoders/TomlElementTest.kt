@@ -10,6 +10,8 @@ import com.akuleshov7.ktoml.decodeFromTomlElement
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -17,6 +19,7 @@ import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
@@ -128,7 +131,7 @@ class TomlElementTest {
     )
 
     private object RawStringListSerializer : KSerializer<List<RawString>> by
-        kotlinx.serialization.builtins.ListSerializer(RawStringSerializer)
+        ListSerializer(RawStringSerializer)
 
     @Test
     fun exposesCurrentArrayElement() {
@@ -187,6 +190,10 @@ class TomlElementTest {
         override fun serialize(encoder: Encoder, value: TomlElementKind): Nothing = error("Decode-only test serializer")
     }
 
+    private object ClassElementKindSerializer : KSerializer<TomlElementKind> by ElementKindSerializer {
+        override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ClassElementKind")
+    }
+
     @Serializable
     private data class RetainedValue(@Serializable(with = RetainedElementSerializer::class) val value: TomlElement)
 
@@ -204,6 +211,7 @@ class TomlElementTest {
             val retained = Toml.decodeFromString(RetainedValue.serializer(), "value = $source").value
             assertEquals(kind, retained.kind)
             assertEquals(kind, Toml.decodeFromTomlElement(ElementKindSerializer, retained))
+            assertEquals(kind, Toml.decodeFromTomlElement(ClassElementKindSerializer, retained))
         }
     }
 
@@ -224,5 +232,45 @@ class TomlElementTest {
                 assertEquals(setOf("first", "second"), element.keys())
             }
         }
+    }
+
+    @Test
+    fun decodesNullableRetainedValuesWithoutIteration() {
+        for ((source, expected) in listOf("42" to 42, "null" to null)) {
+            val format = Toml(inputConfig = TomlInputConfig(allowNullValues = true))
+            val element = TomlElement(format.tomlParser.parseString("value = $source").children.single())
+            assertEquals(expected, format.decodeFromTomlElement<Int?>(element))
+        }
+        val array = Toml.decodeFromString(RetainedValue.serializer(), "value = [1, 2]").value
+        assertEquals(listOf(1, 2), Toml.decodeFromTomlElement<List<Int>?>(array))
+        val table = Toml.parseToTomlElement("[server]\nhost = \"localhost\"").tables().getValue("server")
+        assertEquals(Known("localhost"), Toml.decodeFromTomlElement<Known?>(table))
+    }
+
+    @Serializable
+    private data class BooleanValue(val value: Boolean)
+
+    @Test
+    fun scalarElementCannotDecodeAsObjectOrMapWithMatchingKey() {
+        val element = Toml.decodeFromString(RetainedValue.serializer(), "value = true").value
+        assertFailsWith<SerializationException> { Toml.decodeFromTomlElement<BooleanValue>(element) }
+        assertFailsWith<SerializationException> { Toml.decodeFromTomlElement<Map<String, Boolean>>(element) }
+        assertEquals(true, Toml.decodeFromTomlElement<Boolean>(element))
+    }
+
+    @Test
+    fun internalNodeBridgeDecodesLeavesArraysAndTablesWithoutReparenting() {
+        val document = Toml.tomlParser.parseString("value = true\narray = [1, 2]\n[[server]]\nhost = \"localhost\"")
+        val parents = document.children.map { it.parent }
+        assertEquals(true, Toml.decodeFromTomlNode(Boolean.serializer(), document.children[0]))
+        assertEquals(
+            listOf(1, 2),
+            Toml.decodeFromTomlNode(ListSerializer(Int.serializer()), document.children[1]),
+        )
+        assertEquals(
+            listOf(Known("localhost")),
+            Toml.decodeFromTomlNode(ListSerializer(Known.serializer()), document.children[2]),
+        )
+        assertEquals(parents, document.children.map { it.parent })
     }
 }
