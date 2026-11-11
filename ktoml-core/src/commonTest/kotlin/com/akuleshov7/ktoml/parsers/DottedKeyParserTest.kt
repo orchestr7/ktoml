@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
@@ -128,5 +129,65 @@ class DottedKeyParserTest {
         """.trimMargin(),
             parsedToml.prettyStr()
         )
+    }
+
+    @Test
+    fun invalidEmptyDottedKeyPartsAreRejected() {
+        listOf(
+            ". = 1",
+            ".. = 1",
+            ".key = 1",
+            "[.]\nk = 1",
+            "[..]\nk = 1",
+            "[a.]",
+            "[naughty..naughty]",
+        ).forEach { toml ->
+            assertFailsWith<ParseException> { Toml.tomlParser.parseString(toml) }
+        }
+    }
+
+    @Test
+    fun invalidQuotedKeySyntaxIsRejected() {
+        listOf(
+            "\"\"\"key\"\"\" = 1",
+            "'''key''' = 1",
+            "partial\"quoted\" = 5",
+            "[\"\"\"tbl\"\"\"]\nk = 1",
+            "['''tbl''']\nk = 1",
+        ).forEach { toml ->
+            assertFailsWith<ParseException> { Toml.tomlParser.parseString(toml) }
+        }
+    }
+
+    @Test
+    fun compliantParserRejectsDuplicateKeysAtSameLevel() {
+        val parser = TomlParser(TomlInputConfig.compliant())
+
+        listOf(
+            "name = \"Tom\"\nname = \"Pradyun\"",
+            "spelling = \"favorite\"\n\"spelling\" = \"favourite\"",
+            "a = 1\n\"\\u0061\" = 1",
+            "tbl = {k = 1}\ntbl = {kk = 2}",
+            "a = {k1 = 1, k1.name = \"joe\"}",
+        ).forEach { toml ->
+            assertFailsWith<ParseException> { parser.parseString(toml) }
+        }
+    }
+
+    @Test
+    fun compliantParserKeepsValidKeyAndTableForms() {
+        val toml = """
+            bare = 1
+            "quoted.key".literal = "ok"
+            'literal.key'.value = 2
+            [nested.table]
+            key = "value"
+            [[items]]
+            name = "a"
+            [[items]]
+            name = "b"
+        """.trimIndent()
+
+        TomlParser(TomlInputConfig.compliant()).parseString(toml)
     }
 }

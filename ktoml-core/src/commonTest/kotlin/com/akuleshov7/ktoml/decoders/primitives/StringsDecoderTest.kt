@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.decoders.primitives
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.TomlParser
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -128,6 +129,72 @@ class StringDecoderTest {
             ),
             decoded
         )
+    }
+
+    @Test
+    fun hexAndEscEscapesInBasicStrings() {
+        // \xHH (TOML 1.1 hex escape, equivalent to \u00HH) and \e (ESC, U+001B)
+        val test = """
+            winpath  = "\xE9"
+            winpath2 = "S\xf8rmirb\xe6ren"
+            quoted   = "\e There is no escape! \e"
+            regex    = "Name\tJos\xE9\nSF."
+        """
+
+        val decoded = Toml.decodeFromString<Literals>(test)
+        assertEquals(
+            Literals(
+                "é",
+                "Sørmirbæren",
+                "\u001B There is no escape! \u001B",
+                "Name\tJosé\nSF."
+            ),
+            decoded
+        )
+    }
+
+    @Test
+    fun hexAndEscEscapesNotAppliedInLiteralStrings() {
+        // literal strings must keep \x and \e verbatim
+        val test = """
+            winpath  = '\xE9'
+            winpath2 = '\e'
+            quoted   = '\x20 \x09'
+            regex    = '\e\xFF'
+        """
+
+        val decoded = Toml.decodeFromString<Literals>(test)
+        assertEquals(
+            Literals(
+                "\\xE9",
+                "\\e",
+                "\\x20 \\x09",
+                "\\e\\xFF"
+            ),
+            decoded
+        )
+    }
+
+    @Test
+    fun nonScalarUnicodeEscapesAreRejectedDuringParse() {
+        listOf(
+            "bad = \"\\uD800\"",
+            "bad = \"\\U00110000\"",
+            "bad = \"\"\"\\uD801\"\"\"",
+        ).forEach { toml ->
+            assertFailsWith<ParseException> {
+                TomlParser(TomlInputConfig.compliant()).parseString(toml)
+            }
+        }
+    }
+
+    @Test
+    fun ideographicSpaceIsNotTomlWhitespace() {
+        val parser = TomlParser(TomlInputConfig.compliant())
+        assertFailsWith<ParseException> {
+            parser.parseString("\u3000foo = \"bar\"")
+        }
+        parser.parseString("foo = \"bar\u3000baz\"")
     }
 
     @Test
