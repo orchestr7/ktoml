@@ -11,6 +11,7 @@ import com.akuleshov7.ktoml.exceptions.MissingRequiredPropertyException
 import com.akuleshov7.ktoml.parsers.TomlParser
 import com.akuleshov7.ktoml.tree.nodes.TomlFile
 import com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray
+import com.akuleshov7.ktoml.tree.nodes.TomlKeyValuePrimitive
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
 import com.akuleshov7.ktoml.utils.findPrimitiveTableInAstByName
@@ -211,7 +212,9 @@ public open class Toml(
     public fun <T> decodeFromTomlElement(
         deserializer: DeserializationStrategy<T>,
         element: TomlElement,
-    ): T = if (deserializer.descriptor.kind == StructureKind.LIST && element.isArrayOfTables()) {
+    ): T = if (element.node is TomlKeyValuePrimitive) {
+        TomlMainDecoder.decode(deserializer, element.asFileNode(), inputConfig, this, element.node)
+    } else if (deserializer.descriptor.kind == StructureKind.LIST && element.isArrayOfTables()) {
         TomlArrayOfTablesDecoder(
             element.node as TomlTable,
             inputConfig,
@@ -234,18 +237,7 @@ public open class Toml(
     public fun <T> decodeFromTomlNode(
         deserializer: DeserializationStrategy<T>,
         node: TomlNode,
-    ): T = decode(deserializer, node.wrapIntoFileNode(), inputConfig)
-
-    /**
-     * Wraps an arbitrary node into a [TomlFile] so it can be fed to the existing decoders, which
-     * expect a file root. A [TomlFile] is returned as-is; any other node's children are re-hosted
-     * under a fresh file node. The children are added without re-parenting, so the caller's original
-     * tree (and its `parent` links) is left intact and can keep being traversed and decoded.
-     */
-    private fun TomlNode.wrapIntoFileNode(): TomlFile = when (this) {
-        is TomlFile -> this
-        else -> TomlFile().also { it.children.addAll(children) }
-    }
+    ): T = decodeFromTomlElement(deserializer, TomlElement(node))
 
     private fun <T> decode(
         deserializer: DeserializationStrategy<T>,

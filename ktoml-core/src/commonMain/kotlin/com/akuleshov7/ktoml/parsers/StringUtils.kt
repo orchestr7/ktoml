@@ -103,7 +103,7 @@ internal fun String.convertLineEndingBackslash(): String {
         if (slashCount % 2 == 1) {
             val continuationStart = i
             var j = continuationStart
-            while (j < length && this[j].isWhitespace() && lineBreakLengthAt(j) == 0) {
+            while (j < length && (this[j] == ' ' || this[j] == '\t')) {
                 j++
             }
 
@@ -114,8 +114,13 @@ internal fun String.convertLineEndingBackslash(): String {
                 }
 
                 j += lineBreakLength
-                while (j < length && this[j].isWhitespace()) {
-                    j++
+                while (j < length) {
+                    val newlineLength = lineBreakLengthAt(j)
+                    when {
+                        this[j] == ' ' || this[j] == '\t' -> j++
+                        newlineLength > 0 -> j += newlineLength
+                        else -> break
+                    }
                 }
 
                 i = j
@@ -146,7 +151,7 @@ internal fun String.isLineEndingBackslash(backslashIndex: Int): Boolean {
 
     val continuationStart = backslashIndex + 1
     var j = continuationStart
-    while (j < length && this[j].isWhitespace() && lineBreakLengthAt(j) == 0) {
+    while (j < length && (this[j] == ' ' || this[j] == '\t')) {
         j++
     }
 
@@ -310,42 +315,61 @@ internal fun String.indexOfNextOutsideQuotes(
     allowEscapedQuotesInLiteralStrings: Boolean,
     searchChar: Char,
     startIndex: Int = 0,
-): Int {
-    val chars = this.drop(startIndex).replaceEscaped(allowEscapedQuotesInLiteralStrings)
-    var currentQuoteStr: String? = null
+): Int = drop(startIndex).indicesOutsideQuotes(allowEscapedQuotesInLiteralStrings)
+    .firstOrNull { this[it + startIndex] == searchChar }
+    ?.plus(startIndex) ?: -1
 
-    var idx = 0
-    while (idx < chars.length) {
-        val symbol = chars[idx]
-        // take searchChar index if it's not enclosed in quotation marks
-        if (symbol == searchChar && currentQuoteStr == null) {
-            return idx + startIndex
-        } else if (symbol != '\"' && symbol != '\'') {
-            idx += 1
-            continue
-        }
-
-        val quoteStr = currentQuoteStr
-        if (quoteStr == null) {
-            if (idx + 2 < chars.length && chars[idx + 1] == symbol && chars[idx + 2] == symbol) {
-                currentQuoteStr = "$symbol$symbol$symbol"
-                idx += MULTILINE_STRING_QUOTE_LENGTH
-                continue  // Skip the default increment
-            } else {
-                currentQuoteStr = symbol.toString()
+/**
+ * Scans syntax outside strings, consuming whole quote delimiters and escaped character pairs.
+ * Exposes comment markers and line breaks, skipping comment contents.
+ *
+ * @param allowEscapedQuotesInLiteralStrings legacy literal-string escape mode
+ * @return indices that are outside quoted strings
+ */
+@Suppress("TOO_LONG_FUNCTION", "NESTED_BLOCK")
+internal fun String.indicesOutsideQuotes(allowEscapedQuotesInLiteralStrings: Boolean): Sequence<Int> = sequence {
+    // Preserve legacy handling of literal paths ending in a backslash before their closing quote.
+    val escapeLiteralQuotes = allowEscapedQuotesInLiteralStrings && firstOrNull { it == '"' || it == '\'' } != '\''
+    var quote: Char? = null
+    var delimiterLength = 0
+    var index = 0
+    while (index < length) {
+        val symbol = this@indicesOutsideQuotes[index]
+        when {
+            quote == null && (symbol == '"' || symbol == '\'') -> {
+                quote = symbol
+                delimiterLength = if (startsWith(symbol.toString().repeat(MULTILINE_STRING_QUOTE_LENGTH), index)) {
+                    MULTILINE_STRING_QUOTE_LENGTH
+                } else {
+                    1
+                }
+                index += delimiterLength
             }
-        } else if (quoteStr[0] == symbol && (idx + quoteStr.length) <= chars.length) {
-            val candidate = chars.substring(idx, idx + quoteStr.length)
-            if (candidate == quoteStr) {
-                currentQuoteStr = null
-                idx += candidate.length
-                continue  // Skip the default increment
+            quote == null && symbol == '#' -> {
+                yield(index)
+                index = indexOf('\n', index).takeIf { it >= 0 } ?: length
             }
+            quote == null -> {
+                yield(index)
+                index++
+            }
+            symbol == '\\' && (quote == '"' ||
+                    (escapeLiteralQuotes && getOrNull(index + 1) == quote)) -> index += 2
+            symbol == quote -> {
+                var end = index
+                while (end < length && this@indicesOutsideQuotes[end] == quote) {
+                    end++
+                }
+                if (end - index >= delimiterLength) {
+                    quote = null
+                    index = if (delimiterLength == 1) index + 1 else end
+                } else {
+                    index = end
+                }
+            }
+            else -> index++
         }
-        idx += 1
     }
-
-    return -1
 }
 
 /**
