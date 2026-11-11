@@ -1,0 +1,14 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.akuleshov7:ktoml-kotlinx-io>
+final fun <#A: kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.io/decodeFromSource(kotlinx.serialization/DeserializationStrategy<#A>, kotlinx.io/Source): #A // com.akuleshov7.ktoml.io/decodeFromSource|decodeFromSource@com.akuleshov7.ktoml.Toml(kotlinx.serialization.DeserializationStrategy<0:0>;kotlinx.io.Source){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.io/encodeToSink(kotlinx.serialization/SerializationStrategy<#A>, #A, kotlinx.io/Sink) // com.akuleshov7.ktoml.io/encodeToSink|encodeToSink@com.akuleshov7.ktoml.Toml(kotlinx.serialization.SerializationStrategy<0:0>;0:0;kotlinx.io.Sink){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.io/partiallyDecodeFromSource(kotlinx.serialization/DeserializationStrategy<#A>, kotlinx.io/Source, kotlin/String): #A // com.akuleshov7.ktoml.io/partiallyDecodeFromSource|partiallyDecodeFromSource@com.akuleshov7.ktoml.Toml(kotlinx.serialization.DeserializationStrategy<0:0>;kotlinx.io.Source;kotlin.String){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.io/decodeFromSource(kotlinx.io/Source): #A // com.akuleshov7.ktoml.io/decodeFromSource|decodeFromSource@com.akuleshov7.ktoml.Toml(kotlinx.io.Source){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.io/encodeToSink(#A, kotlinx.io/Sink) // com.akuleshov7.ktoml.io/encodeToSink|encodeToSink@com.akuleshov7.ktoml.Toml(0:0;kotlinx.io.Sink){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml.io/partiallyDecodeFromSource(kotlinx.io/Source, kotlin/String): #A // com.akuleshov7.ktoml.io/partiallyDecodeFromSource|partiallyDecodeFromSource@com.akuleshov7.ktoml.Toml(kotlinx.io.Source;kotlin.String){0§<kotlin.Any?>}[0]

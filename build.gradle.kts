@@ -7,6 +7,18 @@ plugins {
     kotlin("plugin.serialization") version Versions.KOTLIN apply false
     id("com.akuleshov7.buildutils.publishing-configuration")
     id("com.saveourtool.diktat") version "2.0.0"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.18.1"
+}
+
+apiValidation {
+    ignoredProjects += "ktoml-datetime-tests"
+
+    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+    klib {
+        enabled = true
+        strictValidation = providers.gradleProperty("apiStrictKlibValidation")
+            .map(String::toBoolean).getOrElse(false)
+    }
 }
 
 configureVersioning()
@@ -42,6 +54,7 @@ allprojects {
 
 createDetektTask()
 installGitHooks()
+configureJvmConsumerCompatibility()
 
 // Create a convenient 'test' task alias for 'allTests'
 tasks.register("test") {

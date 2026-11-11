@@ -1,0 +1,835 @@
+public class com/akuleshov7/ktoml/Toml : kotlinx/serialization/StringFormat {
+	public static final field Default Lcom/akuleshov7/ktoml/Toml$Default;
+	public fun <init> ()V
+	public fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun decodeFromString (Lkotlinx/serialization/DeserializationStrategy;Ljava/lang/String;)Ljava/lang/Object;
+	public final fun decodeFromString (Lkotlinx/serialization/DeserializationStrategy;Lkotlin/sequences/Sequence;Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/Object;
+	public static synthetic fun decodeFromString$default (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lkotlin/sequences/Sequence;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun decodeFromTomlElement (Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/TomlElement;)Ljava/lang/Object;
+	public final fun decodeFromTomlNode (Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)Ljava/lang/Object;
+	public final fun encodeToEmitter (Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public fun encodeToString (Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;)Ljava/lang/String;
+	protected final fun getInputConfig ()Lcom/akuleshov7/ktoml/TomlInputConfig;
+	protected final fun getOutputConfig ()Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	public final fun getTomlParser-dR07tB4 ()Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public final fun getTomlWriter-uvBttLY ()Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public final fun parseToTomlElement (Ljava/lang/String;)Lcom/akuleshov7/ktoml/TomlElement;
+	public final fun partiallyDecodeFromLines (Lkotlinx/serialization/DeserializationStrategy;Lkotlin/sequences/Sequence;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/Object;
+	public static synthetic fun partiallyDecodeFromLines$default (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lkotlin/sequences/Sequence;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun partiallyDecodeFromString (Lkotlinx/serialization/DeserializationStrategy;Ljava/lang/String;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/Object;
+	public final fun partiallyDecodeFromString (Lkotlinx/serialization/DeserializationStrategy;Lkotlin/sequences/Sequence;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/Object;
+	public static synthetic fun partiallyDecodeFromString$default (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Ljava/lang/String;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun partiallyDecodeFromString$default (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lkotlin/sequences/Sequence;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/Toml$Default : com/akuleshov7/ktoml/Toml {
+}
+
+public abstract interface class com/akuleshov7/ktoml/TomlDecoder : kotlinx/serialization/encoding/CompositeDecoder, kotlinx/serialization/encoding/Decoder {
+	public abstract fun decodeTomlElement ()Lcom/akuleshov7/ktoml/TomlElement;
+	public abstract fun getToml ()Lcom/akuleshov7/ktoml/Toml;
+}
+
+public final class com/akuleshov7/ktoml/TomlDecoder$DefaultImpls {
+	public static fun decodeCollectionSize (Lcom/akuleshov7/ktoml/TomlDecoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public static fun decodeNullableSerializableValue (Lcom/akuleshov7/ktoml/TomlDecoder;Lkotlinx/serialization/DeserializationStrategy;)Ljava/lang/Object;
+	public static fun decodeSequentially (Lcom/akuleshov7/ktoml/TomlDecoder;)Z
+	public static fun decodeSerializableValue (Lcom/akuleshov7/ktoml/TomlDecoder;Lkotlinx/serialization/DeserializationStrategy;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/TomlElement {
+	public final fun getKind ()Lcom/akuleshov7/ktoml/TomlElementKind;
+	public final fun keys ()Ljava/util/Set;
+	public final fun tables ()Ljava/util/Map;
+}
+
+public final class com/akuleshov7/ktoml/TomlElementKind : java/lang/Enum {
+	public static final field ARRAY Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field BOOLEAN Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field DATE_TIME Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field FLOAT Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field INTEGER Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field NULL Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field STRING Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static final field TABLE Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/TomlElementKind;
+	public static fun values ()[Lcom/akuleshov7/ktoml/TomlElementKind;
+}
+
+public final class com/akuleshov7/ktoml/TomlIndentation : java/lang/Enum {
+	public static final field FOUR_SPACES Lcom/akuleshov7/ktoml/TomlIndentation;
+	public static final field NONE Lcom/akuleshov7/ktoml/TomlIndentation;
+	public static final field TAB Lcom/akuleshov7/ktoml/TomlIndentation;
+	public static final field TWO_SPACES Lcom/akuleshov7/ktoml/TomlIndentation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getValue ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/TomlIndentation;
+	public static fun values ()[Lcom/akuleshov7/ktoml/TomlIndentation;
+}
+
+public final class com/akuleshov7/ktoml/TomlInputConfig {
+	public static final field Companion Lcom/akuleshov7/ktoml/TomlInputConfig$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (ZZZZZZ)V
+	public synthetic fun <init> (ZZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZZZZZZ)V
+	public synthetic fun <init> (ZZZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun component7 ()Z
+	public final synthetic fun copy (ZZZZZZ)Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public final fun copy (ZZZZZZZ)Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/TomlInputConfig;ZZZZZZILjava/lang/Object;)Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/TomlInputConfig;ZZZZZZZILjava/lang/Object;)Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowEmptyToml ()Z
+	public final fun getAllowEmptyValues ()Z
+	public final fun getAllowEscapedQuotesInLiteralStrings ()Z
+	public final fun getAllowNullValues ()Z
+	public final fun getAllowTableRedefinition ()Z
+	public final fun getIgnoreDefaultValues ()Z
+	public final fun getIgnoreUnknownNames ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/TomlInputConfig$Companion {
+	public final fun compliant (ZZ)Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public static synthetic fun compliant$default (Lcom/akuleshov7/ktoml/TomlInputConfig$Companion;ZZILjava/lang/Object;)Lcom/akuleshov7/ktoml/TomlInputConfig;
+}
+
+public final class com/akuleshov7/ktoml/TomlOutputConfig {
+	public static final field Companion Lcom/akuleshov7/ktoml/TomlOutputConfig$Companion;
+	public fun <init> ()V
+	public fun <init> (Lcom/akuleshov7/ktoml/TomlIndentation;ZZZZ)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/TomlIndentation;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lcom/akuleshov7/ktoml/TomlIndentation;
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun copy (Lcom/akuleshov7/ktoml/TomlIndentation;ZZZZ)Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/TomlOutputConfig;Lcom/akuleshov7/ktoml/TomlIndentation;ZZZZILjava/lang/Object;)Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowEscapedQuotesInLiteralStrings ()Z
+	public final fun getExplicitTables ()Z
+	public final fun getIgnoreDefaultValues ()Z
+	public final fun getIgnoreNullValues ()Z
+	public final fun getIndentation ()Lcom/akuleshov7/ktoml/TomlIndentation;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/TomlOutputConfig$Companion {
+	public final fun compliant (Lcom/akuleshov7/ktoml/TomlIndentation;ZZ)Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public static synthetic fun compliant$default (Lcom/akuleshov7/ktoml/TomlOutputConfig$Companion;Lcom/akuleshov7/ktoml/TomlIndentation;ZZILjava/lang/Object;)Lcom/akuleshov7/ktoml/TomlOutputConfig;
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/ExperimentalKtomlApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/InternalKtomlApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/TomlComments : java/lang/annotation/Annotation {
+	public abstract fun inline ()Ljava/lang/String;
+	public abstract fun lines ()[Ljava/lang/String;
+}
+
+public final synthetic class com/akuleshov7/ktoml/annotations/TomlComments$Impl : com/akuleshov7/ktoml/annotations/TomlComments {
+	public fun <init> ([Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> ([Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final synthetic fun inline ()Ljava/lang/String;
+	public final synthetic fun lines ()[Ljava/lang/String;
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/TomlInlineTable : java/lang/annotation/Annotation {
+}
+
+public final synthetic class com/akuleshov7/ktoml/annotations/TomlInlineTable$Impl : com/akuleshov7/ktoml/annotations/TomlInlineTable {
+	public fun <init> ()V
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/TomlInteger : java/lang/annotation/Annotation {
+	public abstract fun representation ()Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+}
+
+public final synthetic class com/akuleshov7/ktoml/annotations/TomlInteger$Impl : com/akuleshov7/ktoml/annotations/TomlInteger {
+	public fun <init> (Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final synthetic fun representation ()Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/TomlLiteral : java/lang/annotation/Annotation {
+}
+
+public final synthetic class com/akuleshov7/ktoml/annotations/TomlLiteral$Impl : com/akuleshov7/ktoml/annotations/TomlLiteral {
+	public fun <init> ()V
+}
+
+public abstract interface annotation class com/akuleshov7/ktoml/annotations/TomlMultiline : java/lang/annotation/Annotation {
+}
+
+public final synthetic class com/akuleshov7/ktoml/annotations/TomlMultiline$Impl : com/akuleshov7/ktoml/annotations/TomlMultiline {
+	public fun <init> ()V
+}
+
+public abstract class com/akuleshov7/ktoml/decoders/TomlAbstractDecoder : kotlinx/serialization/encoding/AbstractDecoder {
+	public fun <init> ()V
+	public fun decodeBoolean ()Z
+	public fun decodeByte ()B
+	public fun decodeChar ()C
+	public fun decodeDouble ()D
+	public fun decodeFloat ()F
+	public fun decodeInt ()I
+	public fun decodeLong ()J
+	public fun decodeSerializableValue (Lkotlinx/serialization/DeserializationStrategy;)Ljava/lang/Object;
+	public fun decodeShort ()S
+	public fun decodeString ()Ljava/lang/String;
+	protected final fun isDateTime (Lkotlinx/serialization/DeserializationStrategy;)Z
+	protected final fun isUnsigned (Lkotlinx/serialization/DeserializationStrategy;)Z
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlArrayDecoder : com/akuleshov7/ktoml/decoders/TomlAbstractDecoder, com/akuleshov7/ktoml/TomlDecoder {
+	public static final field Companion Lcom/akuleshov7/ktoml/decoders/TomlArrayDecoder$Companion;
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlKeyValueArray;Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public fun beginStructure (Lkotlinx/serialization/descriptors/SerialDescriptor;)Lkotlinx/serialization/encoding/CompositeDecoder;
+	public fun decodeBoolean ()Z
+	public fun decodeByte ()B
+	public fun decodeChar ()C
+	public fun decodeCollectionSize (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeDouble ()D
+	public fun decodeElementIndex (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeEnum (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeFloat ()F
+	public fun decodeInt ()I
+	public fun decodeLong ()J
+	public fun decodeNotNullMark ()Z
+	public fun decodeSerializableValue (Lkotlinx/serialization/DeserializationStrategy;)Ljava/lang/Object;
+	public fun decodeShort ()S
+	public fun decodeString ()Ljava/lang/String;
+	public fun decodeTomlElement ()Lcom/akuleshov7/ktoml/TomlElement;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	public final fun getToml ()Lcom/akuleshov7/ktoml/Toml;
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlArrayDecoder$Companion {
+	public final fun decode (Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlKeyValueArray;Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/Object;
+	public static synthetic fun decode$default (Lcom/akuleshov7/ktoml/decoders/TomlArrayDecoder$Companion;Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlKeyValueArray;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlArrayOfTablesDecoder : com/akuleshov7/ktoml/decoders/TomlAbstractDecoder, com/akuleshov7/ktoml/TomlDecoder {
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public fun decodeElementIndex (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeSerializableValue (Lkotlinx/serialization/DeserializationStrategy;)Ljava/lang/Object;
+	public fun decodeTomlElement ()Lcom/akuleshov7/ktoml/TomlElement;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	public final fun getToml ()Lcom/akuleshov7/ktoml/Toml;
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlMainDecoder : com/akuleshov7/ktoml/decoders/TomlAbstractDecoder, com/akuleshov7/ktoml/TomlDecoder {
+	public static final field Companion Lcom/akuleshov7/ktoml/decoders/TomlMainDecoder$Companion;
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Lcom/akuleshov7/ktoml/TomlInputConfig;ILkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Lcom/akuleshov7/ktoml/TomlInputConfig;ILkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun beginStructure (Lkotlinx/serialization/descriptors/SerialDescriptor;)Lkotlinx/serialization/encoding/CompositeDecoder;
+	public fun decodeElementIndex (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeEnum (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeInline (Lkotlinx/serialization/descriptors/SerialDescriptor;)Lkotlinx/serialization/encoding/Decoder;
+	public fun decodeNotNullMark ()Z
+	public fun decodeTomlElement ()Lcom/akuleshov7/ktoml/TomlElement;
+	public fun decodeValue ()Ljava/lang/Object;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	public final fun getToml ()Lcom/akuleshov7/ktoml/Toml;
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlMainDecoder$Companion {
+	public final fun decode (Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlinx/serialization/modules/SerializersModule;)Ljava/lang/Object;
+	public static synthetic fun decode$default (Lcom/akuleshov7/ktoml/decoders/TomlMainDecoder$Companion;Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlinx/serialization/modules/SerializersModule;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlMapDecoder : com/akuleshov7/ktoml/decoders/TomlAbstractDecoder, com/akuleshov7/ktoml/TomlDecoder {
+	public static final field Companion Lcom/akuleshov7/ktoml/decoders/TomlMapDecoder$Companion;
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/TomlInputConfig;IILkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/TomlInputConfig;IILkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;Lcom/akuleshov7/ktoml/TomlInputConfig;IILkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;Lcom/akuleshov7/ktoml/TomlInputConfig;IILkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun decodeElementIndex (Lkotlinx/serialization/descriptors/SerialDescriptor;)I
+	public fun decodeSerializableElement (Lkotlinx/serialization/descriptors/SerialDescriptor;ILkotlinx/serialization/DeserializationStrategy;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun decodeTomlElement ()Lcom/akuleshov7/ktoml/TomlElement;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	public final fun getToml ()Lcom/akuleshov7/ktoml/Toml;
+}
+
+public final class com/akuleshov7/ktoml/decoders/TomlMapDecoder$Companion {
+	public final fun decode (Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/Object;
+	public static synthetic fun decode$default (Lcom/akuleshov7/ktoml/decoders/TomlMapDecoder$Companion;Lkotlinx/serialization/DeserializationStrategy;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract class com/akuleshov7/ktoml/encoders/TomlAbstractEncoder : kotlinx/serialization/encoding/AbstractEncoder {
+	protected fun <init> (ILcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	protected fun appendValue (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;)V
+	protected fun arrayEncoder (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;)Lcom/akuleshov7/ktoml/encoders/TomlAbstractEncoder;
+	public static synthetic fun arrayEncoder$default (Lcom/akuleshov7/ktoml/encoders/TomlAbstractEncoder;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;ILjava/lang/Object;)Lcom/akuleshov7/ktoml/encoders/TomlAbstractEncoder;
+	public fun encodeBoolean (Z)V
+	public fun encodeByte (B)V
+	public fun encodeChar (C)V
+	public fun encodeDouble (D)V
+	public fun encodeElement (Lkotlinx/serialization/descriptors/SerialDescriptor;I)Z
+	public fun encodeEnum (Lkotlinx/serialization/descriptors/SerialDescriptor;I)V
+	public fun encodeFloat (F)V
+	public fun encodeInline (Lkotlinx/serialization/descriptors/SerialDescriptor;)Lkotlinx/serialization/encoding/Encoder;
+	public fun encodeInt (I)V
+	public fun encodeLong (J)V
+	public fun encodeNull ()V
+	public fun encodeNullableSerializableElement (Lkotlinx/serialization/descriptors/SerialDescriptor;ILkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;)V
+	public fun encodeSerializableValue (Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;)V
+	public fun encodeShort (S)V
+	public fun encodeString (Ljava/lang/String;)V
+	protected abstract fun encodeStructure (Lkotlinx/serialization/descriptors/SerialKind;)Lcom/akuleshov7/ktoml/encoders/TomlAbstractEncoder;
+	protected final fun getAttributes ()Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;
+	protected final fun getElementIndex ()I
+	protected final fun getOutputConfig ()Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
+	protected fun inlineTableEncoder (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)Lcom/akuleshov7/ktoml/encoders/TomlAbstractEncoder;
+	protected fun isNextElementKey (Lkotlinx/serialization/descriptors/SerialDescriptor;I)Z
+	protected fun nextElementIndex ()I
+	protected final fun setElementIndex (I)V
+	protected final fun setKey (Ljava/lang/String;)V
+	public fun shouldEncodeElementDefault (Lkotlinx/serialization/descriptors/SerialDescriptor;I)Z
+	protected fun tableEncoder (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)Lcom/akuleshov7/ktoml/encoders/TomlAbstractEncoder;
+}
+
+public final class com/akuleshov7/ktoml/encoders/TomlArrayEncoder : com/akuleshov7/ktoml/encoders/TomlAbstractEncoder {
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ILcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public fun endStructure (Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class com/akuleshov7/ktoml/encoders/TomlEncoderAttributes {
+	public fun <init> ()V
+	public fun <init> (Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Ljava/lang/String;ZZLcom/akuleshov7/ktoml/writers/IntegerRepresentation;ZLjava/util/List;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Ljava/lang/String;ZZLcom/akuleshov7/ktoml/writers/IntegerRepresentation;ZLjava/util/List;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun child ()Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;
+	public final fun component1 ()Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public final fun component6 ()Z
+	public final fun component7 ()Ljava/util/List;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Z
+	public final fun copy (Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Ljava/lang/String;ZZLcom/akuleshov7/ktoml/writers/IntegerRepresentation;ZLjava/util/List;Ljava/lang/String;Z)Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Ljava/lang/String;ZZLcom/akuleshov7/ktoml/writers/IntegerRepresentation;ZLjava/util/List;Ljava/lang/String;ZILjava/lang/Object;)Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getComments ()Ljava/util/List;
+	public final fun getFullKey ()Ljava/lang/String;
+	public final fun getInlineComment ()Ljava/lang/String;
+	public final fun getIntRepresentation ()Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getParent ()Lcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;
+	public fun hashCode ()I
+	public final fun isImplicit ()Z
+	public final fun isInline ()Z
+	public final fun isLiteral ()Z
+	public final fun isMultiline ()Z
+	public final fun keyOrThrow ()Ljava/lang/String;
+	public final fun reset ()V
+	public final fun resetComments ()V
+	public final fun set (Ljava/lang/Iterable;)V
+	public final fun setComments (Ljava/util/List;)V
+	public final fun setImplicit (Z)V
+	public final fun setInline (Z)V
+	public final fun setInlineComment (Ljava/lang/String;)V
+	public final fun setIntRepresentation (Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;)V
+	public final fun setKey (Ljava/lang/String;)V
+	public final fun setLiteral (Z)V
+	public final fun setMultiline (Z)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/encoders/TomlInlineTableEncoder : com/akuleshov7/ktoml/encoders/TomlAbstractEncoder {
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ILcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public fun beginStructure (Lkotlinx/serialization/descriptors/SerialDescriptor;)Lkotlinx/serialization/encoding/CompositeEncoder;
+	public fun endStructure (Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class com/akuleshov7/ktoml/encoders/TomlMainEncoder : com/akuleshov7/ktoml/encoders/TomlAbstractEncoder {
+	public static final field Companion Lcom/akuleshov7/ktoml/encoders/TomlMainEncoder$Companion;
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ILcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ILcom/akuleshov7/ktoml/encoders/TomlEncoderAttributes;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun endStructure (Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class com/akuleshov7/ktoml/encoders/TomlMainEncoder$Companion {
+	public final fun encode (Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;
+	public static synthetic fun encode$default (Lcom/akuleshov7/ktoml/encoders/TomlMainEncoder$Companion;Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;ILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;
+}
+
+public abstract class com/akuleshov7/ktoml/exceptions/TomlDecodingException : kotlinx/serialization/SerializationException {
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract class com/akuleshov7/ktoml/exceptions/TomlEncodingException : kotlinx/serialization/SerializationException {
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class com/akuleshov7/ktoml/parsers/TomlParser {
+	public static final synthetic fun box-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;)Lcom/akuleshov7/ktoml/parsers/TomlParser;
+	public static fun constructor-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;)Lcom/akuleshov7/ktoml/TomlInputConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlInputConfig;)Z
+	public fun hashCode ()I
+	public static fun hashCode-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;)I
+	public static final fun parseLines-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlin/sequences/Sequence;)Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;
+	public static final fun parseString-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;
+	public static final fun parseStringsToTomlTree-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlin/sequences/Sequence;Lcom/akuleshov7/ktoml/TomlInputConfig;)Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Lcom/akuleshov7/ktoml/TomlInputConfig;
+}
+
+public final class com/akuleshov7/ktoml/parsers/TomlParserKt {
+	public static final fun parseTomlKeyValue (Ljava/lang/String;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;)Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TableInsertionType : java/lang/Enum {
+	public static final field DOTTED_KEY Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;
+	public static final field HEADER Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;
+	public static final field INLINE_TABLE Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;
+	public static fun values ()[Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TableType : java/lang/Enum {
+	public static final field ARRAY Lcom/akuleshov7/ktoml/tree/nodes/TableType;
+	public static final field PRIMITIVE Lcom/akuleshov7/ktoml/tree/nodes/TableType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/TableType;
+	public static fun values ()[Lcom/akuleshov7/ktoml/tree/nodes/TableType;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlArrayOfTablesElement : com/akuleshov7/ktoml/tree/nodes/TomlNode {
+	public fun <init> (ILjava/util/List;Ljava/lang/String;)V
+	public fun getName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlFile : com/akuleshov7/ktoml/tree/nodes/TomlNode {
+	public fun <init> ()V
+	public fun getName ()Ljava/lang/String;
+	public fun getNeighbourNodes ()Ljava/util/List;
+	public fun toString ()Ljava/lang/String;
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlInlineTable : com/akuleshov7/ktoml/tree/nodes/TomlNode {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/TomlInlineTable$Companion;
+	public fun <init> (Lkotlin/Pair;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/tree/nodes/tables/InlineTableType;Z)V
+	public synthetic fun <init> (Lkotlin/Pair;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/tree/nodes/tables/InlineTableType;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getKey ()Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;
+	public final fun getMultiline ()Z
+	public fun getName ()Ljava/lang/String;
+	public final fun returnTable (Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Z)Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;
+	public static synthetic fun returnTable$default (Lcom/akuleshov7/ktoml/tree/nodes/TomlInlineTable;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ZILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlInlineTable$Companion {
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlKeyValueArray : com/akuleshov7/ktoml/tree/nodes/TomlNode, com/akuleshov7/ktoml/tree/nodes/TomlKeyValue {
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;ILjava/util/List;Ljava/lang/String;)V
+	public fun <init> (Lkotlin/Pair;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;)V
+	public synthetic fun <init> (Lkotlin/Pair;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun createTomlTableFromDottedKey (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;
+	public fun getKey ()Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;
+	public fun getLineNo ()I
+	public fun getName ()Ljava/lang/String;
+	public fun getValue ()Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;
+	public fun isMultiline ()Z
+	public fun setKey (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlKeyValueKt {
+	public static final fun parseList (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlArray;
+	public static final fun parseValue (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;
+	public static final fun splitKeyValue (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;)Lkotlin/Pair;
+	public static synthetic fun splitKeyValue$default (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Lkotlin/Pair;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlKeyValuePrimitive : com/akuleshov7/ktoml/tree/nodes/TomlNode, com/akuleshov7/ktoml/tree/nodes/TomlKeyValue {
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;ILjava/util/List;Ljava/lang/String;)V
+	public fun <init> (Lkotlin/Pair;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;)V
+	public synthetic fun <init> (Lkotlin/Pair;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun createTomlTableFromDottedKey (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;
+	public fun getKey ()Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;
+	public fun getLineNo ()I
+	public fun getName ()Ljava/lang/String;
+	public fun getValue ()Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;
+	public fun isMultiline ()Z
+	public fun setKey (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public abstract class com/akuleshov7/ktoml/tree/nodes/TomlNode {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/TomlNode$Companion;
+	public synthetic fun <init> (ILjava/util/List;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;ILjava/util/List;Ljava/lang/String;Lcom/akuleshov7/ktoml/TomlInputConfig;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun appendChild (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)V
+	public final fun findTableInAstByName (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;
+	public final fun getAllChildTomlTables ()Ljava/util/List;
+	public fun getChildren ()Ljava/util/List;
+	public final fun getComments ()Ljava/util/List;
+	public final fun getFirstChild ()Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;
+	public final fun getInlineComment ()Ljava/lang/String;
+	public fun getLineNo ()I
+	public abstract fun getName ()Ljava/lang/String;
+	public fun getNeighbourNodes ()Ljava/util/List;
+	public fun getParent ()Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;
+	public final fun getRealTomlTables ()Ljava/util/List;
+	public final fun hasNoChildren ()Z
+	public final fun insertTableToTree (Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;Lcom/akuleshov7/ktoml/tree/nodes/TomlArrayOfTablesElement;Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;IZ)Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;
+	public static synthetic fun insertTableToTree$default (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;Lcom/akuleshov7/ktoml/tree/nodes/TomlArrayOfTablesElement;Lcom/akuleshov7/ktoml/tree/nodes/TableInsertionType;IZILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;
+	public final fun prettyPrint (Z)V
+	public static synthetic fun prettyPrint$default (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ZILjava/lang/Object;)V
+	public final fun prettyStr (Z)Ljava/lang/String;
+	public static synthetic fun prettyStr$default (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;ZILjava/lang/Object;)Ljava/lang/String;
+	public fun setParent (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)V
+	public fun toString ()Ljava/lang/String;
+	public abstract fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+	public static synthetic fun write$default (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;ILjava/lang/Object;)V
+	protected final fun writeChildComments (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)V
+	protected final fun writeChildInlineComment (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;)V
+	protected fun writeChildren (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Ljava/util/List;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlNode$Companion {
+	public final fun prettyPrint (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Ljava/lang/StringBuilder;ZI)V
+	public static synthetic fun prettyPrint$default (Lcom/akuleshov7/ktoml/tree/nodes/TomlNode$Companion;Lcom/akuleshov7/ktoml/tree/nodes/TomlNode;Ljava/lang/StringBuilder;ZIILjava/lang/Object;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlNodeKt {
+	public static final field EMPTY_TECHNICAL_NODE Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlStubEmptyNode : com/akuleshov7/ktoml/tree/nodes/TomlNode {
+	public fun <init> (I)V
+	public fun getName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlTable : com/akuleshov7/ktoml/tree/nodes/TomlNode {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/TomlTable$Companion;
+	public fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;ILcom/akuleshov7/ktoml/tree/nodes/TableType;Ljava/util/List;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;ILcom/akuleshov7/ktoml/tree/nodes/TableType;Ljava/util/List;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;ILcom/akuleshov7/ktoml/tree/nodes/TableType;Ljava/util/List;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ILcom/akuleshov7/ktoml/tree/nodes/TableType;Ljava/util/List;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getFullTableKey ()Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;
+	public fun getLineNo ()I
+	public fun getName ()Ljava/lang/String;
+	public final fun getTablesList ()Ljava/util/List;
+	public final fun getType ()Lcom/akuleshov7/ktoml/tree/nodes/TableType;
+	public final fun isSynthetic ()Z
+	public final fun setFullTableKey (Lcom/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey;)V
+	public final fun setSynthetic (Z)V
+	public final fun setTablesList (Ljava/util/List;)V
+	public fun toString ()Ljava/lang/String;
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/TomlTable$Companion {
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/keys/TomlKey {
+	public fun <init> (Ljava/lang/String;I)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun last ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+	public final fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlArray : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlArray$Companion;
+	public fun <init> (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;)V
+	public fun getContent ()Ljava/lang/Object;
+	public final fun getMultiline ()Z
+	public final fun parse (Lcom/akuleshov7/ktoml/TomlInputConfig;)Ljava/util/List;
+	public static synthetic fun parse$default (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlArray;Lcom/akuleshov7/ktoml/TomlInputConfig;ILjava/lang/Object;)Ljava/util/List;
+	public fun setContent (Ljava/lang/Object;)V
+	public final fun setMultiline (Z)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlArray$Companion {
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlBasicString : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlBasicString$Companion;
+	public fun <init> (Ljava/lang/String;I)V
+	public fun getContent ()Ljava/lang/Object;
+	public final fun getMultiline ()Z
+	public fun setContent (Ljava/lang/Object;)V
+	public final fun setMultiline (Z)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlBasicString$Companion {
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlBoolean : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public fun <init> (Ljava/lang/String;I)V
+	public fun getContent ()Ljava/lang/Object;
+	public fun setContent (Ljava/lang/Object;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlDateTime : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlDateTime$Companion;
+	public fun <init> (Ljava/lang/String;I)V
+	public fun getContent ()Ljava/lang/Object;
+	public fun setContent (Ljava/lang/Object;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlDateTime$Companion {
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlDouble : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public fun <init> (DI)V
+	public fun <init> (Ljava/lang/String;I)V
+	public fun getContent ()Ljava/lang/Object;
+	public fun setContent (Ljava/lang/Object;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLiteralString : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public static final field Companion Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLiteralString$Companion;
+	public fun <init> (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;)V
+	public synthetic fun <init> (Ljava/lang/String;ILcom/akuleshov7/ktoml/TomlInputConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getContent ()Ljava/lang/Object;
+	public final fun getMultiline ()Z
+	public fun setContent (Ljava/lang/Object;)V
+	public final fun setMultiline (Z)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLiteralString$Companion {
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDate {
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDate;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDate;Ljava/lang/String;ILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDate;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRaw ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDateTime {
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDateTime;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDateTime;Ljava/lang/String;ILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDateTime;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRaw ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalTime {
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalTime;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalTime;Ljava/lang/String;ILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalTime;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRaw ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLong : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public fun <init> (Ljava/lang/String;I)V
+	public fun getContent ()Ljava/lang/Object;
+	public final fun getRepresentation ()Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public fun setContent (Ljava/lang/Object;)V
+	public final fun setRepresentation (Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlNull : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public fun <init> ()V
+	public fun getContent ()Ljava/lang/Object;
+	public fun setContent (Ljava/lang/Object;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlOffsetDateTime {
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlOffsetDateTime;
+	public static synthetic fun copy$default (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlOffsetDateTime;Ljava/lang/String;ILjava/lang/Object;)Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlOffsetDateTime;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRaw ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlUnsignedLong : com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public fun <init> (Ljava/lang/String;I)V
+	public fun getContent ()Ljava/lang/Object;
+	public final fun getRepresentation ()Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public fun setContent (Ljava/lang/Object;)V
+	public final fun setRepresentation (Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;)V
+	public fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+}
+
+public abstract class com/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue {
+	public abstract fun getContent ()Ljava/lang/Object;
+	public abstract fun setContent (Ljava/lang/Object;)V
+	public abstract fun write (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+	public static synthetic fun write$default (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlValue;Lcom/akuleshov7/ktoml/writers/TomlEmitter;Lcom/akuleshov7/ktoml/TomlOutputConfig;ILjava/lang/Object;)V
+}
+
+public final class com/akuleshov7/ktoml/tree/nodes/tables/InlineTableType : java/lang/Enum {
+	public static final field ARRAY Lcom/akuleshov7/ktoml/tree/nodes/tables/InlineTableType;
+	public static final field PRIMITIVE Lcom/akuleshov7/ktoml/tree/nodes/tables/InlineTableType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/tables/InlineTableType;
+	public static fun values ()[Lcom/akuleshov7/ktoml/tree/nodes/tables/InlineTableType;
+}
+
+public final class com/akuleshov7/ktoml/utils/FloatingPointLimitsEnum : java/lang/Enum {
+	public static final field DOUBLE Lcom/akuleshov7/ktoml/utils/FloatingPointLimitsEnum;
+	public static final field FLOAT Lcom/akuleshov7/ktoml/utils/FloatingPointLimitsEnum;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getMax ()D
+	public final fun getMin ()D
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/utils/FloatingPointLimitsEnum;
+	public static fun values ()[Lcom/akuleshov7/ktoml/utils/FloatingPointLimitsEnum;
+}
+
+public final class com/akuleshov7/ktoml/utils/IntegerLimitsEnum : java/lang/Enum {
+	public static final field BYTE Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+	public static final field CHAR Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+	public static final field INT Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+	public static final field LONG Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+	public static final field SHORT Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getMax ()J
+	public final fun getMin ()J
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+	public static fun values ()[Lcom/akuleshov7/ktoml/utils/IntegerLimitsEnum;
+}
+
+public final class com/akuleshov7/ktoml/utils/SpecialCharactersKt {
+	public static final fun appendEscapedUnicode (Ljava/lang/StringBuilder;Ljava/lang/String;CII)I
+	public static final fun convertSpecialCharacters (Ljava/lang/String;I)Ljava/lang/String;
+	public static final fun escapeSpecialCharacters (Ljava/lang/String;Z)Ljava/lang/String;
+	public static synthetic fun escapeSpecialCharacters$default (Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+}
+
+public final class com/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum : java/lang/Enum {
+	public static final field U_BYTE Lcom/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum;
+	public static final field U_INT Lcom/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum;
+	public static final field U_LONG Lcom/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum;
+	public static final field U_SHORT Lcom/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getMax-s-VKNKU ()J
+	public final fun getMin-s-VKNKU ()J
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum;
+	public static fun values ()[Lcom/akuleshov7/ktoml/utils/UnsignedIntegerLimitsEnum;
+}
+
+public final class com/akuleshov7/ktoml/utils/UtilsJvmKt {
+	public static final fun newLineChar ()C
+}
+
+public final class com/akuleshov7/ktoml/utils/UtilsKt {
+	public static final fun closestEnumName (Ljava/lang/Iterable;Ljava/lang/String;)Ljava/lang/String;
+	public static final fun findPrimitiveTableInAstByName (Ljava/util/List;Ljava/lang/String;)Lcom/akuleshov7/ktoml/tree/nodes/TomlTable;
+	public static final fun levenshteinDistance (Ljava/lang/String;Ljava/lang/String;)I
+}
+
+public final class com/akuleshov7/ktoml/writers/IntegerRepresentation : java/lang/Enum {
+	public static final field BINARY Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public static final field DECIMAL Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public static final field GROUPED Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public static final field HEX Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public static final field OCTAL Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getPrefix ()Ljava/lang/String;
+	public final fun getRadix ()I
+	public static fun valueOf (Ljava/lang/String;)Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+	public static fun values ()[Lcom/akuleshov7/ktoml/writers/IntegerRepresentation;
+}
+
+public abstract class com/akuleshov7/ktoml/writers/TomlEmitter {
+	public fun <init> (Lcom/akuleshov7/ktoml/TomlOutputConfig;)V
+	public final fun dedent ()I
+	protected abstract fun emit (C)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	protected abstract fun emit (Ljava/lang/String;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitBareKey (Ljava/lang/String;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitComment (Ljava/lang/String;Z)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public static synthetic fun emitComment$default (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Ljava/lang/String;ZILjava/lang/Object;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitElementDelimiter ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitIndent ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitKey (Ljava/lang/String;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitKeyDot ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitNewLine ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitNullValue ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitPairDelimiter ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitQuotedKey (Ljava/lang/String;Z)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public static synthetic fun emitQuotedKey$default (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Ljava/lang/String;ZILjava/lang/Object;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (D)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (JLcom/akuleshov7/ktoml/writers/IntegerRepresentation;I)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDate;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalDateTime;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlLocalTime;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (Lcom/akuleshov7/ktoml/tree/nodes/pairs/values/TomlOffsetDateTime;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (Ljava/lang/String;ZZ)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue (Z)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public static synthetic fun emitValue$default (Lcom/akuleshov7/ktoml/writers/TomlEmitter;JLcom/akuleshov7/ktoml/writers/IntegerRepresentation;IILjava/lang/Object;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public static synthetic fun emitValue$default (Lcom/akuleshov7/ktoml/writers/TomlEmitter;Ljava/lang/String;ZZILjava/lang/Object;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitValue-E0BElUM (JLcom/akuleshov7/ktoml/writers/IntegerRepresentation;I)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public static synthetic fun emitValue-E0BElUM$default (Lcom/akuleshov7/ktoml/writers/TomlEmitter;JLcom/akuleshov7/ktoml/writers/IntegerRepresentation;IILjava/lang/Object;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun emitWhitespace (I)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public static synthetic fun emitWhitespace$default (Lcom/akuleshov7/ktoml/writers/TomlEmitter;IILjava/lang/Object;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun endArray ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun endInlineTable ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun endTableHeader (Lcom/akuleshov7/ktoml/tree/nodes/TableType;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun getIndentDepth ()I
+	public final fun indent ()I
+	protected final fun setIndentDepth (I)V
+	public final fun startArray ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun startInlineTable ()Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+	public final fun startTableHeader (Lcom/akuleshov7/ktoml/tree/nodes/TableType;)Lcom/akuleshov7/ktoml/writers/TomlEmitter;
+}
+
+public final class com/akuleshov7/ktoml/writers/TomlWriter {
+	public static final synthetic fun box-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;)Lcom/akuleshov7/ktoml/writers/TomlWriter;
+	public static fun constructor-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;)Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Lcom/akuleshov7/ktoml/TomlOutputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;)Z
+	public fun hashCode ()I
+	public static fun hashCode-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Lcom/akuleshov7/ktoml/TomlOutputConfig;
+	public static final fun write-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Lcom/akuleshov7/ktoml/writers/TomlEmitter;)V
+	public static final fun writeToString-impl (Lcom/akuleshov7/ktoml/TomlOutputConfig;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Ljava/lang/StringBuilder;)Ljava/lang/String;
+	public static synthetic fun writeToString-impl$default (Lcom/akuleshov7/ktoml/TomlOutputConfig;Lcom/akuleshov7/ktoml/tree/nodes/TomlFile;Ljava/lang/StringBuilder;ILjava/lang/Object;)Ljava/lang/String;
+}
+

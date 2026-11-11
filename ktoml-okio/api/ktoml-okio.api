@@ -1,0 +1,6 @@
+public final class com/akuleshov7/ktoml/okio/OkioStreamsKt {
+	public static final fun decodeFromBufferedSource (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lokio/BufferedSource;)Ljava/lang/Object;
+	public static final fun encodeToBufferedSink (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;Lokio/BufferedSink;)V
+	public static final fun partiallyDecodeFromBufferedSource (Lcom/akuleshov7/ktoml/Toml;Lkotlinx/serialization/DeserializationStrategy;Lokio/BufferedSource;Ljava/lang/String;)Ljava/lang/Object;
+}
+
