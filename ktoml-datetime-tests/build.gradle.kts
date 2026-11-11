@@ -1,4 +1,6 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 
 /*
@@ -25,6 +27,27 @@ kotlin {
         }
     }
 
+    js {
+        nodejs()
+    }
+    mingwX64()
+    linuxX64()
+    linuxArm64()
+    macosX64()
+    macosArm64()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        nodejs()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
+    }
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
@@ -41,6 +64,21 @@ kotlin {
             }
         }
 
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
+            }
+        }
+        val wasmJsTest by getting {
+            dependencies {
+                implementation(kotlin("test-wasm-js"))
+            }
+        }
+        val wasmWasiTest by getting {
+            dependencies {
+                implementation(kotlin("test-wasm-wasi"))
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
@@ -52,4 +90,11 @@ kotlin {
 
 tasks.withType<KotlinJvmTest> {
     useJUnitPlatform()
+}
+
+// Match core's test policy: run JS on Node; keep Wasm targets available without enabling their runners.
+tasks.withType<KotlinJsTest> {
+    if (name.startsWith("wasm")) {
+        enabled = false
+    }
 }
