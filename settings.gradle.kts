@@ -7,5 +7,7 @@ rootProject.name = "ktoml"
 includeBuild("gradle/plugins")
 include("ktoml-core")
 include("ktoml-file")
+include("ktoml-kotlinx-io")
+include("ktoml-okio")
 include("ktoml-source")
 include("ktoml-datetime-tests")

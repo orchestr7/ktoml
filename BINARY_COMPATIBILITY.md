@@ -15,11 +15,14 @@ Recompile consumers, including libraries that expose or use ktoml types, and rev
   the `kotlin.time.Instant` overload present on current upstream main.
 * AST/parser/encoder utilities marked `@InternalKtomlApi` now require explicit opt-in. These
   signatures are not stable contracts. Subclassing `Toml`, `TomlEmitter` or `TomlWriter` also
-  requires internal opt-in. `TomlElement`, node/element decoding are experimental and require `@OptIn(ExperimentalKtomlApi::class)`.
+  requires internal opt-in. `TomlElement`, node/element decoding and the new I/O
+  adapters are experimental and require `@OptIn(ExperimentalKtomlApi::class)`.
 * AST insertion and inline-table helpers changed signatures. Recompile custom AST consumers
   and adapt calls to the current declarations. Prefer `Toml.parseToTomlElement` and
   `decodeFromTomlElement` for new tree consumers.
-
+* `ktoml-file` and `ktoml-source` remain available as deprecated compatibility adapters. New
+  applications can use `ktoml-okio` or `ktoml-kotlinx-io`. Caller-owned streams remain open;
+  adapters do not flush them.
 
 The six-Boolean `TomlInputConfig` constructor, `copy` and their default-argument JVM entry points
 are retained with hidden bridges. Five tests execute Java/Kotlin bytecode compiled against the
