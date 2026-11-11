@@ -5,6 +5,7 @@ import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.utils.BIN_RADIX
 import com.akuleshov7.ktoml.utils.HEX_RADIX
 import com.akuleshov7.ktoml.utils.OCT_RADIX
+import com.akuleshov7.ktoml.utils.validateIntegerSyntax
 import com.akuleshov7.ktoml.writers.IntegerRepresentation
 import com.akuleshov7.ktoml.writers.IntegerRepresentation.*
 import com.akuleshov7.ktoml.writers.TomlEmitter
@@ -35,7 +36,7 @@ public class TomlLong internal constructor(
         private fun String.parse(lineNo: Int): Pair<Long, IntegerRepresentation> {
             val value = replace("_", "").split(prefixRegex, limit = 2)
 
-            return if (value.size == 2) {
+            val parsed = if (value.size == 2) {
                 val (prefix, digits) = value
 
                 when (prefix) {
@@ -50,6 +51,8 @@ public class TomlLong internal constructor(
             } else {
                 value.first().toLong() to DECIMAL
             }
+            validateIntegerSyntax(lineNo)
+            return parsed
         }
     }
 }
