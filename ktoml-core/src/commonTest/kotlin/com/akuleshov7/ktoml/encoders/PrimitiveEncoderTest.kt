@@ -115,6 +115,22 @@ class PrimitiveEncoderTest {
     }
 
     @Test
+    fun multilineStringEndingInBackslash() {
+        @Serializable
+        data class MultilineBasicStr(
+            @TomlMultiline
+            val a: String
+        )
+
+        // no newline follows the trailing backslash, so it is escaped rather than taken
+        // for a line ending
+        assertEncodedEquals(
+            value = MultilineBasicStr("abc\\"),
+            expectedToml = "a = \"\"\"\nabc\\\\\n\"\"\""
+        )
+    }
+
+    @Test
     fun jsWholeDoubleRegression() {
         @Serializable
         data class File(

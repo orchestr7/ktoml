@@ -4,6 +4,7 @@
 
 package com.akuleshov7.ktoml.parsers
 
+import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.utils.convertSpecialCharacters
 import com.akuleshov7.ktoml.utils.newLineChar
@@ -77,34 +78,54 @@ internal fun String.trimMultilineLiteralQuotes(): String = trimMultilineQuotes("
  *  be trimmed along with all whitespace (including newlines) up to the next
  *  non-whitespace character or closing delimiter.
  *
+ *  Backslashes are consumed in pairs first, so an escaped backslash never ends a
+ *  line: `a \\` keeps its newline, while `a \\\` trims it. Pairs are left as-is
+ *  for escape-sequence conversion to collapse.
+ *
  * @return string with the result
  */
 internal fun String.convertLineEndingBackslash(): String {
-    // We shouldn't trim if the size of the split array == 1
-    // It means there is no ending backslash, and we should keep all spaces
-    val splitEndingBackslash = this.split("\\\n")
-    return if (splitEndingBackslash.size == 1) {
-        this
-    } else {
-        splitEndingBackslash.joinToString("") { it.trimStart() }
+    val result = StringBuilder(length)
+    var index = 0
+    while (index < length) {
+        val currentChar = this[index]
+        if (currentChar == '\\' && index + 1 < length && this[index + 1] == '\\') {
+            result.append("\\\\")
+            index += 2
+        } else if (currentChar == '\\' && isLineEndingBackslash(index)) {
+            index = indexOfNextNonWhitespace(index + 1)
+        } else {
+            result.append(currentChar)
+            index++
+        }
     }
+    return result.toString()
 }
 
 /**
  * Checks if the backslash at the given index is a line-ending backslash
  * A line-ending backslash is defined as a backslash that is followed only by
- * whitespace characters and then a newline character or the end of the string
+ * whitespace characters and then a newline character. Running into the end of
+ * the string instead means the backslash sits before the closing delimiter,
+ * which is not a line ending and leaves the backslash an invalid escape.
  *
  * @param backslashIndex The index of the backslash to check
  * @return `true` if the backslash is a line-ending backslash, `false` otherwise
+ * @throws InternalEncodingException if [backslashIndex] is not a valid index into this string
  */
 internal fun String.isLineEndingBackslash(backslashIndex: Int): Boolean {
-    var j = backslashIndex + 1
-    while (j < length && this[j] != newLineChar() && this[j].isWhitespace()) {
-        j++
+    if (backslashIndex !in indices) {
+        throw InternalEncodingException(
+            "Called isLineEndingBackslash() with backslashIndex=$backslashIndex," +
+                    " which is not a valid index into a string of length $length."
+        )
+    }
+    var index = backslashIndex + 1
+    while (index < length && this[index] != newLineChar() && this[index].isWhitespace()) {
+        index++
     }
 
-    return j == length || this[j] == newLineChar() || j == length
+    return index < length && this[index] == newLineChar()
 }
 
 /**
@@ -364,6 +385,14 @@ private fun String.validateSymbols(lineNo: Int) {
 private fun Char.isLetterOrDigit() = CharRange('A', 'Z').contains(this) ||
         CharRange('a', 'z').contains(this) ||
         CharRange('0', '9').contains(this)
+
+private fun String.indexOfNextNonWhitespace(startIndex: Int): Int {
+    var index = startIndex
+    while (index < length && this[index].isWhitespace()) {
+        index++
+    }
+    return index
+}
 
 private fun String.isNotQuoted() = !(this.startsWith("\"") && this.endsWith("\""))
 
