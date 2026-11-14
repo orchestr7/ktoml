@@ -64,6 +64,7 @@ object TomlTestConverter {
     @OptIn(ExperimentalTime::class)
     private fun datetimeToJson(content: Any): JsonElement = when (content) {
         is Instant -> tagged("datetime", content.toString())
+        is TomlOffsetDateTime -> tagged("datetime", content.toRfc3339String())
         is LocalDateTime -> tagged("datetime-local", formatLocalDateTime(content))
         is LocalDate -> tagged("date-local", content.toString())
         is LocalTime -> tagged("time-local", formatLocalTime(content))
