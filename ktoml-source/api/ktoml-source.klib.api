@@ -1,0 +1,23 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.akuleshov7:ktoml-source>
+open class com.akuleshov7.ktoml.source/TomlSourceReader : com.akuleshov7.ktoml/Toml { // com.akuleshov7.ktoml.source/TomlSourceReader|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlInputConfig = ..., com.akuleshov7.ktoml/TomlOutputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...) // com.akuleshov7.ktoml.source/TomlSourceReader.<init>|<init>(com.akuleshov7.ktoml.TomlInputConfig;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    open val serializersModule // com.akuleshov7.ktoml.source/TomlSourceReader.serializersModule|{}serializersModule[0]
+        open fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml.source/TomlSourceReader.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+
+    final fun <#A1: kotlin/Any?> decodeFromSource(kotlinx.serialization/DeserializationStrategy<#A1>, okio/Source): #A1 // com.akuleshov7.ktoml.source/TomlSourceReader.decodeFromSource|decodeFromSource(kotlinx.serialization.DeserializationStrategy<0:0>;okio.Source){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> partiallyDecodeFromSource(kotlinx.serialization/DeserializationStrategy<#A1>, okio/Source, kotlin/String): #A1 // com.akuleshov7.ktoml.source/TomlSourceReader.partiallyDecodeFromSource|partiallyDecodeFromSource(kotlinx.serialization.DeserializationStrategy<0:0>;okio.Source;kotlin.String){0§<kotlin.Any?>}[0]
+    final inline fun <#A1: reified kotlin/Any?> decodeFromSource(okio/Source): #A1 // com.akuleshov7.ktoml.source/TomlSourceReader.decodeFromSource|decodeFromSource(okio.Source){0§<kotlin.Any?>}[0]
+    final inline fun <#A1: reified kotlin/Any?> partiallyDecodeFromSource(okio/Source, kotlin/String): #A1 // com.akuleshov7.ktoml.source/TomlSourceReader.partiallyDecodeFromSource|partiallyDecodeFromSource(okio.Source;kotlin.String){0§<kotlin.Any?>}[0]
+
+    final object Default : com.akuleshov7.ktoml.source/TomlSourceReader // com.akuleshov7.ktoml.source/TomlSourceReader.Default|null[0]
+}
+
+final inline fun <#A: kotlin/Any?> (okio/Source).com.akuleshov7.ktoml.source/useLines(kotlin/Function1<kotlin.sequences/Sequence<kotlin/String>, #A>): #A // com.akuleshov7.ktoml.source/useLines|useLines@okio.Source(kotlin.Function1<kotlin.sequences.Sequence<kotlin.String>,0:0>){0§<kotlin.Any?>}[0]

@@ -1,0 +1,906 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, wasmJs, wasmWasi]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.akuleshov7:ktoml-core>
+open annotation class com.akuleshov7.ktoml.annotations/ExperimentalKtomlApi : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/ExperimentalKtomlApi|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.annotations/ExperimentalKtomlApi.<init>|<init>(){}[0]
+}
+
+open annotation class com.akuleshov7.ktoml.annotations/InternalKtomlApi : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/InternalKtomlApi|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.annotations/InternalKtomlApi.<init>|<init>(){}[0]
+}
+
+open annotation class com.akuleshov7.ktoml.annotations/TomlComments : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/TomlComments|null[0]
+    constructor <init>(kotlin/Array<out kotlin/String>..., kotlin/String = ...) // com.akuleshov7.ktoml.annotations/TomlComments.<init>|<init>(kotlin.Array<out|kotlin.String>...;kotlin.String){}[0]
+
+    final val inline // com.akuleshov7.ktoml.annotations/TomlComments.inline|{}inline[0]
+        final fun <get-inline>(): kotlin/String // com.akuleshov7.ktoml.annotations/TomlComments.inline.<get-inline>|<get-inline>(){}[0]
+    final val lines // com.akuleshov7.ktoml.annotations/TomlComments.lines|{}lines[0]
+        final fun <get-lines>(): kotlin/Array<out kotlin/String> // com.akuleshov7.ktoml.annotations/TomlComments.lines.<get-lines>|<get-lines>(){}[0]
+}
+
+open annotation class com.akuleshov7.ktoml.annotations/TomlInlineTable : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/TomlInlineTable|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.annotations/TomlInlineTable.<init>|<init>(){}[0]
+}
+
+open annotation class com.akuleshov7.ktoml.annotations/TomlInteger : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/TomlInteger|null[0]
+    constructor <init>(com.akuleshov7.ktoml.writers/IntegerRepresentation = ...) // com.akuleshov7.ktoml.annotations/TomlInteger.<init>|<init>(com.akuleshov7.ktoml.writers.IntegerRepresentation){}[0]
+
+    final val representation // com.akuleshov7.ktoml.annotations/TomlInteger.representation|{}representation[0]
+        final fun <get-representation>(): com.akuleshov7.ktoml.writers/IntegerRepresentation // com.akuleshov7.ktoml.annotations/TomlInteger.representation.<get-representation>|<get-representation>(){}[0]
+}
+
+open annotation class com.akuleshov7.ktoml.annotations/TomlLiteral : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/TomlLiteral|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.annotations/TomlLiteral.<init>|<init>(){}[0]
+}
+
+open annotation class com.akuleshov7.ktoml.annotations/TomlMultiline : kotlin/Annotation { // com.akuleshov7.ktoml.annotations/TomlMultiline|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.annotations/TomlMultiline.<init>|<init>(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType : kotlin/Enum<com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType> { // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType|null[0]
+    enum entry ARRAY // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType.ARRAY|null[0]
+    enum entry PRIMITIVE // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType.PRIMITIVE|null[0]
+
+    final val entries // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType> // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType> // com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.tree.nodes/TableInsertionType : kotlin/Enum<com.akuleshov7.ktoml.tree.nodes/TableInsertionType> { // com.akuleshov7.ktoml.tree.nodes/TableInsertionType|null[0]
+    enum entry DOTTED_KEY // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.DOTTED_KEY|null[0]
+    enum entry HEADER // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.HEADER|null[0]
+    enum entry INLINE_TABLE // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.INLINE_TABLE|null[0]
+
+    final val entries // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.tree.nodes/TableInsertionType> // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.tree.nodes/TableInsertionType // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.tree.nodes/TableInsertionType> // com.akuleshov7.ktoml.tree.nodes/TableInsertionType.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.tree.nodes/TableType : kotlin/Enum<com.akuleshov7.ktoml.tree.nodes/TableType> { // com.akuleshov7.ktoml.tree.nodes/TableType|null[0]
+    enum entry ARRAY // com.akuleshov7.ktoml.tree.nodes/TableType.ARRAY|null[0]
+    enum entry PRIMITIVE // com.akuleshov7.ktoml.tree.nodes/TableType.PRIMITIVE|null[0]
+
+    final val entries // com.akuleshov7.ktoml.tree.nodes/TableType.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.tree.nodes/TableType> // com.akuleshov7.ktoml.tree.nodes/TableType.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.tree.nodes/TableType // com.akuleshov7.ktoml.tree.nodes/TableType.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.tree.nodes/TableType> // com.akuleshov7.ktoml.tree.nodes/TableType.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum : kotlin/Enum<com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum> { // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum|null[0]
+    enum entry DOUBLE // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.DOUBLE|null[0]
+    enum entry FLOAT // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.FLOAT|null[0]
+
+    final val entries // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum> // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val max // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.max|{}max[0]
+        final fun <get-max>(): kotlin/Double // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.max.<get-max>|<get-max>(){}[0]
+    final val min // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.min|{}min[0]
+        final fun <get-min>(): kotlin/Double // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.min.<get-min>|<get-min>(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum> // com.akuleshov7.ktoml.utils/FloatingPointLimitsEnum.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.utils/IntegerLimitsEnum : kotlin/Enum<com.akuleshov7.ktoml.utils/IntegerLimitsEnum> { // com.akuleshov7.ktoml.utils/IntegerLimitsEnum|null[0]
+    enum entry BYTE // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.BYTE|null[0]
+    enum entry CHAR // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.CHAR|null[0]
+    enum entry INT // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.INT|null[0]
+    enum entry LONG // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.LONG|null[0]
+    enum entry SHORT // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.SHORT|null[0]
+
+    final val entries // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.utils/IntegerLimitsEnum> // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val max // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.max|{}max[0]
+        final fun <get-max>(): kotlin/Long // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.max.<get-max>|<get-max>(){}[0]
+    final val min // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.min|{}min[0]
+        final fun <get-min>(): kotlin/Long // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.min.<get-min>|<get-min>(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.utils/IntegerLimitsEnum // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.utils/IntegerLimitsEnum> // com.akuleshov7.ktoml.utils/IntegerLimitsEnum.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum : kotlin/Enum<com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum> { // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum|null[0]
+    enum entry U_BYTE // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.U_BYTE|null[0]
+    enum entry U_INT // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.U_INT|null[0]
+    enum entry U_LONG // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.U_LONG|null[0]
+    enum entry U_SHORT // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.U_SHORT|null[0]
+
+    final val entries // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum> // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val max // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.max|{}max[0]
+        final fun <get-max>(): kotlin/ULong // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.max.<get-max>|<get-max>(){}[0]
+    final val min // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.min|{}min[0]
+        final fun <get-min>(): kotlin/ULong // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.min.<get-min>|<get-min>(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum> // com.akuleshov7.ktoml.utils/UnsignedIntegerLimitsEnum.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml.writers/IntegerRepresentation : kotlin/Enum<com.akuleshov7.ktoml.writers/IntegerRepresentation> { // com.akuleshov7.ktoml.writers/IntegerRepresentation|null[0]
+    enum entry BINARY // com.akuleshov7.ktoml.writers/IntegerRepresentation.BINARY|null[0]
+    enum entry DECIMAL // com.akuleshov7.ktoml.writers/IntegerRepresentation.DECIMAL|null[0]
+    enum entry GROUPED // com.akuleshov7.ktoml.writers/IntegerRepresentation.GROUPED|null[0]
+    enum entry HEX // com.akuleshov7.ktoml.writers/IntegerRepresentation.HEX|null[0]
+    enum entry OCTAL // com.akuleshov7.ktoml.writers/IntegerRepresentation.OCTAL|null[0]
+
+    final val entries // com.akuleshov7.ktoml.writers/IntegerRepresentation.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml.writers/IntegerRepresentation> // com.akuleshov7.ktoml.writers/IntegerRepresentation.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val prefix // com.akuleshov7.ktoml.writers/IntegerRepresentation.prefix|{}prefix[0]
+        final fun <get-prefix>(): kotlin/String // com.akuleshov7.ktoml.writers/IntegerRepresentation.prefix.<get-prefix>|<get-prefix>(){}[0]
+    final val radix // com.akuleshov7.ktoml.writers/IntegerRepresentation.radix|{}radix[0]
+        final fun <get-radix>(): kotlin/Int // com.akuleshov7.ktoml.writers/IntegerRepresentation.radix.<get-radix>|<get-radix>(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml.writers/IntegerRepresentation // com.akuleshov7.ktoml.writers/IntegerRepresentation.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml.writers/IntegerRepresentation> // com.akuleshov7.ktoml.writers/IntegerRepresentation.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml/TomlElementKind : kotlin/Enum<com.akuleshov7.ktoml/TomlElementKind> { // com.akuleshov7.ktoml/TomlElementKind|null[0]
+    enum entry ARRAY // com.akuleshov7.ktoml/TomlElementKind.ARRAY|null[0]
+    enum entry BOOLEAN // com.akuleshov7.ktoml/TomlElementKind.BOOLEAN|null[0]
+    enum entry DATE_TIME // com.akuleshov7.ktoml/TomlElementKind.DATE_TIME|null[0]
+    enum entry FLOAT // com.akuleshov7.ktoml/TomlElementKind.FLOAT|null[0]
+    enum entry INTEGER // com.akuleshov7.ktoml/TomlElementKind.INTEGER|null[0]
+    enum entry NULL // com.akuleshov7.ktoml/TomlElementKind.NULL|null[0]
+    enum entry STRING // com.akuleshov7.ktoml/TomlElementKind.STRING|null[0]
+    enum entry TABLE // com.akuleshov7.ktoml/TomlElementKind.TABLE|null[0]
+
+    final val entries // com.akuleshov7.ktoml/TomlElementKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml/TomlElementKind> // com.akuleshov7.ktoml/TomlElementKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml/TomlElementKind // com.akuleshov7.ktoml/TomlElementKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml/TomlElementKind> // com.akuleshov7.ktoml/TomlElementKind.values|values#static(){}[0]
+}
+
+final enum class com.akuleshov7.ktoml/TomlIndentation : kotlin/Enum<com.akuleshov7.ktoml/TomlIndentation> { // com.akuleshov7.ktoml/TomlIndentation|null[0]
+    enum entry FOUR_SPACES // com.akuleshov7.ktoml/TomlIndentation.FOUR_SPACES|null[0]
+    enum entry NONE // com.akuleshov7.ktoml/TomlIndentation.NONE|null[0]
+    enum entry TAB // com.akuleshov7.ktoml/TomlIndentation.TAB|null[0]
+    enum entry TWO_SPACES // com.akuleshov7.ktoml/TomlIndentation.TWO_SPACES|null[0]
+
+    final val entries // com.akuleshov7.ktoml/TomlIndentation.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.akuleshov7.ktoml/TomlIndentation> // com.akuleshov7.ktoml/TomlIndentation.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val value // com.akuleshov7.ktoml/TomlIndentation.value|{}value[0]
+        final fun <get-value>(): kotlin/String // com.akuleshov7.ktoml/TomlIndentation.value.<get-value>|<get-value>(){}[0]
+
+    final fun valueOf(kotlin/String): com.akuleshov7.ktoml/TomlIndentation // com.akuleshov7.ktoml/TomlIndentation.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.akuleshov7.ktoml/TomlIndentation> // com.akuleshov7.ktoml/TomlIndentation.values|values#static(){}[0]
+}
+
+abstract interface com.akuleshov7.ktoml/TomlDecoder : kotlinx.serialization.encoding/CompositeDecoder, kotlinx.serialization.encoding/Decoder { // com.akuleshov7.ktoml/TomlDecoder|null[0]
+    abstract val toml // com.akuleshov7.ktoml/TomlDecoder.toml|{}toml[0]
+        abstract fun <get-toml>(): com.akuleshov7.ktoml/Toml // com.akuleshov7.ktoml/TomlDecoder.toml.<get-toml>|<get-toml>(){}[0]
+
+    abstract fun decodeTomlElement(): com.akuleshov7.ktoml/TomlElement // com.akuleshov7.ktoml/TomlDecoder.decodeTomlElement|decodeTomlElement(){}[0]
+}
+
+abstract class com.akuleshov7.ktoml.decoders/TomlAbstractDecoder : kotlinx.serialization.encoding/AbstractDecoder { // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.<init>|<init>(){}[0]
+
+    final fun (kotlinx.serialization/DeserializationStrategy<*>).isDateTime(): kotlin/Boolean // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.isDateTime|isDateTime@kotlinx.serialization.DeserializationStrategy<*>(){}[0]
+    final fun (kotlinx.serialization/DeserializationStrategy<*>).isUnsigned(): kotlin/Boolean // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.isUnsigned|isUnsigned@kotlinx.serialization.DeserializationStrategy<*>(){}[0]
+    open fun <#A1: kotlin/Any?> decodeSerializableValue(kotlinx.serialization/DeserializationStrategy<#A1>): #A1 // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeSerializableValue|decodeSerializableValue(kotlinx.serialization.DeserializationStrategy<0:0>){0§<kotlin.Any?>}[0]
+    open fun decodeBoolean(): kotlin/Boolean // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeBoolean|decodeBoolean(){}[0]
+    open fun decodeByte(): kotlin/Byte // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeByte|decodeByte(){}[0]
+    open fun decodeChar(): kotlin/Char // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeChar|decodeChar(){}[0]
+    open fun decodeDouble(): kotlin/Double // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeDouble|decodeDouble(){}[0]
+    open fun decodeFloat(): kotlin/Float // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeFloat|decodeFloat(){}[0]
+    open fun decodeInt(): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeInt|decodeInt(){}[0]
+    open fun decodeLong(): kotlin/Long // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeLong|decodeLong(){}[0]
+    open fun decodeShort(): kotlin/Short // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeShort|decodeShort(){}[0]
+    open fun decodeString(): kotlin/String // com.akuleshov7.ktoml.decoders/TomlAbstractDecoder.decodeString|decodeString(){}[0]
+}
+
+abstract class com.akuleshov7.ktoml.encoders/TomlAbstractEncoder : kotlinx.serialization.encoding/AbstractEncoder { // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder|null[0]
+    constructor <init>(kotlin/Int, com.akuleshov7.ktoml.encoders/TomlEncoderAttributes, com.akuleshov7.ktoml/TomlOutputConfig, kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.<init>|<init>(kotlin.Int;com.akuleshov7.ktoml.encoders.TomlEncoderAttributes;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final val attributes // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.attributes|{}attributes[0]
+        final fun <get-attributes>(): com.akuleshov7.ktoml.encoders/TomlEncoderAttributes // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.attributes.<get-attributes>|<get-attributes>(){}[0]
+    final val outputConfig // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.outputConfig|{}outputConfig[0]
+        final fun <get-outputConfig>(): com.akuleshov7.ktoml/TomlOutputConfig // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.outputConfig.<get-outputConfig>|<get-outputConfig>(){}[0]
+    open val serializersModule // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.serializersModule|{}serializersModule[0]
+        open fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+
+    final var elementIndex // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.elementIndex|{}elementIndex[0]
+        final fun <get-elementIndex>(): kotlin/Int // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.elementIndex.<get-elementIndex>|<get-elementIndex>(){}[0]
+        final fun <set-elementIndex>(kotlin/Int) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.elementIndex.<set-elementIndex>|<set-elementIndex>(kotlin.Int){}[0]
+
+    abstract fun encodeStructure(kotlinx.serialization.descriptors/SerialKind): com.akuleshov7.ktoml.encoders/TomlAbstractEncoder // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeStructure|encodeStructure(kotlinx.serialization.descriptors.SerialKind){}[0]
+    final fun setKey(kotlin/String) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.setKey|setKey(kotlin.String){}[0]
+    open fun <#A1: kotlin/Any> encodeNullableSerializableElement(kotlinx.serialization.descriptors/SerialDescriptor, kotlin/Int, kotlinx.serialization/SerializationStrategy<#A1>, #A1?) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeNullableSerializableElement|encodeNullableSerializableElement(kotlinx.serialization.descriptors.SerialDescriptor;kotlin.Int;kotlinx.serialization.SerializationStrategy<0:0>;0:0?){0§<kotlin.Any>}[0]
+    open fun <#A1: kotlin/Any?> encodeSerializableValue(kotlinx.serialization/SerializationStrategy<#A1>, #A1) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeSerializableValue|encodeSerializableValue(kotlinx.serialization.SerializationStrategy<0:0>;0:0){0§<kotlin.Any?>}[0]
+    open fun appendValue(com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.appendValue|appendValue(com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue){}[0]
+    open fun arrayEncoder(com.akuleshov7.ktoml.tree.nodes/TomlNode, com.akuleshov7.ktoml.encoders/TomlEncoderAttributes = ...): com.akuleshov7.ktoml.encoders/TomlAbstractEncoder // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.arrayEncoder|arrayEncoder(com.akuleshov7.ktoml.tree.nodes.TomlNode;com.akuleshov7.ktoml.encoders.TomlEncoderAttributes){}[0]
+    open fun encodeBoolean(kotlin/Boolean) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeBoolean|encodeBoolean(kotlin.Boolean){}[0]
+    open fun encodeByte(kotlin/Byte) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeByte|encodeByte(kotlin.Byte){}[0]
+    open fun encodeChar(kotlin/Char) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeChar|encodeChar(kotlin.Char){}[0]
+    open fun encodeDouble(kotlin/Double) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeDouble|encodeDouble(kotlin.Double){}[0]
+    open fun encodeElement(kotlinx.serialization.descriptors/SerialDescriptor, kotlin/Int): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeElement|encodeElement(kotlinx.serialization.descriptors.SerialDescriptor;kotlin.Int){}[0]
+    open fun encodeEnum(kotlinx.serialization.descriptors/SerialDescriptor, kotlin/Int) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeEnum|encodeEnum(kotlinx.serialization.descriptors.SerialDescriptor;kotlin.Int){}[0]
+    open fun encodeFloat(kotlin/Float) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeFloat|encodeFloat(kotlin.Float){}[0]
+    open fun encodeInline(kotlinx.serialization.descriptors/SerialDescriptor): kotlinx.serialization.encoding/Encoder // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeInline|encodeInline(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    open fun encodeInt(kotlin/Int) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeInt|encodeInt(kotlin.Int){}[0]
+    open fun encodeLong(kotlin/Long) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeLong|encodeLong(kotlin.Long){}[0]
+    open fun encodeNull() // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeNull|encodeNull(){}[0]
+    open fun encodeShort(kotlin/Short) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeShort|encodeShort(kotlin.Short){}[0]
+    open fun encodeString(kotlin/String) // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.encodeString|encodeString(kotlin.String){}[0]
+    open fun inlineTableEncoder(com.akuleshov7.ktoml.tree.nodes/TomlNode): com.akuleshov7.ktoml.encoders/TomlAbstractEncoder // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.inlineTableEncoder|inlineTableEncoder(com.akuleshov7.ktoml.tree.nodes.TomlNode){}[0]
+    open fun isNextElementKey(kotlinx.serialization.descriptors/SerialDescriptor, kotlin/Int): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.isNextElementKey|isNextElementKey(kotlinx.serialization.descriptors.SerialDescriptor;kotlin.Int){}[0]
+    open fun nextElementIndex(): kotlin/Int // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.nextElementIndex|nextElementIndex(){}[0]
+    open fun shouldEncodeElementDefault(kotlinx.serialization.descriptors/SerialDescriptor, kotlin/Int): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.shouldEncodeElementDefault|shouldEncodeElementDefault(kotlinx.serialization.descriptors.SerialDescriptor;kotlin.Int){}[0]
+    open fun tableEncoder(com.akuleshov7.ktoml.tree.nodes/TomlNode): com.akuleshov7.ktoml.encoders/TomlAbstractEncoder // com.akuleshov7.ktoml.encoders/TomlAbstractEncoder.tableEncoder|tableEncoder(com.akuleshov7.ktoml.tree.nodes.TomlNode){}[0]
+}
+
+abstract class com.akuleshov7.ktoml.writers/TomlEmitter { // com.akuleshov7.ktoml.writers/TomlEmitter|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.writers/TomlEmitter.<init>|<init>(com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final var indentDepth // com.akuleshov7.ktoml.writers/TomlEmitter.indentDepth|{}indentDepth[0]
+        final fun <get-indentDepth>(): kotlin/Int // com.akuleshov7.ktoml.writers/TomlEmitter.indentDepth.<get-indentDepth>|<get-indentDepth>(){}[0]
+        final fun <set-indentDepth>(kotlin/Int) // com.akuleshov7.ktoml.writers/TomlEmitter.indentDepth.<set-indentDepth>|<set-indentDepth>(kotlin.Int){}[0]
+
+    abstract fun emit(kotlin/Char): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emit|emit(kotlin.Char){}[0]
+    abstract fun emit(kotlin/String): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emit|emit(kotlin.String){}[0]
+    final fun dedent(): kotlin/Int // com.akuleshov7.ktoml.writers/TomlEmitter.dedent|dedent(){}[0]
+    final fun emitBareKey(kotlin/String): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitBareKey|emitBareKey(kotlin.String){}[0]
+    final fun emitComment(kotlin/String, kotlin/Boolean = ...): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitComment|emitComment(kotlin.String;kotlin.Boolean){}[0]
+    final fun emitElementDelimiter(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitElementDelimiter|emitElementDelimiter(){}[0]
+    final fun emitIndent(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitIndent|emitIndent(){}[0]
+    final fun emitKey(kotlin/String): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitKey|emitKey(kotlin.String){}[0]
+    final fun emitKeyDot(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitKeyDot|emitKeyDot(){}[0]
+    final fun emitNewLine(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitNewLine|emitNewLine(){}[0]
+    final fun emitNullValue(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitNullValue|emitNullValue(){}[0]
+    final fun emitPairDelimiter(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitPairDelimiter|emitPairDelimiter(){}[0]
+    final fun emitQuotedKey(kotlin/String, kotlin/Boolean = ...): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitQuotedKey|emitQuotedKey(kotlin.String;kotlin.Boolean){}[0]
+    final fun emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLocalDate){}[0]
+    final fun emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLocalDateTime){}[0]
+    final fun emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlLocalTime){}[0]
+    final fun emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlOffsetDateTime){}[0]
+    final fun emitValue(kotlin/Boolean): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(kotlin.Boolean){}[0]
+    final fun emitValue(kotlin/Double): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(kotlin.Double){}[0]
+    final fun emitValue(kotlin/Long, com.akuleshov7.ktoml.writers/IntegerRepresentation = ..., kotlin/Int = ...): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(kotlin.Long;com.akuleshov7.ktoml.writers.IntegerRepresentation;kotlin.Int){}[0]
+    final fun emitValue(kotlin/String, kotlin/Boolean = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(kotlin.String;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun emitValue(kotlin/ULong, com.akuleshov7.ktoml.writers/IntegerRepresentation = ..., kotlin/Int = ...): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitValue|emitValue(kotlin.ULong;com.akuleshov7.ktoml.writers.IntegerRepresentation;kotlin.Int){}[0]
+    final fun emitWhitespace(kotlin/Int = ...): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.emitWhitespace|emitWhitespace(kotlin.Int){}[0]
+    final fun endArray(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.endArray|endArray(){}[0]
+    final fun endInlineTable(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.endInlineTable|endInlineTable(){}[0]
+    final fun endTableHeader(com.akuleshov7.ktoml.tree.nodes/TableType): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.endTableHeader|endTableHeader(com.akuleshov7.ktoml.tree.nodes.TableType){}[0]
+    final fun indent(): kotlin/Int // com.akuleshov7.ktoml.writers/TomlEmitter.indent|indent(){}[0]
+    final fun startArray(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.startArray|startArray(){}[0]
+    final fun startInlineTable(): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.startInlineTable|startInlineTable(){}[0]
+    final fun startTableHeader(com.akuleshov7.ktoml.tree.nodes/TableType): com.akuleshov7.ktoml.writers/TomlEmitter // com.akuleshov7.ktoml.writers/TomlEmitter.startTableHeader|startTableHeader(com.akuleshov7.ktoml.tree.nodes.TableType){}[0]
+}
+
+final class com.akuleshov7.ktoml.decoders/TomlArrayDecoder : com.akuleshov7.ktoml.decoders/TomlAbstractDecoder, com.akuleshov7.ktoml/TomlDecoder { // com.akuleshov7.ktoml.decoders/TomlArrayDecoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray, com.akuleshov7.ktoml/TomlInputConfig, kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray;com.akuleshov7.ktoml.TomlInputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final val serializersModule // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.serializersModule|{}serializersModule[0]
+        final fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+    final val toml // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.toml|{}toml[0]
+        final fun <get-toml>(): com.akuleshov7.ktoml/Toml // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.toml.<get-toml>|<get-toml>(){}[0]
+
+    final fun <#A1: kotlin/Any?> decodeSerializableValue(kotlinx.serialization/DeserializationStrategy<#A1>): #A1 // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeSerializableValue|decodeSerializableValue(kotlinx.serialization.DeserializationStrategy<0:0>){0§<kotlin.Any?>}[0]
+    final fun beginStructure(kotlinx.serialization.descriptors/SerialDescriptor): kotlinx.serialization.encoding/CompositeDecoder // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.beginStructure|beginStructure(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeBoolean(): kotlin/Boolean // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeBoolean|decodeBoolean(){}[0]
+    final fun decodeByte(): kotlin/Byte // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeByte|decodeByte(){}[0]
+    final fun decodeChar(): kotlin/Char // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeChar|decodeChar(){}[0]
+    final fun decodeCollectionSize(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeCollectionSize|decodeCollectionSize(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeDouble(): kotlin/Double // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeDouble|decodeDouble(){}[0]
+    final fun decodeElementIndex(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeElementIndex|decodeElementIndex(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeEnum(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeEnum|decodeEnum(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeFloat(): kotlin/Float // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeFloat|decodeFloat(){}[0]
+    final fun decodeInt(): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeInt|decodeInt(){}[0]
+    final fun decodeLong(): kotlin/Long // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeLong|decodeLong(){}[0]
+    final fun decodeNotNullMark(): kotlin/Boolean // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeNotNullMark|decodeNotNullMark(){}[0]
+    final fun decodeShort(): kotlin/Short // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeShort|decodeShort(){}[0]
+    final fun decodeString(): kotlin/String // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeString|decodeString(){}[0]
+    final fun decodeTomlElement(): com.akuleshov7.ktoml/TomlElement // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.decodeTomlElement|decodeTomlElement(){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.Companion|null[0]
+        final fun <#A2: kotlin/Any?> decode(kotlinx.serialization/DeserializationStrategy<#A2>, com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray, com.akuleshov7.ktoml/TomlInputConfig = ...): #A2 // com.akuleshov7.ktoml.decoders/TomlArrayDecoder.Companion.decode|decode(kotlinx.serialization.DeserializationStrategy<0:0>;com.akuleshov7.ktoml.tree.nodes.TomlKeyValueArray;com.akuleshov7.ktoml.TomlInputConfig){0§<kotlin.Any?>}[0]
+    }
+}
+
+final class com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder : com.akuleshov7.ktoml.decoders/TomlAbstractDecoder, com.akuleshov7.ktoml/TomlDecoder { // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlTable, com.akuleshov7.ktoml/TomlInputConfig, kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlTable;com.akuleshov7.ktoml.TomlInputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final val serializersModule // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.serializersModule|{}serializersModule[0]
+        final fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+    final val toml // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.toml|{}toml[0]
+        final fun <get-toml>(): com.akuleshov7.ktoml/Toml // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.toml.<get-toml>|<get-toml>(){}[0]
+
+    final fun <#A1: kotlin/Any?> decodeSerializableValue(kotlinx.serialization/DeserializationStrategy<#A1>): #A1 // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.decodeSerializableValue|decodeSerializableValue(kotlinx.serialization.DeserializationStrategy<0:0>){0§<kotlin.Any?>}[0]
+    final fun decodeElementIndex(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.decodeElementIndex|decodeElementIndex(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeTomlElement(): com.akuleshov7.ktoml/TomlElement // com.akuleshov7.ktoml.decoders/TomlArrayOfTablesDecoder.decodeTomlElement|decodeTomlElement(){}[0]
+}
+
+final class com.akuleshov7.ktoml.decoders/TomlMainDecoder : com.akuleshov7.ktoml.decoders/TomlAbstractDecoder, com.akuleshov7.ktoml/TomlDecoder { // com.akuleshov7.ktoml.decoders/TomlMainDecoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlNode, com.akuleshov7.ktoml/TomlInputConfig, kotlin/Int = ..., kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.decoders/TomlMainDecoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlNode;com.akuleshov7.ktoml.TomlInputConfig;kotlin.Int;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final val serializersModule // com.akuleshov7.ktoml.decoders/TomlMainDecoder.serializersModule|{}serializersModule[0]
+        final fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml.decoders/TomlMainDecoder.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+    final val toml // com.akuleshov7.ktoml.decoders/TomlMainDecoder.toml|{}toml[0]
+        final fun <get-toml>(): com.akuleshov7.ktoml/Toml // com.akuleshov7.ktoml.decoders/TomlMainDecoder.toml.<get-toml>|<get-toml>(){}[0]
+
+    final fun beginStructure(kotlinx.serialization.descriptors/SerialDescriptor): kotlinx.serialization.encoding/CompositeDecoder // com.akuleshov7.ktoml.decoders/TomlMainDecoder.beginStructure|beginStructure(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeElementIndex(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlMainDecoder.decodeElementIndex|decodeElementIndex(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeEnum(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlMainDecoder.decodeEnum|decodeEnum(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeInline(kotlinx.serialization.descriptors/SerialDescriptor): kotlinx.serialization.encoding/Decoder // com.akuleshov7.ktoml.decoders/TomlMainDecoder.decodeInline|decodeInline(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeNotNullMark(): kotlin/Boolean // com.akuleshov7.ktoml.decoders/TomlMainDecoder.decodeNotNullMark|decodeNotNullMark(){}[0]
+    final fun decodeTomlElement(): com.akuleshov7.ktoml/TomlElement // com.akuleshov7.ktoml.decoders/TomlMainDecoder.decodeTomlElement|decodeTomlElement(){}[0]
+    final fun decodeValue(): kotlin/Any // com.akuleshov7.ktoml.decoders/TomlMainDecoder.decodeValue|decodeValue(){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml.decoders/TomlMainDecoder.Companion|null[0]
+        final fun <#A2: kotlin/Any?> decode(kotlinx.serialization/DeserializationStrategy<#A2>, com.akuleshov7.ktoml.tree.nodes/TomlFile, com.akuleshov7.ktoml/TomlInputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...): #A2 // com.akuleshov7.ktoml.decoders/TomlMainDecoder.Companion.decode|decode(kotlinx.serialization.DeserializationStrategy<0:0>;com.akuleshov7.ktoml.tree.nodes.TomlFile;com.akuleshov7.ktoml.TomlInputConfig;kotlinx.serialization.modules.SerializersModule){0§<kotlin.Any?>}[0]
+    }
+}
+
+final class com.akuleshov7.ktoml.decoders/TomlMapDecoder : com.akuleshov7.ktoml.decoders/TomlAbstractDecoder, com.akuleshov7.ktoml/TomlDecoder { // com.akuleshov7.ktoml.decoders/TomlMapDecoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlFile, com.akuleshov7.ktoml/TomlInputConfig, kotlin/Int = ..., kotlin/Int = ..., kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.decoders/TomlMapDecoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlFile;com.akuleshov7.ktoml.TomlInputConfig;kotlin.Int;kotlin.Int;kotlinx.serialization.modules.SerializersModule){}[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlTable, com.akuleshov7.ktoml/TomlInputConfig, kotlin/Int = ..., kotlin/Int = ..., kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.decoders/TomlMapDecoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlTable;com.akuleshov7.ktoml.TomlInputConfig;kotlin.Int;kotlin.Int;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final val serializersModule // com.akuleshov7.ktoml.decoders/TomlMapDecoder.serializersModule|{}serializersModule[0]
+        final fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml.decoders/TomlMapDecoder.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+    final val toml // com.akuleshov7.ktoml.decoders/TomlMapDecoder.toml|{}toml[0]
+        final fun <get-toml>(): com.akuleshov7.ktoml/Toml // com.akuleshov7.ktoml.decoders/TomlMapDecoder.toml.<get-toml>|<get-toml>(){}[0]
+
+    final fun <#A1: kotlin/Any?> decodeSerializableElement(kotlinx.serialization.descriptors/SerialDescriptor, kotlin/Int, kotlinx.serialization/DeserializationStrategy<#A1>, #A1?): #A1 // com.akuleshov7.ktoml.decoders/TomlMapDecoder.decodeSerializableElement|decodeSerializableElement(kotlinx.serialization.descriptors.SerialDescriptor;kotlin.Int;kotlinx.serialization.DeserializationStrategy<0:0>;0:0?){0§<kotlin.Any?>}[0]
+    final fun decodeElementIndex(kotlinx.serialization.descriptors/SerialDescriptor): kotlin/Int // com.akuleshov7.ktoml.decoders/TomlMapDecoder.decodeElementIndex|decodeElementIndex(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun decodeTomlElement(): com.akuleshov7.ktoml/TomlElement // com.akuleshov7.ktoml.decoders/TomlMapDecoder.decodeTomlElement|decodeTomlElement(){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml.decoders/TomlMapDecoder.Companion|null[0]
+        final fun <#A2: kotlin/Any?> decode(kotlinx.serialization/DeserializationStrategy<#A2>, com.akuleshov7.ktoml.tree.nodes/TomlFile, com.akuleshov7.ktoml/TomlInputConfig = ...): #A2 // com.akuleshov7.ktoml.decoders/TomlMapDecoder.Companion.decode|decode(kotlinx.serialization.DeserializationStrategy<0:0>;com.akuleshov7.ktoml.tree.nodes.TomlFile;com.akuleshov7.ktoml.TomlInputConfig){0§<kotlin.Any?>}[0]
+    }
+}
+
+final class com.akuleshov7.ktoml.encoders/TomlArrayEncoder : com.akuleshov7.ktoml.encoders/TomlAbstractEncoder { // com.akuleshov7.ktoml.encoders/TomlArrayEncoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlNode, kotlin/Int, com.akuleshov7.ktoml.encoders/TomlEncoderAttributes, com.akuleshov7.ktoml/TomlOutputConfig, kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.encoders/TomlArrayEncoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlNode;kotlin.Int;com.akuleshov7.ktoml.encoders.TomlEncoderAttributes;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final fun endStructure(kotlinx.serialization.descriptors/SerialDescriptor) // com.akuleshov7.ktoml.encoders/TomlArrayEncoder.endStructure|endStructure(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+}
+
+final class com.akuleshov7.ktoml.encoders/TomlEncoderAttributes { // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes|null[0]
+    constructor <init>(com.akuleshov7.ktoml.encoders/TomlEncoderAttributes? = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., com.akuleshov7.ktoml.writers/IntegerRepresentation = ..., kotlin/Boolean = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.<init>|<init>(com.akuleshov7.ktoml.encoders.TomlEncoderAttributes?;kotlin.String?;kotlin.Boolean;kotlin.Boolean;com.akuleshov7.ktoml.writers.IntegerRepresentation;kotlin.Boolean;kotlin.collections.List<kotlin.String>;kotlin.String;kotlin.Boolean){}[0]
+
+    final val parent // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.parent|{}parent[0]
+        final fun <get-parent>(): com.akuleshov7.ktoml.encoders/TomlEncoderAttributes? // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.parent.<get-parent>|<get-parent>(){}[0]
+
+    final var comments // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.comments|{}comments[0]
+        final fun <get-comments>(): kotlin.collections/List<kotlin/String> // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.comments.<get-comments>|<get-comments>(){}[0]
+        final fun <set-comments>(kotlin.collections/List<kotlin/String>) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.comments.<set-comments>|<set-comments>(kotlin.collections.List<kotlin.String>){}[0]
+    final var inlineComment // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.inlineComment|{}inlineComment[0]
+        final fun <get-inlineComment>(): kotlin/String // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.inlineComment.<get-inlineComment>|<get-inlineComment>(){}[0]
+        final fun <set-inlineComment>(kotlin/String) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.inlineComment.<set-inlineComment>|<set-inlineComment>(kotlin.String){}[0]
+    final var intRepresentation // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.intRepresentation|{}intRepresentation[0]
+        final fun <get-intRepresentation>(): com.akuleshov7.ktoml.writers/IntegerRepresentation // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.intRepresentation.<get-intRepresentation>|<get-intRepresentation>(){}[0]
+        final fun <set-intRepresentation>(com.akuleshov7.ktoml.writers/IntegerRepresentation) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.intRepresentation.<set-intRepresentation>|<set-intRepresentation>(com.akuleshov7.ktoml.writers.IntegerRepresentation){}[0]
+    final var isImplicit // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isImplicit|{}isImplicit[0]
+        final fun <get-isImplicit>(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isImplicit.<get-isImplicit>|<get-isImplicit>(){}[0]
+        final fun <set-isImplicit>(kotlin/Boolean) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isImplicit.<set-isImplicit>|<set-isImplicit>(kotlin.Boolean){}[0]
+    final var isInline // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isInline|{}isInline[0]
+        final fun <get-isInline>(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isInline.<get-isInline>|<get-isInline>(){}[0]
+        final fun <set-isInline>(kotlin/Boolean) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isInline.<set-isInline>|<set-isInline>(kotlin.Boolean){}[0]
+    final var isLiteral // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isLiteral|{}isLiteral[0]
+        final fun <get-isLiteral>(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isLiteral.<get-isLiteral>|<get-isLiteral>(){}[0]
+        final fun <set-isLiteral>(kotlin/Boolean) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isLiteral.<set-isLiteral>|<set-isLiteral>(kotlin.Boolean){}[0]
+    final var isMultiline // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isMultiline|{}isMultiline[0]
+        final fun <get-isMultiline>(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isMultiline.<get-isMultiline>|<get-isMultiline>(){}[0]
+        final fun <set-isMultiline>(kotlin/Boolean) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.isMultiline.<set-isMultiline>|<set-isMultiline>(kotlin.Boolean){}[0]
+    final var key // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.key|{}key[0]
+        final fun <get-key>(): kotlin/String? // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.key.<get-key>|<get-key>(){}[0]
+        final fun <set-key>(kotlin/String?) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.key.<set-key>|<set-key>(kotlin.String?){}[0]
+
+    final fun child(): com.akuleshov7.ktoml.encoders/TomlEncoderAttributes // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.child|child(){}[0]
+    final fun component1(): com.akuleshov7.ktoml.encoders/TomlEncoderAttributes? // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component4|component4(){}[0]
+    final fun component5(): com.akuleshov7.ktoml.writers/IntegerRepresentation // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component5|component5(){}[0]
+    final fun component6(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component6|component6(){}[0]
+    final fun component7(): kotlin.collections/List<kotlin/String> // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component7|component7(){}[0]
+    final fun component8(): kotlin/String // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component8|component8(){}[0]
+    final fun component9(): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.component9|component9(){}[0]
+    final fun copy(com.akuleshov7.ktoml.encoders/TomlEncoderAttributes? = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., com.akuleshov7.ktoml.writers/IntegerRepresentation = ..., kotlin/Boolean = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml.encoders/TomlEncoderAttributes // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.copy|copy(com.akuleshov7.ktoml.encoders.TomlEncoderAttributes?;kotlin.String?;kotlin.Boolean;kotlin.Boolean;com.akuleshov7.ktoml.writers.IntegerRepresentation;kotlin.Boolean;kotlin.collections.List<kotlin.String>;kotlin.String;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.equals|equals(kotlin.Any?){}[0]
+    final fun getFullKey(): kotlin/String // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.getFullKey|getFullKey(){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.hashCode|hashCode(){}[0]
+    final fun keyOrThrow(): kotlin/String // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.keyOrThrow|keyOrThrow(){}[0]
+    final fun reset() // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.reset|reset(){}[0]
+    final fun resetComments() // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.resetComments|resetComments(){}[0]
+    final fun set(kotlin.collections/Iterable<kotlin/Annotation>) // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.set|set(kotlin.collections.Iterable<kotlin.Annotation>){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.encoders/TomlEncoderAttributes.toString|toString(){}[0]
+}
+
+final class com.akuleshov7.ktoml.encoders/TomlInlineTableEncoder : com.akuleshov7.ktoml.encoders/TomlAbstractEncoder { // com.akuleshov7.ktoml.encoders/TomlInlineTableEncoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlNode, kotlin/Int, com.akuleshov7.ktoml.encoders/TomlEncoderAttributes, com.akuleshov7.ktoml/TomlOutputConfig, kotlinx.serialization.modules/SerializersModule) // com.akuleshov7.ktoml.encoders/TomlInlineTableEncoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlNode;kotlin.Int;com.akuleshov7.ktoml.encoders.TomlEncoderAttributes;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final fun beginStructure(kotlinx.serialization.descriptors/SerialDescriptor): kotlinx.serialization.encoding/CompositeEncoder // com.akuleshov7.ktoml.encoders/TomlInlineTableEncoder.beginStructure|beginStructure(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+    final fun endStructure(kotlinx.serialization.descriptors/SerialDescriptor) // com.akuleshov7.ktoml.encoders/TomlInlineTableEncoder.endStructure|endStructure(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+}
+
+final class com.akuleshov7.ktoml.encoders/TomlMainEncoder : com.akuleshov7.ktoml.encoders/TomlAbstractEncoder { // com.akuleshov7.ktoml.encoders/TomlMainEncoder|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes/TomlNode, kotlin/Int = ..., com.akuleshov7.ktoml.encoders/TomlEncoderAttributes = ..., com.akuleshov7.ktoml/TomlOutputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...) // com.akuleshov7.ktoml.encoders/TomlMainEncoder.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.TomlNode;kotlin.Int;com.akuleshov7.ktoml.encoders.TomlEncoderAttributes;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final fun endStructure(kotlinx.serialization.descriptors/SerialDescriptor) // com.akuleshov7.ktoml.encoders/TomlMainEncoder.endStructure|endStructure(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml.encoders/TomlMainEncoder.Companion|null[0]
+        final fun <#A2: kotlin/Any?> encode(kotlinx.serialization/SerializationStrategy<#A2>, #A2, com.akuleshov7.ktoml/TomlOutputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...): com.akuleshov7.ktoml.tree.nodes/TomlFile // com.akuleshov7.ktoml.encoders/TomlMainEncoder.Companion.encode|encode(kotlinx.serialization.SerializationStrategy<0:0>;0:0;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){0§<kotlin.Any?>}[0]
+    }
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey { // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey.hashCode|hashCode(){}[0]
+    final fun last(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey.last|last(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey.toString|toString(){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter) // com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey.write|write(com.akuleshov7.ktoml.writers.TomlEmitter){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray|null[0]
+    constructor <init>(kotlin/String, kotlin/Int, com.akuleshov7.ktoml/TomlInputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.<init>|<init>(kotlin.String;kotlin.Int;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.content.<set-content>|<set-content>(kotlin.Any){}[0]
+    final var multiline // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.multiline|{}multiline[0]
+        final fun <get-multiline>(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.multiline.<get-multiline>|<get-multiline>(){}[0]
+        final fun <set-multiline>(kotlin/Boolean) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.multiline.<set-multiline>|<set-multiline>(kotlin.Boolean){}[0]
+
+    final fun parse(com.akuleshov7.ktoml/TomlInputConfig = ...): kotlin.collections/List<kotlin/Any> // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.parse|parse(com.akuleshov7.ktoml.TomlInputConfig){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final object Companion // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray.Companion|null[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.content.<set-content>|<set-content>(kotlin.Any){}[0]
+    final var multiline // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.multiline|{}multiline[0]
+        final fun <get-multiline>(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.multiline.<get-multiline>|<get-multiline>(){}[0]
+        final fun <set-multiline>(kotlin/Boolean) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.multiline.<set-multiline>|<set-multiline>(kotlin.Boolean){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final object Companion // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBasicString.Companion|null[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean.content.<set-content>|<set-content>(kotlin.Any){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlBoolean.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime.content.<set-content>|<set-content>(kotlin.Any){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final object Companion // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDateTime.Companion|null[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble|null[0]
+    constructor <init>(kotlin/Double, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble.<init>|<init>(kotlin.Double;kotlin.Int){}[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble.content.<set-content>|<set-content>(kotlin.Any){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlDouble.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString|null[0]
+    constructor <init>(kotlin/String, kotlin/Int, com.akuleshov7.ktoml/TomlInputConfig = ...) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.<init>|<init>(kotlin.String;kotlin.Int;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.content.<set-content>|<set-content>(kotlin.Any){}[0]
+    final var multiline // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.multiline|{}multiline[0]
+        final fun <get-multiline>(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.multiline.<get-multiline>|<get-multiline>(){}[0]
+        final fun <set-multiline>(kotlin/Boolean) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.multiline.<set-multiline>|<set-multiline>(kotlin.Boolean){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final object Companion // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLiteralString.Companion|null[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate|null[0]
+    final val raw // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.raw|{}raw[0]
+        final fun <get-raw>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.raw.<get-raw>|<get-raw>(){}[0]
+
+    final fun component1(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDate.toString|toString(){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime|null[0]
+    final val raw // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.raw|{}raw[0]
+        final fun <get-raw>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.raw.<get-raw>|<get-raw>(){}[0]
+
+    final fun component1(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalDateTime.toString|toString(){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime|null[0]
+    final val raw // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.raw|{}raw[0]
+        final fun <get-raw>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.raw.<get-raw>|<get-raw>(){}[0]
+
+    final fun component1(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLocalTime.toString|toString(){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.content.<set-content>|<set-content>(kotlin.Any){}[0]
+    final var representation // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.representation|{}representation[0]
+        final fun <get-representation>(): com.akuleshov7.ktoml.writers/IntegerRepresentation // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.representation.<get-representation>|<get-representation>(){}[0]
+        final fun <set-representation>(com.akuleshov7.ktoml.writers/IntegerRepresentation) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.representation.<set-representation>|<set-representation>(com.akuleshov7.ktoml.writers.IntegerRepresentation){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlLong.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull.<init>|<init>(){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull.content.<set-content>|<set-content>(kotlin.Any){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlNull.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime|null[0]
+    final val raw // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.raw|{}raw[0]
+        final fun <get-raw>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.raw.<get-raw>|<get-raw>(){}[0]
+
+    final fun component1(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlOffsetDateTime.toString|toString(){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong : com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.content|{}content[0]
+        final fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.content.<set-content>|<set-content>(kotlin.Any){}[0]
+    final var representation // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.representation|{}representation[0]
+        final fun <get-representation>(): com.akuleshov7.ktoml.writers/IntegerRepresentation // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.representation.<get-representation>|<get-representation>(){}[0]
+        final fun <set-representation>(com.akuleshov7.ktoml.writers/IntegerRepresentation) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.representation.<set-representation>|<set-representation>(com.akuleshov7.ktoml.writers.IntegerRepresentation){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlUnsignedLong.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement : com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement|null[0]
+    constructor <init>(kotlin/Int, kotlin.collections/List<kotlin/String>, kotlin/String) // com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement.<init>|<init>(kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String){}[0]
+
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement.name.<get-name>|<get-name>(){}[0]
+
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement.toString|toString(){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlFile : com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlFile|null[0]
+    constructor <init>() // com.akuleshov7.ktoml.tree.nodes/TomlFile.<init>|<init>(){}[0]
+
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlFile.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlFile.name.<get-name>|<get-name>(){}[0]
+
+    final fun getNeighbourNodes(): kotlin.collections/MutableList<com.akuleshov7.ktoml.tree.nodes/TomlNode> // com.akuleshov7.ktoml.tree.nodes/TomlFile.getNeighbourNodes|getNeighbourNodes(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlFile.toString|toString(){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlFile.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlInlineTable : com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable|null[0]
+    constructor <init>(kotlin/Pair<kotlin/String, kotlin/String>, kotlin/Int, kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., com.akuleshov7.ktoml/TomlInputConfig = ..., com.akuleshov7.ktoml.tree.nodes.tables/InlineTableType = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.<init>|<init>(kotlin.Pair<kotlin.String,kotlin.String>;kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig;com.akuleshov7.ktoml.tree.nodes.tables.InlineTableType;kotlin.Boolean){}[0]
+
+    final val key // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.key|{}key[0]
+        final fun <get-key>(): com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey? // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.key.<get-key>|<get-key>(){}[0]
+    final val multiline // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.multiline|{}multiline[0]
+        final fun <get-multiline>(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.multiline.<get-multiline>|<get-multiline>(){}[0]
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.name.<get-name>|<get-name>(){}[0]
+
+    final fun returnTable(com.akuleshov7.ktoml.tree.nodes/TomlFile, com.akuleshov7.ktoml.tree.nodes/TomlNode, kotlin/Boolean = ...): com.akuleshov7.ktoml.tree.nodes/TomlTable // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.returnTable|returnTable(com.akuleshov7.ktoml.tree.nodes.TomlFile;com.akuleshov7.ktoml.tree.nodes.TomlNode;kotlin.Boolean){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final object Companion // com.akuleshov7.ktoml.tree.nodes/TomlInlineTable.Companion|null[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray : com.akuleshov7.ktoml.tree.nodes/TomlKeyValue, com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey, com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue, kotlin/Int, kotlin.collections/List<kotlin/String>, kotlin/String) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey;com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue;kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String){}[0]
+    constructor <init>(kotlin/Pair<kotlin/String, kotlin/String>, kotlin/Int, kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., com.akuleshov7.ktoml/TomlInputConfig = ...) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.<init>|<init>(kotlin.Pair<kotlin.String,kotlin.String>;kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+
+    final val lineNo // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.lineNo|{}lineNo[0]
+        final fun <get-lineNo>(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.lineNo.<get-lineNo>|<get-lineNo>(){}[0]
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.name.<get-name>|<get-name>(){}[0]
+    final val value // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.value|{}value[0]
+        final fun <get-value>(): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.value.<get-value>|<get-value>(){}[0]
+
+    final var key // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.key|{}key[0]
+        final fun <get-key>(): com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.key.<get-key>|<get-key>(){}[0]
+        final fun <set-key>(com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.key.<set-key>|<set-key>(com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey){}[0]
+
+    final fun isMultiline(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.isMultiline|isMultiline(){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValueArray.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive : com.akuleshov7.ktoml.tree.nodes/TomlKeyValue, com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey, com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue, kotlin/Int, kotlin.collections/List<kotlin/String>, kotlin/String) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey;com.akuleshov7.ktoml.tree.nodes.pairs.values.TomlValue;kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String){}[0]
+    constructor <init>(kotlin/Pair<kotlin/String, kotlin/String>, kotlin/Int, kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., com.akuleshov7.ktoml/TomlInputConfig = ...) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.<init>|<init>(kotlin.Pair<kotlin.String,kotlin.String>;kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+
+    final val lineNo // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.lineNo|{}lineNo[0]
+        final fun <get-lineNo>(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.lineNo.<get-lineNo>|<get-lineNo>(){}[0]
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.name.<get-name>|<get-name>(){}[0]
+    final val value // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.value|{}value[0]
+        final fun <get-value>(): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.value.<get-value>|<get-value>(){}[0]
+
+    final var key // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.key|{}key[0]
+        final fun <get-key>(): com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.key.<get-key>|<get-key>(){}[0]
+        final fun <set-key>(com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.key.<set-key>|<set-key>(com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey){}[0]
+
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlKeyValuePrimitive.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode : com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode|null[0]
+    constructor <init>(kotlin/Int) // com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode.<init>|<init>(kotlin.Int){}[0]
+
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode.name.<get-name>|<get-name>(){}[0]
+
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode.toString|toString(){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlStubEmptyNode.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+final class com.akuleshov7.ktoml.tree.nodes/TomlTable : com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlTable|null[0]
+    constructor <init>(com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey, kotlin/Int, com.akuleshov7.ktoml.tree.nodes/TableType, kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml.tree.nodes/TomlTable.<init>|<init>(com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey;kotlin.Int;com.akuleshov7.ktoml.tree.nodes.TableType;kotlin.collections.List<kotlin.String>;kotlin.String;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/String, kotlin/Int, com.akuleshov7.ktoml.tree.nodes/TableType, kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml.tree.nodes/TomlTable.<init>|<init>(kotlin.String;kotlin.Int;com.akuleshov7.ktoml.tree.nodes.TableType;kotlin.collections.List<kotlin.String>;kotlin.String;kotlin.Boolean){}[0]
+
+    final val lineNo // com.akuleshov7.ktoml.tree.nodes/TomlTable.lineNo|{}lineNo[0]
+        final fun <get-lineNo>(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes/TomlTable.lineNo.<get-lineNo>|<get-lineNo>(){}[0]
+    final val name // com.akuleshov7.ktoml.tree.nodes/TomlTable.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlTable.name.<get-name>|<get-name>(){}[0]
+    final val type // com.akuleshov7.ktoml.tree.nodes/TomlTable.type|{}type[0]
+        final fun <get-type>(): com.akuleshov7.ktoml.tree.nodes/TableType // com.akuleshov7.ktoml.tree.nodes/TomlTable.type.<get-type>|<get-type>(){}[0]
+
+    final var fullTableKey // com.akuleshov7.ktoml.tree.nodes/TomlTable.fullTableKey|{}fullTableKey[0]
+        final fun <get-fullTableKey>(): com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey // com.akuleshov7.ktoml.tree.nodes/TomlTable.fullTableKey.<get-fullTableKey>|<get-fullTableKey>(){}[0]
+        final fun <set-fullTableKey>(com.akuleshov7.ktoml.tree.nodes.pairs.keys/TomlKey) // com.akuleshov7.ktoml.tree.nodes/TomlTable.fullTableKey.<set-fullTableKey>|<set-fullTableKey>(com.akuleshov7.ktoml.tree.nodes.pairs.keys.TomlKey){}[0]
+    final var isSynthetic // com.akuleshov7.ktoml.tree.nodes/TomlTable.isSynthetic|{}isSynthetic[0]
+        final fun <get-isSynthetic>(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes/TomlTable.isSynthetic.<get-isSynthetic>|<get-isSynthetic>(){}[0]
+        final fun <set-isSynthetic>(kotlin/Boolean) // com.akuleshov7.ktoml.tree.nodes/TomlTable.isSynthetic.<set-isSynthetic>|<set-isSynthetic>(kotlin.Boolean){}[0]
+    final var tablesList // com.akuleshov7.ktoml.tree.nodes/TomlTable.tablesList|{}tablesList[0]
+        final fun <get-tablesList>(): kotlin.collections/List<kotlin/String> // com.akuleshov7.ktoml.tree.nodes/TomlTable.tablesList.<get-tablesList>|<get-tablesList>(){}[0]
+        final fun <set-tablesList>(kotlin.collections/List<kotlin/String>) // com.akuleshov7.ktoml.tree.nodes/TomlTable.tablesList.<set-tablesList>|<set-tablesList>(kotlin.collections.List<kotlin.String>){}[0]
+
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlTable.toString|toString(){}[0]
+    final fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlTable.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final object Companion // com.akuleshov7.ktoml.tree.nodes/TomlTable.Companion|null[0]
+}
+
+final class com.akuleshov7.ktoml/TomlElement { // com.akuleshov7.ktoml/TomlElement|null[0]
+    final val kind // com.akuleshov7.ktoml/TomlElement.kind|{}kind[0]
+        final fun <get-kind>(): com.akuleshov7.ktoml/TomlElementKind // com.akuleshov7.ktoml/TomlElement.kind.<get-kind>|<get-kind>(){}[0]
+
+    final fun keys(): kotlin.collections/Set<kotlin/String> // com.akuleshov7.ktoml/TomlElement.keys|keys(){}[0]
+    final fun tables(): kotlin.collections/Map<kotlin/String, com.akuleshov7.ktoml/TomlElement> // com.akuleshov7.ktoml/TomlElement.tables|tables(){}[0]
+}
+
+final class com.akuleshov7.ktoml/TomlInputConfig { // com.akuleshov7.ktoml/TomlInputConfig|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml/TomlInputConfig.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml/TomlInputConfig.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val allowEmptyToml // com.akuleshov7.ktoml/TomlInputConfig.allowEmptyToml|{}allowEmptyToml[0]
+        final fun <get-allowEmptyToml>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.allowEmptyToml.<get-allowEmptyToml>|<get-allowEmptyToml>(){}[0]
+    final val allowEmptyValues // com.akuleshov7.ktoml/TomlInputConfig.allowEmptyValues|{}allowEmptyValues[0]
+        final fun <get-allowEmptyValues>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.allowEmptyValues.<get-allowEmptyValues>|<get-allowEmptyValues>(){}[0]
+    final val allowEscapedQuotesInLiteralStrings // com.akuleshov7.ktoml/TomlInputConfig.allowEscapedQuotesInLiteralStrings|{}allowEscapedQuotesInLiteralStrings[0]
+        final fun <get-allowEscapedQuotesInLiteralStrings>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.allowEscapedQuotesInLiteralStrings.<get-allowEscapedQuotesInLiteralStrings>|<get-allowEscapedQuotesInLiteralStrings>(){}[0]
+    final val allowNullValues // com.akuleshov7.ktoml/TomlInputConfig.allowNullValues|{}allowNullValues[0]
+        final fun <get-allowNullValues>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.allowNullValues.<get-allowNullValues>|<get-allowNullValues>(){}[0]
+    final val allowTableRedefinition // com.akuleshov7.ktoml/TomlInputConfig.allowTableRedefinition|{}allowTableRedefinition[0]
+        final fun <get-allowTableRedefinition>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.allowTableRedefinition.<get-allowTableRedefinition>|<get-allowTableRedefinition>(){}[0]
+    final val ignoreDefaultValues // com.akuleshov7.ktoml/TomlInputConfig.ignoreDefaultValues|{}ignoreDefaultValues[0]
+        final fun <get-ignoreDefaultValues>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.ignoreDefaultValues.<get-ignoreDefaultValues>|<get-ignoreDefaultValues>(){}[0]
+    final val ignoreUnknownNames // com.akuleshov7.ktoml/TomlInputConfig.ignoreUnknownNames|{}ignoreUnknownNames[0]
+        final fun <get-ignoreUnknownNames>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.ignoreUnknownNames.<get-ignoreUnknownNames>|<get-ignoreUnknownNames>(){}[0]
+
+    final fun component1(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component5|component5(){}[0]
+    final fun component6(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component6|component6(){}[0]
+    final fun component7(): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.component7|component7(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml/TomlInputConfig // com.akuleshov7.ktoml/TomlInputConfig.copy|copy(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml/TomlInputConfig // com.akuleshov7.ktoml/TomlInputConfig.copy|copy(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml/TomlInputConfig.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml/TomlInputConfig.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml/TomlInputConfig.toString|toString(){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml/TomlInputConfig.Companion|null[0]
+        final fun compliant(kotlin/Boolean = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml/TomlInputConfig // com.akuleshov7.ktoml/TomlInputConfig.Companion.compliant|compliant(kotlin.Boolean;kotlin.Boolean){}[0]
+    }
+}
+
+final class com.akuleshov7.ktoml/TomlOutputConfig { // com.akuleshov7.ktoml/TomlOutputConfig|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlIndentation = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.akuleshov7.ktoml/TomlOutputConfig.<init>|<init>(com.akuleshov7.ktoml.TomlIndentation;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val allowEscapedQuotesInLiteralStrings // com.akuleshov7.ktoml/TomlOutputConfig.allowEscapedQuotesInLiteralStrings|{}allowEscapedQuotesInLiteralStrings[0]
+        final fun <get-allowEscapedQuotesInLiteralStrings>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.allowEscapedQuotesInLiteralStrings.<get-allowEscapedQuotesInLiteralStrings>|<get-allowEscapedQuotesInLiteralStrings>(){}[0]
+    final val explicitTables // com.akuleshov7.ktoml/TomlOutputConfig.explicitTables|{}explicitTables[0]
+        final fun <get-explicitTables>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.explicitTables.<get-explicitTables>|<get-explicitTables>(){}[0]
+    final val ignoreDefaultValues // com.akuleshov7.ktoml/TomlOutputConfig.ignoreDefaultValues|{}ignoreDefaultValues[0]
+        final fun <get-ignoreDefaultValues>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.ignoreDefaultValues.<get-ignoreDefaultValues>|<get-ignoreDefaultValues>(){}[0]
+    final val ignoreNullValues // com.akuleshov7.ktoml/TomlOutputConfig.ignoreNullValues|{}ignoreNullValues[0]
+        final fun <get-ignoreNullValues>(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.ignoreNullValues.<get-ignoreNullValues>|<get-ignoreNullValues>(){}[0]
+    final val indentation // com.akuleshov7.ktoml/TomlOutputConfig.indentation|{}indentation[0]
+        final fun <get-indentation>(): com.akuleshov7.ktoml/TomlIndentation // com.akuleshov7.ktoml/TomlOutputConfig.indentation.<get-indentation>|<get-indentation>(){}[0]
+
+    final fun component1(): com.akuleshov7.ktoml/TomlIndentation // com.akuleshov7.ktoml/TomlOutputConfig.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.component5|component5(){}[0]
+    final fun copy(com.akuleshov7.ktoml/TomlIndentation = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml/TomlOutputConfig // com.akuleshov7.ktoml/TomlOutputConfig.copy|copy(com.akuleshov7.ktoml.TomlIndentation;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml/TomlOutputConfig.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml/TomlOutputConfig.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml/TomlOutputConfig.toString|toString(){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml/TomlOutputConfig.Companion|null[0]
+        final fun compliant(com.akuleshov7.ktoml/TomlIndentation = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml/TomlOutputConfig // com.akuleshov7.ktoml/TomlOutputConfig.Companion.compliant|compliant(com.akuleshov7.ktoml.TomlIndentation;kotlin.Boolean;kotlin.Boolean){}[0]
+    }
+}
+
+final value class com.akuleshov7.ktoml.parsers/TomlParser { // com.akuleshov7.ktoml.parsers/TomlParser|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlInputConfig) // com.akuleshov7.ktoml.parsers/TomlParser.<init>|<init>(com.akuleshov7.ktoml.TomlInputConfig){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.parsers/TomlParser.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.parsers/TomlParser.hashCode|hashCode(){}[0]
+    final fun parseLines(kotlin.sequences/Sequence<kotlin/String>): com.akuleshov7.ktoml.tree.nodes/TomlFile // com.akuleshov7.ktoml.parsers/TomlParser.parseLines|parseLines(kotlin.sequences.Sequence<kotlin.String>){}[0]
+    final fun parseString(kotlin/String): com.akuleshov7.ktoml.tree.nodes/TomlFile // com.akuleshov7.ktoml.parsers/TomlParser.parseString|parseString(kotlin.String){}[0]
+    final fun parseStringsToTomlTree(kotlin.sequences/Sequence<kotlin/String>, com.akuleshov7.ktoml/TomlInputConfig): com.akuleshov7.ktoml.tree.nodes/TomlFile // com.akuleshov7.ktoml.parsers/TomlParser.parseStringsToTomlTree|parseStringsToTomlTree(kotlin.sequences.Sequence<kotlin.String>;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.parsers/TomlParser.toString|toString(){}[0]
+}
+
+final value class com.akuleshov7.ktoml.writers/TomlWriter { // com.akuleshov7.ktoml.writers/TomlWriter|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.writers/TomlWriter.<init>|<init>(com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.akuleshov7.ktoml.writers/TomlWriter.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.akuleshov7.ktoml.writers/TomlWriter.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.akuleshov7.ktoml.writers/TomlWriter.toString|toString(){}[0]
+    final fun write(com.akuleshov7.ktoml.tree.nodes/TomlFile, com.akuleshov7.ktoml.writers/TomlEmitter) // com.akuleshov7.ktoml.writers/TomlWriter.write|write(com.akuleshov7.ktoml.tree.nodes.TomlFile;com.akuleshov7.ktoml.writers.TomlEmitter){}[0]
+    final fun writeToString(com.akuleshov7.ktoml.tree.nodes/TomlFile, kotlin.text/StringBuilder = ...): kotlin/String // com.akuleshov7.ktoml.writers/TomlWriter.writeToString|writeToString(com.akuleshov7.ktoml.tree.nodes.TomlFile;kotlin.text.StringBuilder){}[0]
+}
+
+open class com.akuleshov7.ktoml/Toml : kotlinx.serialization/StringFormat { // com.akuleshov7.ktoml/Toml|null[0]
+    constructor <init>(com.akuleshov7.ktoml/TomlInputConfig = ..., com.akuleshov7.ktoml/TomlOutputConfig = ..., kotlinx.serialization.modules/SerializersModule = ...) // com.akuleshov7.ktoml/Toml.<init>|<init>(com.akuleshov7.ktoml.TomlInputConfig;com.akuleshov7.ktoml.TomlOutputConfig;kotlinx.serialization.modules.SerializersModule){}[0]
+
+    final val inputConfig // com.akuleshov7.ktoml/Toml.inputConfig|{}inputConfig[0]
+        final fun <get-inputConfig>(): com.akuleshov7.ktoml/TomlInputConfig // com.akuleshov7.ktoml/Toml.inputConfig.<get-inputConfig>|<get-inputConfig>(){}[0]
+    final val outputConfig // com.akuleshov7.ktoml/Toml.outputConfig|{}outputConfig[0]
+        final fun <get-outputConfig>(): com.akuleshov7.ktoml/TomlOutputConfig // com.akuleshov7.ktoml/Toml.outputConfig.<get-outputConfig>|<get-outputConfig>(){}[0]
+    final val tomlParser // com.akuleshov7.ktoml/Toml.tomlParser|{}tomlParser[0]
+        final fun <get-tomlParser>(): com.akuleshov7.ktoml.parsers/TomlParser // com.akuleshov7.ktoml/Toml.tomlParser.<get-tomlParser>|<get-tomlParser>(){}[0]
+    final val tomlWriter // com.akuleshov7.ktoml/Toml.tomlWriter|{}tomlWriter[0]
+        final fun <get-tomlWriter>(): com.akuleshov7.ktoml.writers/TomlWriter // com.akuleshov7.ktoml/Toml.tomlWriter.<get-tomlWriter>|<get-tomlWriter>(){}[0]
+    open val serializersModule // com.akuleshov7.ktoml/Toml.serializersModule|{}serializersModule[0]
+        open fun <get-serializersModule>(): kotlinx.serialization.modules/SerializersModule // com.akuleshov7.ktoml/Toml.serializersModule.<get-serializersModule>|<get-serializersModule>(){}[0]
+
+    final fun <#A1: kotlin/Any?> decodeFromString(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin.sequences/Sequence<kotlin/String>, com.akuleshov7.ktoml/TomlInputConfig = ...): #A1 // com.akuleshov7.ktoml/Toml.decodeFromString|decodeFromString(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.sequences.Sequence<kotlin.String>;com.akuleshov7.ktoml.TomlInputConfig){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> decodeFromTomlElement(kotlinx.serialization/DeserializationStrategy<#A1>, com.akuleshov7.ktoml/TomlElement): #A1 // com.akuleshov7.ktoml/Toml.decodeFromTomlElement|decodeFromTomlElement(kotlinx.serialization.DeserializationStrategy<0:0>;com.akuleshov7.ktoml.TomlElement){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> decodeFromTomlNode(kotlinx.serialization/DeserializationStrategy<#A1>, com.akuleshov7.ktoml.tree.nodes/TomlNode): #A1 // com.akuleshov7.ktoml/Toml.decodeFromTomlNode|decodeFromTomlNode(kotlinx.serialization.DeserializationStrategy<0:0>;com.akuleshov7.ktoml.tree.nodes.TomlNode){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> encodeToEmitter(kotlinx.serialization/SerializationStrategy<#A1>, #A1, kotlin/Function1<kotlin/String, kotlin/Unit>, kotlin/Function1<kotlin/Char, kotlin/Unit>) // com.akuleshov7.ktoml/Toml.encodeToEmitter|encodeToEmitter(kotlinx.serialization.SerializationStrategy<0:0>;0:0;kotlin.Function1<kotlin.String,kotlin.Unit>;kotlin.Function1<kotlin.Char,kotlin.Unit>){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> partiallyDecodeFromLines(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin.sequences/Sequence<kotlin/String>, kotlin/String, com.akuleshov7.ktoml/TomlInputConfig = ...): #A1 // com.akuleshov7.ktoml/Toml.partiallyDecodeFromLines|partiallyDecodeFromLines(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.sequences.Sequence<kotlin.String>;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> partiallyDecodeFromString(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin.sequences/Sequence<kotlin/String>, kotlin/String, com.akuleshov7.ktoml/TomlInputConfig = ...): #A1 // com.akuleshov7.ktoml/Toml.partiallyDecodeFromString|partiallyDecodeFromString(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.sequences.Sequence<kotlin.String>;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> partiallyDecodeFromString(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin/String, kotlin/String, com.akuleshov7.ktoml/TomlInputConfig = ...): #A1 // com.akuleshov7.ktoml/Toml.partiallyDecodeFromString|partiallyDecodeFromString(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.String;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig){0§<kotlin.Any?>}[0]
+    final fun parseToTomlElement(kotlin/String): com.akuleshov7.ktoml/TomlElement // com.akuleshov7.ktoml/Toml.parseToTomlElement|parseToTomlElement(kotlin.String){}[0]
+    open fun <#A1: kotlin/Any?> decodeFromString(kotlinx.serialization/DeserializationStrategy<#A1>, kotlin/String): #A1 // com.akuleshov7.ktoml/Toml.decodeFromString|decodeFromString(kotlinx.serialization.DeserializationStrategy<0:0>;kotlin.String){0§<kotlin.Any?>}[0]
+    open fun <#A1: kotlin/Any?> encodeToString(kotlinx.serialization/SerializationStrategy<#A1>, #A1): kotlin/String // com.akuleshov7.ktoml/Toml.encodeToString|encodeToString(kotlinx.serialization.SerializationStrategy<0:0>;0:0){0§<kotlin.Any?>}[0]
+
+    final object Default : com.akuleshov7.ktoml/Toml // com.akuleshov7.ktoml/Toml.Default|null[0]
+}
+
+sealed class com.akuleshov7.ktoml.exceptions/TomlDecodingException : kotlinx.serialization/SerializationException // com.akuleshov7.ktoml.exceptions/TomlDecodingException|null[0]
+
+sealed class com.akuleshov7.ktoml.exceptions/TomlEncodingException : kotlinx.serialization/SerializationException // com.akuleshov7.ktoml.exceptions/TomlEncodingException|null[0]
+
+sealed class com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue { // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue|null[0]
+    abstract var content // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue.content|{}content[0]
+        abstract fun <get-content>(): kotlin/Any // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue.content.<get-content>|<get-content>(){}[0]
+        abstract fun <set-content>(kotlin/Any) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue.content.<set-content>|<set-content>(kotlin.Any){}[0]
+
+    abstract fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig = ...) // com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+}
+
+sealed class com.akuleshov7.ktoml.tree.nodes/TomlNode { // com.akuleshov7.ktoml.tree.nodes/TomlNode|null[0]
+    abstract val name // com.akuleshov7.ktoml.tree.nodes/TomlNode.name|{}name[0]
+        abstract fun <get-name>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlNode.name.<get-name>|<get-name>(){}[0]
+    final val comments // com.akuleshov7.ktoml.tree.nodes/TomlNode.comments|{}comments[0]
+        final fun <get-comments>(): kotlin.collections/MutableList<kotlin/String> // com.akuleshov7.ktoml.tree.nodes/TomlNode.comments.<get-comments>|<get-comments>(){}[0]
+    final val inlineComment // com.akuleshov7.ktoml.tree.nodes/TomlNode.inlineComment|{}inlineComment[0]
+        final fun <get-inlineComment>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlNode.inlineComment.<get-inlineComment>|<get-inlineComment>(){}[0]
+    open val children // com.akuleshov7.ktoml.tree.nodes/TomlNode.children|{}children[0]
+        open fun <get-children>(): kotlin.collections/MutableList<com.akuleshov7.ktoml.tree.nodes/TomlNode> // com.akuleshov7.ktoml.tree.nodes/TomlNode.children.<get-children>|<get-children>(){}[0]
+    open val lineNo // com.akuleshov7.ktoml.tree.nodes/TomlNode.lineNo|{}lineNo[0]
+        open fun <get-lineNo>(): kotlin/Int // com.akuleshov7.ktoml.tree.nodes/TomlNode.lineNo.<get-lineNo>|<get-lineNo>(){}[0]
+
+    open var parent // com.akuleshov7.ktoml.tree.nodes/TomlNode.parent|{}parent[0]
+        open fun <get-parent>(): com.akuleshov7.ktoml.tree.nodes/TomlNode? // com.akuleshov7.ktoml.tree.nodes/TomlNode.parent.<get-parent>|<get-parent>(){}[0]
+        open fun <set-parent>(com.akuleshov7.ktoml.tree.nodes/TomlNode?) // com.akuleshov7.ktoml.tree.nodes/TomlNode.parent.<set-parent>|<set-parent>(com.akuleshov7.ktoml.tree.nodes.TomlNode?){}[0]
+
+    abstract fun write(com.akuleshov7.ktoml.writers/TomlEmitter, com.akuleshov7.ktoml/TomlOutputConfig = ...) // com.akuleshov7.ktoml.tree.nodes/TomlNode.write|write(com.akuleshov7.ktoml.writers.TomlEmitter;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+    final fun (com.akuleshov7.ktoml.writers/TomlEmitter).writeChildComments(com.akuleshov7.ktoml.tree.nodes/TomlNode) // com.akuleshov7.ktoml.tree.nodes/TomlNode.writeChildComments|writeChildComments@com.akuleshov7.ktoml.writers.TomlEmitter(com.akuleshov7.ktoml.tree.nodes.TomlNode){}[0]
+    final fun (com.akuleshov7.ktoml.writers/TomlEmitter).writeChildInlineComment(com.akuleshov7.ktoml.tree.nodes/TomlNode) // com.akuleshov7.ktoml.tree.nodes/TomlNode.writeChildInlineComment|writeChildInlineComment@com.akuleshov7.ktoml.writers.TomlEmitter(com.akuleshov7.ktoml.tree.nodes.TomlNode){}[0]
+    final fun appendChild(com.akuleshov7.ktoml.tree.nodes/TomlNode) // com.akuleshov7.ktoml.tree.nodes/TomlNode.appendChild|appendChild(com.akuleshov7.ktoml.tree.nodes.TomlNode){}[0]
+    final fun findTableInAstByName(kotlin/String): com.akuleshov7.ktoml.tree.nodes/TomlTable? // com.akuleshov7.ktoml.tree.nodes/TomlNode.findTableInAstByName|findTableInAstByName(kotlin.String){}[0]
+    final fun getAllChildTomlTables(): kotlin.collections/List<com.akuleshov7.ktoml.tree.nodes/TomlTable> // com.akuleshov7.ktoml.tree.nodes/TomlNode.getAllChildTomlTables|getAllChildTomlTables(){}[0]
+    final fun getFirstChild(): com.akuleshov7.ktoml.tree.nodes/TomlNode? // com.akuleshov7.ktoml.tree.nodes/TomlNode.getFirstChild|getFirstChild(){}[0]
+    final fun getRealTomlTables(): kotlin.collections/List<com.akuleshov7.ktoml.tree.nodes/TomlTable> // com.akuleshov7.ktoml.tree.nodes/TomlNode.getRealTomlTables|getRealTomlTables(){}[0]
+    final fun hasNoChildren(): kotlin/Boolean // com.akuleshov7.ktoml.tree.nodes/TomlNode.hasNoChildren|hasNoChildren(){}[0]
+    final fun insertTableToTree(com.akuleshov7.ktoml.tree.nodes/TomlTable, com.akuleshov7.ktoml.tree.nodes/TomlArrayOfTablesElement? = ..., com.akuleshov7.ktoml.tree.nodes/TableInsertionType = ..., kotlin/Int = ..., kotlin/Boolean = ...): com.akuleshov7.ktoml.tree.nodes/TomlNode // com.akuleshov7.ktoml.tree.nodes/TomlNode.insertTableToTree|insertTableToTree(com.akuleshov7.ktoml.tree.nodes.TomlTable;com.akuleshov7.ktoml.tree.nodes.TomlArrayOfTablesElement?;com.akuleshov7.ktoml.tree.nodes.TableInsertionType;kotlin.Int;kotlin.Boolean){}[0]
+    final fun prettyPrint(kotlin/Boolean = ...) // com.akuleshov7.ktoml.tree.nodes/TomlNode.prettyPrint|prettyPrint(kotlin.Boolean){}[0]
+    final fun prettyStr(kotlin/Boolean = ...): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlNode.prettyStr|prettyStr(kotlin.Boolean){}[0]
+    open fun (com.akuleshov7.ktoml.writers/TomlEmitter).writeChildren(kotlin.collections/List<com.akuleshov7.ktoml.tree.nodes/TomlNode>, com.akuleshov7.ktoml/TomlOutputConfig) // com.akuleshov7.ktoml.tree.nodes/TomlNode.writeChildren|writeChildren@com.akuleshov7.ktoml.writers.TomlEmitter(kotlin.collections.List<com.akuleshov7.ktoml.tree.nodes.TomlNode>;com.akuleshov7.ktoml.TomlOutputConfig){}[0]
+    open fun getNeighbourNodes(): kotlin.collections/MutableList<com.akuleshov7.ktoml.tree.nodes/TomlNode> // com.akuleshov7.ktoml.tree.nodes/TomlNode.getNeighbourNodes|getNeighbourNodes(){}[0]
+    open fun toString(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/TomlNode.toString|toString(){}[0]
+
+    final object Companion { // com.akuleshov7.ktoml.tree.nodes/TomlNode.Companion|null[0]
+        final fun prettyPrint(com.akuleshov7.ktoml.tree.nodes/TomlNode, kotlin.text/StringBuilder, kotlin/Boolean = ..., kotlin/Int = ...) // com.akuleshov7.ktoml.tree.nodes/TomlNode.Companion.prettyPrint|prettyPrint(com.akuleshov7.ktoml.tree.nodes.TomlNode;kotlin.text.StringBuilder;kotlin.Boolean;kotlin.Int){}[0]
+    }
+}
+
+final const val com.akuleshov7.ktoml.tree.nodes/EMPTY_TECHNICAL_NODE // com.akuleshov7.ktoml.tree.nodes/EMPTY_TECHNICAL_NODE|{}EMPTY_TECHNICAL_NODE[0]
+    final fun <get-EMPTY_TECHNICAL_NODE>(): kotlin/String // com.akuleshov7.ktoml.tree.nodes/EMPTY_TECHNICAL_NODE.<get-EMPTY_TECHNICAL_NODE>|<get-EMPTY_TECHNICAL_NODE>(){}[0]
+
+final fun (kotlin.collections/Iterable<kotlin/String>).com.akuleshov7.ktoml.utils/closestEnumName(kotlin/String): kotlin/String? // com.akuleshov7.ktoml.utils/closestEnumName|closestEnumName@kotlin.collections.Iterable<kotlin.String>(kotlin.String){}[0]
+final fun (kotlin.text/StringBuilder).com.akuleshov7.ktoml.utils/appendEscapedUnicode(kotlin/String, kotlin/Char, kotlin/Int, kotlin/Int): kotlin/Int // com.akuleshov7.ktoml.utils/appendEscapedUnicode|appendEscapedUnicode@kotlin.text.StringBuilder(kotlin.String;kotlin.Char;kotlin.Int;kotlin.Int){}[0]
+final fun (kotlin/String).com.akuleshov7.ktoml.parsers/parseTomlKeyValue(kotlin/Int, kotlin.collections/List<kotlin/String>, kotlin/String, com.akuleshov7.ktoml/TomlInputConfig): com.akuleshov7.ktoml.tree.nodes/TomlNode // com.akuleshov7.ktoml.parsers/parseTomlKeyValue|parseTomlKeyValue@kotlin.String(kotlin.Int;kotlin.collections.List<kotlin.String>;kotlin.String;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+final fun (kotlin/String).com.akuleshov7.ktoml.tree.nodes/parseList(kotlin/Int, com.akuleshov7.ktoml/TomlInputConfig): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlArray // com.akuleshov7.ktoml.tree.nodes/parseList|parseList@kotlin.String(kotlin.Int;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+final fun (kotlin/String).com.akuleshov7.ktoml.tree.nodes/parseValue(kotlin/Int, com.akuleshov7.ktoml/TomlInputConfig): com.akuleshov7.ktoml.tree.nodes.pairs.values/TomlValue // com.akuleshov7.ktoml.tree.nodes/parseValue|parseValue@kotlin.String(kotlin.Int;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+final fun (kotlin/String).com.akuleshov7.ktoml.tree.nodes/splitKeyValue(kotlin/Int, com.akuleshov7.ktoml/TomlInputConfig = ...): kotlin/Pair<kotlin/String, kotlin/String> // com.akuleshov7.ktoml.tree.nodes/splitKeyValue|splitKeyValue@kotlin.String(kotlin.Int;com.akuleshov7.ktoml.TomlInputConfig){}[0]
+final fun (kotlin/String).com.akuleshov7.ktoml.utils/convertSpecialCharacters(kotlin/Int): kotlin/String // com.akuleshov7.ktoml.utils/convertSpecialCharacters|convertSpecialCharacters@kotlin.String(kotlin.Int){}[0]
+final fun (kotlin/String).com.akuleshov7.ktoml.utils/escapeSpecialCharacters(kotlin/Boolean = ...): kotlin/String // com.akuleshov7.ktoml.utils/escapeSpecialCharacters|escapeSpecialCharacters@kotlin.String(kotlin.Boolean){}[0]
+final fun com.akuleshov7.ktoml.utils/findPrimitiveTableInAstByName(kotlin.collections/List<com.akuleshov7.ktoml.tree.nodes/TomlNode>, kotlin/String): com.akuleshov7.ktoml.tree.nodes/TomlTable? // com.akuleshov7.ktoml.utils/findPrimitiveTableInAstByName|findPrimitiveTableInAstByName(kotlin.collections.List<com.akuleshov7.ktoml.tree.nodes.TomlNode>;kotlin.String){}[0]
+final fun com.akuleshov7.ktoml.utils/levenshteinDistance(kotlin/String, kotlin/String): kotlin/Int // com.akuleshov7.ktoml.utils/levenshteinDistance|levenshteinDistance(kotlin.String;kotlin.String){}[0]
+final fun com.akuleshov7.ktoml.utils/newLineChar(): kotlin/Char // com.akuleshov7.ktoml.utils/newLineChar|newLineChar(){}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml/decodeFromTomlElement(com.akuleshov7.ktoml/TomlElement): #A // com.akuleshov7.ktoml/decodeFromTomlElement|decodeFromTomlElement@com.akuleshov7.ktoml.Toml(com.akuleshov7.ktoml.TomlElement){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> (com.akuleshov7.ktoml/Toml).com.akuleshov7.ktoml/decodeFromTomlNode(com.akuleshov7.ktoml.tree.nodes/TomlNode): #A // com.akuleshov7.ktoml/decodeFromTomlNode|decodeFromTomlNode@com.akuleshov7.ktoml.Toml(com.akuleshov7.ktoml.tree.nodes.TomlNode){0§<kotlin.Any?>}[0]

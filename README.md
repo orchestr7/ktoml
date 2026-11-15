@@ -42,7 +42,9 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml is built with Kotlin 2.4.21.
+:globe_with_meridians: ktoml is built with Kotlin 2.4.21. JVM consumers are also tested with
+Kotlin 2.3.0, including that compiler's serialization plugin. The build compiler's patch version
+is not a consumer compiler requirement. See [compiler compatibility](BINARY_COMPATIBILITY.md#kotlin-compiler-compatibility).
 
 ## TOML support
 
