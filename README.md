@@ -197,9 +197,70 @@ val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /
 </details>
 
 <details>
-<summary>Toml File deserialization</summary>
+<summary>Experimental parsed elements</summary>
+
+Parse a document once, retain a table handle, and decode it into a serializable type. `TomlElement`
+exposes `kind`, `keys()` and `tables()`; it keeps the mutable parser AST behind an experimental API.
 
 ```kotlin
+@file:OptIn(com.akuleshov7.ktoml.annotations.ExperimentalKtomlApi::class)
+
+import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.decodeFromTomlElement
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Server(val port: Int)
+
+val document = Toml.parseToTomlElement("[server]\nport = 8080")
+val server = Toml.decodeFromTomlElement<Server>(document.tables().getValue("server"))
+```
+
+</details>
+
+<details>
+<summary>Decoding an already-parsed node (parse once, decode many)</summary>
+
+`partiallyDecodeFromString` re-parses the whole input on every call. When you need to decode several
+tables from the same document, parse it **once** with `tomlParser`, traverse the resulting AST, and
+decode the nodes you care about with `decodeFromTomlNode` — no re-parsing per node.
+
+This is also the building block for binding a set of nested tables to a `Map` keyed by the table path
+(TOML's data model is nested, so ktoml does not invent a flat path-keyed map — you compose it yourself
+with full control):
+
+```kotlin
+@file:OptIn(
+    com.akuleshov7.ktoml.annotations.ExperimentalKtomlApi::class,
+    com.akuleshov7.ktoml.annotations.InternalKtomlApi::class,
+)
+
+import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.decodeFromTomlNode
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Foobar(val foo: String, val bar: String)
+
+// [a]          -> "a"
+// [b.a], [b.b] -> "b.a", "b.b"
+// [x.y.z]      -> "x.y.z"
+val file = Toml.tomlParser.parseString(/* string with a toml input */)   // a single parse
+val byPath: Map<String, Foobar> = file.getRealTomlTables().associate { table ->
+    table.fullTableKey.toString() to Toml.decodeFromTomlNode<Foobar>(table)
+}
+
+// or decode a single, already-picked table/file node:
+val server = file.findTableInAstByName("server")!!
+val decoded = Toml.decodeFromTomlNode<Foobar>(server)
+```
+</details>
+
+<details>
+<summary>Legacy Toml File deserialization</summary>
+
+```kotlin
+// deprecated compatibility API from com.akuleshov7:ktoml-file
 import com.akuleshov7.ktoml.file.TomlFileReader
 
 val resultFromString = TomlFileReader.decodeFromFile<MyClass>(serializer(), /* file path to toml file */)
@@ -214,6 +275,7 @@ For this purpose we have prepared `toml-source` module and implemented an
 with java streams for JVM target.
 
 ```kotlin
+// deprecated compatibility API from com.akuleshov7:ktoml-source
 import com.akuleshov7.ktoml.source.TomlSourceReader
 
 val resultFromString = TomlSourceReader.decodeFromSource<MyClass>(serializer(), /* your source */)
@@ -296,6 +358,7 @@ val toml = Toml.encodeToString(MyClass(/* ... */))
 <summary>Legacy Toml File serialization</summary>
 
 ```kotlin
+// deprecated compatibility API from com.akuleshov7:ktoml-file
 import com.akuleshov7.ktoml.file.TomlFileWriter
 
 TomlFileWriter.encodeToFile(MyClass.serializer(), value, /* file path to toml file */)
