@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.InternalAstException
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
@@ -8,6 +9,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * A root node for TOML Abstract Syntax Tree
  */
 @Suppress("EMPTY_PRIMARY_CONSTRUCTOR")
+@InternalKtomlApi
 public class TomlFile() : TomlNode(
     lineNo = 0,
     comments = emptyList(),

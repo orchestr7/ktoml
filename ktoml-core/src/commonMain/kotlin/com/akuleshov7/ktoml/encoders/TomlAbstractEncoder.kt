@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.InternalEncodingException
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.exceptions.UnsupportedEncodingFeatureException
@@ -9,10 +10,6 @@ import com.akuleshov7.ktoml.tree.nodes.pairs.values.*
 import com.akuleshov7.ktoml.utils.isBareKey
 import com.akuleshov7.ktoml.utils.isLiteralKeyCandidate
 
-import kotlin.time.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.builtins.serializer
@@ -30,6 +27,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @property serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class, kotlin.time.ExperimentalTime::class)
+@InternalKtomlApi
 public abstract class TomlAbstractEncoder protected constructor(
     protected var elementIndex: Int,
     protected val attributes: TomlEncoderAttributes,
@@ -37,10 +35,6 @@ public abstract class TomlAbstractEncoder protected constructor(
     override val serializersModule: SerializersModule,
 ) : AbstractEncoder() {
     private var isNextElementKey = false
-    private val instantDescriptor = Instant.serializer().descriptor
-    private val localDateTimeDescriptor = LocalDateTime.serializer().descriptor
-    private val localDateDescriptor = LocalDate.serializer().descriptor
-    private val localTimeDescriptor = LocalTime.serializer().descriptor
 
     protected open fun nextElementIndex(): Int = ++elementIndex
 
@@ -128,27 +122,36 @@ public abstract class TomlAbstractEncoder protected constructor(
 
     @Suppress("NESTED_BLOCK")
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
-        when (val desc = serializer.descriptor) {
-            instantDescriptor,
-            localDateTimeDescriptor,
-            localDateDescriptor,
-            localTimeDescriptor -> if (!encodeAsKey(value as Any, desc.serialName)) {
-                appendValue(TomlDateTime(value))
+        val desc = serializer.descriptor
+        // Date-time types are detected by serial name (no dependency on a date library). We take their
+        // canonical text via toString() and emit it as a bare TOML date-time, not a quoted string.
+        if (desc.serialName in dateTimeSerialNames) {
+            if (!encodeAsKey(value as Any, desc.serialName)) {
+                appendValue(TomlDateTime(dateTimeHolder(desc.serialName, value)))
             }
-            else -> when (val kind = desc.kind) {
-                is StructureKind,
-                is PolymorphicKind -> when {
-                    desc.isInline -> serializer.serialize(this, value)
-                    !encodeAsKey(value as Any, desc.serialName) -> {
-                        val encoder = encodeStructure(kind)
-                        serializer.serialize(encoder, value)
-                        elementIndex = encoder.elementIndex
-                        attributes.reset()
-                    }
-                }
-                else -> super.encodeSerializableValue(serializer, value)
-            }
+            return
         }
+        when (val kind = desc.kind) {
+            is StructureKind,
+            is PolymorphicKind -> when {
+                desc.isInline -> serializer.serialize(this, value)
+                !encodeAsKey(value as Any, desc.serialName) -> {
+                    val encoder = encodeStructure(kind)
+                    serializer.serialize(encoder, value)
+                    elementIndex = encoder.elementIndex
+                    attributes.reset()
+                }
+            }
+            else -> super.encodeSerializableValue(serializer, value)
+        }
+    }
+
+    private fun dateTimeHolder(serialName: String, value: Any): Any = when (serialName) {
+        TomlDateTime.INSTANT_SERIAL_NAME -> TomlOffsetDateTime(value.toString())
+        TomlDateTime.LOCAL_DATE_TIME_SERIAL_NAME -> TomlLocalDateTime(value.toString())
+        TomlDateTime.LOCAL_DATE_SERIAL_NAME -> TomlLocalDate(value.toString())
+        TomlDateTime.LOCAL_TIME_SERIAL_NAME -> TomlLocalTime(value.toString())
+        else -> throw InternalEncodingException("Unexpected date-time serial name: $serialName")
     }
 
     override fun encodeByte(value: Byte): Unit = encodeLong(value.toLong())
@@ -324,4 +327,13 @@ public abstract class TomlAbstractEncoder protected constructor(
             outputConfig,
             serializersModule
         )
+
+    private companion object {
+        private val dateTimeSerialNames = setOf(
+            TomlDateTime.INSTANT_SERIAL_NAME,
+            TomlDateTime.LOCAL_DATE_TIME_SERIAL_NAME,
+            TomlDateTime.LOCAL_DATE_SERIAL_NAME,
+            TomlDateTime.LOCAL_TIME_SERIAL_NAME,
+        )
+    }
 }
