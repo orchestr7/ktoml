@@ -34,8 +34,10 @@ internal interface TomlKeyValue {
     fun createTomlTableFromDottedKey(parentNode: TomlNode): TomlTable {
         // for a key: a.b.c it will be [a, b]
         val syntheticTablePrefix = this.key.keyParts.dropLast(1)
-        // creating new key with the last dot-separated fragment
-        val realKeyWithoutDottedPrefix = TomlKey(key.last(), lineNo)
+        // creating new key from the last dot-separated fragment. We reuse the original raw token
+        // (e.g. the quoted "google.com") instead of re-parsing key.last(), which would unquote and
+        // then wrongly re-split a quoted dot back into several tokens.
+        val realKeyWithoutDottedPrefix = TomlKey(listOf(key.keyParts.last()))
         // updating current KeyValue with this key
         this.key = realKeyWithoutDottedPrefix
         // tables should contain fully qualified name, so we need to add parental name
@@ -125,7 +127,7 @@ public fun String.parseValue(lineNo: Int, config: TomlInputConfig): TomlValue = 
     // ===== special values
     "+inf", "inf" -> TomlDouble(Double.POSITIVE_INFINITY)
     "-inf" -> TomlDouble(Double.NEGATIVE_INFINITY)
-    "-nan", "+nan", "nan", "-NaN", "+NaN", "NaN" -> TomlDouble(Double.NaN)
+    "-nan", "+nan", "nan" -> TomlDouble(Double.NaN)
     // ===== null values
     "null", "nil", "NULL", "NIL", "" -> if (config.allowNullValues) {
         TomlNull()

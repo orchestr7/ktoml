@@ -2,11 +2,16 @@ package com.akuleshov7.ktoml.parsers
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.exceptions.InternalDecodingException
+import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.enums.MultilineType
 import com.akuleshov7.ktoml.tree.nodes.*
 import com.akuleshov7.ktoml.utils.LinesIteratorWrapper
+import com.akuleshov7.ktoml.utils.checkNoTomlControlChars
 import com.akuleshov7.ktoml.utils.newLineChar
 import kotlin.jvm.JvmInline
+
+private const val IDEOGRAPHIC_SPACE = '\u3000'
+private const val TRIPLE_QUOTE_LENGTH = 3
 
 /**
  * @param config - object that stores configuration options for a parser
@@ -50,16 +55,21 @@ public value class TomlParser(private val config: TomlInputConfig) {
         // link to the head of the tree
         val tomlFileHead = currentParentalNode as TomlFile
         // need to trim empty lines BEFORE the start of processing
-        val trimmedTomlLines = tomlLines.trimEmptyLines()
+        val trimmedTomlLines = tomlLines
+            .checkNoTomlControlChars()
+            .trimEmptyLines()
         // here we always store the bucket of the latest created array of tables
         var latestCreatedBucket: TomlArrayOfTablesElement? = null
 
         val comments: MutableList<String> = mutableListOf()
         val linesIterator = LinesIteratorWrapper(trimmedTomlLines.iterator())
+        // in spec-compliant mode we reject table/key redefinitions; ktoml's lenient default merges them
+        val validate = !config.allowTableRedefinition
         // all lines will be streamed sequentially
         while (linesIterator.hasNext()) {
             val line = linesIterator.next()
             val lineNo = linesIterator.lineNo
+            line.validateTomlWhitespace(lineNo, config)
 
             // comments and empty lines can easily be ignored in the TomlTree, but we cannot filter them out in mutableTomlLines
             // because we need to calculate and save lineNo
@@ -82,7 +92,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                     if (tomlLine.isArrayOfTables()) {
                         // TomlArrayOfTables contains all information about the ArrayOfTables ([[array of tables]])
                         val tableArray = TomlTable(tomlLine, lineNo, TableType.ARRAY)
-                        val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, latestCreatedBucket)
+                        val arrayOfTables = tomlFileHead.insertTableToTree(tableArray, latestCreatedBucket, validate = validate)
                         // creating a new empty element that will be used as an element in array and the parent for next key-value records
                         val newArrayElement = TomlArrayOfTablesElement(lineNo, comments, inlineComment)
                         // adding this element as a child to the array of tables
@@ -104,7 +114,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                         // covering the case when the processed table does not contain nor key-value pairs neither tables (after our insertion)
                         // adding fake nodes to a previous table (it has no children because we have found another table right after)
                         currentParentalNode.insertStub()
-                        currentParentalNode = tomlFileHead.insertTableToTree(tableSection)
+                        currentParentalNode = tomlFileHead.insertTableToTree(tableSection, validate = validate)
                     }
                 } else {
                     val keyValue = tomlLine.parseTomlKeyValue(lineNo, comments, inlineComment, config)
@@ -114,22 +124,45 @@ public value class TomlParser(private val config: TomlInputConfig) {
                             // in case parser has faced dot-separated complex key (a.b.c) it should create proper table [a.b],
                             // because table is the same as dotted key
                             tomlFileHead
-                                .insertTableToTree(keyValue.createTomlTableFromDottedKey(currentParentalNode))
-                                .appendChild(keyValue)
+                                .insertTableToTree(
+                                    keyValue.createTomlTableFromDottedKey(currentParentalNode),
+                                    insertionType = TableInsertionType.DOTTED_KEY,
+                                    containerDepth = currentParentalNode.sectionDepth(),
+                                    validate = validate
+                                )
+                                .appendCheckedKeyValue(keyValue, validate)
 
-                        keyValue is TomlInlineTable ->
+                        keyValue is TomlInlineTable -> {
                             // in case of inline tables (a = { b = "c" }) we need to create a new parental table and
                             // recursively process all inner nested tables (including inline and dotted)
-                            tomlFileHead.insertTableToTree(keyValue.returnTable(tomlFileHead, currentParentalNode))
+                            keyValue.key?.last()?.let { keyName ->
+                                currentParentalNode.checkKeyCanBeDefined(keyName, keyValue.lineNo, validate)
+                            }
+                            tomlFileHead.insertTableToTree(
+                                keyValue.returnTable(tomlFileHead, currentParentalNode, validate),
+                                insertionType = TableInsertionType.INLINE_TABLE,
+                                containerDepth = currentParentalNode.sectionDepth(),
+                                validate = validate
+                            )
+                        }
 
                         // otherwise, it should simply append the keyValue to the parent
-                        else -> currentParentalNode.appendChild(keyValue)
+                        else -> currentParentalNode.appendCheckedKeyValue(keyValue, validate)
                     }
                 }
                 comments.clear()
             }
         }
         return tomlFileHead
+    }
+
+    private fun Sequence<String>.checkNoTomlControlChars(): Sequence<String> = sequence {
+        var lineNo = 1
+        for (line in this@checkNoTomlControlChars) {
+            line.checkNoTomlControlChars(lineNo)
+            yield(line)
+            lineNo++
+        }
     }
 
     @Suppress("TOO_LONG_FUNCTION")
@@ -232,6 +265,45 @@ public value class TomlParser(private val config: TomlInputConfig) {
     private fun String.isComment() = this.trim().startsWith("#")
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
+
+    @Suppress("NESTED_BLOCK")
+    private fun String.validateTomlWhitespace(lineNo: Int, config: TomlInputConfig) {
+        val chars = replaceEscaped(config.allowEscapedQuotesInLiteralStrings)
+        var quote: String? = null
+        var index = 0
+        while (index < chars.length) {
+            val symbol = chars[index]
+            val currentQuote = quote
+            if (currentQuote == null) {
+                when {
+                    symbol == '#' -> return
+                    symbol == IDEOGRAPHIC_SPACE -> throw ParseException(
+                        "Only ASCII space and tab are permitted as TOML whitespace; found U+3000.",
+                        lineNo,
+                    )
+                    symbol == '"' || symbol == '\'' -> {
+                        val openingQuote = chars.openingQuoteAt(index, symbol)
+                        quote = openingQuote
+                        index += openingQuote.length
+                        continue
+                    }
+                    else -> Unit
+                }
+            } else if (chars.startsWith(currentQuote, index)) {
+                quote = null
+                index += currentQuote.length
+                continue
+            }
+            index += 1
+        }
+    }
+
+    private fun String.openingQuoteAt(index: Int, symbol: Char): String =
+        if (index + 2 < length && this[index + 1] == symbol && this[index + 2] == symbol) {
+            symbol.toString().repeat(TRIPLE_QUOTE_LENGTH)
+        } else {
+            symbol.toString()
+        }
 }
 
 /**
@@ -250,8 +322,13 @@ public fun String.parseTomlKeyValue(
     config: TomlInputConfig
 ): TomlNode {
     val keyValuePair = this.splitKeyValue(lineNo, config)
+    val value = keyValuePair.second
+    // [{..}, {..}] — a pure array of inline tables is modelled as an array-of-tables.
+    // A mixed array that only starts with an inline table ([{..}, "b", 1]) is a normal array.
+    val isArrayOfInlineTables = value.startsWithIgnoreAllWhitespaces("[{") &&
+            with(TomlInlineTable.Companion) { value.isArrayOfInlineTables() }
     return when {
-        keyValuePair.second.startsWithIgnoreAllWhitespaces("[{") ->
+        isArrayOfInlineTables ->
             TomlInlineTable(
                 keyValuePair, lineNo, comments, inlineComment, config
             )
