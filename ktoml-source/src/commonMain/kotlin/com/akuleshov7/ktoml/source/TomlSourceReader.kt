@@ -3,8 +3,13 @@ package com.akuleshov7.ktoml.source
 import com.akuleshov7.ktoml.Toml
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
+import com.akuleshov7.ktoml.okio.decodeFromBufferedSource
+import com.akuleshov7.ktoml.okio.partiallyDecodeFromBufferedSource
 
 import okio.Source
+import okio.buffer
+import okio.use
 
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.serialization.DeserializationStrategy
@@ -21,6 +26,11 @@ import kotlinx.serialization.serializer
  * @property serializersModule
  */
 @OptIn(ExperimentalSerializationApi::class)
+@Deprecated(
+    "Use extension APIs from the ktoml-okio artifact. " +
+            "TomlSourceReader remains available for compatibility and closes caller-provided sources."
+)
+@SubclassOptInRequired(InternalKtomlApi::class)
 public open class TomlSourceReader(
     inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
@@ -40,7 +50,7 @@ public open class TomlSourceReader(
     public fun <T> decodeFromSource(
         deserializer: DeserializationStrategy<T>,
         source: Source,
-    ): T = source.useLines { decodeFromString(deserializer, it, inputConfig) }
+    ): T = source.buffer().use { decodeFromBufferedSource(deserializer, it) }
 
     /**
      * Simple deserializer of a source that contains toml.
@@ -67,8 +77,8 @@ public open class TomlSourceReader(
         deserializer: DeserializationStrategy<T>,
         source: Source,
         tomlTableName: String,
-    ): T = source.useLines {
-        partiallyDecodeFromLines(deserializer, it, tomlTableName, inputConfig)
+    ): T = source.buffer().use {
+        partiallyDecodeFromBufferedSource(deserializer, it, tomlTableName)
     }
 
     /**

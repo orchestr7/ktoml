@@ -3,6 +3,7 @@ package com.akuleshov7.ktoml.file
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.source.TomlSourceReader
 
 import kotlin.native.concurrent.ThreadLocal
@@ -19,6 +20,12 @@ import kotlinx.serialization.serializer
  * @param inputConfig
  * @param outputConfig
  */
+@Deprecated(
+    "Open a source with your chosen filesystem and use the ktoml-okio or " +
+            "ktoml-kotlinx-io extension APIs. This class remains available for compatibility."
+)
+@Suppress("DEPRECATION")
+@SubclassOptInRequired(InternalKtomlApi::class)
 public open class TomlFileReader public constructor(
     inputConfig: TomlInputConfig = TomlInputConfig(),
     outputConfig: TomlOutputConfig = TomlOutputConfig(),
