@@ -133,7 +133,6 @@ public abstract class TomlAbstractDecoder : AbstractDecoder() {
      * >>> expected by user: data class A(val a: Int)
      * >>> TomlString cannot be cast to Int, user made a mistake -> IllegalTypeException
      */
-    @OptIn(ExperimentalTime::class)
     private fun decodeInstant(): Instant {
         val keyValue = decodeKeyValue()
         return try {
