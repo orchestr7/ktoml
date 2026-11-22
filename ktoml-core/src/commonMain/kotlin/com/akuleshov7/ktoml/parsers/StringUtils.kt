@@ -11,16 +11,6 @@ import com.akuleshov7.ktoml.utils.newLineChar
 import com.akuleshov7.ktoml.utils.validateIntegerSyntax
 
 private const val MULTILINE_STRING_QUOTE_LENGTH = 3
-private const val TOML_DECIMAL_INTEGER_PATTERN = "(?:0|[1-9](?:_?[0-9])*)"
-private const val TOML_DIGITS_PATTERN = "[0-9](?:_?[0-9])*"
-private const val TOML_EXPONENT_PATTERN = "[eE][+-]?$TOML_DIGITS_PATTERN"
-
-private val tomlFloatRegex = Regex(
-    "[+-]?(?:" +
-            "$TOML_DECIMAL_INTEGER_PATTERN\\.$TOML_DIGITS_PATTERN(?:$TOML_EXPONENT_PATTERN)?|" +
-            "$TOML_DECIMAL_INTEGER_PATTERN$TOML_EXPONENT_PATTERN" +
-            ")"
-)
 
 /**
  * Callback invoked for every character while scanning a key string: receives the character and
@@ -254,7 +244,25 @@ internal fun String.isValidTomlIntegerLiteral(): Boolean = try {
  *
  * @return true for valid decimal float literals, excluding special values handled separately
  */
-internal fun String.isValidTomlFloatLiteral(): Boolean = tomlFloatRegex.matches(this)
+internal fun String.isValidTomlFloatLiteral(): Boolean {
+    val integerStart = if (firstOrNull() == '+' || firstOrNull() == '-') 1 else 0
+    val integerEnd = floatDigitsEnd(integerStart)
+    if (integerEnd == -1 || (this[integerStart] == '0' && integerEnd > integerStart + 1)) {
+        return false
+    }
+
+    val hasFraction = getOrNull(integerEnd) == '.'
+    val exponentStart = if (hasFraction) floatDigitsEnd(integerEnd + 1) else integerEnd
+    if (exponentStart == -1) {
+        return false
+    }
+    if (getOrNull(exponentStart) == 'e' || getOrNull(exponentStart) == 'E') {
+        val signIndex = exponentStart + 1
+        val digitsStart = if (getOrNull(signIndex) == '+' || getOrNull(signIndex) == '-') signIndex + 1 else signIndex
+        return floatDigitsEnd(digitsStart) == length
+    }
+    return hasFraction && exponentStart == length
+}
 
 /**
  * If this string starts and end with a pair brackets([[]]) - will return the string with brackets removed
@@ -447,6 +455,29 @@ private fun String.isSingleQuotedKeyToken(quote: Char): Boolean {
         index++
     }
     return true
+}
+
+/**
+ * Scans decimal digits with optional underscores between digits, without recursion.
+ *
+ * @param startIndex index of the required first digit
+ * @return the first index after the digits, or -1 for missing digits or misplaced underscores
+ */
+private fun String.floatDigitsEnd(startIndex: Int): Int {
+    var index = startIndex
+    if (index >= length || this[index] !in '0'..'9') {
+        return -1
+    }
+    while (index < length && this[index] in '0'..'9') {
+        index++
+        if (getOrNull(index) == '_') {
+            index++
+            if (index >= length || this[index] !in '0'..'9') {
+                return -1
+            }
+        }
+    }
+    return index
 }
 
 /**

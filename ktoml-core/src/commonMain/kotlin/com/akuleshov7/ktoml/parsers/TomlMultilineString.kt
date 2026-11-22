@@ -210,8 +210,9 @@ internal class TomlMultilineString(
 
     @Suppress("TOO_LONG_FUNCTION", "NESTED_BLOCK")
     private fun hasClosedMultilineArray(): Boolean {
-        val value = getLine()
-            .substringAfter('=')
+        val line = getLine()
+        val assignmentIndex = line.indexOfNextOutsideQuotes(config.allowEscapedQuotesInLiteralStrings, '=')
+        val value = line.substring(assignmentIndex + 1)
             .replaceEscaped(config.allowEscapedQuotesInLiteralStrings)
 
         var bracketBalance = 0
@@ -285,7 +286,7 @@ internal class TomlMultilineString(
          */
         fun getMultilineType(line: String, config: TomlInputConfig): MultilineType {
             val line = line.takeBeforeComment(config.allowEscapedQuotesInLiteralStrings)
-            val firstEqualsSign = line.indexOfFirst { it == '=' }
+            val firstEqualsSign = line.indexOfNextOutsideQuotes(config.allowEscapedQuotesInLiteralStrings, '=')
             if (firstEqualsSign == -1) {
                 return MultilineType.NOT_A_MULTILINE
             }
