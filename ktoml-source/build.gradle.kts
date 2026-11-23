@@ -61,10 +61,6 @@ kotlin {
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.14.1")
             }
         }
-
-        all {
-            languageSettings.enableLanguageFeature("InlineClasses")
-        }
     }
 }
 

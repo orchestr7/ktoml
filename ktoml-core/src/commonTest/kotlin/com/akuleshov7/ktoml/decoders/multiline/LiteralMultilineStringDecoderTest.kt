@@ -85,32 +85,11 @@ class LiteralMultilineStringDecoderTest {
 
     @Test
     fun lineEndingBackslash() {
-        var test = """
-            a = '''
-            first line \
-            second line \
-            
-            third line'''
-        """.trimIndent()
-        assertEquals(SimpleString("first line second line third line"), Toml.decodeFromString(test))
+        var test = "a = '''first line \\\nsecond line \\\n\nthird line'''"
+        assertEquals(SimpleString("first line \\\nsecond line \\\n\nthird line"), Toml.decodeFromString(test))
 
-        test = """
-            a = '''
-            The quick brown \
-            
-                fox jumps over \
-                 the lazy dog.'''
-        """.trimIndent()
-        assertEquals(SimpleString("The quick brown fox jumps over the lazy dog."), Toml.decodeFromString(test))
-
-        test = """
-            a = '''\
-                The quick brown \
-                fox jumps over \
-                the lazy dog.\
-                    '''
-        """.trimIndent()
-        assertEquals(SimpleString("The quick brown fox jumps over the lazy dog."), Toml.decodeFromString(test))
+        test = "a = '''\\\nThe quick brown \\\nfox jumps over \\\nthe lazy dog.\\\n'''"
+        assertEquals(SimpleString("\\\nThe quick brown \\\nfox jumps over \\\nthe lazy dog.\\\n"), Toml.decodeFromString(test))
     }
 
     @Test

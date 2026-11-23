@@ -2,6 +2,7 @@ package com.akuleshov7.ktoml.encoders
 
 import com.akuleshov7.ktoml.annotations.TomlLiteral
 import com.akuleshov7.ktoml.annotations.TomlMultiline
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -111,6 +112,22 @@ class PrimitiveEncoderTest {
         assertEncodedEquals(
             value = MultilineBasicStr("test \n test \n test \'\'\'"),
             expectedToml = "a = \"\"\"\ntest \n test \n test \'\'\'\n\"\"\""
+        )
+    }
+
+    @Test
+    fun multilineStringEndingInBackslash() {
+        @Serializable
+        data class MultilineBasicStr(
+            @TomlMultiline
+            val a: String
+        )
+
+        // no newline follows the trailing backslash, so it is escaped rather than taken
+        // for a line ending
+        assertEncodedEquals(
+            value = MultilineBasicStr("abc\\"),
+            expectedToml = "a = \"\"\"\nabc\\\\\n\"\"\""
         )
     }
 

@@ -1,7 +1,9 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.exceptions.IllegalTypeException
 import com.akuleshov7.ktoml.exceptions.ParseException
+import com.akuleshov7.ktoml.parsers.isValidTomlIntegerLiteral
 import com.akuleshov7.ktoml.utils.BIN_RADIX
 import com.akuleshov7.ktoml.utils.HEX_RADIX
 import com.akuleshov7.ktoml.utils.OCT_RADIX
@@ -33,6 +35,10 @@ public class TomlLong internal constructor(
         private val prefixRegex = "(?<=0[box])".toRegex()
 
         private fun String.parse(lineNo: Int): Pair<Long, IntegerRepresentation> {
+            if (!isValidTomlIntegerLiteral()) {
+                throw NumberFormatException("Invalid TOML integer literal <$this>")
+            }
+
             val value = replace("_", "").split(prefixRegex, limit = 2)
 
             return if (value.size == 2) {
@@ -48,8 +54,17 @@ public class TomlLong internal constructor(
                     )
                 }
             } else {
-                value.first().toLong() to DECIMAL
+                value.first().parseDecimal(lineNo)
             }
+        }
+
+        private fun String.parseDecimal(lineNo: Int): Pair<Long, IntegerRepresentation> = try {
+            toLong() to DECIMAL
+        } catch (e: NumberFormatException) {
+            if (startsWith("-")) {
+                throw IllegalTypeException("Integer <$this> is outside the signed Long range.", lineNo)
+            }
+            throw e
         }
     }
 }

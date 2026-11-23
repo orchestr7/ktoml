@@ -1,16 +1,14 @@
  ## <img src="/ktoml.png" width="300px"/>
 
-[![Releases](https://img.shields.io/github/v/release/akuleshov7/ktoml)](https://github.com/orchestr7/ktoml/releases)
+[![Releases](https://img.shields.io/github/v/release/orchestr7/ktoml)](https://github.com/orchestr7/ktoml/releases)
 [![Maven Central](https://img.shields.io/maven-central/v/com.akuleshov7/ktoml-core)](https://search.maven.org/artifact/com.akuleshov7/ktoml-core/)
-[![License](https://img.shields.io/github/license/akuleshov7/ktoml)](https://github.com/orchestr7/ktoml/blob/main/LICENSE)
-![Build and test](https://github.com/akuleshov7/ktoml/actions/workflows/build_and_test.yml/badge.svg?branch=main)
-![Lines of code](https://img.shields.io/tokei/lines/github/akuleshov7/ktoml)
-![Hits-of-Code](https://hitsofcode.com/github/akuleshov7/ktoml?branch=main)
-![GitHub repo size](https://img.shields.io/github/repo-size/akuleshov7/ktoml)
-![codebeat badge](https://codebeat.co/badges/0518ea49-71ed-4bfd-8dd3-62da7034eebd)
-![maintainability](https://api.codeclimate.com/v1/badges/c75d2d6b0d44cea7aefe/maintainability)
-![Run deteKT](https://github.com/akuleshov7/ktoml/actions/workflows/detekt.yml/badge.svg?branch=main)
-![Run diKTat](https://github.com/akuleshov7/ktoml/actions/workflows/diktat.yml/badge.svg?branch=main)
+[![License](https://img.shields.io/github/license/orchestr7/ktoml)](https://github.com/orchestr7/ktoml/blob/main/LICENSE)
+![Build and test](https://github.com/orchestr7/ktoml/actions/workflows/build_and_test.yml/badge.svg?branch=main)
+![Lines of code](https://sloc.xyz/github/orchestr7/ktoml/?category=code)
+![Hits-of-Code](https://hitsofcode.com/github/orchestr7/ktoml?branch=main)
+![GitHub repo size](https://img.shields.io/github/repo-size/orchestr7/ktoml)
+![Run deteKT](https://github.com/orchestr7/ktoml/actions/workflows/detekt.yml/badge.svg?branch=main)
+![Run diKTat](https://github.com/orchestr7/ktoml/actions/workflows/diktat.yml/badge.svg?branch=main)
 
 Fully Native and Multiplatform Kotlin serialization library for serialization/deserialization of [toml](https://toml.io/en/) format.
 Uses native [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization), provided by Kotlin. This library contains no Java code and no Java dependencies.
@@ -44,11 +42,17 @@ However, to reduce the scope, ktoml now supports only the following platforms:
 
 Other platforms could be added later on the demand (just create a corresponding issue) or easily built by users on their machines.
 
-:globe_with_meridians: ktoml supports Kotlin 2.2.0
+:globe_with_meridians: ktoml supports Kotlin 2.4.21
+
+## TOML support
+
+The parser supports TOML 1.1, including multiline inline tables with trailing commas, `\xHH` and
+`\e` string escapes, and times with omitted seconds. Use `TomlInputConfig.compliant()` for strict
+TOML validation; the default configuration retains ktoml's lenient extensions.
 
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc. 
-You can check types that are supported in TOML standard [here](https://toml.io/en/v1.0.0#string).
+You can check types that are supported in TOML standard [here](https://toml.io/en/v1.1.0#string).
 However, in Ktoml, our goal is to comprehensively support all primitive types offered by Kotlin.
 
 **General** \
@@ -604,8 +608,9 @@ data class CoinsConfiguration(
 
 ## Compliance Testing
 
-ktoml is tested against the [toml-lang/toml-test](https://github.com/toml-lang/toml-test) suite (TOML 1.0). Known failures are tracked with upstream issues.
+ktoml is tested against the pinned [toml-lang/toml-test](https://github.com/toml-lang/toml-test)
+TOML 1.1 suite. Strict parsing is checked against every fixture, with an empty known-failure baseline.
 
-See [`TomlTestBaseline.kt`](ktoml-core/src/jvmTest/kotlin/com/akuleshov7/ktoml/compliance/TomlTestBaseline.kt) for the full baseline, failure categories, and linked issues.
-
-Related: [#32 — Integrate toml-test compliance suite](https://github.com/orchestr7/ktoml/issues/32)
+See [`TomlTestSuite.kt`](ktoml-core/src/jvmTest/kotlin/com/akuleshov7/ktoml/compliance/TomlTestSuite.kt)
+for the suite runner and [`TomlTestBaseline.kt`](ktoml-core/src/jvmTest/kotlin/com/akuleshov7/ktoml/compliance/TomlTestBaseline.kt)
+for the baseline guard.
