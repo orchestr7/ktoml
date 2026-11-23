@@ -197,9 +197,32 @@ val result = Toml.partiallyDecodeFromString<MyClassOnlyForTable>(serializer(), /
 </details>
 
 <details>
-<summary>Toml File deserialization</summary>
+<summary>Decode an already-parsed document (experimental)</summary>
+
+Parse once and decode selected tables with `TomlElement`:
 
 ```kotlin
+@file:OptIn(com.akuleshov7.ktoml.annotations.ExperimentalKtomlApi::class)
+
+import com.akuleshov7.ktoml.Toml
+import com.akuleshov7.ktoml.decodeFromTomlElement
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Server(val port: Int)
+
+val document = Toml.parseToTomlElement("[server]\nport = 8080")
+val server = Toml.decodeFromTomlElement<Server>(document.tables().getValue("server"))
+```
+
+See the [parsed-document guide](docs/parsed-elements.md) for traversal and lower-level AST examples.
+</details>
+
+<details>
+<summary>Legacy Toml File deserialization</summary>
+
+```kotlin
+// deprecated compatibility API from com.akuleshov7:ktoml-file
 import com.akuleshov7.ktoml.file.TomlFileReader
 
 val resultFromString = TomlFileReader.decodeFromFile<MyClass>(serializer(), /* file path to toml file */)
@@ -214,6 +237,7 @@ For this purpose we have prepared `toml-source` module and implemented an
 with java streams for JVM target.
 
 ```kotlin
+// deprecated compatibility API from com.akuleshov7:ktoml-source
 import com.akuleshov7.ktoml.source.TomlSourceReader
 
 val resultFromString = TomlSourceReader.decodeFromSource<MyClass>(serializer(), /* your source */)
@@ -296,6 +320,7 @@ val toml = Toml.encodeToString(MyClass(/* ... */))
 <summary>Legacy Toml File serialization</summary>
 
 ```kotlin
+// deprecated compatibility API from com.akuleshov7:ktoml-file
 import com.akuleshov7.ktoml.file.TomlFileWriter
 
 TomlFileWriter.encodeToFile(MyClass.serializer(), value, /* file path to toml file */)
