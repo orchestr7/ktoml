@@ -89,8 +89,9 @@ See [API compatibility and migration](BINARY_COMPATIBILITY.md) before upgrading 
 especially when using the AST, custom emitters, or `kotlinx-datetime`.
 
 ## Dependency
-The library is hosted on the [Maven Central](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
-To import `ktoml` library you need to add following dependencies to your code:
+ktoml is hosted on [Maven Central](https://central.sonatype.com/artifact/com.akuleshov7/ktoml-core)
+under the `com.akuleshov7` group. Kotlin package imports remain `com.akuleshov7.ktoml.*`.
+Add `ktoml-core` plus one optional I/O adapter when your application needs it:
 <details>
 <summary>Maven</summary>
 
@@ -98,22 +99,25 @@ To import `ktoml` library you need to add following dependencies to your code:
 <dependency>
   <groupId>com.akuleshov7</groupId>
   <artifactId>ktoml-core</artifactId>
-  <version>0.7.1</version>
+  <version>&lt;version&gt;</version>
 </dependency>
 <dependency>
   <groupId>com.akuleshov7</groupId>
-  <artifactId>ktoml-file</artifactId>
-  <version>0.7.1</version>
+  <artifactId>ktoml-okio</artifactId>
+  <version>&lt;version&gt;</version>
 </dependency>
 ```
+
+Use `ktoml-kotlinx-io` instead of `ktoml-okio` when your application uses kotlinx-io.
 </details>
 
 <details>
 <summary>Gradle Groovy</summary>
 
 ```groovy
-implementation 'com.akuleshov7:ktoml-core:0.7.1'
-implementation 'com.akuleshov7:ktoml-file:0.7.1'
+implementation 'com.akuleshov7:ktoml-core:<version>'
+implementation 'com.akuleshov7:ktoml-okio:<version>' // optional
+// implementation 'com.akuleshov7:ktoml-kotlinx-io:<version>' // optional alternative
 ```
 </details>
 
@@ -121,10 +125,15 @@ implementation 'com.akuleshov7:ktoml-file:0.7.1'
 <summary>Gradle Kotlin</summary>
 
 ```kotlin
-implementation("com.akuleshov7:ktoml-core:0.7.1")
-implementation("com.akuleshov7:ktoml-file:0.7.1")
+implementation("com.akuleshov7:ktoml-core:<version>")
+implementation("com.akuleshov7:ktoml-okio:<version>") // optional
+// implementation("com.akuleshov7:ktoml-kotlinx-io:<version>") // optional alternative
 ```
 </details>
+
+`ktoml-core` has no Okio or kotlinx-io dependency. `ktoml-kotlinx-io` is experimental and currently uses
+kotlinx-io 0.8.2. The old
+`ktoml-source` and `ktoml-file` artifacts remain available as deprecated, Okio-backed compatibility APIs.
 
 ### Date-times and `kotlinx-datetime` (opt-in)
 
@@ -145,11 +154,35 @@ recent version) — ktoml bridges to its serializers automatically.
 > date-times / strings) need no changes and no longer ship `kotlinx-datetime`.
 
 ## How to use
-:heavy_exclamation_mark: as TOML is a foremost language for config files, we have also supported the deserialization from file.
-However, we are using [okio](https://github.com/square/okio) to read the file, so it will be added as a dependency to your
-project if you will import [ktoml-file](https://search.maven.org/artifact/com.akuleshov7/ktoml-file). 
-Same about okio `Source` (for example if you need Streaming): [ktoml-source](https://search.maven.org/artifact/com.akuleshov7/ktoml-source).
-For basic scenarios of decoding strings you can simply use [ktoml-core](https://search.maven.org/artifact/com.akuleshov7/ktoml-core).
+For basic string encoding and decoding, use
+[ktoml-core](https://central.sonatype.com/artifact/com.akuleshov7/ktoml-core). The optional adapters expose extensions
+on the configured `Toml` instance and leave caller-provided sources and sinks open:
+
+```kotlin
+// com.akuleshov7:ktoml-okio
+@file:OptIn(com.akuleshov7.ktoml.annotations.ExperimentalKtomlApi::class)
+
+import com.akuleshov7.ktoml.okio.decodeFromBufferedSource
+import com.akuleshov7.ktoml.okio.encodeToBufferedSink
+
+val config = Toml.decodeFromBufferedSource<MyConfig>(bufferedSource)
+Toml.encodeToBufferedSink(config, bufferedSink)
+```
+
+```kotlin
+// com.akuleshov7:ktoml-kotlinx-io
+@file:OptIn(com.akuleshov7.ktoml.annotations.ExperimentalKtomlApi::class)
+
+import com.akuleshov7.ktoml.io.decodeFromSource
+import com.akuleshov7.ktoml.io.encodeToSink
+
+val config = Toml.decodeFromSource<MyConfig>(source)
+Toml.encodeToSink(config, sink)
+```
+
+The adapters neither close nor flush handles. Open files through the `FileSystem` belonging to the I/O library your
+application already uses, and manage those handles with `use`. `ktoml-file` remains an Okio-backed compatibility
+convenience; it is not duplicated for kotlinx-io.
 
 :heavy_exclamation_mark: don't forget to add the serialization plugin `kotlin("plugin.serialization")` to your project.
 Otherwise, `@Serialization` annotation won't work properly.
