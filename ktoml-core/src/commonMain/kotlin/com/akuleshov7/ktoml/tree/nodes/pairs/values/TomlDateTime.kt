@@ -24,8 +24,11 @@ private const val MAX_MONTH = 12
 private const val MAX_HOUR = 23
 private const val MAX_MINUTE = 59
 
-// TOML allows a leap second, so seconds run 00-60 (not 00-59).
+// RFC 3339 section 5.7 permits second 60 for an inserted leap second.
+// https://www.rfc-editor.org/rfc/rfc3339#section-5.7
 private const val MAX_SECOND = 60
+private const val MINUTES_PER_HOUR = 60
+private const val MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
 
 // Structural offsets used by the date-time shape classifier (single-pass, regex-free).
 private const val YEAR_DIGITS = 4
@@ -301,7 +304,45 @@ internal constructor(
             val time = timeAndOffset.takeWhile { it != 'Z' && it != '+' && it != '-' }
             validateDate(normalized.substringBefore('T'), normalized, lineNo)
             validateTime(time, normalized, lineNo)
-            validateOffset(timeAndOffset.substring(time.length), normalized, lineNo)
+            val offset = timeAndOffset.substring(time.length)
+            validateOffset(offset, normalized, lineNo)
+            validateLeapSecondPlacement(time, offset, normalized, lineNo)
+        }
+
+        /**
+         * An offset leap second must fall at 23:59 UTC on the last day of a month (RFC 3339 section 5.7).
+         * This checks placement, not the IERS history of announced leap seconds. Local values have no
+         * offset, so their UTC placement cannot be checked here.
+         */
+        private fun validateLeapSecondPlacement(
+            time: String,
+            offset: String,
+            full: String,
+            lineNo: Int
+        ) {
+            if (time.substringAfterLast(':').substringBefore('.') != MAX_SECOND.toString()) {
+                return
+            }
+            val segments = time.split(':')
+            val offsetMinutes = if (offset == "Z") {
+                0
+            } else {
+                val parts = offset.drop(1).split(':')
+                val magnitude = parts[0].toInt() * MINUTES_PER_HOUR + parts[1].toInt()
+                if (offset[0] == '-') -magnitude else magnitude
+            }
+            val utcMinute = segments[0].toInt() * MINUTES_PER_HOUR + segments[1].toInt() - offsetMinutes
+            val date = full.substringBefore('T').split('-')
+            val day = date[2].toInt()
+            // Offsets are less than 24 hours: UTC 23:59 is either the same day or the previous day.
+            val atMonthEnd = when (utcMinute) {
+                -1 -> day == 1
+                MINUTES_PER_DAY - 1 -> day == daysInMonth(date[0].toInt(), date[1].toInt())
+                else -> false
+            }
+            if (!atMonthEnd) {
+                throw ParseException("Invalid leap-second placement in date-time literal: <$full>", lineNo)
+            }
         }
 
         private fun validateLocalDateTime(normalized: String, lineNo: Int) {

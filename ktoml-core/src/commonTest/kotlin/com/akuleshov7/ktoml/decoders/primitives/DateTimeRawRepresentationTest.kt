@@ -50,6 +50,49 @@ class DateTimeRawRepresentationTest {
     }
 
     @Test
+    fun leapSecondsPreserveRawTextAcrossOffsets() {
+        // RFC 3339 section 5.8 gives the first two forms of the 1990 leap second.
+        listOf(
+            "1990-12-31T23:59:60Z",
+            "1990-12-31T15:59:60-08:00",
+            "1991-01-01T00:59:60+01:00",
+            "1991-01-01T05:29:60.5+05:30",
+            "1990-12-31T23:59:60+00:00",
+            "1990-12-31T23:59:60-00:00",
+            "2015-06-30T23:59:60Z",
+            "2015-07-01T00:29:60+00:30",
+            "2015-07-01T23:58:60+23:59",
+            "2015-06-30T00:00:60-23:59",
+        ).forEach { literal ->
+            assertEquals(TomlOffsetDateTime(literal), parsedContent(literal))
+        }
+    }
+
+    @Test
+    fun leapSecondsAtInvalidUtcPositionsAreRejected() {
+        listOf(
+            "1990-12-31T23:58:60Z",
+            "1990-12-31T22:59:60Z",
+            "1990-12-30T23:59:60Z",
+            "1990-12-31T15:59:60-07:00",
+            "1991-01-02T00:59:60+01:00",
+            "1991-01-01T05:29:60+05:00",
+            "2015-06-30T00:29:60+00:30",
+            "1990-12-31T23:59:61Z",
+        ).forEach { literal ->
+            assertFailsWith<ParseException>("expected <$literal> to be rejected") {
+                parsedContent(literal)
+            }
+        }
+    }
+
+    @Test
+    fun localLeapSecondsArePreservedWithoutAssumingAnOffset() {
+        assertEquals(TomlLocalTime("15:59:60"), parsedContent("15:59:60"))
+        assertEquals(TomlLocalDateTime("1990-12-31T15:59:60"), parsedContent("1990-12-31T15:59:60"))
+    }
+
+    @Test
     fun localDateTimesAreStoredAsNormalizedRawText() {
         assertEquals(TomlLocalDateTime("1979-05-27T07:32:00"), parsedContent("1979-05-27 07:32"))
         assertEquals(TomlLocalDate("1979-05-27"), parsedContent("1979-05-27"))
