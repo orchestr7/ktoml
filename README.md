@@ -44,9 +44,15 @@ Other platforms could be added later on the demand (just create a corresponding 
 
 :globe_with_meridians: ktoml supports Kotlin 2.4.21
 
+## TOML support
+
+The parser supports TOML 1.1, including multiline inline tables with trailing commas, `\xHH` and
+`\e` string escapes, and times with omitted seconds. Use `TomlInputConfig.compliant()` for strict
+TOML validation; the default configuration retains ktoml's lenient extensions.
+
 ## Current limitations
 :heavy_exclamation_mark: Please note, that TOML standard does not define Java-like types: `Char`, `Short`, etc. 
-You can check types that are supported in TOML standard [here](https://toml.io/en/v1.0.0#string).
+You can check types that are supported in TOML standard [here](https://toml.io/en/v1.1.0#string).
 However, in Ktoml, our goal is to comprehensively support all primitive types offered by Kotlin.
 
 **General** \
@@ -602,8 +608,9 @@ data class CoinsConfiguration(
 
 ## Compliance Testing
 
-ktoml is tested against the [toml-lang/toml-test](https://github.com/toml-lang/toml-test) suite (TOML 1.0). Known failures are tracked with upstream issues.
+ktoml is tested against the pinned [toml-lang/toml-test](https://github.com/toml-lang/toml-test)
+TOML 1.1 suite. Strict parsing is checked against every fixture, with an empty known-failure baseline.
 
-See [`TomlTestBaseline.kt`](ktoml-core/src/jvmTest/kotlin/com/akuleshov7/ktoml/compliance/TomlTestBaseline.kt) for the full baseline, failure categories, and linked issues.
-
-Related: [#32 — Integrate toml-test compliance suite](https://github.com/orchestr7/ktoml/issues/32)
+See [`TomlTestSuite.kt`](ktoml-core/src/jvmTest/kotlin/com/akuleshov7/ktoml/compliance/TomlTestSuite.kt)
+for the suite runner and [`TomlTestBaseline.kt`](ktoml-core/src/jvmTest/kotlin/com/akuleshov7/ktoml/compliance/TomlTestBaseline.kt)
+for the baseline guard.

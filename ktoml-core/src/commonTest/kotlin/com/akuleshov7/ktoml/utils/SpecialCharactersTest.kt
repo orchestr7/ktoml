@@ -14,28 +14,28 @@ class SpecialCharactersTest {
     data class SimpleString(val a: String)
 
     @Test
-    fun testValidUnicodeEscapesAreConverted() {
+    fun validUnicodeEscapesAreConverted() {
         assertEquals("A", "\\u0041".convertSpecialCharacters(1))
         assertEquals("\uD83D\uDCA9", "\\U0001F4A9".convertSpecialCharacters(1))
         assertEquals("\u00FF", "\\u00ff".convertSpecialCharacters(1))
+        assertEquals("3", "\\x33".convertSpecialCharacters(1))
     }
 
     @Test
-    fun testMalformedUnicodeEscapesAreRejected() {
+    fun malformedUnicodeEscapesAreRejected() {
         val malformed = listOf(
+            "\\x+3",
+            "\\x-3",
             "\\uZZZZ",
-            // a single non-hex digit in an otherwise well-formed code
             "\\uabag",
-            // both toInt and toLong accept a leading sign, which would smuggle these
-            // through as U+0041
+            // TOML HEXDIG is ASCII-only; Unicode digits must not be accepted as escape digits
+            "\\u００４１",
             "\\u+041",
             "\\u-041",
-            // eight hex digits overflow an Int
             "\\UFFFFFFFF",
-            // parses cleanly but sits above the highest code point
             "\\U0011FFFF",
             "\\U00D80000",
-            // the code is cut short by the end of the string
+            "\\uD800",
             "\\u041",
         )
 
@@ -47,7 +47,7 @@ class SpecialCharactersTest {
     }
 
     @Test
-    fun testMalformedUnicodeEscapeInDecodedTomlRaisesParseException() {
+    fun malformedUnicodeEscapeInDecodedTomlRaisesParseException() {
         assertFailsWith<ParseException> {
             Toml.decodeFromString<SimpleString>("a = \"\\uZZZZ\"")
         }
