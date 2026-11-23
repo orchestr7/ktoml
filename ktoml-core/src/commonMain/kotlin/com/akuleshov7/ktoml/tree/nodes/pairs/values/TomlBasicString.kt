@@ -46,7 +46,7 @@ public class TomlBasicString internal constructor(
                 // ====== multiline string (""") =======
                 startsWith("\"\"\"") && endsWith("\"\"\"") ->
                     // please note that for a better user experience we will also trim spaces for a standalone closing quotes
-                    trimMultilineQuotes()
+                    replace("\r\n", "\n").trimMultilineQuotes()
                         .checkCountOfOtherUnescapedQuotes(lineNo)
                         .checkNoTomlControlChars(lineNo, allowLineFeed = true)
                         .convertLineEndingBackslash()

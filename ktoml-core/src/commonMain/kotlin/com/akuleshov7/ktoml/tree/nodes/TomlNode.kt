@@ -154,7 +154,9 @@ public sealed class TomlNode(
                 foundTable != null && isLastLevel && foundTable.type == tomlTable.type -> {
                     if (validate) {
                         foundTable.checkRedefinitionAllowed(tomlTable, insertionType)
-                        foundTable.mergeProvenance(insertionType)
+                        if (!isContainerLevel) {
+                            foundTable.mergeProvenance(insertionType)
+                        }
                     }
                     tomlTable.children.forEach { foundTable.appendCheckedKeyValue(it, validate) }
                     foundTable
@@ -171,6 +173,9 @@ public sealed class TomlNode(
                 foundTable != null -> {
                     if (validate && !isContainerLevel) {
                         foundTable.checkPassThroughAllowed(tomlTable, insertionType)
+                        if (insertionType == TableInsertionType.DOTTED_KEY) {
+                            foundTable.mergeProvenance(insertionType)
+                        }
                     }
                     foundTable.resolveInsertionParent()
                 }
@@ -232,8 +237,7 @@ public sealed class TomlNode(
 
     /**
      * Validates an attempt to land a header/dotted key/inline table on an existing table of the
-     * same type. Allowed: making an implicit super-table explicit, and an inline table reconciling
-     * with the synthetic tables created by its own dotted keys. Forbidden: a second explicit
+     * same type. Allowed: making an implicit super-table explicit. Forbidden: a second explicit
      * definition of a table, a header/dotted/inline definition over a dotted-key or inline table,
      * and a dotted key appending to an already explicitly-defined (closed) table.
      *
@@ -247,7 +251,8 @@ public sealed class TomlNode(
             return
         }
         // array-of-tables headers legitimately append a new element to an existing array
-        if (type == TableType.ARRAY && insertionType == TableInsertionType.HEADER) {
+        if (type == TableType.ARRAY && insertionType == TableInsertionType.HEADER &&
+                provenance == TableProvenance.EXPLICIT_HEADER) {
             return
         }
         val allowed = when (insertionType) {
@@ -257,8 +262,8 @@ public sealed class TomlNode(
             // but not one closed by an explicit header or an inline table
             TableInsertionType.DOTTED_KEY -> provenance == TableProvenance.IMPLICIT_SUPER ||
                     provenance == TableProvenance.DOTTED_KEY
-            // an inline table only ever reconciles with the synthetic tables its own dotted keys made
-            TableInsertionType.INLINE_TABLE -> provenance == TableProvenance.INLINE_TABLE
+            // Inline values are built separately and cannot overwrite an existing table.
+            TableInsertionType.INLINE_TABLE -> false
         }
         if (allowed) {
             return
@@ -287,11 +292,6 @@ public sealed class TomlNode(
         if (this !is TomlTable) {
             return
         }
-        // an inline table is self-contained: while it is being built, it legitimately descends
-        // through the synthetic tables created by its own dotted keys
-        if (insertionType == TableInsertionType.INLINE_TABLE) {
-            return
-        }
         // nothing else may descend through (extend) a closed inline table
         if (provenance == TableProvenance.INLINE_TABLE) {
             throw ParseException(
@@ -313,18 +313,17 @@ public sealed class TomlNode(
     }
 
     /**
-     * When a header lands on an existing implicit super-table, promote it to explicit so a later
-     * duplicate header is rejected.
+     * Records the first explicit definition of a previously implicit super-table.
      *
      * @param insertionType
      */
     internal fun mergeProvenance(insertionType: TableInsertionType) {
-        // promote an implicit super-table to explicit so a later duplicate header is rejected; the
-        // node's `isSynthetic` flag is intentionally left untouched so writer output is unchanged
-        if (this is TomlTable && insertionType == TableInsertionType.HEADER &&
-                provenance == TableProvenance.IMPLICIT_SUPER
-        ) {
-            provenance = TableProvenance.EXPLICIT_HEADER
+        if (this is TomlTable && provenance == TableProvenance.IMPLICIT_SUPER) {
+            provenance = when (insertionType) {
+                TableInsertionType.HEADER -> TableProvenance.EXPLICIT_HEADER
+                TableInsertionType.DOTTED_KEY -> TableProvenance.DOTTED_KEY
+                TableInsertionType.INLINE_TABLE -> provenance
+            }
         }
     }
 
@@ -584,6 +583,6 @@ public enum class TableInsertionType {
     internal fun provenanceFor(isLastLevel: Boolean): TableProvenance = when (this) {
         HEADER -> if (isLastLevel) TableProvenance.EXPLICIT_HEADER else TableProvenance.IMPLICIT_SUPER
         DOTTED_KEY -> TableProvenance.DOTTED_KEY
-        INLINE_TABLE -> TableProvenance.INLINE_TABLE
+        INLINE_TABLE -> if (isLastLevel) TableProvenance.INLINE_TABLE else TableProvenance.DOTTED_KEY
     }
 }

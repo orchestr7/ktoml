@@ -70,6 +70,10 @@ public class TomlInlineTable internal constructor(
         validate: Boolean = false
     ): TomlTable {
         val tomlTable = createTableRoot(currentParentalNode)
+        // Build the complete value before attaching it to the document. Nested dotted keys
+        // must not make an already-closed inline table look like one still under construction.
+        val valueRoot = TomlFile()
+        valueRoot.insertTableToTree(tomlTable, insertionType = TableInsertionType.INLINE_TABLE)
 
         // FixMe: this code duplication can be unified with the logic in TomlParser
         tomlKeyValues.forEach { keyValue ->
@@ -80,18 +84,18 @@ public class TomlInlineTable internal constructor(
                     // in the inline table's own section, so the table's own depth is the container.
                     val newTableSection = keyValue.createTomlTableFromDottedKey(tomlTable)
 
-                    tomlFileHead
+                    valueRoot
                         .insertTableToTree(
                             newTableSection,
-                            insertionType = TableInsertionType.INLINE_TABLE,
+                            insertionType = TableInsertionType.DOTTED_KEY,
                             containerDepth = tomlTable.tablesList.size,
                             validate = validate
                         )
                         .appendChild(keyValue)
                 }
 
-                keyValue is TomlInlineTable -> tomlFileHead.insertTableToTree(
-                    keyValue.returnTable(tomlFileHead, tomlTable, validate),
+                keyValue is TomlInlineTable -> valueRoot.insertTableToTree(
+                    keyValue.returnTable(valueRoot, tomlTable, validate),
                     insertionType = TableInsertionType.INLINE_TABLE,
                     containerDepth = tomlTable.tablesList.size,
                     validate = validate
@@ -99,7 +103,7 @@ public class TomlInlineTable internal constructor(
 
                 keyValue is TomlArrayOfTablesElement -> {
                     tomlTable.appendChild(keyValue)
-                    keyValue.expandNestedInlineArraysOfTables(tomlFileHead, validate)
+                    keyValue.expandInlineElementChildren(valueRoot, validate)
                 }
 
                 // otherwise, it should simply append the keyValue to the parent
@@ -110,32 +114,36 @@ public class TomlInlineTable internal constructor(
     }
 
     /**
-     * Expand inline arrays of tables nested inside this array-of-tables element (e.g. the
-     * `children = [{ ... }]` in `kids = [{ name = "x", children = [{ ... }] }]`) into proper
-     * `[[parent.child]]` tables nested under the element. Otherwise they would be left as raw
-     * inline nodes and fail to decode as lists - see issues #360 and #29.
-     *
-     * Dotted-keyed nested arrays (`a.b = [{ ... }]`) are intentionally left untouched: expanding
-     * them here would attach a single `[[parent.a.b]]` table directly to the element, collapsing
-     * the `a` level (the parent table is not yet in the file tree, so the dotted key cannot be
-     * split into nested tables the way `insertTableToTree` would). Those are already decoded and
-     * converted correctly from their raw inline form by the dotted-key handling - see the
-     * `valid/inline-table/key-dotted-*` toml-test cases.
+     * Expands dotted keys and nested inline values within one array-of-tables element.
+     * The temporary value tree preserves each prefix and the element that owns it.
      */
-    private fun TomlArrayOfTablesElement.expandNestedInlineArraysOfTables(
+    private fun TomlArrayOfTablesElement.expandInlineElementChildren(
         tomlFileHead: TomlFile,
         validate: Boolean
     ) {
-        children
-            .filterIsInstance<TomlInlineTable>()
-            .filter { it.isInlineArrayOfTables() && it.key?.isDotted != true }
-            .toList()
-            .forEach { nested ->
-                children.remove(nested)
-                // the parent table is not in the file tree yet, so we attach the expanded
-                // table directly to the element instead of going through insertTableToTree
-                appendChild(nested.returnTable(tomlFileHead, this, validate))
+        val containerDepth = (parent as TomlTable).fullTableKey.keyParts.size
+        children.toList().forEach { child ->
+            when {
+                child is TomlKeyValue && child.key.isDotted -> {
+                    children.remove(child)
+                    tomlFileHead.insertTableToTree(
+                        child.createTomlTableFromDottedKey(this),
+                        insertionType = TableInsertionType.DOTTED_KEY,
+                        containerDepth = containerDepth,
+                        validate = validate
+                    ).appendChild(child)
+                }
+                child is TomlInlineTable -> {
+                    children.remove(child)
+                    tomlFileHead.insertTableToTree(
+                        child.returnTable(tomlFileHead, this, validate),
+                        insertionType = TableInsertionType.INLINE_TABLE,
+                        containerDepth = containerDepth,
+                        validate = validate
+                    )
+                }
             }
+        }
     }
 
     public override fun write(
@@ -271,10 +279,11 @@ public class TomlInlineTable internal constructor(
          * Only the former is modelled as an array-of-tables; the latter is a normal array whose
          * elements happen to include inline tables.
          *
+         * @param allowEscapedQuotesInLiteralStrings legacy literal-string escape mode
          * @return true if every top-level element of this array is an inline table
          */
-        internal fun String.isArrayOfInlineTables(): Boolean {
-            val elements = this.trim().splitInlineArrayOfTables()
+        internal fun String.isArrayOfInlineTables(allowEscapedQuotesInLiteralStrings: Boolean = false): Boolean {
+            val elements = this.trim().splitInlineArrayOfTables(allowEscapedQuotesInLiteralStrings)
             return elements.isNotEmpty() && elements.all { it.startsWithIgnoreAllWhitespaces("{") }
         }
 
@@ -283,7 +292,7 @@ public class TomlInlineTable internal constructor(
             lineNo: Int,
             config: TomlInputConfig
         ): List<TomlNode> {
-            val inlineTableValues = this.splitInlineArrayOfTables()
+            val inlineTableValues = this.splitInlineArrayOfTables(config.allowEscapedQuotesInLiteralStrings)
 
             return inlineTableValues.map { tableValue ->
                 val inlineTableValues = tableValue.parseInlineTableValue(
@@ -308,75 +317,37 @@ public class TomlInlineTable internal constructor(
          * inline tables (e.g. `{a.b = [{c.d = 1}]}`) without the inner `}`/`]` being mistaken for
          * an element boundary.
          */
-        private fun String.splitInlineArrayOfTables(): List<String> {
-            val clearedString = this
-                .removePrefix("[")
-                .removeSuffix("]")
-            val result: MutableList<String> = mutableListOf()
-            val current = StringBuilder()
-            var openQuoteChar: Char? = null
-            var depth = 0
-
-            clearedString.forEach { currentChar ->
-                when {
-                    openQuoteChar != null -> if (currentChar == openQuoteChar) {
-                        openQuoteChar = null
-                    }
-                    currentChar == '\"' || currentChar == '\'' -> openQuoteChar = currentChar
-                    currentChar == '{' || currentChar == '[' -> depth++
-                    currentChar == '}' || currentChar == ']' -> depth--
-                    currentChar == ',' && depth == 0 -> {
-                        // comma between top-level inline tables: flush the current element
-                        result.add(current.toString().trim())
-                        current.clear()
-                        return@forEach
-                    }
-                    else -> {}
-                }
-                current.append(currentChar)
-            }
-
-            // 'current' is blank when array has a trailing comma
-            if (current.isNotBlank()) {
-                result.add(current.toString().trim())
-            }
-            return result
+        private fun String.splitInlineArrayOfTables(allowEscapedQuotesInLiteralStrings: Boolean): List<String> {
+            val elements = removePrefix("[").removeSuffix("]")
+                .splitInlineTableToKeyValue(allowEscapedQuotesInLiteralStrings)
+            // Only a single trailing comma is optional; interior empty entries are invalid.
+            return if (elements.last().isBlank()) elements.dropLast(1) else elements
         }
 
         /**
-         * That's basically split(",") function, but we ignore all commas inside arrays [ ],
-         * nested tables { } and quotes " "/' '. The bracket depth is tracked so that inline
-         * tables nested to any depth are split correctly (see issues #29 and #360).
+         * Splits only on commas outside strings, nested arrays and nested inline tables.
+         *
+         * @param allowEscapedQuotesInLiteralStrings legacy literal-string escape mode
+         * @return top-level entries
          */
-        @Suppress("TOO_LONG_FUNCTION")
         private fun String.splitInlineTableToKeyValue(
             allowEscapedQuotesInLiteralStrings: Boolean,
         ): List<String> {
-            val clearedString = this.replaceEscaped(allowEscapedQuotesInLiteralStrings)
-            val keyValueList: MutableList<String> = mutableListOf()
-            var currentQuoteChar: Char? = null
-            var bracketDepth = 0
-            var prevIdx = 0
-
-            clearedString.forEachIndexed { idx, ch ->
-                when {
-                    // inside a quoted string only the matching closing quote is meaningful
-                    currentQuoteChar != null -> if (ch == currentQuoteChar) {
-                        currentQuoteChar = null
-                    }
-                    ch == '\'' || ch == '\"' -> currentQuoteChar = ch
-                    ch == '[' || ch == '{' -> bracketDepth++
-                    ch == ']' || ch == '}' -> bracketDepth--
-                    // only a top-level comma (not nested inside [] or {}) separates key-value pairs
-                    ch == ',' && bracketDepth == 0 -> {
-                        keyValueList.add(this.substring(prevIdx, idx).trim())
-                        prevIdx = idx + 1
+            val entries: MutableList<String> = mutableListOf()
+            var depth = 0
+            var start = 0
+            indicesOutsideQuotes(allowEscapedQuotesInLiteralStrings).forEach { index ->
+                when (this[index]) {
+                    '[', '{' -> depth++
+                    ']', '}' -> depth--
+                    ',' -> if (depth == 0) {
+                        entries.add(substring(start, index).trim())
+                        start = index + 1
                     }
                 }
             }
-            keyValueList.add(this.substring(prevIdx).trim())
-
-            return keyValueList
+            entries.add(substring(start).trim())
+            return entries
         }
     }
 }

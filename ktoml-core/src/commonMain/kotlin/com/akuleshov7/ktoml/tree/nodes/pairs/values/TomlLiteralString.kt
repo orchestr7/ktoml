@@ -50,7 +50,7 @@ public class TomlLiteralString internal constructor(
             when {
                 // ====== multiline string (''') =======
                 startsWith("'''") && endsWith("'''") -> {
-                    val contentString = trimMultilineLiteralQuotes()
+                    val contentString = replace("\r\n", "\n").trimMultilineLiteralQuotes()
                         .checkCountOfOtherQuotes(lineNo)
                         .checkNoTomlControlChars(lineNo, allowLineFeed = true)
                     val rawContent = if (config.allowEscapedQuotesInLiteralStrings) {
