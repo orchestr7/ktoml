@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.values
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.ParseException
 import com.akuleshov7.ktoml.parsers.convertLineEndingBackslash
 import com.akuleshov7.ktoml.parsers.getCountOfOccurrencesOfSubstring
@@ -16,6 +17,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @property content
  * @property multiline Whether the string is multiline.
  */
+@InternalKtomlApi
 public class TomlBasicString internal constructor(
     override var content: Any,
     public var multiline: Boolean = false

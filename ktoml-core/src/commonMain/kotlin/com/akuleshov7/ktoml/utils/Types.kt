@@ -4,10 +4,13 @@
 
 package com.akuleshov7.ktoml.utils
 
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
+
 /**
  * @property min
  * @property max
  */
+@InternalKtomlApi
 public enum class IntegerLimitsEnum(public val min: Long, public val max: Long) {
     BYTE(Byte.MIN_VALUE.toLong(), Byte.MAX_VALUE.toLong()),
     CHAR(Char.MIN_VALUE.code.toLong(), Char.MAX_VALUE.code.toLong()),
@@ -21,6 +24,7 @@ public enum class IntegerLimitsEnum(public val min: Long, public val max: Long) 
  * @property min
  * @property max
  */
+@InternalKtomlApi
 public enum class FloatingPointLimitsEnum(public val min: Double, public val max: Double) {
     DOUBLE(-Double.MAX_VALUE, Double.MAX_VALUE),
     FLOAT(-Float.MAX_VALUE.toDouble(), Float.MAX_VALUE.toDouble()),
@@ -32,6 +36,7 @@ public enum class FloatingPointLimitsEnum(public val min: Double, public val max
  * @property max
  */
 @Suppress("WRONG_DECLARATIONS_ORDER")
+@InternalKtomlApi
 public enum class UnsignedIntegerLimitsEnum(public val min: ULong, public val max: ULong) {
     U_BYTE(UByte.MIN_VALUE.toULong(), UByte.MAX_VALUE.toULong()),
     U_SHORT(UShort.MIN_VALUE.toULong(), UShort.MAX_VALUE.toULong()),

@@ -5,6 +5,7 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -14,6 +15,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  * @param comments
  * @param inlineComment
  */
+@InternalKtomlApi
 public class TomlArrayOfTablesElement(
     lineNo: Int,
     comments: List<String>,

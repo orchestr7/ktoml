@@ -4,6 +4,7 @@
 
 package com.akuleshov7.ktoml.utils
 
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.tree.nodes.TableType
 import com.akuleshov7.ktoml.tree.nodes.TomlNode
 import com.akuleshov7.ktoml.tree.nodes.TomlTable
@@ -12,6 +13,7 @@ import com.akuleshov7.ktoml.tree.nodes.TomlTable
  * @param enumValue input value that we need to compare with elements of enum
  * @return nearest enum value (using levenshtein distance algorithm)
  */
+@InternalKtomlApi
 public fun Iterable<String>.closestEnumName(enumValue: String): String? =
     this.minByOrNull { levenshteinDistance(it, enumValue) }
 
@@ -30,6 +32,7 @@ internal expect fun StringBuilder.appendCodePointCompat(codePoint: Int): StringB
  * @param children list of nodes
  * @param fullTableName string with a table name
  */
+@InternalKtomlApi
 public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName: String): TomlTable? {
     if (children.isEmpty()) {
         return null
@@ -51,6 +54,7 @@ public fun findPrimitiveTableInAstByName(children: List<TomlNode>, fullTableName
  * @param second string for comparison
  * @return the distance between compared strings
  */
+@InternalKtomlApi
 public fun levenshteinDistance(first: String, second: String): Int {
     when {
         first == second -> return 0

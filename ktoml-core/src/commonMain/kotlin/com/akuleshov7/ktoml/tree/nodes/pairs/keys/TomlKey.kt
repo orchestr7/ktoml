@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes.pairs.keys
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.exceptions.TomlWritingException
 import com.akuleshov7.ktoml.parsers.parseKeyName
 import com.akuleshov7.ktoml.parsers.splitKeyToTokens
@@ -13,6 +14,7 @@ import com.akuleshov7.ktoml.writers.TomlStringEmitter
  *
  * @property keyParts The parts of the key, separated by dots.
  */
+@InternalKtomlApi
 public class TomlKey internal constructor(
     internal val keyParts: List<String>
 ) {

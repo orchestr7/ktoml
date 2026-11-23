@@ -19,4 +19,5 @@ internal actual fun StringBuilder.appendCodePointCompat(codePoint: Int): StringB
     else -> throw IllegalArgumentException()
 }
 
+@com.akuleshov7.ktoml.annotations.InternalKtomlApi
 public actual fun newLineChar(): Char = '\n'

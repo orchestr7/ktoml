@@ -2,9 +2,6 @@ package com.akuleshov7.ktoml.compliance
 
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.parsers.TomlParser
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -279,10 +276,11 @@ class TomlTestSuite {
     @OptIn(ExperimentalTime::class)
     private fun canonicalDateTime(type: String, value: String): String? = runCatching {
         when (type) {
+            // Offset date-times can be spelled differently yet be equal (`Z` vs `+00:00`, `.5` vs
+            // `.500`); compare them by the parsed instant via the stdlib (no date library needed).
             "datetime" -> Instant.parse(value).toString()
-            "datetime-local" -> LocalDateTime.parse(value).toString()
-            "date-local" -> LocalDate.parse(value).toString()
-            "time-local" -> LocalTime.parse(value).toString()
+            // Local values are emitted in canonical form by ktoml, so a plain textual comparison is
+            // exact — return null to fall back to it.
             else -> null
         }
     }.getOrNull()

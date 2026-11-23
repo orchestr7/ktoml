@@ -15,6 +15,13 @@ class InlineDecoderTest {
     @Serializable
     value class ColorWrapper(val color: Color)
 
+    @JvmInline
+    @Serializable
+    value class SchemaVersion(val value: Int)
+
+    @Serializable
+    data class SchemaMetadata(val schemaVersion: SchemaVersion)
+
     @Test
     fun testDecodingWithCustomSerializer() {
         var res = Toml.decodeFromString<Color>(
@@ -41,5 +48,16 @@ class InlineDecoderTest {
         )
 
         assertEquals(Color(0), res)
+    }
+
+    @Test
+    fun decodeInlinePrimitiveValueClass() {
+        val decoded = Toml.decodeFromString<SchemaMetadata>(
+            """
+                schemaVersion = 0
+            """.trimIndent()
+        )
+
+        assertEquals(SchemaMetadata(SchemaVersion(0)), decoded)
     }
 }

@@ -1,6 +1,7 @@
 package com.akuleshov7.ktoml.tree.nodes
 
 import com.akuleshov7.ktoml.TomlOutputConfig
+import com.akuleshov7.ktoml.annotations.InternalKtomlApi
 import com.akuleshov7.ktoml.writers.TomlEmitter
 
 /**
@@ -11,6 +12,7 @@ import com.akuleshov7.ktoml.writers.TomlEmitter
  *
  * @param lineNo
  */
+@InternalKtomlApi
 public class TomlStubEmptyNode(lineNo: Int) : TomlNode(
     lineNo,
     comments = emptyList(),
