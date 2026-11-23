@@ -1,0 +1,18 @@
+public class com/akuleshov7/ktoml/file/TomlFileReader : com/akuleshov7/ktoml/source/TomlSourceReader {
+	public static final field Default Lcom/akuleshov7/ktoml/file/TomlFileReader$Default;
+	public fun <init> ()V
+	public fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun decodeFromFile (Lkotlinx/serialization/DeserializationStrategy;Ljava/lang/String;)Ljava/lang/Object;
+	public final fun partiallyDecodeFromFile (Lkotlinx/serialization/DeserializationStrategy;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class com/akuleshov7/ktoml/file/TomlFileReader$Default : com/akuleshov7/ktoml/file/TomlFileReader {
+}
+
+public class com/akuleshov7/ktoml/file/TomlFileWriter : com/akuleshov7/ktoml/Toml {
+	public fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;)V
+	public synthetic fun <init> (Lcom/akuleshov7/ktoml/TomlInputConfig;Lcom/akuleshov7/ktoml/TomlOutputConfig;Lkotlinx/serialization/modules/SerializersModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun encodeToFile (Lkotlinx/serialization/SerializationStrategy;Ljava/lang/Object;Ljava/lang/String;)V
+}
+
