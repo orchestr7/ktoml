@@ -12,7 +12,6 @@ import com.akuleshov7.ktoml.utils.newLineChar
 import kotlin.jvm.JvmInline
 
 private const val IDEOGRAPHIC_SPACE = '\u3000'
-private const val TRIPLE_QUOTE_LENGTH = 3
 
 /**
  * @param config - object that stores configuration options for a parser
@@ -85,7 +84,7 @@ public value class TomlParser(private val config: TomlInputConfig) {
                 val tomlLine = if (multilineType != MultilineType.NOT_A_MULTILINE) {
                     val tomlMultilineString = TomlMultilineString(config, linesIterator, line)
                     comments += tomlMultilineString.getComments()
-                    tomlMultilineString.getLine()
+                    tomlMultilineString.getLine().also { it.validateTomlWhitespace(lineNo, config) }
                 } else {
                     line
                 }
@@ -270,44 +269,14 @@ public value class TomlParser(private val config: TomlInputConfig) {
 
     private fun String.isEmptyLine() = this.trim().isEmpty()
 
-    @Suppress("NESTED_BLOCK")
     private fun String.validateTomlWhitespace(lineNo: Int, config: TomlInputConfig) {
-        val chars = replaceEscaped(config.allowEscapedQuotesInLiteralStrings)
-        var quote: String? = null
-        var index = 0
-        while (index < chars.length) {
-            val symbol = chars[index]
-            val currentQuote = quote
-            if (currentQuote == null) {
-                when {
-                    symbol == '#' -> return
-                    symbol == IDEOGRAPHIC_SPACE -> throw ParseException(
-                        "Only ASCII space and tab are permitted as TOML whitespace; found U+3000.",
-                        lineNo,
-                    )
-                    symbol == '"' || symbol == '\'' -> {
-                        val openingQuote = chars.openingQuoteAt(index, symbol)
-                        quote = openingQuote
-                        index += openingQuote.length
-                        continue
-                    }
-                    else -> Unit
-                }
-            } else if (chars.startsWith(currentQuote, index)) {
-                quote = null
-                index += currentQuote.length
-                continue
-            }
-            index += 1
+        indicesOutsideQuotes(config.allowEscapedQuotesInLiteralStrings).firstOrNull { this[it] == IDEOGRAPHIC_SPACE }?.let { index ->
+            throw ParseException(
+                "Only ASCII space and tab are permitted as TOML whitespace; found U+3000.",
+                lineNo + substring(0, index).count { it == '\n' },
+            )
         }
     }
-
-    private fun String.openingQuoteAt(index: Int, symbol: Char): String =
-        if (index + 2 < length && this[index + 1] == symbol && this[index + 2] == symbol) {
-            symbol.toString().repeat(TRIPLE_QUOTE_LENGTH)
-        } else {
-            symbol.toString()
-        }
 }
 
 /**

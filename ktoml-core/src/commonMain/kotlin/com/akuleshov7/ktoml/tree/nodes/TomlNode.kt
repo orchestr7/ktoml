@@ -154,7 +154,9 @@ public sealed class TomlNode(
                 foundTable != null && isLastLevel && foundTable.type == tomlTable.type -> {
                     if (validate) {
                         foundTable.checkRedefinitionAllowed(tomlTable, insertionType)
-                        foundTable.mergeProvenance(insertionType)
+                        if (!isContainerLevel) {
+                            foundTable.mergeProvenance(insertionType)
+                        }
                     }
                     tomlTable.children.forEach { foundTable.appendCheckedKeyValue(it, validate) }
                     foundTable
@@ -171,6 +173,9 @@ public sealed class TomlNode(
                 foundTable != null -> {
                     if (validate && !isContainerLevel) {
                         foundTable.checkPassThroughAllowed(tomlTable, insertionType)
+                        if (insertionType == TableInsertionType.DOTTED_KEY) {
+                            foundTable.mergeProvenance(insertionType)
+                        }
                     }
                     foundTable.resolveInsertionParent()
                 }
@@ -308,18 +313,17 @@ public sealed class TomlNode(
     }
 
     /**
-     * When a header lands on an existing implicit super-table, promote it to explicit so a later
-     * duplicate header is rejected.
+     * Records the first explicit definition of a previously implicit super-table.
      *
      * @param insertionType
      */
     internal fun mergeProvenance(insertionType: TableInsertionType) {
-        // promote an implicit super-table to explicit so a later duplicate header is rejected; the
-        // node's `isSynthetic` flag is intentionally left untouched so writer output is unchanged
-        if (this is TomlTable && insertionType == TableInsertionType.HEADER &&
-                provenance == TableProvenance.IMPLICIT_SUPER
-        ) {
-            provenance = TableProvenance.EXPLICIT_HEADER
+        if (this is TomlTable && provenance == TableProvenance.IMPLICIT_SUPER) {
+            provenance = when (insertionType) {
+                TableInsertionType.HEADER -> TableProvenance.EXPLICIT_HEADER
+                TableInsertionType.DOTTED_KEY -> TableProvenance.DOTTED_KEY
+                TableInsertionType.INLINE_TABLE -> provenance
+            }
         }
     }
 

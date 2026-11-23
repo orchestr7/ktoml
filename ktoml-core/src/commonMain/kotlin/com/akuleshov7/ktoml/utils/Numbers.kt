@@ -6,28 +6,53 @@ package com.akuleshov7.ktoml.utils
 
 import com.akuleshov7.ktoml.exceptions.ParseException
 
-private val decimalIntegerPattern = "^[+-]?(?:0|[1-9](?:_?[0-9])*)$".toRegex()
-private val binaryIntegerPattern = "^0b[01](?:_?[01])*$".toRegex()
-private val octalIntegerPattern = "^0o[0-7](?:_?[0-7])*$".toRegex()
-private val hexadecimalIntegerPattern = "^0x[0-9a-fA-F](?:_?[0-9a-fA-F])*$".toRegex()
-
 /**
- * Validate the spelling after a value has been recognized as an integer.
- *
- * Select a radix before matching so Kotlin/JS does not prematurely match the
- * leading zero of a radix-prefixed literal as a decimal alternative.
+ * Validates integer spelling without recursion, including tokens too large for numeric conversion.
  *
  * @param lineNo source line number for parse errors
  * @throws ParseException if the spelling is not a TOML integer literal
  */
 internal fun String.validateIntegerSyntax(lineNo: Int) {
-    val valid = when {
-        startsWith("0b") -> binaryIntegerPattern.matches(this)
-        startsWith("0o") -> octalIntegerPattern.matches(this)
-        startsWith("0x") -> hexadecimalIntegerPattern.matches(this)
-        else -> decimalIntegerPattern.matches(this)
+    val radix = when {
+        startsWith("0b") -> BIN_RADIX
+        startsWith("0o") -> OCT_RADIX
+        startsWith("0x") -> HEX_RADIX
+        else -> DEC_RADIX
     }
-    if (!valid) {
+    val digitsStart = if (radix == DEC_RADIX) {
+        if (firstOrNull() == '+' || firstOrNull() == '-') 1 else 0
+    } else {
+        2
+    }
+    val hasLeadingZero = radix == DEC_RADIX && getOrNull(digitsStart) == '0' && length > digitsStart + 1
+    if (hasLeadingZero || !hasIntegerDigits(digitsStart, radix)) {
         throw ParseException("Invalid integer literal <$this>.", lineNo)
     }
+}
+
+private fun String.hasIntegerDigits(startIndex: Int, radix: Int): Boolean {
+    var index = startIndex
+    if (index >= length) {
+        return false
+    }
+    while (index < length) {
+        if (!this[index].isIntegerDigit(radix)) {
+            return false
+        }
+        index++
+        if (getOrNull(index) == '_') {
+            index++
+            if (index == length) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
+private fun Char.isIntegerDigit(radix: Int): Boolean = when (radix) {
+    BIN_RADIX -> this in '0'..'1'
+    OCT_RADIX -> this in '0'..'7'
+    HEX_RADIX -> this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'
+    else -> this in '0'..'9'
 }

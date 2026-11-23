@@ -103,7 +103,7 @@ public class TomlInlineTable internal constructor(
 
                 keyValue is TomlArrayOfTablesElement -> {
                     tomlTable.appendChild(keyValue)
-                    keyValue.expandNestedInlineArraysOfTables(valueRoot, validate)
+                    keyValue.expandInlineElementChildren(valueRoot, validate)
                 }
 
                 // otherwise, it should simply append the keyValue to the parent
@@ -114,32 +114,36 @@ public class TomlInlineTable internal constructor(
     }
 
     /**
-     * Expand inline arrays of tables nested inside this array-of-tables element (e.g. the
-     * `children = [{ ... }]` in `kids = [{ name = "x", children = [{ ... }] }]`) into proper
-     * `[[parent.child]]` tables nested under the element. Otherwise they would be left as raw
-     * inline nodes and fail to decode as lists - see issues #360 and #29.
-     *
-     * Dotted-keyed nested arrays (`a.b = [{ ... }]`) are intentionally left untouched: expanding
-     * them here would attach a single `[[parent.a.b]]` table directly to the element, collapsing
-     * the `a` level (the parent table is not yet in the file tree, so the dotted key cannot be
-     * split into nested tables the way `insertTableToTree` would). Those are already decoded and
-     * converted correctly from their raw inline form by the dotted-key handling - see the
-     * `valid/inline-table/key-dotted-*` toml-test cases.
+     * Expands dotted keys and nested inline values within one array-of-tables element.
+     * The temporary value tree preserves each prefix and the element that owns it.
      */
-    private fun TomlArrayOfTablesElement.expandNestedInlineArraysOfTables(
+    private fun TomlArrayOfTablesElement.expandInlineElementChildren(
         tomlFileHead: TomlFile,
         validate: Boolean
     ) {
-        children
-            .filterIsInstance<TomlInlineTable>()
-            .filter { it.isInlineArrayOfTables() && it.key?.isDotted != true }
-            .toList()
-            .forEach { nested ->
-                children.remove(nested)
-                // the parent table is not in the file tree yet, so we attach the expanded
-                // table directly to the element instead of going through insertTableToTree
-                appendChild(nested.returnTable(tomlFileHead, this, validate))
+        val containerDepth = (parent as TomlTable).fullTableKey.keyParts.size
+        children.toList().forEach { child ->
+            when {
+                child is TomlKeyValue && child.key.isDotted -> {
+                    children.remove(child)
+                    tomlFileHead.insertTableToTree(
+                        child.createTomlTableFromDottedKey(this),
+                        insertionType = TableInsertionType.DOTTED_KEY,
+                        containerDepth = containerDepth,
+                        validate = validate
+                    ).appendChild(child)
+                }
+                child is TomlInlineTable -> {
+                    children.remove(child)
+                    tomlFileHead.insertTableToTree(
+                        child.returnTable(tomlFileHead, this, validate),
+                        insertionType = TableInsertionType.INLINE_TABLE,
+                        containerDepth = containerDepth,
+                        validate = validate
+                    )
+                }
             }
+        }
     }
 
     public override fun write(
