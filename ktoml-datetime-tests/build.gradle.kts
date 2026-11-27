@@ -35,7 +35,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(project(":ktoml-core"))
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
             }
@@ -44,7 +44,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.14.1")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.14.5")
             }
         }
     }
